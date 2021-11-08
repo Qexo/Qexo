@@ -11,7 +11,6 @@ npm i -g vercel
 
 
 - 修改Configs
-  
   将configs.example.py的文件名修改为configs.py，并根据注释修改数据库配置信息
 
 

@@ -3,4 +3,6 @@
 configs.py
 venv
 __pycache__
+core/__pycache__
+hexoweb/__pycache__
 

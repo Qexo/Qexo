@@ -721,6 +721,9 @@ def pages(request):
                 context['IMG_API'] = SettingModel.objects.get(name='IMG_API').content
             except Exception as e:
                 context["error"] = repr(e)
+        context["github_dev"] = "https://github.dev/" + SettingModel.objects.get(
+            name="GH_REPO").content + "/tree/" + SettingModel.objects.get(
+            name="GH_REPO_BRANCH").content
         html_template = loader.get_template('home/' + load_template)
         return HttpResponse(html_template.render(context, request))
 

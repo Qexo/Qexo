@@ -160,7 +160,7 @@ def login_view(request):
         if int(SettingModel.objects.get(name="INIT").content) <= 5:
             return redirect("/init/")
     except:
-        pass
+        return redirect("/init/")
     if request.method == "POST":
 
         if form.is_valid():

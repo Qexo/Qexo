@@ -1,0 +1,239 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} {% if search %}搜索文章:{{ search }}{% else %}全部文章{% endif %} {% endblock title %}
+
+{% block content %}
+
+    <div class="header bg-primary pb-6">
+        <div class="container-fluid">
+            <div class="header-body">
+                <div class="row align-items-center py-4">
+                    <div class="col-lg-6 col-7">
+                        <h6 class="h2 text-white d-inline-block mb-0">文章列表</h6>
+                        <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
+                            <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+                                <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i></a></li>
+                                <li class="breadcrumb-item active" aria-current="page">文章</li>
+                            </ol>
+                        </nav>
+                    </div>
+                    <div class="col-lg-6 col-5 text-right">
+                        <a href="/" class="btn btn-sm btn-neutral">主页</a>
+                        <a href="/new.html" class="btn btn-sm btn-neutral">新建文章</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page content -->
+    <div class="container-fluid mt--6">
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header border-0">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h3 class="mb-0">{% if search %}搜索文章: {{ search }}{% else %}全部文章{% endif %}
+                                    ({{ post_number }}篇)</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <!-- Projects table -->
+                        <table class="table align-items-center table-flush">
+                            <thead class="thead-light">
+                            <tr>
+                                <th scope="col">文章名</th>
+                                <th scope="col">大小</th>
+                                <th scope="col">发布状态</th>
+                                <th scope="col">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for post in posts %}
+                                <tr>
+                                    <th scope="row">
+                                        {{ post.name }}
+                                    </th>
+                                    <td>
+                                        {{ post.size | div:1000 }} KB
+                                    </td>
+                                    <td>
+                                        {% if post.status %}
+                                            已发布
+                                        {% else %}
+                                            草稿
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="/edit.html?file={{ post.path }}"><i
+                                                class="fa fa-edit mr-2"></i></a>
+                                        <a href="javascript:query_delete('{{ post.path }}')"><i
+                                                class="fa fa-trash-alt mr-2"></i></a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                        <div class="card-footer py-4">
+                            <ul class="pagination justify-content-end mb-0">
+                                <li class="page-item{% if start %} disabled{% endif %}">
+                                    <a class="page-link"
+                                       href="?page={{ page|add:-1 }}{% if search %}&s={{ search }}{% endif %}">
+                                        <i class="fas fa-angle-left"></i>
+                                        <span class="sr-only">上一页</span>
+                                    </a>
+                                </li>
+                                {% for i in page_number|get_range %}
+                                    <li class="page-item {% if i == page %}active{% endif %}">
+                                        <a class="page-link"
+                                           href="?page={{ i }}{% if search %}&s={{ search }}{% endif %}">{{ i }}</a>
+                                    </li>
+                                {% endfor %}
+
+                                <li class="page-item {% if end %}disabled{% endif %}">
+                                    <a class="page-link"
+                                       href="?page={{ page|add:1 }}{% if search %}&s={{ search }}{% endif %}">
+                                        <i class="fas fa-angle-right"></i>
+                                        <span class="sr-only">Next</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">提示</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        确认要删除 <a id="delfile"></a> 吗？此操作不可撤回
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="delete_file()">确定
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% include "includes/footer.html" %}
+
+    </div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE -->
+{% block javascripts %}
+    <script src="/static/assets/vendor/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="/static/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        function KZ_Loading(config) {
+            if (this instanceof KZ_Loading) {
+                const domTemplate = '<div class="modal fade kz-loading" data-kzid="@@KZ_Loadin_ID@@" backdrop="static" keyboard="false"><div style="width: 200px;height:20px; z-index: 20000; position: absolute; text-align: center; left: 50%; top: 50%;margin-left:-100px;margin-top:-10px"><div class="progress progress-striped active" style="margin-bottom: 0;"><div class="progress-bar" style="width: 100%;"></div></div><h5>@@KZ_Loading_Text@@</h5></div></div>';
+                this.config = {
+                    content: 'loading...',
+                    time: 0,
+                };
+                if (config != null) {
+                    if (typeof config === 'string') {
+                        this.config = Object.assign(this.config, {
+                            content: config
+                        });
+                    } else if (typeof config === 'object') {
+                        this.config = Object.assign(this.config, config);
+                    }
+                }
+                this.id = new Date().getTime().toString();
+                this.state = 'hide';
+
+                /*显示 */
+                this.show = function () {
+                    $('.kz-loading[data-kzid=' + this.id + ']').modal({
+                        backdrop: 'static',
+                        keyboard: false
+                    });
+                    this.state = 'show';
+                    if (this.config.time > 0) {
+                        var that = this;
+                        setTimeout(function () {
+                            that.hide();
+                        }, this.config.time);
+                    }
+                };
+                /*隐藏 */
+                this.hide = function (callback) {
+                    $('.kz-loading[data-kzid=' + this.id + ']').modal('hide');
+                    this.state = 'hide';
+                    if (callback) {
+                        callback();
+                    }
+                };
+                /*销毁dom */
+                this.destroy = function () {
+                    var that = this;
+                    this.hide(function () {
+                        var node = $('.kz-loading[data-kzid=' + that.id + ']');
+                        node.next().remove();
+                        node.remove();
+                        that.show = function () {
+                            throw new Error('对象已销毁！');
+                        };
+                        that.hide = function () {
+                        };
+                        that.destroy = function () {
+                        };
+                    });
+                }
+
+                var domHtml = domTemplate.replace('@@KZ_Loadin_ID@@', this.id).replace('@@KZ_Loading_Text@@', this.config.content);
+                $('body').append(domHtml);
+            } else {
+                return new KZ_Loading(config);
+            }
+        }
+
+        function query_delete(name) {
+            $("#delfile").text(name);
+            $("#deleteModal").modal("show");
+        }
+
+        function delete_file() {
+            var loading = new KZ_Loading('正在删除中...');
+            loading.show();
+            $.ajax({
+                url: '/api/delete/',
+                method: 'post',
+                data: {"file": $("#delfile").text()},
+                dataType: 'JSON',
+                success: function (res) {
+                    loading.destroy();
+                    if (res.status) {
+                        var notify = $.notify('删除成功！', {type: "success", delay: 1000});
+                        setTimeout(location.reload(), 1000);
+                    } else {
+                        var notify = $.notify(res.msg, {type: "warning", delay: 1000});
+                    }
+                },
+                error: function (res) {
+                    loading.destroy();
+                    var notify = $.notify("网络错误！", {type: "warning", delay: 1000});
+                }
+            })
+        }
+
+
+    </script>
+{% endblock javascripts %}

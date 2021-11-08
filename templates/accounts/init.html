@@ -1,0 +1,197 @@
+{% extends 'layouts/base-fullscreen.html' %}
+
+{% block title %} 初始化 {% endblock title %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    <!-- Page content -->
+    <div class="container mt--8 pb-5">
+        <div class="row justify-content-center">
+            {% if step == "4" %}
+                <div class="col-lg-8 col-md-5">
+            {% else %}
+                <div class="col-lg-5 col-md-5">
+            {% endif %}
+            <div class="card bg-secondary shadow border-0">
+                <div class="card-body">
+                    <div class="text-center text-muted mb-4">
+                        {% if step == "1" %}
+                            <h2>欢迎！请点击开始以继续初始化</h2>
+                        {% endif %}
+                        {% if step == "2" %}
+                            <h3>用户配置</h3>
+                        {% endif %}
+                        {% if step == "3" %}
+                            <h3>Github配置</h3>
+                        {% endif %}
+                        {% if step == "4" %}
+                            <h3>图床配置</h3>
+                        {% endif %}
+                        {% if step == "5" %}
+                            <h3>恭喜您初始化完毕</h3>
+                        {% endif %}
+                    </div>
+                {% if step == "5" %}
+                    <ul>请牢记您的登录信息：
+                    <li>用户名: {{ context.username }}</li>
+                    <li>密码: 您设定的值</li>
+                    <a class="btn btn-primary my-4 text-white" href="/">登录控制台</a>
+                    </ul>
+                {% endif %}
+                    <form method="POST">
+                        {% if step == "1" %}
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary my-4">开始</button>
+                            </div>
+                        {% endif %}
+                        <input type="hidden" name="step"
+                               value="{{ step }}">
+                        {% csrf_token %}
+                        {% if step == "2" %}
+                            <hr class="my-4"/>
+                            <div class="form-group">
+                                <label class="form-control-label">用户名</label>
+                                <input type="text" name="username"
+                                       class="form-control" placeholder="设置用户名"
+                                       value="{{ context.username }}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-control-label">密码</label>
+                                <input type="text" name="password" class="form-control"
+                                       placeholder="设置密码" value="{{ context.password }}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-control-label">重复密码</label>
+                                <input type="text" name="repassword" class="form-control"
+                                       placeholder="再次输入以确认密码" value="{{ context.repassword }}">
+                            </div>
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary my-4">下一步</button>
+                            </div>
+                        {% endif %}
+                        {% if step == "3" %}
+                            <hr class="my-4"/>
+                            <div class="form-group">
+                                <label class="form-control-label">Github仓库</label>
+                                <input type="text" name="repo"
+                                       class="form-control" placeholder="username/repo"
+                                       value="{{ context.repo }}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-control-label">项目分支</label>
+                                <input type="text" name="branch" class="form-control"
+                                       placeholder="main" value="{{ context.branch }}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-control-label">Github密钥</label>
+                                <input type="text" name="token" class="form-control"
+                                       placeholder="你的Github密钥" value="{{ context.token }}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-control-label">仓库路径</label>
+                                <input type="text" name="path" class="form-control"
+                                       placeholder="留空即为根目录" value="{{ context.path }}">
+                            </div>
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary my-4">下一步</button>
+                            </div>
+                        {% endif %}
+                        {% if step == "4" %}
+                            <hr class="my-4"/>
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label class="form-control-label">API地址</label>
+                                        <input type="text" name="api" class="form-control"
+                                               placeholder="API地址(包含http)"
+                                               value="{{ context.api }}">
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label class="form-control-label">POST参数名</label>
+                                        <input type="text" name="post" class="form-control"
+                                               placeholder="POST参数名"
+                                               value="{{ context.post }}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label class="form-control-label">JSON路径</label>
+                                        <input type="text" name="jsonpath" class="form-control"
+                                               placeholder="JSON路径 eg: data.img"
+                                               value="{{ context.jsonpath }}">
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label class="form-control-label">自定义请求头</label>
+                                        <input type="text" name="header" class="form-control"
+                                               placeholder="标准JSON格式"
+                                               value="{{ context.header }}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label class="form-control-label">自定义BODY</label>
+                                        <input type="text" name="body" class="form-control"
+                                               placeholder="标准JSON格式" value="{{ context.body }}">
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label class="form-control-label">自定义前缀</label>
+                                        <input type="text" name="custom" class="form-control"
+                                               placeholder="自定义图片URL前缀"
+                                               value="{{ context.custom }}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <a href="javascript:skip()" class="btn btn-white my-4">跳过</a>
+                                <button type="submit" class="btn btn-primary my-4">完成</button>
+                            </div>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+            </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE -->
+{% block javascripts %}
+    <script src="/static/assets/vendor/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="/static/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
+    <script>
+        {% if msg %}
+            $.notify("{{ msg }}", {type: "warning", delay: 1000});
+        {% endif %}
+        function skip() {
+            let temp = document.createElement("form");
+            temp.action = "";
+            temp.method = "post";
+            temp.hidden = true;
+            let opt = document.createElement("textarea");
+            opt.name = "csrfmiddlewaretoken";
+            opt.value = "{{ csrf_token }}";
+            temp.appendChild(opt);
+            opt = document.createElement("textarea");
+            opt.name = "step";
+            opt.value = "{{ step }}";
+            temp.appendChild(opt);
+            document.body.appendChild(temp);
+            temp.submit();
+        }
+    </script>
+{% endblock javascripts %}

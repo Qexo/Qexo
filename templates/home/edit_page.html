@@ -1,0 +1,313 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} 编辑页面: {{ filename }} {% endblock title %}
+
+{% block content %}
+
+    <div class="header bg-primary pb-6">
+        <div class="container-fluid">
+            <div class="header-body">
+                <div class="row align-items-center py-4">
+                    <div class="col-lg-6 col-7">
+                        <h6 class="h2 text-white d-inline-block mb-0">正在编辑: {{ filename }}</h6>
+                        <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
+                            <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+                                <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i></a></li>
+                                <li class="breadcrumb-item"><a href="/pages.html">页面</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">编辑</li>
+                            </ol>
+                        </nav>
+                    </div>
+                    <div class="col-lg-6 col-5 text-right">
+                        <a href="/pages.html" class="btn btn-sm btn-neutral">页面列表</a>
+                        <a href="javascript:SaveChanges()" class="btn btn-sm btn-neutral">保存</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page content -->
+    <div class="container-fluid mt--6">
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div id="vditor"></div>
+                </div>
+            </div>
+        </div>
+
+        {% include "includes/footer.html" %}
+
+    </div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE -->
+{% block javascripts %}
+    <link href="https://cdn.jsdelivr.net/npm/vditor@3.8.7/dist/index.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/vditor@3.8.7/dist/index.min.js"></script>
+    <script src="/static/assets/vendor/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="/static/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        function KZ_Loading(config) {
+            if (this instanceof KZ_Loading) {
+                const domTemplate = '<div class="modal fade kz-loading" data-kzid="@@KZ_Loadin_ID@@" backdrop="static" keyboard="false"><div style="width: 200px;height:20px; z-index: 20000; position: absolute; text-align: center; left: 50%; top: 50%;margin-left:-100px;margin-top:-10px"><div class="progress progress-striped active" style="margin-bottom: 0;"><div class="progress-bar" style="width: 100%;"></div></div><h5>@@KZ_Loading_Text@@</h5></div></div>';
+                this.config = {
+                    content: 'loading...',
+                    time: 0,
+                };
+                if (config != null) {
+                    if (typeof config === 'string') {
+                        this.config = Object.assign(this.config, {
+                            content: config
+                        });
+                    } else if (typeof config === 'object') {
+                        this.config = Object.assign(this.config, config);
+                    }
+                }
+                this.id = new Date().getTime().toString();
+                this.state = 'hide';
+
+                /*显示 */
+                this.show = function () {
+                    $('.kz-loading[data-kzid=' + this.id + ']').modal({
+                        backdrop: 'static',
+                        keyboard: false
+                    });
+                    this.state = 'show';
+                    if (this.config.time > 0) {
+                        var that = this;
+                        setTimeout(function () {
+                            that.hide();
+                        }, this.config.time);
+                    }
+                };
+                /*隐藏 */
+                this.hide = function (callback) {
+                    $('.kz-loading[data-kzid=' + this.id + ']').modal('hide');
+                    this.state = 'hide';
+                    if (callback) {
+                        callback();
+                    }
+                };
+                /*销毁dom */
+                this.destroy = function () {
+                    var that = this;
+                    this.hide(function () {
+                        var node = $('.kz-loading[data-kzid=' + that.id + ']');
+                        node.next().remove();
+                        node.remove();
+                        that.show = function () {
+                            throw new Error('对象已销毁！');
+                        };
+                        that.hide = function () {
+                        };
+                        that.destroy = function () {
+                        };
+                    });
+                }
+
+                var domHtml = domTemplate.replace('@@KZ_Loadin_ID@@', this.id).replace('@@KZ_Loading_Text@@', this.config.content);
+                $('body').append(domHtml);
+            } else {
+                return new KZ_Loading(config);
+            }
+        }
+
+        function SaveChanges() {
+            var loading = new KZ_Loading('正在保存中...');
+            loading.show();
+            $.ajax({
+                url: '/api/save/',
+                method: 'post',
+                data: {"file": "{{ file_path }}", "content": vditor.getValue()},
+                dataType: 'JSON',
+                success: function (res) {
+                    loading.destroy();
+                    if (res.status) {
+                        var notify = $.notify('保存成功！', {type: "success", delay: 1000});
+                    } else {
+                        var notify = $.notify(res.msg, {type: "warning", delay: 1000});
+                    }
+                },
+                error: function (res) {
+                    loading.destroy();
+                    var notify = $.notify("网络错误！", {type: "warning", delay: 1000});
+                }
+            })
+
+        }
+
+        function fIsMobile() {
+            return /Android|iPhone|iPad|iPod|BlackBerry|webOS|Windows Phone|SymbianOS|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+
+        var toolbar;
+        toolbar = [
+            "emoji",
+            "headings",
+            "bold",
+            "italic",
+            "strike",
+            "link",
+            "|",
+            "list",
+            "ordered-list",
+            "check",
+            "|",
+            "quote",
+            "line",
+            "code",
+            "inline-code",
+            "|",
+            {% if img_bed %}
+            {
+                name: "upload",
+                tip: '上传图片',
+            },
+            {% endif %}
+            "table",
+            "export",
+            "|",
+            "fullscreen",
+            "preview"
+        ];
+        //挂载到全局
+        if (fIsMobile()) {
+            new Vditor('vditor', {
+                toolbarConfig: {
+                    pin: true
+                },
+                counter: {
+                    enable: true
+                },
+                "height": window.innerHeight / 2,
+                "value": {{ file_content|safe }},
+                "fullscreen": {
+                    "index": 1050,
+                },
+                "debugger": false,
+                toolbar: [
+                    'emoji',
+                    'link',
+                    {% if img_bed %}
+                    {
+                        name: "upload",
+                        tip: '上传图片',
+                    },
+                    {% endif %}
+                    'edit-mode',
+                    {
+                        name: 'more',
+                        toolbar: [
+                            'insert-after',
+                            'fullscreen',
+                            'preview',
+                            'info',
+                            'help',
+                        ],
+                    },
+                ],
+                // 文件上传配置
+                upload: {
+                    accept: "image/*",
+                    url: "/api/upload/",
+                    filename(name) {
+                        return name
+                            .replace(/[^(a-zA-Z0-9\u4e00-\u9fa5\.)]/g, "")
+                            .replace(/[\?\\/:|<>\*\[\]\(\)\$%\{\}@~]/g, "")
+                            .replace("/\\s/g", "");
+                    },
+                    success(editor, msg) {
+                        let responseData = JSON.parse(msg)
+                        if (responseData.status) {
+                            let imageUrl = responseData.url;
+                            let succFileText = "";
+                            if (vditor && vditor.vditor.currentMode === "wysiwyg") {
+                                succFileText += `\n <img alt=${imageUrl} src="${imageUrl}">`;
+                            } else {
+                                succFileText += `\n![${imageUrl}](${imageUrl})`;
+                            }
+                            //将图片路径写入文本
+                            document.execCommand("insertHTML", false, succFileText);
+                            let notify = $.notify(responseData.msg, {type: "success", delay: 1000});
+                        } else {
+                            let notify = $.notify(responseData.msg, {type: "warning", delay: 1000});
+                        }
+
+                    },
+                    error() {
+                        let notify = $.notify("上传失败！", {type: "warning", delay: 1000});
+                    }
+                },
+            })
+        } else {
+            window.vditor = new Vditor("vditor", {
+
+                // 获取焦点方法
+                focus(md) {
+                    document.onkeydown = function () {
+                        // 判断 Ctrl+S
+                        if (event.ctrlKey == true && event.keyCode == 83) {
+                            SaveChanges();
+                            event.preventDefault();
+                        }
+                    }
+                },
+                // _lutePath: "lib/vditor-3.7.3/src/js/lute/lute.min.js",
+                // 这个是自定义导航栏
+                toolbar,
+                "fullscreen": {
+                    "index": 1050,
+                },
+                "height": document.documentElement.clientHeight - 200,
+                "cache": {
+                    "enable": false
+                },
+                "value": {{ file_content|safe }},
+                "mode": "sv",
+                "debugger": false,
+                "preview": {
+                    "mode": "both"
+                },
+                // 文件上传配置
+                upload: {
+                    accept: "image/*",
+                    url: "/api/upload/",
+                    filename(name) {
+                        return name
+                            .replace(/[^(a-zA-Z0-9\u4e00-\u9fa5\.)]/g, "")
+                            .replace(/[\?\\/:|<>\*\[\]\(\)\$%\{\}@~]/g, "")
+                            .replace("/\\s/g", "");
+                    },
+                    success(editor, msg) {
+                        let responseData = JSON.parse(msg)
+                        if (responseData.status) {
+                            let imageUrl = responseData.url;
+                            let succFileText = "";
+                            if (vditor && vditor.vditor.currentMode === "wysiwyg") {
+                                succFileText += `\n <img alt=${imageUrl} src="${imageUrl}">`;
+                            } else {
+                                succFileText += `\n![${imageUrl}](${imageUrl})`;
+                            }
+                            //将图片路径写入文本
+                            document.execCommand("insertHTML", false, succFileText);
+                            let notify = $.notify(responseData.msg, {type: "success", delay: 1000});
+                        } else {
+                            let notify = $.notify(responseData.msg, {type: "warning", delay: 1000});
+                        }
+
+                    },
+                    error() {
+                        let notify = $.notify("上传失败！", {type: "warning", delay: 1000});
+                    }
+                },
+            });
+        }
+    </script>
+{% endblock javascripts %}

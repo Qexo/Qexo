@@ -1,0 +1,410 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} 设置 {% endblock title %}
+
+{% block content %}
+
+    <div class="header bg-primary pb-6">
+        <div class="container-fluid">
+            <div class="header-body">
+                <div class="row align-items-center py-4">
+                    <div class="col-lg-6 col-7">
+                        <h6 class="h2 text-white d-inline-block mb-0">设置中心</h6>
+                        <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
+                            <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+                                <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i></a></li>
+                                <li class="breadcrumb-item active">设置</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Page content -->
+    <div class="container-fluid mt--6">
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row align-items-center">
+                            <div class="col-8">
+                                <h3 class="mb-0">修改配置</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="pl-lg-4">
+                                <input type="button" class="btn btn-warning" value="清除缓存"
+                                       onclick="query_purge()">
+                            </div>
+                        </div>
+                        <form id="user-settings">
+                            <hr class="my-4"/>
+                            <h6 class="heading-small text-muted mb-4">用户配置</h6>
+                            <div class="pl-lg-4">
+                                <div class="row">
+                                    {% csrf_token %}
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">原密码</label>
+                                            <input type="text" name="password" class="form-control" placeholder="原密码">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">新用户名</label>
+                                            <input type="text" name="username" class="form-control" placeholder="新的用户名">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">新密码</label>
+                                            <input type="text" name="newpassword" class="form-control"
+                                                   placeholder="新的密码">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">重复密码</label>
+                                            <input type="text" name="repassword" class="form-control"
+                                                   placeholder="再次输入以确认密码">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <input type="button" class="btn btn-primary" value="提交"
+                                               onclick="submit_user_config()">
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        <form id="github-settings">
+                            <hr class="my-4"/>
+                            <h6 class="heading-small text-muted mb-4">Github配置</h6>
+                            <div class="pl-lg-4">
+                                <div class="row">
+                                    {% csrf_token %}
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">Github仓库</label>
+                                            <input type="text" name="repo" class="form-control"
+                                                   placeholder="username/repo" value="{{ GH_REPO }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">项目分支</label>
+                                            <input type="text" name="branch" class="form-control" placeholder="main"
+                                                   value="{{ GH_REPO_BRANCH }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">Github密钥</label>
+                                            <input type="text" name="token" class="form-control"
+                                                   placeholder="你的Github密钥" value="{{ GH_TOKEN }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">仓库路径</label>
+                                            <input type="text" name="path" class="form-control" placeholder="若为根目录请留空"
+                                                   value="{{ GH_REPO_PATH }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <input type="button" class="btn btn-primary" value="提交"
+                                               onclick="submit_github_config()">
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        <form id="image-settings">
+                            <hr class="my-4"/>
+                            <h6 class="heading-small text-muted mb-4">图床配置</h6>
+                            <div class="pl-lg-4">
+                                <div class="row">
+                                    {% csrf_token %}
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">API地址</label>
+                                            <input type="text" name="api" class="form-control"
+                                                   placeholder="API地址(包含http)" value="{{ IMG_API }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">POST参数名</label>
+                                            <input type="text" name="post" class="form-control" placeholder="POST参数名"
+                                                   value="{{ IMG_POST }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">JSON路径</label>
+                                            <input type="text" name="jsonpath" class="form-control"
+                                                   placeholder="JSON路径 eg: data.img" value="{{ IMG_JSON_PATH }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">自定义请求头</label>
+                                            <input type="text" name="header" class="form-control" placeholder="标准JSON格式"
+                                                   value="{{ IMG_CUSTOM_HEADER }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">自定义BODY</label>
+                                            <input type="text" name="body" class="form-control"
+                                                   placeholder="标准JSON格式" value="{{ IMG_CUSTOM_BODY }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">自定义前缀</label>
+                                            <input type="text" name="custom" class="form-control"
+                                                   placeholder="自定义图片URL前缀"
+                                                   value="{{ IMG_CUSTOM_URL }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <input type="button" class="btn btn-primary" value="提交"
+                                               onclick="submit_image_config()">
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="queryModal" tabindex="-1" aria-labelledby="queryModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="queryModalLabel">提示</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <a id="question"></a>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="purge()">确定
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% include "includes/footer.html" %}
+
+    </div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE -->
+{% block javascripts %}
+    <script src="/static/assets/vendor/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="/static/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
+    <script>
+        {% if error %}
+            let notify = $.notify(error, {type: "warning"});
+        {% endif %}
+
+        function KZ_Loading(config) {
+            if (this instanceof KZ_Loading) {
+                const domTemplate = '<div class="modal kz-loading" data-kzid="@@KZ_Loadin_ID@@" backdrop="static" keyboard="false"><div style="width: 200px;height:20px; z-index: 20000; position: absolute; text-align: center; left: 50%; top: 50%;margin-left:-100px;margin-top:-10px"><div class="progress progress-striped active" style="margin-bottom: 0;"><div class="progress-bar" style="width: 100%;"></div></div><h5>@@KZ_Loading_Text@@</h5></div></div>';
+                this.config = {
+                    content: 'loading...',
+                    time: 0,
+                };
+                if (config != null) {
+                    if (typeof config === 'string') {
+                        this.config = Object.assign(this.config, {
+                            content: config
+                        });
+                    } else if (typeof config === 'object') {
+                        this.config = Object.assign(this.config, config);
+                    }
+                }
+                this.id = new Date().getTime().toString();
+                this.state = 'hide';
+
+                /*显示 */
+                this.show = function () {
+                    $('.kz-loading[data-kzid=' + this.id + ']').modal({
+                        backdrop: 'static',
+                        keyboard: false
+                    });
+                    this.state = 'show';
+                    if (this.config.time > 0) {
+                        var that = this;
+                        setTimeout(function () {
+                            that.hide();
+                        }, this.config.time);
+                    }
+                };
+                /*隐藏 */
+                this.hide = function (callback) {
+                    $('.kz-loading[data-kzid=' + this.id + ']').modal('hide');
+                    this.state = 'hide';
+                    if (callback) {
+                        callback();
+                    }
+                };
+                /*销毁dom */
+                this.destroy = function () {
+                    var that = this;
+                    this.hide(function () {
+                        var node = $('.kz-loading[data-kzid=' + that.id + ']');
+                        node.next().remove();
+                        node.remove();
+                        that.show = function () {
+                            throw new Error('对象已销毁！');
+                        };
+                        that.hide = function () {
+                        };
+                        that.destroy = function () {
+                        };
+                    });
+                }
+
+                var domHtml = domTemplate.replace('@@KZ_Loadin_ID@@', this.id).replace('@@KZ_Loading_Text@@', this.config.content);
+                $('body').append(domHtml);
+            } else {
+                return new KZ_Loading(config);
+            }
+        }
+
+        function submit_github_config() {
+            var loading = new KZ_Loading('正在校验并保存中...');
+            loading.show();
+            $.ajax({
+                url: '/api/set_github/',
+                method: 'post',
+                data: $('#github-settings').serialize(),
+                dataType: "json",
+                success: function (res) {
+                    loading.destroy();
+                    if (res.status) {
+                        let notify = $.notify(res.msg, {type: "success", delay: 1000});
+                    } else {
+                        let notify = $.notify(res.msg, {type: "warning"});
+                    }
+                },
+                error: function (res) {
+                    loading.destroy();
+                    let notify = $.notify("网络错误！", {type: "warning"});
+                }
+            })
+        }
+
+        function submit_user_config() {
+            if(!$("input[name='username']").val()){
+                let notify = $.notify("请输入正确的用户名！", {type: "warning", delay: 1500});
+                return false;
+            }
+            if(!$("input[name='password']").val()){
+                let notify = $.notify("原密码不能为空！", {type: "warning", delay: 1500});
+                return false;
+            }
+            if(!$("input[name='newpassword']").val()){
+                let notify = $.notify("请输入正确的新密码！", {type: "warning", delay: 1500});
+                return false;
+            }
+            if($("input[name='newpassword']").val() != $("input[name='repassword']").val()){
+                let notify = $.notify("两次输入的密码不相同！", {type: "warning", delay: 1500});
+                return false;
+            }
+            let loading = new KZ_Loading('正在校验并保存中...');
+            loading.show();
+            $.ajax({
+                url: '/api/set_user/',
+                method: 'post',
+                data: $('#user-settings').serialize(),
+                dataType: "json",
+                success: function (res) {
+                    loading.destroy();
+                    if (res.status) {
+                        let notify = $.notify(res.msg, {type: "success", delay: 1000});
+                        setTimeout(location.reload(), 1000);
+                    } else {
+                        let notify = $.notify(res.msg, {type: "warning"});
+                    }
+                },
+                error: function (res) {
+                    loading.destroy();
+                    let notify = $.notify("网络错误！", {type: "warning"});
+                }
+            })
+        }
+
+        function submit_image_config() {
+            let loading = new KZ_Loading('正在保存中...');
+            loading.show();
+            $.ajax({
+                url: '/api/set_image_bed/',
+                method: 'post',
+                data: $('#image-settings').serialize(),
+                dataType: "json",
+                success: function (res) {
+                    loading.destroy();
+                    if (res.status) {
+                        let notify = $.notify(res.msg, {type: "success", delay: 1000});
+                    } else {
+                        let notify = $.notify(res.msg, {type: "warning"});
+                    }
+                },
+                error: function (res) {
+                    loading.destroy();
+                    let notify = $.notify("网络错误！", {type: "warning"});
+                }
+            })
+        }
+
+        function query_purge() {
+            $("#question").text("确定清除所有缓存吗");
+            $("#queryModal").modal("show");
+        }
+
+        function purge() {
+            let loading = new KZ_Loading('正在清除中...');
+            loading.show();
+            $.ajax({
+                url: '/api/purge/',
+                method: 'get',
+                dataType: "json",
+                success: function (res) {
+                    loading.destroy();
+                    if (res.status) {
+                        let notify = $.notify(res.msg, {type: "success", delay: 1000});
+                    } else {
+                        let notify = $.notify(res.msg, {type: "warning"});
+                    }
+                },
+                error: function (res) {
+                    loading.destroy();
+                    let notify = $.notify("网络错误！", {type: "warning"});
+                }
+            })
+        }
+    </script>
+{% endblock javascripts %}

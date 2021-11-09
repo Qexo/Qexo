@@ -2,7 +2,7 @@ from pathlib import Path
 import os
 from configs import CONFIGS
 
-VERSION = "0.01"
+QEXO_VERSION = "0.01"
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -24,7 +24,7 @@ ALLOWED_HOSTS = ['.vercel.app', '127.0.0.1']
 # Application definition
 
 INSTALLED_APPS = [
-    # 'django.contrib.admin',
+    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -70,17 +70,11 @@ WSGI_APPLICATION = 'core.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'djongo',
-        'ENFORCE_SCHEMA': True,
+        'ENFORCE_SCHEMA': False,
         'LOGGING': {
             'version': 1,
-            'loggers': {
-                'djongo': {
-                    'level': 'DEBUG',
-                    'propogate': False,
-                }
-            },
         },
-        'NAME': 'Django',
+        'NAME': 'django',
         'CLIENT': {
             'host': CONFIGS["MONGODB_HOST"],
             'port': int(CONFIGS["MONGODB_PORT"]),

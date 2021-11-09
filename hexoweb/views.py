@@ -9,7 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
-from core.settings import VERSION
+from core.settings import QEXO_VERSION
 from configs import CONFIGS
 from django.urls import reverse
 import github
@@ -140,7 +140,9 @@ def delete_pages_caches():
 
 def save_setting(name, content):
     obj = SettingModel.objects.filter(name=name)
-    if obj.count():
+    if obj.count() == 1:
+        obj.delete()
+    if obj.count() > 1:
         for i in obj:
             i.delete()
     new = SettingModel()
@@ -183,11 +185,8 @@ def login_view(request):
 def init_view(request):
     msg = None
     context = dict()
-    try:
-        step = SettingModel.objects.get(name="INIT").content
-    except:
-        save_setting("INIT", "1")
-        step = "1"
+    save_setting("INIT", "1")
+    step = "1"
 
     if request.method == "POST":
         if request.POST.get("step") == "1":
@@ -531,7 +530,7 @@ def index(request):
         context["images"] = images[0:5]
     else:
         context["images"] = images
-    context["version"] = VERSION
+    context["version"] = QEXO_VERSION
     context["post_number"] = str(len(posts))
     context["images_number"] = str(len(images))
     context["github_dev"] = "https://github.dev/" + SettingModel.objects.get(

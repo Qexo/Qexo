@@ -145,14 +145,15 @@ def save_setting(name, content):
     if obj.count() > 1:
         for i in obj:
             i.delete()
-    new = SettingModel()
-    new.name = str(name)
+    new_set = SettingModel()
+    new_set.name = str(name)
     if content is not None:
-        new.content = str(content)
+        new_set.content = str(content)
     else:
-        new.content = ""
-    new.save()
-    return new
+        new_set.content = ""
+    new_set.save()
+    return new_set
+
 
 
 def login_view(request):
@@ -185,8 +186,11 @@ def login_view(request):
 def init_view(request):
     msg = None
     context = dict()
-    save_setting("INIT", "1")
-    step = "1"
+    try:
+        step = SettingModel.objects.get(name="INIT").content
+    except:
+        save_setting("INIT", "1")
+        step = "1"
 
     if request.method == "POST":
         if request.POST.get("step") == "1":

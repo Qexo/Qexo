@@ -20,7 +20,8 @@ vercel
 ```
 
 ## 鸣谢
-- [Argon-Dashboard-Django](https://github.com/creativetimofficial/argon-dashboard-django):
+- [Argon-Dashboard-Django](https://github.com/creativetimofficial/argon-dashboard-django)
+- [Djongo](https://github.com/nesdis/djongo)
 - [Django](https://github.com/django/django)
 - [HexoPlusPlus](https://github.com/HexoPlusPlus/HexoPlusPlus)
 - [jQuery](https://jquery.com/)

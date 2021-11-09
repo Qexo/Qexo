@@ -1,5 +1,6 @@
 # Qexo
 一个快速、强大、漂亮的在线 Hexo 编辑器。 文档正在施工中...
+![image](https://user-images.githubusercontent.com/51912589/140952128-f4597b44-f214-4fb8-b36d-271612d8e35d.png)
 
 ## 如何部署
 - 安装vercel-cli

@@ -19,3 +19,10 @@ npm i -g vercel
 vercel
 ```
 
+## 鸣谢
+- [Argon-Dashboard-Django](https://github.com/creativetimofficial/argon-dashboard-django):
+- [Django](https://github.com/django/django)
+- [HexoPlusPlus](https://github.com/HexoPlusPlus/HexoPlusPlus)
+- [jQuery](https://jquery.com/)
+- [Bootstrap](https://getbootstrap.com/)
+- [Bootstrap-Notify](https://github.com/mouse0270/bootstrap-notify)

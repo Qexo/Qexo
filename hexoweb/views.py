@@ -515,6 +515,11 @@ def upload_img(request):
 # Pages
 @login_required(login_url="/login/")
 def index(request):
+    try:
+        if int(SettingModel.objects.get(name="INIT").content) <= 5:
+            return redirect("/init/")
+    except:
+        return redirect("/init/")
     context = {'segment': 'index'}
     cache = Cache.objects.filter(name="posts")
     if cache.count():

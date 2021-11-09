@@ -7,12 +7,10 @@
 npm i -g vercel
 ```
 - 申请 [MongoDB 账号](https://www.mongodb.com/cloud/atlas/register) 创建免费 MongoDB 数据库，区域推荐选择 AWS / N. 
-  Virginia (us-east-1)
-在 Clusters 页面点击 CONNECT，按步骤设置允许所有 IP 地址的连接），创建数据库用户，并记录数据库连接字符串，请将连接字符串中的 <password> 修改为数据库密码
+  Virginia (us-east-1) 在 Clusters 页面点击 CONNECT，按步骤设置允许所有 IP 地址的连接），创建数据库用户，并记录数据库连接字符串，请将连接字符串中的 \<password\> 修改为数据库密码
 
 
 - 修改Configs
-  
   将configs.example.py的文件名修改为configs.py，并根据注释修改数据库配置信息
 
 

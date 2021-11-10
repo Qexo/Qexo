@@ -1,0 +1,35 @@
+{
+	
+"name": "lavalamp",
+"title": "Lava Lamp",
+"description": "Lava Lamp is a jQuery plugin for menus. It creates a div that moves when you hover over an element, giving it an elastic animation.",
+"keywords": [
+	"navigation",
+	"nav",
+	"animation",
+	"hover",
+	"CSS3 transitions",
+	"menu"
+],
+"version": "1.1.0",
+"author": {
+	"name": "Richard Hung",
+	"email": "richardhung111@gmail.com",
+	"url": "http://www.magicmediamuse.com/"
+},
+"licenses": [
+	{
+		"type": "Creative Commons Attribution-NonCommercial 3.0 Unported License",
+		"url": "http://creativecommons.org/licenses/by-nc/3.0/deed.en_US"
+	}
+],
+"demo": "http://lavalamp.magicmediamuse.com/examples.php",
+"bugs": "https://github.com/Richard1320/Lava-Lamp/issues",
+"homepage": "http://lavalamp.magicmediamuse.com",
+"docs": "http://lavalamp.magicmediamuse.com",
+"download": "http://lavalamp.magicmediamuse.com/download.php",
+"dependencies": {
+"jquery": ">=1.7"
+}
+
+}

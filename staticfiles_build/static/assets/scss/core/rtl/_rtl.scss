@@ -1,0 +1,105 @@
+.rtl{
+  &.g-sidenav-pinned .sidenav + .main-content{
+    margin-right: 250px;
+  }
+
+  .sidenav + .main-content{
+    margin-right: 62px;
+  }
+
+  .sidenav{
+    // direction: initial;
+    .navbar-nav{
+      padding-right: 0;
+    }
+    .navbar-nav .nav-link > i{
+      min-width: auto;
+      margin-left: 1rem;
+    }
+
+    .navbar-nav .nav-link[data-toggle="collapse"]:after {
+      margin-right: auto;
+      margin-left: initial;
+      transform: rotate(180deg);
+    }
+
+    .navbar-nav .nav-link[data-toggle="collapse"][aria-expanded="true"]:after{
+      transform: rotate(90deg) !important;
+    }
+
+    .navbar-nav .nav .nav-link{
+      padding-right: 15px;
+    }
+    .sidenav-toggler.active .sidenav-toggler-line:first-child{
+      transform: translateX(0);
+    }
+    .sidenav-toggler.active .sidenav-toggler-line:last-child{
+      transform: translateX(0);
+    }
+    .navbar-heading{
+      text-align: right;
+    }
+    .scrollbar-inner{
+      direction: initial;
+      .navbar-nav{
+        direction: rtl;
+      }
+    }
+
+  }
+
+  .sidenav .navbar-heading .docs-mini{
+    padding-left: 0;
+    padding-right: 3px;
+  }
+
+  .navbar-vertical.navbar-expand-xs .navbar-nav .nav .nav-link span.sidenav-normal{
+    padding-right: 8px;
+  }
+
+  .dropdown-menu-left{
+    text-align: right;
+  }
+
+  .card .card-body{
+    text-align: right;
+  }
+
+  @media (max-width: 1199.98px){
+    .sidenav{
+      transform: translateX(62px);
+      & + .main-content{
+        margin-right: 0 !important;
+      }
+    }
+
+    .sidenav-toggler.active .sidenav-toggler-line:first-child{
+      transform: translateX(0);
+    }
+
+    .sidenav-toggler.active .sidenav-toggler-line:last-child{
+      transform: translateX(0);
+    }
+
+    &.g-sidenav-pinned .sidenav{
+      transform: translateX(0) !important;
+    }
+  }
+
+  @media(max-width: 576px){
+    .navbar-expand .navbar-nav .nav-link{
+      padding-left: 0;
+    }
+    &.g-navbar-search-show .navbar-search .close{
+      left: 0;
+      right: auto;
+    }
+    .navbar-search{
+      transform: translateX(150%);
+    }
+
+    &.g-navbar-search-shown .navbar-search{
+      transform: translateX(0);
+    }
+  }
+}

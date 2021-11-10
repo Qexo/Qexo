@@ -1,0 +1,140 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Lava Lamp</title>
+<link type="text/css" href="css/jquery.lavalamp.css" rel="stylesheet" media="screen" />
+<style>
+.lavalamp-object {
+	background-color:#ccc;
+}
+img {
+	margin:25px;
+}
+</style>
+
+</head>
+
+<body>
+<h1 class="page-title">Demo</h1>
+
+<p>More info and examples of easing at <a target="_blank" href="http://lavalamp.magicmediamuse.com/">http://lavalamp.magicmediamuse.com/</a></p>
+
+<h2 id="default-head">Default</h2>
+<p>Creates a div that animates when you mouse over sibling elements.</p>
+<div id="default">
+    <img src="images/103332256.jpg" alt="dandelion seeds" class="active" />
+    <img src="images/104209996.jpg" alt="lake" />
+    <img src="images/146672189.jpg" alt="park" />
+    <img src="images/sb10065850n-001.jpg" alt="bike" />
+</div>
+
+<h2 id="margins-head">Margins</h2>
+<p>Calculates margins when determining the width and height of the lava lamp object.</p>
+<div id="margins">
+    <img src="images/103332256.jpg" alt="dandelion seeds" class="active" />
+    <img src="images/104209996.jpg" alt="lake" />
+    <img src="images/146672189.jpg" alt="park" />
+    <img src="images/sb10065850n-001.jpg" alt="bike" />
+</div>
+
+<h2 id="setonclick-head">Set on Click</h2>
+<p>The lava lamp object sets a new active element when you click on it. You still have to set a default active element or the lavalamp won't initialize correctly.</p>
+<div id="setonclick">
+    <img src="images/103332256.jpg" alt="dandelion seeds" class="active" />
+    <img src="images/104209996.jpg" alt="lake" />
+    <img src="images/146672189.jpg" alt="park" />
+    <img src="images/sb10065850n-001.jpg" alt="bike" />
+</div>
+
+<h2 id="setactive-head">Set active element</h2>
+<p>You can change the current active element by passing it into the wrapper data. After setting the data, you need to update the wrapper so your lavalamp object moves to the correct element.</p>
+<div id="setactive">
+    <img src="images/103332256.jpg" alt="dandelion seeds" class="active" />
+    <img src="images/104209996.jpg" alt="lake" />
+    <img src="images/146672189.jpg" alt="park" />
+    <img src="images/sb10065850n-001.jpg" alt="bike" />
+</div>
+<select id="setactive-links">
+	<option selected="selected" value="0">Item 1</option>
+	<option selected="selected" value="1">Item 2</option>
+	<option selected="selected" value="2">Item 3</option>
+	<option selected="selected" value="3">Item 4</option>
+</select>
+
+<h2 id="delay-head">Delay Animation</h2>
+<p>You can put a delay before and after hover states.</p>
+<div id="delay">
+    <img src="images/103332256.jpg" alt="dandelion seeds" class="active" />
+    <img src="images/104209996.jpg" alt="lake" />
+    <img src="images/146672189.jpg" alt="park" />
+    <img src="images/sb10065850n-001.jpg" alt="bike" />
+</div>
+
+<h2 id="focus-head">Animate on Focus</h2>
+<p>Lavalamp object animates on object focus.</p>
+<div id="focus">
+    <a href="#1" style="display:block;padding:20px;"></a>
+    <a href="#2" style="display:block;padding:20px;"></a>
+    <a href="#3" style="display:block;padding:20px;"></a>
+    <a href="#4" style="display:block;padding:20px;"></a>
+</div>
+
+<h2 id="focus-deep-head">Animate on Decendant Focus</h2>
+<p>Lavalamp object moves on focus of decendants.</p>
+<div id="focus-deep">
+    <div style="padding:20px;"><input type="text" name="input[]" /></div>
+    <div style="padding:20px;"><input type="text" name="input[]" /></div>
+    <div style="padding:20px;"><input type="text" name="input[]" /></div>
+    <div style="padding:20px;"><input type="text" name="input[]" /></div>
+</div>
+
+<script type="text/javascript" src="js/jquery-3.1.1.min.js"></script>
+<script type="text/javascript" src="js/jquery.lavalamp.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+	
+	
+	$('#default').lavalamp({
+		easing: 'easeOutBack'
+	});
+	
+	$('#margins').lavalamp({
+		easing: 'easeOutBack',
+		margins:true
+	});
+	
+	$('#setonclick').lavalamp({
+		easing: 'easeOutBack',
+		setOnClick:true
+	});
+	
+	$('#setactive').lavalamp({
+		easing: 'easeOutBack'
+	});
+	$('#setactive-links').change(function() {
+		var v = $(this).val();
+		var a = $('#setactive').children('.lavalamp-item').eq(v);
+		
+		$('#setactive').data('lavalampActive',a).lavalamp('update');
+	});
+
+	$('#delay').lavalamp({
+		easing: 'easeOutBack',
+		delayOn: 500,
+		delayOff: 1000
+	});
+	
+	$('#focus').lavalamp({
+		easing: 'easeOutBack',
+		enableFocus: true
+	});
+	
+	$('#focus-deep').lavalamp({
+		easing: 'easeOutBack',
+		deepFocus: true
+	});
+});
+</script>
+</body>
+</html>

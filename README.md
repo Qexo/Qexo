@@ -28,3 +28,4 @@ vercel --prod
 - [jQuery](https://jquery.com/)
 - [Bootstrap](https://getbootstrap.com/)
 - [Bootstrap-Notify](https://github.com/mouse0270/bootstrap-notify)
+- [Vercel-Python-WSGI](https://github.com/ardnt/vercel-python-wsgi)

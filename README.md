@@ -17,7 +17,7 @@ npm i -g vercel
 
 - 在目录下执行命令部署
 ```bash
-vercel
+vercel --prod
 ```
 
 ## 鸣谢

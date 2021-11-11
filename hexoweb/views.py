@@ -7,17 +7,15 @@ from .forms import LoginForm
 from django import template
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse
 from django.template import loader
 from core.settings import QEXO_VERSION
-from configs import CONFIGS
-from django.urls import reverse
 import github
 from django.template.defaulttags import register
 import json
-from html import unescape
 from .models import Cache, SettingModel, ImageModel
 import time
+import random
 
 
 def get_repo():
@@ -153,7 +151,6 @@ def save_setting(name, content):
         new_set.content = ""
     new_set.save()
     return new_set
-
 
 
 def login_view(request):
@@ -313,6 +310,17 @@ def set_github(request):
 
 
 @login_required(login_url="/login/")
+def set_webhook(request):
+    try:
+        apikey = request.POST.get("apikey")
+        save_setting("WEBHOOK_APIKEY", apikey)
+        context = {"msg": "保存成功!", "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+@login_required(login_url="/login/")
 def set_image_bed(request):
     try:
         api = request.POST.get("api")
@@ -450,6 +458,49 @@ def purge(request):
     try:
         delete_all_caches()
         context = {"msg": "清除成功！", "status": True}
+    except Exception as error:
+        context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+@login_required(login_url="/login/")
+def create_webhook_config(request):
+    context = dict(msg="Error!", status=False)
+    if request.method == "POST":
+        try:
+            if SettingModel.objects.filter(name="WEBHOOK_APIKEY"):
+                config = {
+                    "content_type": "json",
+                    "url": request.POST.get("uri") + "?token=" + SettingModel.objects.get(
+                        name="WEBHOOK_APIKEY").content
+                }
+            else:
+                save_setting("WEBHOOK_APIKEY", ''.join(
+                    random.choice("qwertyuiopasdfghjklzxcvbnm1234567890") for x in range(12)))
+                config = {
+                    "content_type": "json",
+                    "url": request.POST.get("uri") + "?token=" + SettingModel.objects.get(
+                        name="WEBHOOK_APIKEY").content
+                }
+            repo = get_repo()
+            for hook in repo.get_hooks():  # 删除所有HOOK
+                hook.delete()
+            repo.create_hook(active=True, config=config, events=["push"], name="web")
+            context = {"msg": "设置成功！", "status": True}
+        except Exception as error:
+            context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+@csrf_exempt
+def webhook(request):
+    context = dict(msg="Error!", status=False)
+    try:
+        if request.GET.get("token") == SettingModel.objects.get(name="WEBHOOK_APIKEY").content:
+            delete_all_caches()
+            context = {"msg": "操作成功！", "status": True}
+        else:
+            context = {"msg": "校验错误", "status": False}
     except Exception as error:
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})

@@ -16,6 +16,8 @@ urlpatterns = [
     path('', index, name='home'),
 
     path('api/save/', save, name='save'),
+    path('api/save_post/', save_post, name='save_post'),
+    path('api/save_draft/', save_draft, name='save_draft'),
     path('api/new/', new, name='new'),
     path('api/delete/', delete, name='delete'),
     path('api/upload/', upload_img, name='upload'),

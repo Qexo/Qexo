@@ -26,6 +26,17 @@ def get_repo():
     return False
 
 
+def get_post(post):
+    repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
+    branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
+    try:
+        return get_repo().get_contents(repo_path + "source/_drafts/" + post,
+                                       branch).decoded_content.decode("utf8")
+    except:
+        return get_repo().get_contents(repo_path + "source/_posts/" + post,
+                                       branch).decoded_content.decode("utf8")
+
+
 @register.filter  # 在模板中使用range()
 def get_range(value):
     return range(1, value + 1)
@@ -55,17 +66,25 @@ def update_posts_cache(s=None):
     posts = repo.get_contents(
         SettingModel.objects.get(name="GH_REPO_PATH").content + 'source/_posts',
         ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
+    _posts = list()
+    names = list()
     for i in range(len(posts)):
-        posts[i] = {"name": posts[i].name[0:-3], "path": posts[i].path, "size": posts[i].size,
-                    "status": True}
+        _posts.append(
+            {"name": posts[i].name[0:-3], "fullname": posts[i].name, "path": posts[i].path,
+             "size": posts[i].size,
+             "status": True})
+        names.append(posts[i].name)
     try:
         drafts = repo.get_contents(
             SettingModel.objects.get(name="GH_REPO_PATH").content + 'source/_drafts',
             ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
+        _drafts = list()
         for i in range(len(drafts)):
-            drafts[i] = {"name": drafts[i].name[0:-3], "path": drafts[i].path,
-                         "size": drafts[i].size, "status": False}
-        posts = posts + drafts
+            if drafts[i].name not in names:
+                _drafts.append({"name": drafts[i].name[0:-3], "fullname": drafts[i].name,
+                                "path": drafts[i].path,
+                                "size": drafts[i].size, "status": False})
+        posts = _posts + _drafts
     except:
         pass
     if s:
@@ -390,6 +409,81 @@ def save(request):
 
 
 @login_required(login_url="/login/")
+def save(request):
+    repo = get_repo()
+    context = dict(msg="Error!", status=False)
+    if request.method == "POST":
+        file_path = request.POST.get('file')
+        content = request.POST.get('content')
+        try:
+            repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
+            branch = SettingModel.objects.get(name="GH_REPO_BRANCH")
+            repo.update_file(repo_path + file_path, "Update by Qexo", content,
+                             repo.get_contents(repo_path + file_path, ref=branch).sha,
+                             branch=branch)
+            context = {"msg": "OK!", "status": True}
+        except Exception as error:
+            context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+def save_post(request):
+    repo = get_repo()
+    context = dict(msg="Error!", status=False)
+    if request.method == "POST":
+        file_name = request.POST.get('file')
+        content = request.POST.get('content')
+        try:
+            repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
+            branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
+            # 删除草稿
+            try:
+                repo.delete_file(repo_path + "source/_drafts/" + file_name, "Delete by Qexo",
+                                 repo.get_contents(repo_path + "source/_drafts/" + file_name,
+                                                   ref=branch).sha,
+                                 branch=branch)
+            except:
+                pass
+            # 创建/更新文章
+            try:
+                repo.update_file(repo_path + "source/_posts/" + file_name, "Update by Qexo",
+                                 content,
+                                 repo.get_contents(repo_path + "source/_posts/" + file_name,
+                                                   ref=branch).sha, branch=branch)
+            except:
+                repo.create_file(repo_path + "source/_posts/" + file_name, "Update by Qexo",
+                                 content, branch=branch)
+            context = {"msg": "OK!", "status": True}
+        except Exception as error:
+            context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+def save_draft(request):
+    repo = get_repo()
+    context = dict(msg="Error!", status=False)
+    if request.method == "POST":
+        file_name = request.POST.get('file')
+        content = request.POST.get('content')
+        try:
+            repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
+            branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
+            # 创建/更新草稿
+            try:
+                repo.update_file(repo_path + "source/_drafts/" + file_name, "Update by Qexo",
+                                 content,
+                                 repo.get_contents(repo_path + "source/_drafts/" + file_name,
+                                                   ref=branch).sha, branch=branch)
+            except:
+                repo.create_file(repo_path + "source/_drafts/" + file_name, "Update by Qexo",
+                                 content, branch=branch)
+            context = {"msg": "OK!", "status": True}
+        except Exception as error:
+            context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+@login_required(login_url="/login/")
 def new(request):
     repo = get_repo()
     context = dict(msg="Error!", status=False)
@@ -629,15 +723,9 @@ def pages(request):
             except:
                 pass
         elif "edit" in load_template:
-            repo = get_repo()
             file_path = request.GET.get("file")
-            context["file_content"] = repr(
-                repo.get_contents(SettingModel.objects.get(name="GH_REPO_PATH").content + file_path,
-                                  ref=SettingModel.objects.get(
-                                      name="GH_REPO_BRANCH").content).decoded_content.decode(
-                    "utf8"))
+            context["file_content"] = repr(get_post(file_path))
             context['filename'] = file_path.split("/")[-1]
-            context["file_path"] = file_path
             try:
                 if SettingModel.objects.get(name="IMG_API").content and SettingModel.objects.get(
                         name="IMG_POST").content:

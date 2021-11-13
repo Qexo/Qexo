@@ -706,10 +706,14 @@ def index(request):
         context["images"] = images[0:5]
     else:
         context["images"] = images
-    latest = requests.get("https://api.github.com/repos/am-abudu/Qexo/releases/latest").json()
-    if (latest.get("tag_name")) and (latest.get("tag_name") != QEXO_VERSION):
-        context["newer"] = latest["tag_name"]
-        context["newer_link"] = latest["zipball_url"]
+    user = github.Github(SettingModel.objects.get(name='GH_TOKEN').content)
+    latest = user.get_repo("am-abudu/Qexo").get_latest_release()
+    if latest.tag_name and (latest.tag_name != QEXO_VERSION):
+        context["hasNew"] = True
+    context["newer"] = latest.tag_name
+    context["newer_link"] = latest.zipball_url
+    context["newer_time"] = latest.created_at.isoformat(sep=" ")
+    context["newer_text"] = latest.body
     context["version"] = QEXO_VERSION
     context["post_number"] = str(len(posts))
     context["images_number"] = str(len(images))
@@ -730,6 +734,14 @@ def pages(request):
     # All resource paths end in .html.
     # Pick out the html file name from the url. And load that template.
     try:
+        user = github.Github(SettingModel.objects.get(name='GH_TOKEN').content)
+        latest = user.get_repo("am-abudu/Qexo").get_latest_release()
+        if latest.tag_name and (latest.tag_name != QEXO_VERSION):
+            context["hasNew"] = True
+        context["newer"] = latest.tag_name
+        context["newer_link"] = latest.zipball_url
+        context["newer_time"] = latest.created_at.isoformat(sep=" ")
+        context["newer_text"] = latest.body
         load_template = request.path.split('/')[-1]
         context['segment'] = load_template
         if "index" in load_template:

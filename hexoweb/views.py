@@ -732,7 +732,9 @@ def pages(request):
     try:
         load_template = request.path.split('/')[-1]
         context['segment'] = load_template
-        if "edit_page" in load_template:
+        if "index" in load_template:
+            return index(request)
+        elif "edit_page" in load_template:
             repo = get_repo()
             file_path = request.GET.get("file")
             context["file_content"] = repr(

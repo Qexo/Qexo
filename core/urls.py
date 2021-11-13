@@ -20,6 +20,7 @@ urlpatterns = [
     path('api/save_draft/', save_draft, name='save_draft'),
     path('api/new/', new, name='new'),
     path('api/delete/', delete, name='delete'),
+    path('api/delete_post/', delete_post, name='delete_post'),
     path('api/upload/', upload_img, name='upload'),
     path('api/delete_img/', delete_img, name='delete_img'),
     path('api/set_github/', set_github, name='set_github'),

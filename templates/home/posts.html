@@ -12,7 +12,8 @@
                         <h6 class="h2 text-white d-inline-block mb-0">文章列表</h6>
                         <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
                             <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
-                                <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i></a></li>
+                                <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i></a>
+                                </li>
                                 <li class="breadcrumb-item active" aria-current="page">文章</li>
                             </ol>
                         </nav>
@@ -34,7 +35,8 @@
                     <div class="card-header border-0">
                         <div class="row align-items-center">
                             <div class="col">
-                                <h3 class="mb-0">{% if search %}搜索文章: {{ search }}{% else %}全部文章{% endif %}
+                                <h3 class="mb-0">{% if search %}搜索文章: {{ search }}{% else %}
+                                    全部文章{% endif %}
                                     ({{ post_number }}篇)</h3>
                             </div>
                         </div>
@@ -69,7 +71,7 @@
                                     <td>
                                         <a href="/edit.html?file={{ post.fullname }}"><i
                                                 class="fa fa-edit mr-2"></i></a>
-                                        <a href="javascript:query_delete('{{ post.path }}')"><i
+                                        <a href="javascript:query_delete('{{ post.fullname }}')"><i
                                                 class="fa fa-trash-alt mr-2"></i></a>
                                     </td>
                                 </tr>
@@ -80,7 +82,8 @@
                             <ul class="pagination justify-content-end mb-0">
                                 <li class="page-item{% if start %} disabled{% endif %}">
                                     <a class="page-link"
-                                       href="?page={{ page|add:-1 }}{% if search %}&s={{ search }}{% endif %}">
+                                       href="?page=
+                                               {{ page|add:-1 }}{% if search %}&s={{ search }}{% endif %}">
                                         <i class="fas fa-angle-left"></i>
                                         <span class="sr-only">上一页</span>
                                     </a>
@@ -88,13 +91,15 @@
                                 {% for i in page_number|get_range %}
                                     <li class="page-item {% if i == page %}active{% endif %}">
                                         <a class="page-link"
-                                           href="?page={{ i }}{% if search %}&s={{ search }}{% endif %}">{{ i }}</a>
+                                           href="?page=
+                                                   {{ i }}{% if search %}&s={{ search }}{% endif %}">{{ i }}</a>
                                     </li>
                                 {% endfor %}
 
                                 <li class="page-item {% if end %}disabled{% endif %}">
                                     <a class="page-link"
-                                       href="?page={{ page|add:1 }}{% if search %}&s={{ search }}{% endif %}">
+                                       href="?page=
+                                               {{ page|add:1 }}{% if search %}&s={{ search }}{% endif %}">
                                         <i class="fas fa-angle-right"></i>
                                         <span class="sr-only">Next</span>
                                     </a>
@@ -105,7 +110,8 @@
                 </div>
             </div>
         </div>
-        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel"
+             aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -118,8 +124,10 @@
                         确认要删除 <a id="delfile"></a> 吗？此操作不可撤回
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
-                        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="delete_file()">确定
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消
+                        </button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal"
+                                onclick="delete_file()">确定
                         </button>
                     </div>
                 </div>
@@ -214,7 +222,7 @@
             var loading = new KZ_Loading('正在删除中...');
             loading.show();
             $.ajax({
-                url: '/api/delete/',
+                url: '/api/delete_post/',
                 method: 'post',
                 data: {"file": $("#delfile").text()},
                 dataType: 'JSON',

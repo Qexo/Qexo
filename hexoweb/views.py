@@ -505,28 +505,50 @@ def delete(request):
     repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
+        branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
+        repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
         file_path = request.POST.get('file')
         try:
-            file = repo.get_contents(file_path,
-                                     ref=SettingModel.objects.get(
-                                         name="GH_REPO_BRANCH").content)
+            file = repo.get_contents(file_path, ref=branch)
             if not isinstance(file, list):
-                repo.delete_file(SettingModel.objects.get(name="GH_REPO_PATH").content + file_path,
-                                 "Delete by Qexo", file.sha,
-                                 branch=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
+                repo.delete_file(repo_path + file_path, "Delete by Qexo", file.sha, branch=branch)
 
             else:
                 for i in file:
-                    repo.delete_file(
-                        SettingModel.objects.get(name="GH_REPO_PATH").content + i.path,
-                        "Delete by Qexo", i.sha,
-                        branch=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
+                    repo.delete_file(repo_path + i.path, "Delete by Qexo", i.sha, branch=branch)
             context = {"msg": "OK!", "status": True}
             # Delete Caches
             if ("_posts" in file_path) or ("_drafts" in file_path):
                 delete_posts_caches()
             else:
                 delete_all_caches()
+        except Exception as error:
+            context = {"msg": repr(error)}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+@login_required(login_url="/login/")
+def delete_post(request):
+    repo = get_repo()
+    context = dict(msg="Error!", status=False)
+    if request.method == "POST":
+        branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
+        repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
+        filename = request.POST.get('file')
+        try:
+            repo.delete_file(repo_path + "source/_posts/" + filename, "Delete by Qexo",
+                             repo.get_contents(
+                                 repo_path + "source/_posts/" + filename, ref=branch).sha,
+                             branch=branch)
+            try:
+                repo.delete_file(repo_path + "source/_drafts/" + filename, "Delete by Qexo",
+                                 repo.get_contents(
+                                     repo_path + "source/_drafts/" + filename, ref=branch).sha,
+                                 branch=branch)
+            except:
+                pass
+            delete_posts_caches()
+            context = {"msg": "删除成功！", "status": True}
         except Exception as error:
             context = {"msg": repr(error)}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
@@ -684,6 +706,10 @@ def index(request):
         context["images"] = images[0:5]
     else:
         context["images"] = images
+    latest = requests.get("https://api.github.com/repos/am-abudu/Qexo/releases/latest").json()
+    if (latest.get("tag_name")) and (latest.get("tag_name") != QEXO_VERSION):
+        context["newer"] = latest["tag_name"]
+        context["newer_link"] = latest["zipball_url"]
     context["version"] = QEXO_VERSION
     context["post_number"] = str(len(posts))
     context["images_number"] = str(len(images))

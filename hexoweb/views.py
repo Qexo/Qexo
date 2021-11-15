@@ -16,6 +16,7 @@ import json
 from .models import Cache, SettingModel, ImageModel
 import time
 import random
+from datetime import datetime, timezone, timedelta
 
 
 def get_repo():
@@ -712,7 +713,8 @@ def index(request):
         context["hasNew"] = True
     context["newer"] = latest.tag_name
     context["newer_link"] = latest.zipball_url
-    context["newer_time"] = latest.created_at.isoformat(sep=" ")
+    context["newer_time"] = latest.created_at.astimezone(timezone(timedelta(hours=16))).strftime(
+        "%Y-%m-%d %H:%M:%S")
     context["newer_text"] = latest.body
     context["version"] = QEXO_VERSION
     context["post_number"] = str(len(posts))

@@ -67,6 +67,7 @@ def update_posts_cache(s=None):
         SettingModel.objects.get(name="GH_REPO_PATH").content + 'source/_posts',
         ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
     _posts = list()
+    _drafts = list()
     names = list()
     for i in range(len(posts)):
         _posts.append(
@@ -78,15 +79,14 @@ def update_posts_cache(s=None):
         drafts = repo.get_contents(
             SettingModel.objects.get(name="GH_REPO_PATH").content + 'source/_drafts',
             ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
-        _drafts = list()
         for i in range(len(drafts)):
             if drafts[i].name not in names:
                 _drafts.append({"name": drafts[i].name[0:-3], "fullname": drafts[i].name,
                                 "path": drafts[i].path,
                                 "size": drafts[i].size, "status": False})
-        posts = _posts + _drafts
     except:
         pass
+    posts = _posts + _drafts
     if s:
         i = 0
         while i < len(posts):
@@ -762,6 +762,8 @@ def pages(request):
                     context["img_bed"] = True
             except:
                 pass
+        elif "edit_config" in load_template:
+            pass
         elif "edit" in load_template:
             file_path = request.GET.get("file")
             context["file_content"] = repr(get_post(file_path))

@@ -8,10 +8,14 @@
             {% elif 'images' in segment %}
                 <form class="navbar-search navbar-search-light form-inline mr-sm-3"
                       id="navbar-search-main" action="/images.html" method="get">
+            {% elif 'configs' in segment %}
+                <form class="navbar-search navbar-search-light form-inline mr-sm-3"
+                      id="navbar-search-main" action="/configs.html" method="get">
             {% else %}
                 <form class="navbar-search navbar-search-light form-inline mr-sm-3"
                       id="navbar-search-main" action="/posts.html" method="get">
             {% endif %}
+
             <div class="form-group mb-0">
                 <div class="input-group input-group-alternative input-group-merge">
                     <div class="input-group-prepend">
@@ -21,6 +25,8 @@
                         <input class="form-control" placeholder="搜索页面..." type="text" name="s">
                     {% elif 'images' in segment %}
                         <input class="form-control" placeholder="搜索图片..." type="text" name="s">
+                    {% elif 'configs' in segment %}
+                        <input class="form-control" placeholder="搜索配置..." type="text" name="s">
                     {% else %}
                         <input class="form-control" placeholder="搜索文章..." type="text" name="s">
                     {% endif %}
@@ -119,7 +125,7 @@
                             <i class="ni ni-single-02"></i>
                             <span>设置</span>
                         </a>
-                        <a target="_blank" href="http://github.com/am-abudu/Qexo"
+                        <a target="_blank" href="https://github.com/am-abudu/Qexo"
                            class="dropdown-item">
                             <i class="ni ni-support-16"></i>
                             <span>支持</span>

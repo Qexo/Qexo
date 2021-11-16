@@ -1,0 +1,152 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} {% if search %}搜索配置:{{ search }}{% else %}全部配置{% endif %} {% endblock title %}
+
+{% block content %}
+
+    <div class="header bg-primary pb-6">
+        <div class="container-fluid">
+            <div class="header-body">
+                <div class="row align-items-center py-4">
+                    <div class="col-lg-6 col-7">
+                        <h6 class="h2 text-white d-inline-block mb-0">配置列表</h6>
+                        <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
+                            <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+                                <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i></a></li>
+                                <li class="breadcrumb-item active" aria-current="page">配置</li>
+                            </ol>
+                        </nav>
+                    </div>
+                    <div class="col-lg-6 col-5 text-right">
+                        <a href="/" class="btn btn-sm btn-neutral">主页</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page content -->
+    <div class="container-fluid mt--6">
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header border-0">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h3 class="mb-0">{% if search %}搜索配置: {{ search }}{% else %}全部配置
+                                    {% endif %} ({{ post_number }}个)</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <!-- Projects table -->
+                        <table class="table align-items-center table-flush">
+                            <thead class="thead-light">
+                            <tr>
+                                <th scope="col">配置名</th>
+                                <th scope="col">大小</th>
+                                <th scope="col">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for post in posts %}
+                                <tr>
+                                    <th scope="row">
+                                        {{ post.name }}
+                                    </th>
+                                    <td>
+                                        {{ post.size | div:1000 }} KB
+                                    </td>
+                                    <td>
+                                        <a href="/edit_config.html?file={{ post.path }}"><i
+                                                class="fa fa-edit mr-2"></i></a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% include "includes/footer.html" %}
+
+    </div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE -->
+{% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@latest/static/assets/vendor/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@latest/static/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        function KZ_Loading(config) {
+            if (this instanceof KZ_Loading) {
+                const domTemplate = '<div class="modal fade kz-loading" data-kzid="@@KZ_Loadin_ID@@" backdrop="static" keyboard="false"><div style="width: 200px;height:20px; z-index: 20000; position: absolute; text-align: center; left: 50%; top: 50%;margin-left:-100px;margin-top:-10px"><div class="progress progress-striped active" style="margin-bottom: 0;"><div class="progress-bar" style="width: 100%;"></div></div><h5>@@KZ_Loading_Text@@</h5></div></div>';
+                this.config = {
+                    content: 'loading...',
+                    time: 0,
+                };
+                if (config != null) {
+                    if (typeof config === 'string') {
+                        this.config = Object.assign(this.config, {
+                            content: config
+                        });
+                    } else if (typeof config === 'object') {
+                        this.config = Object.assign(this.config, config);
+                    }
+                }
+                this.id = new Date().getTime().toString();
+                this.state = 'hide';
+
+                /*显示 */
+                this.show = function () {
+                    $('.kz-loading[data-kzid=' + this.id + ']').modal({
+                        backdrop: 'static',
+                        keyboard: false
+                    });
+                    this.state = 'show';
+                    if (this.config.time > 0) {
+                        var that = this;
+                        setTimeout(function () {
+                            that.hide();
+                        }, this.config.time);
+                    }
+                };
+                /*隐藏 */
+                this.hide = function (callback) {
+                    $('.kz-loading[data-kzid=' + this.id + ']').modal('hide');
+                    this.state = 'hide';
+                    if (callback) {
+                        callback();
+                    }
+                };
+                /*销毁dom */
+                this.destroy = function () {
+                    var that = this;
+                    this.hide(function () {
+                        var node = $('.kz-loading[data-kzid=' + that.id + ']');
+                        node.next().remove();
+                        node.remove();
+                        that.show = function () {
+                            throw new Error('对象已销毁！');
+                        };
+                        that.hide = function () {
+                        };
+                        that.destroy = function () {
+                        };
+                    });
+                }
+
+                var domHtml = domTemplate.replace('@@KZ_Loadin_ID@@', this.id).replace('@@KZ_Loading_Text@@', this.config.content);
+                $('body').append(domHtml);
+            } else {
+                return new KZ_Loading(config);
+            }
+        }
+    </script>
+{% endblock javascripts %}

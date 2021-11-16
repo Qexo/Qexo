@@ -132,6 +132,48 @@ def update_pages_cache(s=None):
     return results
 
 
+def update_configs_cache(s=None):
+    repo = get_repo()
+    posts = repo.get_contents(SettingModel.objects.get(name="GH_REPO_PATH").content,
+                              ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
+    results = list()
+    for post in posts:
+        try:
+            if s:
+                if post.name[-3:] == "yml" and s in post.name:
+                    results.append({"name": post.name, "path": post.path, "size": post.size})
+            else:
+                if post.name[-3:] == "yml":
+                    results.append({"name": post.name, "path": post.path, "size": post.size})
+        except:
+            pass
+
+    themes = repo.get_contents(SettingModel.objects.get(name="GH_REPO_PATH").content + "themes",
+                               ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
+    for theme in themes:
+        if theme.type == "dir":
+            for post in repo.get_contents(
+                    SettingModel.objects.get(name="GH_REPO_PATH").content + theme.path,
+                    ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content):
+                try:
+                    if s:
+                        if post.name[-3:] == "yml" and s in post.name:
+                            results.append(
+                                {"name": post.name, "path": post.path, "size": post.size})
+                    else:
+                        if post.name[-3:] == "yml":
+                            results.append(
+                                {"name": post.name, "path": post.path, "size": post.size})
+                except:
+                    pass
+    if s:
+        cache_name = "configs." + str(s)
+    else:
+        cache_name = "configs"
+    update_caches(cache_name, results)
+    return results
+
+
 def delete_all_caches():
     caches = Cache.objects.all()
     for cache in caches:
@@ -719,8 +761,6 @@ def index(request):
     context["version"] = QEXO_VERSION
     context["post_number"] = str(len(posts))
     context["images_number"] = str(len(images))
-    context["github_dev"] = "https://github.dev/" + SettingModel.objects.get(
-        name="GH_REPO").content + "/tree/" + SettingModel.objects.get(name="GH_REPO_BRANCH").content
     html_template = loader.get_template('home/index.html')
     return HttpResponse(html_template.render(context, request))
 
@@ -765,7 +805,15 @@ def pages(request):
             except:
                 pass
         elif "edit_config" in load_template:
-            pass
+            file_path = request.GET.get("file")
+            repo = get_repo()
+            context["file_content"] = repo.get_contents(
+                SettingModel.objects.get(name="GH_REPO_PATH").content + file_path,
+                ref=SettingModel.objects.get(
+                    name="GH_REPO_BRANCH").content).decoded_content.decode(
+                "utf8")
+            context["filepath"] = file_path
+            context['filename'] = file_path.split("/")[-1]
         elif "edit" in load_template:
             file_path = request.GET.get("file")
             context["file_content"] = repr(get_post(file_path))
@@ -860,6 +908,23 @@ def pages(request):
             context["posts"] = posts
             context["post_number"] = len(posts)
             context["search"] = search
+        elif "configs" in load_template:
+            search = request.GET.get("s")
+            if search:
+                cache = Cache.objects.filter(name="configs." + search)
+                if cache.count():
+                    posts = json.loads(cache.first().content)
+                else:
+                    posts = update_configs_cache(search)
+            else:
+                cache = Cache.objects.filter(name="configs")
+                if cache.count():
+                    posts = json.loads(cache.first().content)
+                else:
+                    posts = update_configs_cache(search)
+            context["posts"] = posts
+            context["post_number"] = len(posts)
+            context["search"] = search
         elif "images" in load_template:
             page = request.GET.get("page")
             search = request.GET.get("s")
@@ -912,9 +977,6 @@ def pages(request):
                 context['IMG_API'] = SettingModel.objects.get(name='IMG_API').content
             except Exception as e:
                 context["error"] = repr(e)
-        context["github_dev"] = "https://github.dev/" + SettingModel.objects.get(
-            name="GH_REPO").content + "/tree/" + SettingModel.objects.get(
-            name="GH_REPO_BRANCH").content
         html_template = loader.get_template('home/' + load_template)
         return HttpResponse(html_template.render(context, request))
 

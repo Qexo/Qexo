@@ -21,11 +21,12 @@ vercel --prod
 ```
 
 ## 鸣谢
+- [Ace](https://ace.c9.io/)
 - [Argon-Dashboard-Django](https://github.com/creativetimofficial/argon-dashboard-django)
-- [Djongo](https://github.com/nesdis/djongo)
-- [Django](https://github.com/django/django)
-- [HexoPlusPlus](https://github.com/HexoPlusPlus/HexoPlusPlus)
-- [jQuery](https://jquery.com/)
 - [Bootstrap](https://getbootstrap.com/)
 - [Bootstrap-Notify](https://github.com/mouse0270/bootstrap-notify)
+- [Django](https://github.com/django/django)
+- [Djongo](https://github.com/nesdis/djongo)
+- [HexoPlusPlus](https://github.com/HexoPlusPlus/HexoPlusPlus)
+- [jQuery](https://jquery.com/)
 - [Vercel-Python-WSGI](https://github.com/ardnt/vercel-python-wsgi)

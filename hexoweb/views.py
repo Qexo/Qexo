@@ -418,7 +418,7 @@ def save(request):
         content = request.POST.get('content')
         try:
             repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
-            branch = SettingModel.objects.get(name="GH_REPO_BRANCH")
+            branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
             repo.update_file(repo_path + file_path, "Update by Qexo", content,
                              repo.get_contents(repo_path + file_path, ref=branch).sha,
                              branch=branch)

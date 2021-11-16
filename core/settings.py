@@ -2,7 +2,7 @@ from pathlib import Path
 import os
 from configs import CONFIGS
 
-QEXO_VERSION = "0.1.4"
+QEXO_VERSION = "0.1.5"
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

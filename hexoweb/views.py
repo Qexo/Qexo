@@ -62,29 +62,64 @@ def update_caches(name, content, _type="json"):
     posts_cache.save()
 
 
-def update_posts_cache(s=None):
+def update_posts_cache(s=None, _path=""):
     repo = get_repo()
-    posts = repo.get_contents(
-        SettingModel.objects.get(name="GH_REPO_PATH").content + 'source/_posts',
-        ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
-    _posts = list()
-    _drafts = list()
-    names = list()
-    for i in range(len(posts)):
-        _posts.append(
-            {"name": posts[i].name[0:-3], "fullname": posts[i].name, "path": posts[i].path,
-             "size": posts[i].size,
-             "status": True})
-        names.append(posts[i].name)
+
+    if s:
+        old_cache = Cache.objects.filter(name="posts")
+        if old_cache.count():
+            posts = json.loads(old_cache.first().content)
+            i = 0
+            while i < len(posts):
+                if s not in posts[i]["name"]:
+                    del posts[i]
+                    i -= 1
+                i += 1
+            cache_name = "posts." + str(s)
+            update_caches(cache_name, posts)
+            return posts
+    try:
+        _posts = list()
+        _drafts = list()
+        names = list()
+        posts = repo.get_contents(
+            SettingModel.objects.get(name="GH_REPO_PATH").content + 'source/_posts' + _path,
+            ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
+        for i in range(len(posts)):
+            if posts[i].type == "file":
+                _posts.append(
+                    {"name": posts[i].path.split("source/_posts/")[1][0:-3], "fullname": posts[i].path.split("source/_posts/")[1],
+                     "path": posts[i].path,
+                     "size": posts[i].size,
+                     "status": True})
+                names.append(posts[i].path.split("source/_posts/")[1])
+            if posts[i].type == "dir":
+                dir_content = update_posts_cache(_path=posts[i].path.split("source/_posts")[1])
+                for file in dir_content:
+                    if "source/_posts" in file["path"]:
+                        _posts.append(file)
+                        names.append(file["fullname"])
+    except:
+        pass
     try:
         drafts = repo.get_contents(
-            SettingModel.objects.get(name="GH_REPO_PATH").content + 'source/_drafts',
+            SettingModel.objects.get(name="GH_REPO_PATH").content + 'source/_drafts' + _path,
             ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
         for i in range(len(drafts)):
-            if drafts[i].name not in names:
-                _drafts.append({"name": drafts[i].name[0:-3], "fullname": drafts[i].name,
-                                "path": drafts[i].path,
-                                "size": drafts[i].size, "status": False})
+            if drafts[i].type == "file":
+                if drafts[i].path.split(
+                        "source/_drafts/")[1] not in names:
+                    _drafts.append({"name": drafts[i].path.split(
+                        "source/_drafts/")[1][0:-3], "fullname": drafts[i].path.split(
+                        "source/_drafts/")[1],
+                                    "path": drafts[i].path,
+                                    "size": drafts[i].size, "status": False})
+            if drafts[i].type == "dir":
+                dir_content = update_posts_cache(_path=drafts[i].path.split("source/_drafts")[1])
+                for file in dir_content:
+                    if ("source/_drafts" in file["path"]) and (file["fullname"] not in names):
+                        _posts.append(file)
+                        names.append(file["fullname"])
     except:
         pass
     posts = _posts + _drafts
@@ -95,12 +130,12 @@ def update_posts_cache(s=None):
                 del posts[i]
                 i -= 1
             i += 1
-    if s:
-        cache_name = "posts." + str(s)
-    else:
-        cache_name = "posts"
-
-    update_caches(cache_name, posts)
+    if not _path:
+        if s:
+            cache_name = "posts." + str(s)
+        else:
+            cache_name = "posts"
+        update_caches(cache_name, posts)
     return posts
 
 
@@ -818,6 +853,7 @@ def pages(request):
             file_path = request.GET.get("file")
             context["file_content"] = repr(get_post(file_path))
             context['filename'] = file_path.split("/")[-1]
+            context['fullname'] = file_path
             try:
                 if SettingModel.objects.get(name="IMG_API").content and SettingModel.objects.get(
                         name="IMG_POST").content:

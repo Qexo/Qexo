@@ -124,6 +124,8 @@ def update_posts_cache(s=None, _path=""):
         pass
     posts = _posts + _drafts
     if s:
+        if not old_cache.count():
+            update_caches("posts", posts)
         i = 0
         while i < len(posts):
             if s not in posts[i]["name"]:

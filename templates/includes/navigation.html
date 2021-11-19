@@ -60,10 +60,8 @@
                     <a class="nav-link" href="#" role="button" data-toggle="dropdown"
                        aria-haspopup="true" aria-expanded="false">
                         <i class="ni ni-bell-55">
-                            {% if hasNew %}
-                            <div class="point"
-                                 style="position: absolute;top: -4px;right: -3px;width: 6px;height: 6px;background: red;border-radius: 50%;"></div>
-                            {% endif %}
+                            <div class="update-point"
+                                 style=""></div>
                         </i>
                     </a>
                     <div class="dropdown-menu dropdown-menu-xl  dropdown-menu-right  py-0 overflow-hidden">
@@ -80,19 +78,11 @@
                                             <div>
                                                 <h4 class="mb-0 text-sm">更新</h4>
                                             </div>
-                                            <div class="text-right text-muted">
-                                                <small>{{ newer_time }}</small>
+                                            <div class="text-right text-muted" id="update-time">
+                                                <small></small>
                                             </div>
                                         </div>
-                                        {% if hasNew %}
-                                            <p class="text-sm mb-0">有新版本: <a href="{{ newer_link }}"
-                                                                             target="_blank">
-                                                {{ newer }}</a><br>
-                                            {{ newer_text }}
-                                            </p>
-                                        {% else %}
-                                            <p class="text-sm mb-0">当前是最新版本哟~</p>
-                                        {% endif %}
+                                            <p class="text-sm mb-0" id="update-body">正在检测更新中...</p>
                                     </div>
                                 </div>
                             </ul>

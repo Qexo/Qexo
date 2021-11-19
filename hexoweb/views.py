@@ -88,7 +88,8 @@ def update_posts_cache(s=None, _path=""):
         for i in range(len(posts)):
             if posts[i].type == "file":
                 _posts.append(
-                    {"name": posts[i].path.split("source/_posts/")[1][0:-3], "fullname": posts[i].path.split("source/_posts/")[1],
+                    {"name": posts[i].path.split("source/_posts/")[1][0:-3],
+                     "fullname": posts[i].path.split("source/_posts/")[1],
                      "path": posts[i].path,
                      "size": posts[i].size,
                      "status": True})
@@ -758,21 +759,27 @@ def upload_img(request):
             context = {"msg": repr(error), "url": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
+
 @login_required(login_url="/login/")
 def get_update(request):
     context = dict()
-    user = github.Github(SettingModel.objects.get(name='GH_TOKEN').content)
-    latest = user.get_repo("am-abudu/Qexo").get_latest_release()
-    if latest.tag_name and (latest.tag_name != QEXO_VERSION):
-        context["hasNew"] = True
-    else:
-        context["hasNew"] = False
-    context["newer"] = latest.tag_name
-    context["newer_link"] = latest.zipball_url
-    context["newer_time"] = latest.created_at.astimezone(timezone(timedelta(hours=16))).strftime(
-        "%Y-%m-%d %H:%M:%S")
-    context["newer_text"] = latest.body
+    try:
+        user = github.Github(SettingModel.objects.get(name='GH_TOKEN').content)
+        latest = user.get_repo("am-abudu/Qexo").get_latest_release()
+        if latest.tag_name and (latest.tag_name != QEXO_VERSION):
+            context["hasNew"] = True
+        else:
+            context["hasNew"] = False
+        context["newer"] = latest.tag_name
+        context["newer_link"] = latest.zipball_url
+        context["newer_time"] = latest.created_at.astimezone(timezone(timedelta(hours=16))).strftime(
+            "%Y-%m-%d %H:%M:%S")
+        context["newer_text"] = latest.body
+        context["status"] = True
+    except:
+        context["status"] = False
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
 
 # Pages
 @login_required(login_url="/login/")
@@ -807,9 +814,6 @@ def index(request):
         context["hasNew"] = True
     context["newer"] = latest.tag_name
     context["newer_link"] = latest.zipball_url
-    context["newer_time"] = latest.created_at.astimezone(timezone(timedelta(hours=16))).strftime(
-        "%Y-%m-%d %H:%M:%S")
-    context["newer_text"] = latest.body
     context["version"] = QEXO_VERSION
     context["post_number"] = str(len(posts))
     context["images_number"] = str(len(images))
@@ -828,14 +832,6 @@ def pages(request):
     # All resource paths end in .html.
     # Pick out the html file name from the url. And load that template.
     try:
-        user = github.Github(SettingModel.objects.get(name='GH_TOKEN').content)
-        latest = user.get_repo("am-abudu/Qexo").get_latest_release()
-        if latest.tag_name and (latest.tag_name != QEXO_VERSION):
-            context["hasNew"] = True
-        context["newer"] = latest.tag_name
-        context["newer_link"] = latest.zipball_url
-        context["newer_time"] = latest.created_at.isoformat(sep=" ")
-        context["newer_text"] = latest.body
         load_template = request.path.split('/')[-1]
         context['segment'] = load_template
         if "index" in load_template:

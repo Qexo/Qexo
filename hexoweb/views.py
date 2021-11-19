@@ -812,8 +812,12 @@ def index(request):
     latest = user.get_repo("am-abudu/Qexo").get_latest_release()
     if latest.tag_name and (latest.tag_name != QEXO_VERSION):
         context["hasNew"] = True
+    else:
+        context["hasNew"] = False
     context["newer"] = latest.tag_name
     context["newer_link"] = latest.zipball_url
+    context["newer_time"] = latest.created_at.astimezone(timezone(timedelta(hours=16))).strftime("%Y-%m-%d %H:%M:%S")
+    context["newer_text"] = latest.body
     context["version"] = QEXO_VERSION
     context["post_number"] = str(len(posts))
     context["images_number"] = str(len(images))

@@ -30,6 +30,7 @@ urlpatterns = [
     path('api/purge/', purge, name='purge'),
     path('api/webhook/', webhook, name='webhook'),
     path('api/create_webhook/', create_webhook_config, name='create_webhook'),
+    path('api/get_update/', get_update, name='get_update'),
 
-    re_path(r'^.*\.*', pages, name='pages'),
+    re_path(r'^(?!api).*$\.*', pages, name='pages'),
 ]

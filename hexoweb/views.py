@@ -758,6 +758,21 @@ def upload_img(request):
             context = {"msg": repr(error), "url": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
+@login_required(login_url="/login/")
+def get_update(request):
+    context = dict()
+    user = github.Github(SettingModel.objects.get(name='GH_TOKEN').content)
+    latest = user.get_repo("am-abudu/Qexo").get_latest_release()
+    if latest.tag_name and (latest.tag_name != QEXO_VERSION):
+        context["hasNew"] = True
+    else:
+        context["hasNew"] = False
+    context["newer"] = latest.tag_name
+    context["newer_link"] = latest.zipball_url
+    context["newer_time"] = latest.created_at.astimezone(timezone(timedelta(hours=16))).strftime(
+        "%Y-%m-%d %H:%M:%S")
+    context["newer_text"] = latest.body
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 # Pages
 @login_required(login_url="/login/")

@@ -4,7 +4,7 @@ configuration your MongoDB database here
 """
 
 CONFIGS = {
-    'DOMAINS': ['qexo.qystudio.ltd', 'setting.qystudio.ltd', '127.0.0.1'],   # allow hosts
+    'DOMAINS': ['.vercel.app', '.qystudio.ltd', '127.0.0.1'],   # allow hosts
     'MONGODB_HOST': 'mongodb+srv://cluster0.3ldqe.mongodb.net',  # your MongoDB host
     'MONGODB_PORT': 27017,  # default is '27017'
     'MONGODB_USER': 'qystudio',  # your MongoDB username

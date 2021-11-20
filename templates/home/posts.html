@@ -52,51 +52,28 @@
                                 <th scope="col">操作</th>
                             </tr>
                             </thead>
-                            <tbody>
-                            {% for post in posts %}
-                                <tr>
-                                    <th scope="row">
-                                        {{ post.name }}
-                                    </th>
-                                    <td>
-                                        {{ post.size | div:1000 }} KB
-                                    </td>
-                                    <td>
-                                        {% if post.status %}
-                                            已发布
-                                        {% else %}
-                                            草稿
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <a href="/edit.html?file={{ post.fullname }}"><i
-                                                class="fa fa-edit mr-2"></i></a>
-                                        <a href="javascript:query_delete('{{ post.fullname }}')"><i
-                                                class="fa fa-trash-alt mr-2"></i></a>
-                                    </td>
-                                </tr>
-                            {% endfor %}
+                            <tbody id="posts-list">
                             </tbody>
                         </table>
                         <div class="card-footer py-4">
                             <ul class="pagination justify-content-end mb-0">
-                                <li class="page-item{% if start %} disabled{% endif %}">
+                                <li class="page-item">
                                     <a class="page-link"
-                                       href="?page={{ page|add:-1 }}{% if search %}&s={{ search }}{% endif %}">
+                                       href="javascript:prev_page()">
                                         <i class="fas fa-angle-left"></i>
                                         <span class="sr-only">上一页</span>
                                     </a>
                                 </li>
                                 {% for i in page_number|get_range %}
-                                    <li class="page-item {% if i == page %}active{% endif %}">
+                                    <li class="page-item">
                                         <a class="page-link"
-                                           href="?page={{ i }}{% if search %}&s={{ search }}{% endif %}">{{ i }}</a>
+                                           href="javascript:change_page({{ i }})">{{ i }}</a>
                                     </li>
                                 {% endfor %}
 
-                                <li class="page-item {% if end %}disabled{% endif %}">
+                                <li class="page-item">
                                     <a class="page-link"
-                                       href="?page={{ page|add:1 }}{% if search %}&s={{ search }}{% endif %}">
+                                       href="javascript:next_page()">
                                         <i class="fas fa-angle-right"></i>
                                         <span class="sr-only">Next</span>
                                     </a>
@@ -141,6 +118,67 @@
     <script src="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@latest/static/assets/vendor/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@latest/static/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
     <script>
+        var posts = {{ all_posts|safe }};
+        var _page = 1;
+
+        function scrollToTop() {
+            let timer = null;
+            cancelAnimationFrame(timer);
+            timer = requestAnimationFrame(function fn() {
+                let oTop = document.body.scrollTop || document.documentElement.scrollTop;
+                if (oTop > 0) {
+                    document.body.scrollTop = document.documentElement.scrollTop = oTop - 30;
+                    timer = requestAnimationFrame(fn);
+                } else {
+                    cancelAnimationFrame(timer);
+                }
+            });
+        }
+
+        function change_page(page) {
+            scrollToTop();
+            let page_posts;
+            if (posts.length > page * 15 + 1) {
+                page_posts = posts.slice(15 * (page - 1), page * 15);
+            } else {
+                page_posts = posts.slice(15 * (page - 1), -1);
+            }
+            let list = "";
+            for (let i = 0; i < page_posts.length; i++) {
+                list += "<tr><th scope=\"row\">" + page_posts[i]["name"] + "</th><td>" +
+                    (page_posts[i]["size"] / 1000).toFixed(2) + " KB</td><td>";
+                if (page_posts[i]["status"]) {
+                    list += "已发布";
+                } else {
+                    list += "草稿";
+                }
+                list += "</td><td><a href=\"/edit.html?file=" + page_posts[i]["fullname"] + "\">" +
+                    "<i class=\"fa fa-edit mr-2\"></i></a>" + "<a href=\"javascript:query_delete('" +
+                    page_posts[i]["fullname"] + "')\"><i class=\"fa fa-trash-alt " +
+                    "mr-2\"></i></a></td></tr>";
+            }
+            $("#posts-list").html(list);
+            _page = page;
+        }
+
+        function prev_page() {
+            if (_page > 1) {
+                change_page(_page - 1);
+            } else {
+                $.notify("已是第一页", {type: "warning", delay: 1000});
+            }
+        }
+
+        function next_page() {
+            if (_page <{{ page_number }}) {
+                change_page(_page + 1);
+            } else {
+                $.notify("已是最后一页", {type: "warning", delay: 1000});
+            }
+        }
+
+        change_page(1);
+
         $.ajaxSetup({
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
         });

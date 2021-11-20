@@ -912,7 +912,6 @@ def pages(request):
             except:
                 pass
         elif "posts" in load_template:
-            page = request.GET.get("page")
             search = request.GET.get("s")
             if search:
                 cache = Cache.objects.filter(name="posts." + search)
@@ -926,21 +925,7 @@ def pages(request):
                     posts = json.loads(cache.first().content)
                 else:
                     posts = update_posts_cache(search)
-            if not page:
-                page = 1
-            if int(page) == 1:
-                context["start"] = True
-            if len(posts) <= 15:
-                context["posts"] = posts
-                context["end"] = True
-            else:
-                page = int(page)
-                try:
-                    posts[page * 15 + 1]
-                except:
-                    context["end"] = True
-                context["posts"] = posts[15 * (page - 1):page * 15]
-            context["page"] = page
+            context["all_posts"] = json.dumps(posts)
             context["post_number"] = len(posts)
             context["page_number"] = context["post_number"] // 15 + 1
             context["search"] = search
@@ -979,7 +964,6 @@ def pages(request):
             context["post_number"] = len(posts)
             context["search"] = search
         elif "images" in load_template:
-            page = request.GET.get("page")
             search = request.GET.get("s")
             posts = []
             if search:
@@ -996,21 +980,7 @@ def pages(request):
                                   "date": time.strftime("%Y-%m-%d %H:%M:%S",
                                                         time.localtime(float(i.date))),
                                   "time": i.date})
-            if not page:
-                page = 1
-            if int(page) == 1:
-                context["start"] = True
-            if len(posts) <= 15:
-                context["posts"] = posts
-                context["end"] = True
-            else:
-                page = int(page)
-                try:
-                    posts[page * 15 + 1]
-                except:
-                    context["end"] = True
-                context["posts"] = posts[15 * (page - 1):page * 15]
-            context["page"] = page
+            context["posts"] = posts
             context["post_number"] = len(posts)
             context["page_number"] = context["post_number"] // 15 + 1
             context["search"] = search

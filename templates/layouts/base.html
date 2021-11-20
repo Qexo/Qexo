@@ -17,47 +17,85 @@
 <html lang="en">
 
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <link rel="canonical" href="https://github.com/am-abudu/Qexo">
-  
-  <title>
-    Hexo管理面板 - {% block title %}{% endblock %}
-  </title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="canonical" href="https://github.com/am-abudu/Qexo">
 
-  <!-- Favicon - loaded as static -->
-  <link rel="icon" href="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@latest/static/assets/img/brand/favicon.png" type="image/png">
-  <!-- Fonts -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700">
-  <!-- Icons -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@latest/static/assets/vendor/nucleo/css/nucleo.css" type="text/css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@latest/static/assets/vendor/@fortawesome/fontawesome-free/css/all.min.css" type="text/css">
-  <!-- Page plugins -->
-  <!-- Argon CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@latest/static/assets/css/argon.css?v=1.2.0" type="text/css">
-  <!-- Specific CSS goes HERE -->
-  {% block stylesheets %}{% endblock stylesheets %}
+    <title>
+        Hexo管理面板 - {% block title %}{% endblock %}
+    </title>
+
+    <!-- Favicon - loaded as static -->
+    <link rel="icon"
+          href="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@latest/static/assets/img/brand/favicon.png"
+          type="image/png">
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700">
+    <!-- Icons -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@latest/static/assets/vendor/nucleo/css/nucleo.css"
+          type="text/css">
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@latest/static/assets/vendor/@fortawesome/fontawesome-free/css/all.min.css"
+          type="text/css">
+    <!-- Page plugins -->
+    <!-- Argon CSS -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@latest/static/assets/css/argon.css?v=1.2.0"
+          type="text/css">
+    <!-- Specific CSS goes HERE -->
+    {% block stylesheets %}{% endblock stylesheets %}
 
 </head>
 
 <body class="">
 
-  {% include "includes/sidenav.html" %}
+{% include "includes/sidenav.html" %}
 
-  <div class="main-content" id="panel">
+<div class="main-content" id="panel">
 
     {% include "includes/navigation.html" %}
 
     {% block content %}{% endblock content %}
 
-  </div>
+</div>
 
-  {% include "includes/scripts.html" %}
+{% include "includes/scripts.html" %}
 
-  <!-- Specific JS goes HERE --> 
-  {% block javascripts %}{% endblock javascripts %}
+<!-- Specific JS goes HERE -->
+{% block javascripts %}
 
-  <script src="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@latest/static/assets/js/argon.js?v=1.2.0"></script>
+{% endblock javascripts %}
+
+<script src="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@latest/static/assets/js/argon.js?v=1.2.0"></script>
+<script>
+    {% if 'index' not in segment %}
+    $.ajax({
+        url: "/api/get_update/",
+        type: "get",
+        success: function (res) {
+            let data = JSON.parse(res);
+            if (data["status"]) {
+                $("#update-time").html("<small>" + data["newer_time"] + "</small>");
+                if (data["hasNew"]) {
+                    $("#update-body").html("有新版本: <a href=\"" + data["newer_link"] + "\" " +
+                        "target=\"_blank\">" + data["newer"] + "</a><br>" + data["newer_text"])
+                    $(".update-point").css({
+                        "position": "absolute", "top": "-4px", "right": "-3px", "width": "6px",
+                        "height": "6px", "background": "red", "border-radius": "50%"
+                    })
+                } else {
+                    $("#update-body").html("当前是最新版本哟~")
+                }
+            }
+            else{
+                $("#update-body").html("检查更新失败！");
+            }
+        }
+    })
+    {% endif %}
+
+</script>
 </body>
 
 </html>

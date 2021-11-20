@@ -82,8 +82,7 @@
                             <ul class="pagination justify-content-end mb-0">
                                 <li class="page-item{% if start %} disabled{% endif %}">
                                     <a class="page-link"
-                                       href="?page=
-                                               {{ page|add:-1 }}{% if search %}&s={{ search }}{% endif %}">
+                                       href="?page={{ page|add:-1 }}{% if search %}&s={{ search }}{% endif %}">
                                         <i class="fas fa-angle-left"></i>
                                         <span class="sr-only">上一页</span>
                                     </a>
@@ -91,15 +90,13 @@
                                 {% for i in page_number|get_range %}
                                     <li class="page-item {% if i == page %}active{% endif %}">
                                         <a class="page-link"
-                                           href="?page=
-                                                   {{ i }}{% if search %}&s={{ search }}{% endif %}">{{ i }}</a>
+                                           href="?page={{ i }}{% if search %}&s={{ search }}{% endif %}">{{ i }}</a>
                                     </li>
                                 {% endfor %}
 
                                 <li class="page-item {% if end %}disabled{% endif %}">
                                     <a class="page-link"
-                                       href="?page=
-                                               {{ page|add:1 }}{% if search %}&s={{ search }}{% endif %}">
+                                       href="?page={{ page|add:1 }}{% if search %}&s={{ search }}{% endif %}">
                                         <i class="fas fa-angle-right"></i>
                                         <span class="sr-only">Next</span>
                                     </a>

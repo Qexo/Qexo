@@ -126,7 +126,7 @@
             $.ajax({
                 url: '/api/save_post/',
                 method: 'post',
-                data: {"file": "{{ filename }}", "content": vditor.getValue()},
+                data: {"file": "{{ fullname }}", "content": vditor.getValue()},
                 dataType: 'JSON',
                 success: function (res) {
                     loading.destroy();
@@ -149,7 +149,7 @@
             $.ajax({
                 url: '/api/save_draft/',
                 method: 'post',
-                data: {"file": "{{ filename }}", "content": vditor.getValue()},
+                data: {"file": "{{ fullname }}", "content": vditor.getValue()},
                 dataType: 'JSON',
                 success: function (res) {
                     loading.destroy();

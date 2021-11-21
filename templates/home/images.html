@@ -133,7 +133,7 @@
             if (posts.length > page * 15 + 1) {
                 page_posts = posts.slice(15 * (page - 1), page * 15);
             } else {
-                page_posts = posts.slice(15 * (page - 1), -1);
+                page_posts = posts.slice(15 * (page - 1));
             }
             let list = "";
             for (let i = 0; i < page_posts.length; i++) {

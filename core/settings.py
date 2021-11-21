@@ -1,8 +1,8 @@
 from pathlib import Path
 import os
-from configs import CONFIGS
+import json
 
-QEXO_VERSION = "1.2.2"
+QEXO_VERSION = "1.3"
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -19,7 +19,7 @@ SECRET_KEY = 'django-insecure-mrf1flh+i8*!ao73h6)ne#%gowhtype!ld#+(j^r*!^11al2vz
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = CONFIGS["DOMAINS"]
+ALLOWED_HOSTS = json.loads(os.environ["DOMAINS"])
 
 # Application definition
 
@@ -76,11 +76,11 @@ DATABASES = {
         },
         'NAME': 'django',
         'CLIENT': {
-            'host': CONFIGS["MONGODB_HOST"],
-            'port': int(CONFIGS["MONGODB_PORT"]),
-            'username': CONFIGS["MONGODB_USER"],
-            'password': CONFIGS["MONGODB_PASS"],
-            'authSource': CONFIGS["MONGODB_DB"],
+            'host': os.environ["MONGODB_HOST"],
+            'port': int(os.environ["MONGODB_PORT"]),
+            'username': os.environ["MONGODB_USER"],
+            'password': os.environ["MONGODB_PASS"],
+            'authSource': os.environ["MONGODB_DB"],
             'authMechanism': 'SCRAM-SHA-1'
         }
     }

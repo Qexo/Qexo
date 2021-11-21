@@ -1,6 +1,5 @@
 .vercel
 .idea
-configs.py
 venv
 __pycache__
 core/__pycache__

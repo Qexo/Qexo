@@ -394,7 +394,10 @@ def set_github(request):
         branch = request.POST.get("branch")
         token = request.POST.get("token")
         if not token:
-            token = SettingModel.objects.get("GH_TOKEN").content
+            try:
+                token = SettingModel.objects.get(name="GH_TOKEN").content
+            except:
+                pass
         path = request.POST.get("path")
         try:
             _repo = github.Github(token).get_repo(repo).get_contents(path + "source/_posts",

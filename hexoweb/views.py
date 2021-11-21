@@ -772,7 +772,8 @@ def get_update(request):
             context["hasNew"] = False
         context["newer"] = latest.tag_name
         context["newer_link"] = latest.zipball_url
-        context["newer_time"] = latest.created_at.astimezone(timezone(timedelta(hours=16))).strftime(
+        context["newer_time"] = latest.created_at.astimezone(
+            timezone(timedelta(hours=16))).strftime(
             "%Y-%m-%d %H:%M:%S")
         context["newer_text"] = latest.body
         context["status"] = True
@@ -816,7 +817,8 @@ def index(request):
         context["hasNew"] = False
     context["newer"] = latest.tag_name
     context["newer_link"] = latest.zipball_url
-    context["newer_time"] = latest.created_at.astimezone(timezone(timedelta(hours=16))).strftime("%Y-%m-%d %H:%M:%S")
+    context["newer_time"] = latest.created_at.astimezone(timezone(timedelta(hours=16))).strftime(
+        "%Y-%m-%d %H:%M:%S")
     context["newer_text"] = latest.body
     context["version"] = QEXO_VERSION
     context["post_number"] = str(len(posts))
@@ -992,6 +994,10 @@ def pages(request):
                 context['GH_REPO_BRANCH'] = SettingModel.objects.get(name="GH_REPO_BRANCH").content
                 context['GH_REPO'] = SettingModel.objects.get(name="GH_REPO").content
                 context['GH_TOKEN'] = SettingModel.objects.get(name="GH_TOKEN").content
+                token_len = len(context['GH_TOKEN'])
+                if token_len >= 5:
+                    context['GH_TOKEN'] = context['GH_TOKEN'][:3] + "*" * (token_len - 5) +  \
+                                          context['GH_TOKEN'][-1]
                 context['IMG_CUSTOM_URL'] = SettingModel.objects.get(name='IMG_CUSTOM_URL').content
                 context['IMG_CUSTOM_HEADER'] = SettingModel.objects.get(
                     name='IMG_CUSTOM_HEADER').content

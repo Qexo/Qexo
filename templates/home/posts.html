@@ -57,7 +57,7 @@
                         </table>
                         <div class="card-footer py-4">
                             <ul class="pagination justify-content-end mb-0">
-                                <li class="page-item">
+                                <li class="page-item" id="prev-page">
                                     <a class="page-link"
                                        href="javascript:prev_page()">
                                         <i class="fas fa-angle-left"></i>
@@ -65,17 +65,17 @@
                                     </a>
                                 </li>
                                 {% for i in page_number|get_range %}
-                                    <li class="page-item">
+                                    <li class="page-item" id="page-{{ i }}">
                                         <a class="page-link"
                                            href="javascript:change_page({{ i }})">{{ i }}</a>
                                     </li>
                                 {% endfor %}
 
-                                <li class="page-item">
+                                <li class="page-item" id="next-page">
                                     <a class="page-link"
                                        href="javascript:next_page()">
                                         <i class="fas fa-angle-right"></i>
-                                        <span class="sr-only">Next</span>
+                                        <span class="sr-only">下一页</span>
                                     </a>
                                 </li>
                             </ul>
@@ -157,8 +157,22 @@
                     page_posts[i]["fullname"] + "')\"><i class=\"fa fa-trash-alt " +
                     "mr-2\"></i></a></td></tr>";
             }
+            $("#page-"+_page).removeClass("active");
+            $("#page-"+page).addClass("active");
             $("#posts-list").html(list);
             _page = page;
+            if(page<=1){
+                $("#prev-page").addClass("disabled");
+            }
+            else{
+                $("#prev-page").removeClass("disabled");
+            }
+            if(page>={{ page_number }}){
+                $("#next-page").addClass("disabled");
+            }
+            else{
+                $("#next-page").removeClass("disabled");
+            }
         }
 
         function prev_page() {

@@ -945,6 +945,7 @@ def pages(request):
                     posts = update_pages_cache(search)
             context["posts"] = posts
             context["post_number"] = len(posts)
+            context["page_number"] = context["post_number"] // 15 + 1
             context["search"] = search
         elif "configs" in load_template:
             search = request.GET.get("s")
@@ -962,6 +963,7 @@ def pages(request):
                     posts = update_configs_cache(search)
             context["posts"] = posts
             context["post_number"] = len(posts)
+            context["page_number"] = context["post_number"] // 15 + 1
             context["search"] = search
         elif "images" in load_template:
             search = request.GET.get("s")

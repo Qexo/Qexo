@@ -393,6 +393,11 @@ def set_github(request):
         repo = request.POST.get("repo")
         branch = request.POST.get("branch")
         token = request.POST.get("token")
+        if not token:
+            try:
+                token = SettingModel.objects.get(name="GH_TOKEN").content
+            except:
+                pass
         path = request.POST.get("path")
         try:
             _repo = github.Github(token).get_repo(repo).get_contents(path + "source/_posts",
@@ -772,7 +777,8 @@ def get_update(request):
             context["hasNew"] = False
         context["newer"] = latest.tag_name
         context["newer_link"] = latest.zipball_url
-        context["newer_time"] = latest.created_at.astimezone(timezone(timedelta(hours=16))).strftime(
+        context["newer_time"] = latest.created_at.astimezone(
+            timezone(timedelta(hours=16))).strftime(
             "%Y-%m-%d %H:%M:%S")
         context["newer_text"] = latest.body
         context["status"] = True
@@ -816,7 +822,8 @@ def index(request):
         context["hasNew"] = False
     context["newer"] = latest.tag_name
     context["newer_link"] = latest.zipball_url
-    context["newer_time"] = latest.created_at.astimezone(timezone(timedelta(hours=16))).strftime("%Y-%m-%d %H:%M:%S")
+    context["newer_time"] = latest.created_at.astimezone(timezone(timedelta(hours=16))).strftime(
+        "%Y-%m-%d %H:%M:%S")
     context["newer_text"] = latest.body
     context["version"] = QEXO_VERSION
     context["post_number"] = str(len(posts))
@@ -912,7 +919,6 @@ def pages(request):
             except:
                 pass
         elif "posts" in load_template:
-            page = request.GET.get("page")
             search = request.GET.get("s")
             if search:
                 cache = Cache.objects.filter(name="posts." + search)
@@ -926,21 +932,7 @@ def pages(request):
                     posts = json.loads(cache.first().content)
                 else:
                     posts = update_posts_cache(search)
-            if not page:
-                page = 1
-            if int(page) == 1:
-                context["start"] = True
-            if len(posts) <= 15:
-                context["posts"] = posts
-                context["end"] = True
-            else:
-                page = int(page)
-                try:
-                    posts[page * 15 + 1]
-                except:
-                    context["end"] = True
-                context["posts"] = posts[15 * (page - 1):page * 15]
-            context["page"] = page
+            context["all_posts"] = json.dumps(posts)
             context["post_number"] = len(posts)
             context["page_number"] = context["post_number"] // 15 + 1
             context["search"] = search
@@ -960,6 +952,7 @@ def pages(request):
                     posts = update_pages_cache(search)
             context["posts"] = posts
             context["post_number"] = len(posts)
+            context["page_number"] = context["post_number"] // 15 + 1
             context["search"] = search
         elif "configs" in load_template:
             search = request.GET.get("s")
@@ -977,9 +970,9 @@ def pages(request):
                     posts = update_configs_cache(search)
             context["posts"] = posts
             context["post_number"] = len(posts)
+            context["page_number"] = context["post_number"] // 15 + 1
             context["search"] = search
         elif "images" in load_template:
-            page = request.GET.get("page")
             search = request.GET.get("s")
             posts = []
             if search:
@@ -996,21 +989,7 @@ def pages(request):
                                   "date": time.strftime("%Y-%m-%d %H:%M:%S",
                                                         time.localtime(float(i.date))),
                                   "time": i.date})
-            if not page:
-                page = 1
-            if int(page) == 1:
-                context["start"] = True
-            if len(posts) <= 15:
-                context["posts"] = posts
-                context["end"] = True
-            else:
-                page = int(page)
-                try:
-                    posts[page * 15 + 1]
-                except:
-                    context["end"] = True
-                context["posts"] = posts[15 * (page - 1):page * 15]
-            context["page"] = page
+            context["posts"] = posts
             context["post_number"] = len(posts)
             context["page_number"] = context["post_number"] // 15 + 1
             context["search"] = search
@@ -1020,6 +999,10 @@ def pages(request):
                 context['GH_REPO_BRANCH'] = SettingModel.objects.get(name="GH_REPO_BRANCH").content
                 context['GH_REPO'] = SettingModel.objects.get(name="GH_REPO").content
                 context['GH_TOKEN'] = SettingModel.objects.get(name="GH_TOKEN").content
+                token_len = len(context['GH_TOKEN'])
+                if token_len >= 5:
+                    context['GH_TOKEN'] = context['GH_TOKEN'][:3] + "*" * (token_len - 5) +  \
+                                          context['GH_TOKEN'][-1]
                 context['IMG_CUSTOM_URL'] = SettingModel.objects.get(name='IMG_CUSTOM_URL').content
                 context['IMG_CUSTOM_HEADER'] = SettingModel.objects.get(
                     name='IMG_CUSTOM_HEADER').content

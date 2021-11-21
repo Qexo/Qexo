@@ -7,7 +7,7 @@
 ### 申请 MongoDB 
 [注册 MongoDB 账号](https://www.mongodb.com/cloud/atlas/register) 创建免费 MongoDB 数据库，区域推荐选择 AWS / N. 
   Virginia (us-east-1) 在 Clusters 页面点击 CONNECT，按步骤设置允许所有 IP 地址的连接），创建数据库用户，并记录数据库连接信息，密码即为你所设置的值
-![image](https://user-images.githubusercontent.com/51912589/140946317-bafeac24-fe3f-408b-927a-ca9a88168fa8.png)
+![](https://user-images.githubusercontent.com/51912589/140946317-bafeac24-fe3f-408b-927a-ca9a88168fa8.png)
 ### Fork 本项目
 打开 [项目主页](https://github.com/am-abudu/Qexo) 点击 Fork 将项目复刻到您的账户下
 ### 创建 Vercel 项目

@@ -190,9 +190,9 @@ def update_configs_cache(s=None):
                                ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
     for theme in themes:
         if theme.type == "dir":
-            for post in repo.get_contents(
-                    SettingModel.objects.get(name="GH_REPO_PATH").content + theme.path,
-                    ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content):
+            for post in repo.get_contents(theme.path,
+                                          ref=SettingModel.objects.get(
+                                              name="GH_REPO_BRANCH").content):
                 try:
                     if s:
                         if post.name[-3:] == "yml" and s in post.name:
@@ -204,6 +204,39 @@ def update_configs_cache(s=None):
                                 {"name": post.name, "path": post.path, "size": post.size})
                 except:
                     pass
+
+    sources = repo.get_contents(SettingModel.objects.get(name="GH_REPO_PATH").content +
+                                "source",
+                                ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
+    for source in sources:
+        if source.type == "file":
+            try:
+                if s:
+                    if source.name[-3:] == "yml" and s in source.name:
+                        results.append(
+                            {"name": source.name, "path": source.path, "size": source.size})
+                else:
+                    if source.name[-3:] == "yml":
+                        results.append(
+                            {"name": source.name, "path": source.path, "size": source.size})
+            except:
+                pass
+        if source.type == "dir":
+            for post in repo.get_contents(source.path,
+                                          ref=SettingModel.objects.get(
+                                              name="GH_REPO_BRANCH").content):
+                try:
+                    if s:
+                        if post.name[-3:] == "yml" and s in post.name:
+                            results.append(
+                                {"name": post.name, "path": post.path, "size": post.size})
+                    else:
+                        if post.name[-3:] == "yml":
+                            results.append(
+                                {"name": post.name, "path": post.path, "size": post.size})
+                except:
+                    pass
+
     if s:
         cache_name = "configs." + str(s)
     else:
@@ -1001,7 +1034,7 @@ def pages(request):
                 context['GH_TOKEN'] = SettingModel.objects.get(name="GH_TOKEN").content
                 token_len = len(context['GH_TOKEN'])
                 if token_len >= 5:
-                    context['GH_TOKEN'] = context['GH_TOKEN'][:3] + "*" * (token_len - 5) +  \
+                    context['GH_TOKEN'] = context['GH_TOKEN'][:3] + "*" * (token_len - 5) + \
                                           context['GH_TOKEN'][-1]
                 context['IMG_CUSTOM_URL'] = SettingModel.objects.get(name='IMG_CUSTOM_URL').content
                 context['IMG_CUSTOM_HEADER'] = SettingModel.objects.get(

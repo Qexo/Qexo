@@ -138,8 +138,8 @@
             let list = "";
             for (let i = 0; i < page_posts.length; i++) {
                 list += "<tr><th scope=\"row\">" + page_posts[i]["name"] + "<a href=\"" +
-                    page_posts[i]["url"] + "\" target=\"_blank\"><i "+
-                "class=\"fa\" fa-external-link-alt\"></i></a></th><td>" +
+                    page_posts[i]["url"] + "\" target=\"_blank\"> <i "+
+                "class=\"fa fa-external-link-alt\"></i></a></th><td>" +
                     (page_posts[i]["size"]/1000).toFixed(2)+ " KB</td><td>" + page_posts[i]["date"]+
                     "</td><td><a href=\"javascript:query_delete('" + page_posts[i]["name"] + "', '"+
                     page_posts[i]["time"] + "')\"><i class=\"fa fa-trash-alt " +

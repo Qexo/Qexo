@@ -942,7 +942,8 @@ def pages(request):
                         SettingModel.objects.get(name="GH_REPO_PATH").content + "scaffolds/post.md",
                         ref=SettingModel.objects.get(
                             name="GH_REPO_BRANCH").content).decoded_content.decode(
-                        "utf8"))
+                        "utf8").replace("{{ date }}", time.strftime("%Y-%m-%d %H:%M:%S",
+                                                                    time.localtime(time.time()))))
             except:
                 pass
             try:

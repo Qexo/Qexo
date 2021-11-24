@@ -23,7 +23,7 @@
 打开项目主页 Settings -> Environment Variables 添加环境变量
 | 名称 | 意义 | 示例 |
 | --- | --- | --- |
-| DOMAINS | 你所允许通信的域名（安全域名）注意双引号 | [".vercel.app", "127.0.0.1", ".yoursite.com"] |
+| DOMAINS | 你所允许通信的安全域名 注意双引号 | [".vercel.app", "127.0.0.1", ".yoursite.com"] |
 | MONGODB_HOST | MongoDB 连接地址 | mongodb+srv://cluster0.xxxx.mongodb.net |
 | MONGODB_PORT | MongoDB 通信端口 默认应填写 27017 | 27017 |
 | MONGODB_USER | MongoDB 用户名 | abudu |

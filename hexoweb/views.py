@@ -887,7 +887,9 @@ def pages(request):
                 repo.get_contents(SettingModel.objects.get(name="GH_REPO_PATH").content + file_path,
                                   ref=SettingModel.objects.get(
                                       name="GH_REPO_BRANCH").content).decoded_content.decode(
-                    "utf8"))
+                    "utf8")).replace("<",
+                                         "\\<").replace(
+                    ">", "\\>")
             context['filename'] = file_path.split("/")[-2] + "/" + file_path.split("/")[-1]
             context["file_path"] = file_path
             try:
@@ -908,7 +910,9 @@ def pages(request):
             context['filename'] = file_path.split("/")[-1]
         elif "edit" in load_template:
             file_path = request.GET.get("file")
-            context["file_content"] = repr(get_post(file_path))
+            context["file_content"] = repr(get_post(file_path)).replace("<",
+                                         "\\<").replace(
+                    ">", "\\>")
             context['filename'] = file_path.split("/")[-1]
             context['fullname'] = file_path
             try:
@@ -925,7 +929,12 @@ def pages(request):
                         SettingModel.objects.get(name="GH_REPO_PATH").content + "scaffolds/page.md",
                         ref=SettingModel.objects.get(
                             name="GH_REPO_BRANCH").content).decoded_content.decode(
-                        "utf8"))
+                        "utf8")).replace("<",
+                                         "\\<").replace(
+                    ">", "\\>").replace("{{ date }}", time.strftime("%Y-%m-%d %H:%M:%S",
+                                                                    time.localtime(
+                                                                        time.time())))
+
             except:
                 pass
             try:
@@ -943,7 +952,11 @@ def pages(request):
                         ref=SettingModel.objects.get(
                             name="GH_REPO_BRANCH").content).decoded_content.decode(
                         "utf8").replace("{{ date }}", time.strftime("%Y-%m-%d %H:%M:%S",
-                                                                    time.localtime(time.time()))))
+                                                                    time.localtime(
+                                                                        time.time())))).replace("<",
+                                                                                                "\\<").replace(
+                    ">", "\\>")
+
             except:
                 pass
             try:

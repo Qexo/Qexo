@@ -899,11 +899,11 @@ def pages(request):
         elif "edit_config" in load_template:
             file_path = request.GET.get("file")
             repo = get_repo()
-            context["file_content"] = repo.get_contents(
+            context["file_content"] = repr(repo.get_contents(
                 SettingModel.objects.get(name="GH_REPO_PATH").content + file_path,
                 ref=SettingModel.objects.get(
                     name="GH_REPO_BRANCH").content).decoded_content.decode(
-                "utf8")
+                "utf8")).replace("<", "\\<").replace(">", "\\>")
             context["filepath"] = file_path
             context['filename'] = file_path.split("/")[-1]
         elif "edit" in load_template:

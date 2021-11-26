@@ -118,7 +118,7 @@
             }
             let list = "";
             for (let i = 0; i < page_posts.length; i++) {
-                list +="<tr><th scope=\"row\">" + page_posts[i]["name"] + "</th><td>" +
+                list +="<tr><th scope=\"row\">" + page_posts[i]["path"] + "</th><td>" +
                     (page_posts[i]["size"] / 1000).toFixed(2) + " KB</td><td><a " +
                     "href=\"/edit_config.html?file=" + page_posts[i]["path"] + "\"><i class=\"fa " +
                     "fa-edit mr-2\"></i></a></td></tr>";

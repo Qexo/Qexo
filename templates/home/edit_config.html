@@ -34,7 +34,7 @@
             <div class="col">
                 <div class="card">
                     <div id="editor" class="ace_editor" style="height: 36rem;
-                    min-height:inherit;border-radius: 0.375rem;">{{ file_content|safe }}</div>
+                    min-height:inherit;border-radius: 0.375rem;"></div>
                 </div>
             </div>
         </div>
@@ -70,6 +70,7 @@
         editor.getSession().setUseWorker(false);
         editor.getSession().setUseWrapMode(true);
         editor.getSession().setUseSoftTabs(true);
+        editor.session.setValue({{ file_content|safe }});
         $.ajaxSetup({
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
         });

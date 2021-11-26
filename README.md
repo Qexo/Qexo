@@ -1,5 +1,5 @@
 # Qexo
-一个快速、强大、漂亮的在线 Hexo 编辑器。 文档正在施工中...
+一个快速、强大、漂亮的在线 Hexo 编辑器，您的 Star 是对我最大的支持。
 ![](https://user-images.githubusercontent.com/51912589/142183851-7428c3ef-8d38-4029-9ca4-0f5e0f3ccfc0.png)
 ## 特色功能
 - 自定义图床上传图片
@@ -23,7 +23,7 @@
 打开项目主页 Settings -> Environment Variables 添加环境变量
 | 名称 | 意义 | 示例 |
 | --- | --- | --- |
-| DOMAINS | 你所允许通信的域名（安全域名）注意双引号 | [".vercel.app", "127.0.0.1", ".yoursite.com"] |
+| DOMAINS | 你所允许通信的安全域名 注意双引号 | [".vercel.app", "127.0.0.1", ".yoursite.com"] |
 | MONGODB_HOST | MongoDB 连接地址 | mongodb+srv://cluster0.xxxx.mongodb.net |
 | MONGODB_PORT | MongoDB 通信端口 默认应填写 27017 | 27017 |
 | MONGODB_USER | MongoDB 用户名 | abudu |

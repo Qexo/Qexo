@@ -507,26 +507,6 @@ def set_user(request):
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
-
-@login_required(login_url="/login/")
-def save(request):
-    repo = get_repo()
-    context = dict(msg="Error!", status=False)
-    if request.method == "POST":
-        file_path = request.POST.get('file')
-        content = request.POST.get('content')
-        try:
-            repo.update_file(SettingModel.objects.get(name="GH_REPO_PATH").content + file_path,
-                             "Update by Qexo", content, repo.get_contents(
-                    SettingModel.objects.get(name="GH_REPO_PATH").content + file_path,
-                    ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content).sha,
-                             branch=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
-            context = {"msg": "OK!", "status": True}
-        except Exception as error:
-            context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
-
-
 @login_required(login_url="/login/")
 def save(request):
     repo = get_repo()
@@ -887,7 +867,9 @@ def pages(request):
                 repo.get_contents(SettingModel.objects.get(name="GH_REPO_PATH").content + file_path,
                                   ref=SettingModel.objects.get(
                                       name="GH_REPO_BRANCH").content).decoded_content.decode(
-                    "utf8"))
+                    "utf8")).replace("<",
+                                         "\\<").replace(
+                    ">", "\\>")
             context['filename'] = file_path.split("/")[-2] + "/" + file_path.split("/")[-1]
             context["file_path"] = file_path
             try:
@@ -899,16 +881,18 @@ def pages(request):
         elif "edit_config" in load_template:
             file_path = request.GET.get("file")
             repo = get_repo()
-            context["file_content"] = repo.get_contents(
+            context["file_content"] = repr(repo.get_contents(
                 SettingModel.objects.get(name="GH_REPO_PATH").content + file_path,
                 ref=SettingModel.objects.get(
                     name="GH_REPO_BRANCH").content).decoded_content.decode(
-                "utf8")
+                "utf8")).replace("<", "\\<").replace(">", "\\>")
             context["filepath"] = file_path
             context['filename'] = file_path.split("/")[-1]
         elif "edit" in load_template:
             file_path = request.GET.get("file")
-            context["file_content"] = repr(get_post(file_path))
+            context["file_content"] = repr(get_post(file_path)).replace("<",
+                                         "\\<").replace(
+                    ">", "\\>")
             context['filename'] = file_path.split("/")[-1]
             context['fullname'] = file_path
             try:
@@ -925,7 +909,12 @@ def pages(request):
                         SettingModel.objects.get(name="GH_REPO_PATH").content + "scaffolds/page.md",
                         ref=SettingModel.objects.get(
                             name="GH_REPO_BRANCH").content).decoded_content.decode(
-                        "utf8"))
+                        "utf8")).replace("<",
+                                         "\\<").replace(
+                    ">", "\\>").replace("{{ date }}", time.strftime("%Y-%m-%d %H:%M:%S",
+                                                                    time.localtime(
+                                                                        time.time())))
+
             except:
                 pass
             try:
@@ -942,7 +931,12 @@ def pages(request):
                         SettingModel.objects.get(name="GH_REPO_PATH").content + "scaffolds/post.md",
                         ref=SettingModel.objects.get(
                             name="GH_REPO_BRANCH").content).decoded_content.decode(
-                        "utf8"))
+                        "utf8").replace("{{ date }}", time.strftime("%Y-%m-%d %H:%M:%S",
+                                                                    time.localtime(
+                                                                        time.time())))).replace("<",
+                                                                                                "\\<").replace(
+                    ">", "\\>")
+
             except:
                 pass
             try:

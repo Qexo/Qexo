@@ -17,7 +17,7 @@ LOGOUT_REDIRECT_URL = "home"  # Route defined in home/urls.py
 SECRET_KEY = 'django-insecure-mrf1flh+i8*!ao73h6)ne#%gowhtype!ld#+(j^r*!^11al2vz'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = json.loads(os.environ["DOMAINS"])
 

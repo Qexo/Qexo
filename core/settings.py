@@ -2,7 +2,7 @@ from pathlib import Path
 import os
 import json
 
-QEXO_VERSION = "1.3.6"
+QEXO_VERSION = "1.4"
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -17,7 +17,7 @@ LOGOUT_REDIRECT_URL = "home"  # Route defined in home/urls.py
 SECRET_KEY = 'django-insecure-mrf1flh+i8*!ao73h6)ne#%gowhtype!ld#+(j^r*!^11al2vz'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = json.loads(os.environ["DOMAINS"])
 

@@ -44,29 +44,13 @@
                                 <input type="button" class="btn btn-warning" value="清除缓存"
                                        onclick="query_purge()">
                             </div>
-                        </div>
-                        <form id="webhook-settings">
-                            <hr class="my-4"/>
-                            <h6 class="heading-small text-muted mb-4">Webhook配置</h6>
+                            {% if showUpdate %}
                             <div class="pl-lg-4">
-                                <div class="row">
-                                    {% csrf_token %}
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">API密钥</label>
-                                            <input type="text" name="apikey" class="form-control"
-                                                   placeholder="请保管好您的密钥">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-lg-6">
-                                        <input type="button" class="btn btn-primary" value="提交"
-                                               onclick="submit_webhook_config()">
-                                    </div>
-                                </div>
+                                <input type="button" class="btn btn-danger" value="更新"
+                                       onclick="query_update()">
                             </div>
-                        </form>
+                            {% endif %}
+                        </div>
                         <form id="user-settings">
                             <hr class="my-4"/>
                             <h6 class="heading-small text-muted mb-4">用户配置</h6>
@@ -158,6 +142,53 @@
                                     <div class="col-lg-6">
                                         <input type="button" class="btn btn-primary" value="提交"
                                                onclick="submit_github_config()">
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        <form id="others">
+                            <hr class="my-4"/>
+                            <h6 class="heading-small text-muted mb-4">其他设置</h6>
+                            <div class="pl-lg-4">
+                                <div class="row">
+                                    {% csrf_token %}
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">API密钥</label>
+                                            <input type="text" name="apikey" class="form-control"
+                                                   placeholder="请保管好您的密钥">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">在线更新-Qexo仓库</label>
+                                            <input type="text" name="repo" class="form-control"
+                                                   placeholder="username/repo"
+                                                   value="{{ UPDATE_REPO }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">在线更新-Github密钥</label>
+                                            <input type="text" name="token" class="form-control"
+                                                   placeholder="{{ UPDATE_TOKEN }}" value="">
+                                        </div>
+                                    </div>
+                                     <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">在线更新-项目分支</label>
+                                            <input type="text" name="branch" class="form-control"
+                                                   placeholder="master"
+                                                   value="{{ UPDATE_REPO_BRANCH }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <input type="button" class="btn btn-primary" value="提交"
+                                               onclick="submit_others()">
                                     </div>
                                 </div>
                             </div>
@@ -279,6 +310,29 @@
                 </div>
             </div>
         </div>
+        <div class="modal fade" id="queryUpdate" tabindex="-1" aria-labelledby="queryUpdateLabel"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="queryWebhookLabel">提示</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        确定要提交自动更新吗？这会创建一个新的 Pull request 尝试合并最新的 master 分支
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消
+                        </button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal"
+                                onclick="do_update()">确定
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
         {% include "includes/footer.html" %}
 
     </div>
@@ -291,7 +345,7 @@
     <script src="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@latest/static/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
     <script>
         {% if error %}
-            let notify = $.notify(error, {type: "warning"});
+            $.notify("{{ error }}", {type: "warning"});
         {% endif %}
 
         function getBaseUrl() {
@@ -465,6 +519,10 @@
             $("#queryWebhook").modal("show");
         }
 
+        function query_update() {
+            $("#queryUpdate").modal("show");
+        }
+
         function purge() {
             let loading = new KZ_Loading('正在清除中...');
             loading.show();
@@ -512,13 +570,13 @@
             })
         }
 
-        function submit_webhook_config() {
+        function submit_others() {
             let loading = new KZ_Loading('正在保存中...');
             loading.show();
             $.ajax({
-                url: '/api/set_webhook/',
+                url: '/api/set_others/',
                 method: 'post',
-                data: $('#webhook-settings').serialize(),
+                data: $('#others').serialize(),
                 dataType: "json",
                 success: function (res) {
                     loading.destroy();
@@ -531,6 +589,28 @@
                 error: function (res) {
                     loading.destroy();
                     let notify = $.notify("网络错误！", {type: "warning"});
+                }
+            })
+        }
+
+        function do_update() {
+            let loading = new KZ_Loading('正在尝试更新...');
+            loading.show();
+            $.ajax({
+                url: '/api/do_update/',
+                method: 'get',
+                dataType: "json",
+                success: function (res) {
+                    loading.destroy();
+                    if (res.status) {
+                        $.notify("更新提交成功！请等待自动部署", {type: "success", delay: 1000});
+                    } else {
+                        $.notify(res.msg, {type: "warning"});
+                    }
+                },
+                error: function (res) {
+                    loading.destroy();
+                    $.notify("网络错误！", {type: "warning"});
                 }
             })
         }

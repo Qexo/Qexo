@@ -26,11 +26,12 @@ urlpatterns = [
     path('api/set_github/', set_github, name='set_github'),
     path('api/set_user/', set_user, name='set_user'),
     path('api/set_image_bed/', set_image_bed, name='set_image_bed'),
-    path('api/set_webhook/', set_webhook, name='set_webhook'),
+    path('api/set_others/', set_others, name='set_others'),
     path('api/purge/', purge, name='purge'),
     path('api/webhook/', webhook, name='webhook'),
     path('api/create_webhook/', create_webhook_config, name='create_webhook'),
     path('api/get_update/', get_update, name='get_update'),
+    path('api/do_update/', do_update, name='do_update'),
 
     re_path(r'^(?!api).*$\.*', pages, name='pages'),
 ]

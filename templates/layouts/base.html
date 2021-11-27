@@ -69,7 +69,7 @@
 
 <script src="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@latest/static/assets/js/argon.js?v=1.2.0"></script>
 <script>
-    {% if 'index' not in segment %}
+    {% if 'index' not in segment and 'settings' not in segment %}
     $.ajax({
         url: "/api/get_update/",
         type: "get",

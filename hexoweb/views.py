@@ -321,7 +321,6 @@ def init_view(request):
     except:
         save_setting("INIT", "1")
         step = "1"
-
     if request.method == "POST":
         if request.POST.get("step") == "1":
             save_setting("INIT", "2")
@@ -396,7 +395,7 @@ def init_view(request):
                 save_setting("IMG_CUSTOM_BODY", custom_body)
                 save_setting("IMG_CUSTOM_HEADER", custom_header)
                 save_setting("IMG_CUSTOM_URL", custom_url)
-                save_setting("INIT", "6")
+                save_setting("INIT", "5")
                 step = "5"
             except Exception as e:
                 msg = repr(e)
@@ -406,10 +405,38 @@ def init_view(request):
                 context["body"] = custom_body
                 context["header"] = custom_header
                 context["custom"] = custom_url
-        if step == "5":
+        if request.POST.get("step") == "5":
+
+            apikey = request.POST.get("apikey")
+            save_setting("WEBHOOK_APIKEY", apikey)
+            update_repo = request.POST.get("repo")
+            update_token = request.POST.get("token")
+            update_branch = request.POST.get("branch")
+            if update_branch and update_token and update_repo:
+                try:
+                    github.Github(update_token).get_repo(update_repo).get_contents("",
+                                                                                   ref=update_branch)
+                    save_setting("UPDATE_REPO", update_repo)
+                    save_setting("UPDATE_TOKEN", update_token)
+                    save_setting("UPDATE_REPO_BRANCH", update_branch)
+                    save_setting("INIT", "6")
+                    step = "6"
+                except:
+                    msg = "校验失败"
+                    context["apikey"] = apikey
+                    context["repo"] = update_repo
+                    context["token"] = update_token
+                    context["branch"] = update_branch
+            else:
+                save_setting("UPDATE_REPO", update_repo)
+                save_setting("UPDATE_TOKEN", update_token)
+                save_setting("UPDATE_REPO_BRANCH", update_branch)
+                save_setting("INIT", "6")
+                step = "6"
+        if step == "6":
             user = User.objects.all()[0]
             context["username"] = user.username
-    elif int(step) >= 5:
+    elif int(step) >= 6:
         return redirect("/")
     return render(request, "accounts/init.html", {"msg": msg, "step": step, "context": context})
 
@@ -448,10 +475,35 @@ def set_github(request):
 
 
 @login_required(login_url="/login/")
-def set_webhook(request):
+def set_others(request):
     try:
         apikey = request.POST.get("apikey")
-        save_setting("WEBHOOK_APIKEY", apikey)
+        if apikey:
+            save_setting("WEBHOOK_APIKEY", apikey)
+        update_repo = request.POST.get("repo")
+        update_token = request.POST.get("token")
+        update_branch = request.POST.get("branch")
+        try:
+            if update_repo == SettingModel.objects.get(name="UPDATE_REPO") and \
+                    update_branch == SettingModel.objects.get(name="UPDATE_BRANCH"):
+                context = {"msg": "保存成功!", "status": True}
+                return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+        except:
+            pass
+        if not update_token:
+            try:
+                update_token = SettingModel.objects.get(name="UPDATE_TOKEN").content
+            except:
+                context = {"msg": "校验失败!", "status": False}
+                return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+        try:
+            github.Github(update_token).get_repo(update_repo).get_contents("", ref=update_branch)
+        except:
+            context = {"msg": "校验失败!", "status": False}
+            return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+        save_setting("UPDATE_REPO", update_repo)
+        save_setting("UPDATE_TOKEN", update_token)
+        save_setting("UPDATE_REPO_BRANCH", update_branch)
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
         context = {"msg": repr(e), "status": False}
@@ -506,6 +558,25 @@ def set_user(request):
     except Exception as e:
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+@login_required(login_url="/login/")
+def do_update(request):
+    repo = SettingModel.objects.get(name="UPDATE_REPO").content
+    token = SettingModel.objects.get(name="UPDATE_TOKEN").content
+    branch = SettingModel.objects.get(name="UPDATE_REPO_BRANCH").content
+    repo = github.Github(token).get_repo(repo)
+    context = dict(msg="Error!", status=False)
+    try:
+        pull = repo.create_pull(title="Update from {}".format(QEXO_VERSION), body="auto update",
+                                head="am-abudu:master",
+                                base=branch, maintainer_can_modify=False)
+        pull.merge()
+        context = {"msg": "OK!", "status": True}
+    except Exception as error:
+        context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
 
 @login_required(login_url="/login/")
 def save(request):
@@ -868,8 +939,8 @@ def pages(request):
                                   ref=SettingModel.objects.get(
                                       name="GH_REPO_BRANCH").content).decoded_content.decode(
                     "utf8")).replace("<",
-                                         "\\<").replace(
-                    ">", "\\>")
+                                     "\\<").replace(
+                ">", "\\>")
             context['filename'] = file_path.split("/")[-2] + "/" + file_path.split("/")[-1]
             context["file_path"] = file_path
             try:
@@ -891,8 +962,8 @@ def pages(request):
         elif "edit" in load_template:
             file_path = request.GET.get("file")
             context["file_content"] = repr(get_post(file_path)).replace("<",
-                                         "\\<").replace(
-                    ">", "\\>")
+                                                                        "\\<").replace(
+                ">", "\\>")
             context['filename'] = file_path.split("/")[-1]
             context['fullname'] = file_path
             try:
@@ -1038,6 +1109,29 @@ def pages(request):
                 context['IMG_JSON_PATH'] = SettingModel.objects.get(name='IMG_JSON_PATH').content
                 context['IMG_POST'] = SettingModel.objects.get(name='IMG_POST').content
                 context['IMG_API'] = SettingModel.objects.get(name='IMG_API').content
+                context['UPDATE_REPO_BRANCH'] = SettingModel.objects.get(
+                    name="UPDATE_REPO_BRANCH").content
+                context['UPDATE_REPO'] = SettingModel.objects.get(name="UPDATE_REPO").content
+                context['UPDATE_TOKEN'] = SettingModel.objects.get(name="UPDATE_TOKEN").content
+                if len(context['UPDATE_TOKEN']) >= 5:
+                    context['UPDATE_TOKEN'] = context['UPDATE_TOKEN'][:3] + "*" * (token_len - 5) \
+                                              + context['UPDATE_TOKEN'][-1]
+                user = github.Github(SettingModel.objects.get(name='GH_TOKEN').content)
+                latest = user.get_repo("am-abudu/Qexo").get_latest_release()
+                if latest.tag_name and (latest.tag_name != QEXO_VERSION):
+                    context["hasNew"] = True
+                else:
+                    context["hasNew"] = False
+                context["newer"] = latest.tag_name
+                context["newer_link"] = latest.zipball_url
+                context["newer_time"] = latest.created_at.astimezone(
+                    timezone(timedelta(hours=16))).strftime(
+                    "%Y-%m-%d %H:%M:%S")
+                context["newer_text"] = latest.body
+                context["version"] = QEXO_VERSION
+                if context["hasNew"] and context['UPDATE_REPO_BRANCH'] and context['UPDATE_REPO'] \
+                        and context['UPDATE_TOKEN']:
+                    context["showUpdate"] = True
             except Exception as e:
                 context["error"] = repr(e)
         html_template = loader.get_template('home/' + load_template)

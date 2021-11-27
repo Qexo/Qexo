@@ -10,7 +10,7 @@
     <!-- Page content -->
     <div class="container mt--8 pb-5">
         <div class="row justify-content-center">
-            {% if step == "4" %}
+            {% if step == "4" or step == "5" %}
                 <div class="col-lg-8 col-md-5">
             {% else %}
                 <div class="col-lg-5 col-md-5">
@@ -31,10 +31,13 @@
                             <h3>图床配置</h3>
                         {% endif %}
                         {% if step == "5" %}
+                            <h3>其他配置</h3>
+                        {% endif %}
+                        {% if step == "6" %}
                             <h3>恭喜您初始化完毕</h3>
                         {% endif %}
                     </div>
-                {% if step == "5" %}
+                {% if step == "6" %}
                     <ul>请牢记您的登录信息：
                     <li>用户名: {{ context.username }}</li>
                     <li>密码: 您设定的值</li>
@@ -154,6 +157,45 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="text-center">
+                                <a href="javascript:skip()" class="btn btn-white my-4">下一步</a>
+                                <button type="submit" class="btn btn-primary my-4">完成</button>
+                            </div>
+                        {% endif %}
+                    {% if step == "5" %}
+                            <hr class="my-4"/>
+                            <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">API密钥</label>
+                                            <input type="text" name="apikey" class="form-control"
+                                                   placeholder="请保管好您的密钥" value="{{ context.apikey }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">在线更新-Qexo仓库</label>
+                                            <input type="text" name="repo" class="form-control"
+                                                   placeholder="username/repo" value="{{ context.repo }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">在线更新-Github密钥</label>
+                                            <input type="text" name="token" class="form-control"
+                                                   placeholder="Qexo所在仓库账户的Token" value="{{ context.token }}">
+                                        </div>
+                                    </div>
+                                     <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">在线更新-项目分支</label>
+                                            <input type="text" name="branch" class="form-control"
+                                                   placeholder="master" value="{{ context.branch }}">
+                                        </div>
+                                    </div>
+                                </div>
                             <div class="text-center">
                                 <a href="javascript:skip()" class="btn btn-white my-4">跳过</a>
                                 <button type="submit" class="btn btn-primary my-4">完成</button>

@@ -49,7 +49,6 @@ def update_caches(name, content, _type="json"):
 
 def update_posts_cache(s=None, _path=""):
     repo = get_repo()
-
     if s:
         old_cache = Cache.objects.filter(name="posts")
         if old_cache.count():

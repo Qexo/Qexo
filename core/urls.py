@@ -1,7 +1,6 @@
 from hexoweb.views import *
 from django.urls import path, re_path
-from django.contrib.auth.views import LogoutView
-from django.contrib import admin
+# from django.contrib import admin
 from django.views.static import serve
 from django.conf import settings
 
@@ -15,6 +14,7 @@ urlpatterns = [
     path("init/", init_view, name="init"),
     path('', index, name='home'),
 
+    path('api/auth/', auth, name='auth'),
     path('api/save/', save, name='save'),
     path('api/save_post/', save_post, name='save_post'),
     path('api/save_draft/', save_draft, name='save_draft'),

@@ -1,11 +1,11 @@
-from hexoweb.functions import *
+from .functions import *
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 import random
 import requests
 from .models import ImageModel
 from django.shortcuts import render
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from core.settings import QEXO_VERSION
 from datetime import timezone, timedelta
@@ -13,6 +13,21 @@ from time import time
 
 
 # API
+def auth(request):
+    try:
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            login(request, user)
+            context = {"msg": "登录成功", "status": True}
+        else:
+            context = {"msg": "登录信息错误", "status": False}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
 @login_required(login_url="/login/")
 def set_github(request):
     try:
@@ -163,6 +178,7 @@ def save(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+@login_required(login_url="/login/")
 def save_post(request):
     repo = get_repo()
     context = dict(msg="Error!", status=False)
@@ -195,6 +211,7 @@ def save_post(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+@login_required(login_url="/login/")
 def save_draft(request):
     repo = get_repo()
     context = dict(msg="Error!", status=False)
@@ -435,4 +452,3 @@ def get_update(request):
     except:
         context["status"] = False
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
-

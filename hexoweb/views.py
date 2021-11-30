@@ -1,7 +1,6 @@
 # -*- encoding: utf-8 -*-
 from django.shortcuts import redirect
-from django.contrib.auth import login, logout
-from .forms import LoginForm
+from django.contrib.auth import logout
 from django import template
 from django.http import HttpResponse
 from django.template import loader
@@ -10,30 +9,17 @@ from .api import *
 
 
 def login_view(request):
-    form = LoginForm(request.POST or None)
-    msg = None
     try:
         if int(SettingModel.objects.get(name="INIT").content) <= 5:
             return redirect("/init/")
     except:
         return redirect("/init/")
-    if request.method == "POST":
-
-        if form.is_valid():
-            username = form.cleaned_data.get("username")
-            password = form.cleaned_data.get("password")
-            user = authenticate(username=username, password=password)
-            if user is not None:
-                login(request, user)
-                if request.GET.get("next"):
-                    return redirect(request.GET.get("next"))
-                return redirect("/")
-            else:
-                msg = '登录信息错误'
+    if request.user.is_authenticated:
+        if not request.GET.get("next"):
+            return redirect("/")
         else:
-            msg = '验证表单时出错'
-
-    return render(request, "accounts/login.html", {"form": form, "msg": msg})
+            return redirect(request.GET.get("next"))
+    return render(request, "accounts/login.html")
 
 
 def init_view(request):
@@ -391,29 +377,73 @@ def pages(request):
             context["search"] = search
         elif 'settings' in load_template:
             try:
-                context['GH_REPO_PATH'] = SettingModel.objects.get(name="GH_REPO_PATH").content
-                context['GH_REPO_BRANCH'] = SettingModel.objects.get(name="GH_REPO_BRANCH").content
-                context['GH_REPO'] = SettingModel.objects.get(name="GH_REPO").content
-                context['GH_TOKEN'] = SettingModel.objects.get(name="GH_TOKEN").content
-                token_len = len(context['GH_TOKEN'])
-                if token_len >= 5:
-                    context['GH_TOKEN'] = context['GH_TOKEN'][:3] + "*" * (token_len - 5) + \
-                                          context['GH_TOKEN'][-1]
-                context['IMG_CUSTOM_URL'] = SettingModel.objects.get(name='IMG_CUSTOM_URL').content
-                context['IMG_CUSTOM_HEADER'] = SettingModel.objects.get(
-                    name='IMG_CUSTOM_HEADER').content
-                context['IMG_CUSTOM_BODY'] = SettingModel.objects.get(
-                    name='IMG_CUSTOM_BODY').content
-                context['IMG_JSON_PATH'] = SettingModel.objects.get(name='IMG_JSON_PATH').content
-                context['IMG_POST'] = SettingModel.objects.get(name='IMG_POST').content
-                context['IMG_API'] = SettingModel.objects.get(name='IMG_API').content
-                context['UPDATE_REPO_BRANCH'] = SettingModel.objects.get(
-                    name="UPDATE_REPO_BRANCH").content
-                context['UPDATE_REPO'] = SettingModel.objects.get(name="UPDATE_REPO").content
-                context['UPDATE_TOKEN'] = SettingModel.objects.get(name="UPDATE_TOKEN").content
-                if len(context['UPDATE_TOKEN']) >= 5:
-                    context['UPDATE_TOKEN'] = context['UPDATE_TOKEN'][:3] + "*" * (token_len - 5) \
-                                              + context['UPDATE_TOKEN'][-1]
+                try:
+                    context['GH_REPO_PATH'] = SettingModel.objects.get(name="GH_REPO_PATH").content
+                except:
+                    save_setting('GH_REPO_PATH', '')
+                try:
+                    context['GH_REPO_BRANCH'] = SettingModel.objects.get(
+                        name="GH_REPO_BRANCH").content
+                except:
+                    save_setting('GH_REPO_BRANCH', '')
+                try:
+                    context['GH_REPO'] = SettingModel.objects.get(name="GH_REPO").content
+                except:
+                    save_setting('GH_REPO', '')
+                try:
+                    context['GH_TOKEN'] = SettingModel.objects.get(name="GH_TOKEN").content
+                    token_len = len(context['GH_TOKEN'])
+                    if token_len >= 5:
+                        context['GH_TOKEN'] = context['GH_TOKEN'][:3] + "*" * (token_len - 5) + \
+                                              context['GH_TOKEN'][-1]
+                except:
+                    save_setting('GH_TOKEN', '')
+                try:
+                    context['IMG_CUSTOM_URL'] = SettingModel.objects.get(
+                        name='IMG_CUSTOM_URL').content
+                except:
+                    save_setting('IMG_CUSTOM_URL', '')
+                try:
+                    context['IMG_CUSTOM_HEADER'] = SettingModel.objects.get(
+                        name='IMG_CUSTOM_HEADER').content
+                except:
+                    save_setting('IMG_CUSTOM_HEADER', '')
+                try:
+                    context['IMG_CUSTOM_BODY'] = SettingModel.objects.get(
+                        name='IMG_CUSTOM_BODY').content
+                except:
+                    save_setting('IMG_CUSTOM_BODY', '')
+                try:
+                    context['IMG_JSON_PATH'] = SettingModel.objects.get(
+                        name='IMG_JSON_PATH').content
+                except:
+                    save_setting('IMG_JSON_PATH', '')
+                try:
+                    context['IMG_POST'] = SettingModel.objects.get(name='IMG_POST').content
+                except:
+                    save_setting('IMG_POST', '')
+                try:
+                    context['IMG_API'] = SettingModel.objects.get(name='IMG_API').content
+                except:
+                    save_setting('IMG_API', '')
+                try:
+                    context['UPDATE_REPO_BRANCH'] = SettingModel.objects.get(
+                        name="UPDATE_REPO_BRANCH").content
+                except:
+                    save_setting('UPDATE_REPO_BRANCH', '')
+                try:
+                    context['UPDATE_REPO'] = SettingModel.objects.get(name="UPDATE_REPO").content
+                except:
+                    save_setting('UPDATE_REPO', '')
+                try:
+                    context['UPDATE_TOKEN'] = SettingModel.objects.get(name="UPDATE_TOKEN").content
+                    if len(context['UPDATE_TOKEN']) >= 5:
+                        context['UPDATE_TOKEN'] = context['UPDATE_TOKEN'][:3] + "*" * (
+                                token_len - 5) \
+                                                  + context['UPDATE_TOKEN'][-1]
+                except:
+                    save_setting('UPDATE_TOKEN', '')
+
                 user = github.Github(SettingModel.objects.get(name='GH_TOKEN').content)
                 latest = user.get_repo("am-abudu/Qexo").get_latest_release()
                 if latest.tag_name and (latest.tag_name != QEXO_VERSION):

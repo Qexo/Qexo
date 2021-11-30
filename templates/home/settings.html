@@ -474,15 +474,15 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        let notify = $.notify(res.msg, {type: "success", delay: 1000});
+                        $.notify(res.msg, {type: "success", delay: 1000});
                         setTimeout(location.reload(), 1000);
                     } else {
-                        let notify = $.notify(res.msg, {type: "warning"});
+                        $.notify(res.msg, {type: "warning"});
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    let notify = $.notify("网络错误！", {type: "warning"});
+                    $.notify("网络错误！", {type: "warning"});
                 }
             })
         }

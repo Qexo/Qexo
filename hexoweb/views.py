@@ -36,6 +36,14 @@ def init_view(request):
             step = "2"
         if request.POST.get("step") == "2":
             try:
+                apikey = request.POST.get("apikey")
+                if apikey:
+                    save_setting("WEBHOOK_APIKEY", apikey)
+                else:
+                    if not SettingModel.objects.filter(name="WEBHOOK_APIKEY").count():
+                        save_setting("WEBHOOK_APIKEY", ''.join(
+                            random.choice("qwertyuiopasdfghjklzxcvbnm1234567890") for x in
+                            range(12)))
                 username = request.POST.get("username")
                 password = request.POST.get("password")
                 repassword = request.POST.get("repassword")
@@ -44,16 +52,19 @@ def init_view(request):
                     context["username"] = username
                     context["password"] = password
                     context["repassword"] = repassword
+                    context["apikey"] = apikey
                 elif not password:
                     msg = "请输入正确的密码！"
                     context["username"] = username
                     context["password"] = password
                     context["repassword"] = repassword
+                    context["apikey"] = apikey
                 elif not username:
                     msg = "请输入正确的用户名！"
                     context["username"] = username
                     context["password"] = password
                     context["repassword"] = repassword
+                    context["apikey"] = apikey
                 else:
                     User.objects.create_superuser(username=username, password=password)
                     save_setting("INIT", "3")
@@ -115,16 +126,15 @@ def init_view(request):
                 context["header"] = custom_header
                 context["custom"] = custom_url
         if request.POST.get("step") == "5":
-
-            apikey = request.POST.get("apikey")
-            save_setting("WEBHOOK_APIKEY", apikey)
             update_repo = request.POST.get("repo")
             update_token = request.POST.get("token")
             update_branch = request.POST.get("branch")
+            origin_branch = request.POST.get("origin")
             if update_branch and update_token and update_repo:
                 try:
-                    github.Github(update_token).get_repo(update_repo).get_contents("",
-                                                                                   ref=update_branch)
+                    user = github.Github(update_token)
+                    user.get_repo(update_repo).get_contents("", ref=update_branch)
+                    user.get_repo("am-abudu/Qexo").get_contents("", ref=origin_branch)
                     save_setting("UPDATE_REPO", update_repo)
                     save_setting("UPDATE_TOKEN", update_token)
                     save_setting("UPDATE_REPO_BRANCH", update_branch)
@@ -132,14 +142,15 @@ def init_view(request):
                     step = "6"
                 except:
                     msg = "校验失败"
-                    context["apikey"] = apikey
                     context["repo"] = update_repo
                     context["token"] = update_token
                     context["branch"] = update_branch
+                    context["origin"] = origin_branch
             else:
                 save_setting("UPDATE_REPO", update_repo)
                 save_setting("UPDATE_TOKEN", update_token)
                 save_setting("UPDATE_REPO_BRANCH", update_branch)
+                save_setting("UPDATE_ORIGIN_BRANCH", origin_branch)
                 save_setting("INIT", "6")
                 step = "6"
         if step == "6":
@@ -189,7 +200,7 @@ def index(request):
     else:
         context["hasNew"] = False
     context["newer"] = latest.tag_name
-    context["newer_link"] = latest.zipball_url
+    context["newer_link"] = latest.html_url
     context["newer_time"] = latest.created_at.astimezone(timezone(timedelta(hours=16))).strftime(
         "%Y-%m-%d %H:%M:%S")
     context["newer_text"] = latest.body
@@ -436,6 +447,12 @@ def pages(request):
                 except:
                     save_setting('UPDATE_REPO', '')
                 try:
+                    context['UPDATE_ORIGIN_BRANCH'] = SettingModel.objects.get(
+                        name="UPDATE_ORIGIN_BRANCH").content
+                except:
+                    save_setting('UPDATE_ORIGIN_BRANCH', 'master')
+                    context['UPDATE_ORIGIN_BRANCH'] = "master"
+                try:
                     context['UPDATE_TOKEN'] = SettingModel.objects.get(name="UPDATE_TOKEN").content
                     if len(context['UPDATE_TOKEN']) >= 5:
                         context['UPDATE_TOKEN'] = context['UPDATE_TOKEN'][:3] + "*" * (
@@ -451,7 +468,7 @@ def pages(request):
                 else:
                     context["hasNew"] = False
                 context["newer"] = latest.tag_name
-                context["newer_link"] = latest.zipball_url
+                context["newer_link"] = latest.html_url
                 context["newer_time"] = latest.created_at.astimezone(
                     timezone(timedelta(hours=16))).strftime(
                     "%Y-%m-%d %H:%M:%S")

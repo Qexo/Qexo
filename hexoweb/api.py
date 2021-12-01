@@ -56,21 +56,12 @@ def set_github(request):
 
 
 @login_required(login_url="/login/")
-def set_others(request):
+def set_update(request):
     try:
-        apikey = request.POST.get("apikey")
-        if apikey:
-            save_setting("WEBHOOK_APIKEY", apikey)
         update_repo = request.POST.get("repo")
         update_token = request.POST.get("token")
         update_branch = request.POST.get("branch")
-        try:
-            if update_repo == SettingModel.objects.get(name="UPDATE_REPO") and \
-                    update_branch == SettingModel.objects.get(name="UPDATE_BRANCH"):
-                context = {"msg": "保存成功!", "status": True}
-                return render(request, 'layouts/json.html', {"data": json.dumps(context)})
-        except:
-            pass
+        origin_branch = request.POST.get("origin")
         if not update_token:
             try:
                 update_token = SettingModel.objects.get(name="UPDATE_TOKEN").content
@@ -78,13 +69,30 @@ def set_others(request):
                 context = {"msg": "校验失败!", "status": False}
                 return render(request, 'layouts/json.html', {"data": json.dumps(context)})
         try:
-            github.Github(update_token).get_repo(update_repo).get_contents("", ref=update_branch)
+            user = github.Github(update_token)
+            user.get_repo(update_repo).get_contents("", ref=update_branch)
+            user.get_repo("am-abudu/Qexo").get_contents("", ref=origin_branch)
         except:
             context = {"msg": "校验失败!", "status": False}
             return render(request, 'layouts/json.html', {"data": json.dumps(context)})
         save_setting("UPDATE_REPO", update_repo)
         save_setting("UPDATE_TOKEN", update_token)
         save_setting("UPDATE_REPO_BRANCH", update_branch)
+        save_setting("UPDATE_ORIGIN_BRANCH", origin_branch)
+        context = {"msg": "保存成功!", "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+@login_required(login_url="/login/")
+def set_api_key(request):
+    try:
+        apikey = request.POST.get("apikey")
+        if apikey:
+            save_setting("WEBHOOK_APIKEY", apikey)
+        else:
+            save_setting("WEBHOOK_APIKEY", ''.join(
+                random.choice("qwertyuiopasdfghjklzxcvbnm1234567890") for x in range(12)))
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
         context = {"msg": repr(e), "status": False}
@@ -147,10 +155,10 @@ def do_update(request):
     token = SettingModel.objects.get(name="UPDATE_TOKEN").content
     branch = SettingModel.objects.get(name="UPDATE_REPO_BRANCH").content
     repo = github.Github(token).get_repo(repo)
-    context = dict(msg="Error!", status=False)
+    origin_branch = SettingModel.objects.get(name="UPDATE_ORIGIN_BRANCH").content
     try:
         pull = repo.create_pull(title="Update from {}".format(QEXO_VERSION), body="auto update",
-                                head="am-abudu:master",
+                                head="am-abudu:"+origin_branch,
                                 base=branch, maintainer_can_modify=False)
         pull.merge()
         context = {"msg": "OK!", "status": True}
@@ -443,7 +451,7 @@ def get_update(request):
         else:
             context["hasNew"] = False
         context["newer"] = latest.tag_name
-        context["newer_link"] = latest.zipball_url
+        context["newer_link"] = latest.html_url
         context["newer_time"] = latest.created_at.astimezone(
             timezone(timedelta(hours=16))).strftime(
             "%Y-%m-%d %H:%M:%S")

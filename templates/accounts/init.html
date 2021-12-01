@@ -10,7 +10,7 @@
     <!-- Page content -->
     <div class="container mt--8 pb-5">
         <div class="row justify-content-center">
-            {% if step == "4" or step == "5" %}
+            {% if step == "4" or step == "5" or step == "2" %}
                 <div class="col-lg-8 col-md-5">
             {% else %}
                 <div class="col-lg-5 col-md-5">
@@ -31,19 +31,19 @@
                             <h3>图床配置</h3>
                         {% endif %}
                         {% if step == "5" %}
-                            <h3>其他配置</h3>
+                            <h3>更新配置</h3>
                         {% endif %}
                         {% if step == "6" %}
                             <h3>恭喜您初始化完毕</h3>
                         {% endif %}
                     </div>
-                {% if step == "6" %}
-                    <ul>请牢记您的登录信息：
-                    <li>用户名: {{ context.username }}</li>
-                    <li>密码: 您设定的值</li>
-                    <a class="btn btn-primary my-4 text-white" href="/">登录控制台</a>
-                    </ul>
-                {% endif %}
+                    {% if step == "6" %}
+                        <ul>请牢记您的登录信息：
+                            <li>用户名: {{ context.username }}</li>
+                            <li>密码: 您设定的值</li>
+                            <a class="btn btn-primary my-4 text-white" href="/">登录控制台</a>
+                        </ul>
+                    {% endif %}
                     <form method="POST">
                         {% if step == "1" %}
                             <div class="text-center">
@@ -55,21 +55,39 @@
                         {% csrf_token %}
                         {% if step == "2" %}
                             <hr class="my-4"/>
-                            <div class="form-group">
-                                <label class="form-control-label">用户名</label>
-                                <input type="text" name="username"
-                                       class="form-control" placeholder="设置用户名"
-                                       value="{{ context.username }}">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label class="form-control-label">API密钥</label>
+                                        <input type="text" name="apikey" class="form-control"
+                                               placeholder="留空即自动生成" value="{{ context.apikey }}">
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label class="form-control-label">用户名</label>
+                                        <input type="text" name="username"
+                                               class="form-control" placeholder="设置用户名"
+                                               value="{{ context.username }}">
+                                    </div>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label class="form-control-label">密码</label>
-                                <input type="text" name="password" class="form-control"
-                                       placeholder="设置密码" value="{{ context.password }}">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-control-label">重复密码</label>
-                                <input type="text" name="repassword" class="form-control"
-                                       placeholder="再次输入以确认密码" value="{{ context.repassword }}">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label class="form-control-label">密码</label>
+                                        <input type="text" name="password" class="form-control"
+                                               placeholder="设置密码" value="{{ context.password }}">
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label class="form-control-label">重复密码</label>
+                                        <input type="text" name="repassword" class="form-control"
+                                               placeholder="再次输入以确认密码"
+                                               value="{{ context.repassword }}">
+                                    </div>
+                                </div>
                             </div>
                             <div class="text-center">
                                 <button type="submit" class="btn btn-primary my-4">下一步</button>
@@ -162,40 +180,42 @@
                                 <button type="submit" class="btn btn-primary my-4">完成</button>
                             </div>
                         {% endif %}
-                    {% if step == "5" %}
+                        {% if step == "5" %}
                             <hr class="my-4"/>
                             <div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">API密钥</label>
-                                            <input type="text" name="apikey" class="form-control"
-                                                   placeholder="请保管好您的密钥" value="{{ context.apikey }}">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">在线更新-Qexo仓库</label>
-                                            <input type="text" name="repo" class="form-control"
-                                                   placeholder="username/repo" value="{{ context.repo }}">
-                                        </div>
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label class="form-control-label">在线更新-远程分支</label>
+                                        <input type="text" name="origin" class="form-control"
+                                               placeholder="master" value="{{ context.origin }}">
                                     </div>
                                 </div>
-                                <div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">在线更新-Github密钥</label>
-                                            <input type="text" name="token" class="form-control"
-                                                   placeholder="Qexo所在仓库账户的Token" value="{{ context.token }}">
-                                        </div>
-                                    </div>
-                                     <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">在线更新-项目分支</label>
-                                            <input type="text" name="branch" class="form-control"
-                                                   placeholder="master" value="{{ context.branch }}">
-                                        </div>
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label class="form-control-label">在线更新-Qexo仓库</label>
+                                        <input type="text" name="repo" class="form-control"
+                                               placeholder="username/repo"
+                                               value="{{ context.repo }}">
                                     </div>
                                 </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label class="form-control-label">在线更新-Github密钥</label>
+                                        <input type="text" name="token" class="form-control"
+                                               placeholder="Qexo所在仓库账户的Token"
+                                               value="{{ context.token }}">
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label class="form-control-label">在线更新-项目分支</label>
+                                        <input type="text" name="branch" class="form-control"
+                                               placeholder="master" value="{{ context.branch }}">
+                                    </div>
+                                </div>
+                            </div>
                             <div class="text-center">
                                 <a href="javascript:skip()" class="btn btn-white my-4">跳过</a>
                                 <button type="submit" class="btn btn-primary my-4">完成</button>
@@ -213,7 +233,7 @@
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
-    <script src="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@latest/static/assets/vendor/bootstrap/dist/js/bootstrap.min.js"></script>
+
     <script src="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@latest/static/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
     <script>
         {% if msg %}

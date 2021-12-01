@@ -163,7 +163,11 @@ def do_update(request):
         pull.merge()
         context = {"msg": "OK!", "status": True}
     except Exception as error:
-        context = {"msg": repr(error), "status": False}
+        try:
+            msg = json.loads(str(error)[4:])["errors"][0]["message"]
+        except:
+            msg = repr(error)
+        context = {"msg": msg, "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 

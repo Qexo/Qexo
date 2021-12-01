@@ -20,7 +20,7 @@ def auth(request):
         user = authenticate(username=username, password=password)
         if user is not None:
             login(request, user)
-            context = {"msg": "登录成功", "status": True}
+            context = {"msg": "登录成功，等待转跳", "status": True}
         else:
             context = {"msg": "登录信息错误", "status": False}
     except Exception as e:

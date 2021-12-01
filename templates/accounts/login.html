@@ -41,7 +41,7 @@
                                 </div>
                             </div>
                         </form>
-                        <div class="text-center">
+                        <div class="text-center" id="submit-button">
                             <button onclick="submit()" class="btn btn-primary my-4">登录</button>
                         </div>
                     </div>
@@ -138,25 +138,26 @@
                 $.notify("密码不能为空! ", {type: "warning", delay: 1000});
                 return false;
             }
-            let loading = new KZ_Loading('正在登录中...');
-            loading.show();
+            $("#submit-button").html("<button class=\"btn btn-white my-4\">······</button>");
             $.ajax({
                 url: '/api/auth/',
                 method: 'post',
                 data: $('#login-form').serialize(),
                 dataType: "json",
                 success: function (res) {
-                    loading.destroy();
                     if (res.status) {
                         $.notify(res.msg, {type: "success", delay: 1000});
                         setTimeout(window.location = get_direct_link(), 1000);
                     } else {
                         $.notify(res.msg, {type: "warning"});
+                        $("#submit-button").html("<button onclick=\"submit()\" class=\"btn " +
+                        "btn-primary my-4\">登录</button>");
                     }
                 },
                 error: function (res) {
-                    loading.destroy();
                     $.notify("网络错误！", {type: "warning"});
+                    $("#submit-button").html("<button onclick=\"submit()\" class=\"btn " +
+                        "btn-primary my-4\">登录</button>");
                 }
             })
         }

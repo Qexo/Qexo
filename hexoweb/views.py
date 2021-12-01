@@ -474,7 +474,7 @@ def pages(request):
                     "%Y-%m-%d %H:%M:%S")
                 context["newer_text"] = latest.body
                 context["version"] = QEXO_VERSION
-                if context["hasNew"] and context['UPDATE_REPO_BRANCH'] and context['UPDATE_REPO'] \
+                if context['UPDATE_REPO_BRANCH'] and context['UPDATE_REPO'] \
                         and context['UPDATE_TOKEN']:
                     context["showUpdate"] = True
             except Exception as e:

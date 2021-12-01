@@ -1,7 +1,6 @@
 from hexoweb.views import *
 from django.urls import path, re_path
-from django.contrib.auth.views import LogoutView
-from django.contrib import admin
+# from django.contrib import admin
 from django.views.static import serve
 from django.conf import settings
 
@@ -15,6 +14,7 @@ urlpatterns = [
     path("init/", init_view, name="init"),
     path('', index, name='home'),
 
+    path('api/auth/', auth, name='auth'),
     path('api/save/', save, name='save'),
     path('api/save_post/', save_post, name='save_post'),
     path('api/save_draft/', save_draft, name='save_draft'),
@@ -26,7 +26,8 @@ urlpatterns = [
     path('api/set_github/', set_github, name='set_github'),
     path('api/set_user/', set_user, name='set_user'),
     path('api/set_image_bed/', set_image_bed, name='set_image_bed'),
-    path('api/set_others/', set_others, name='set_others'),
+    path('api/set_update/', set_update, name='set_update'),
+    path('api/set_apikey/', set_api_key, name='set_apikey'),
     path('api/purge/', purge, name='purge'),
     path('api/webhook/', webhook, name='webhook'),
     path('api/create_webhook/', create_webhook_config, name='create_webhook'),

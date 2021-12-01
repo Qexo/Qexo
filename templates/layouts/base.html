@@ -26,9 +26,7 @@
     </title>
 
     <!-- Favicon - loaded as static -->
-    <link rel="icon"
-          href="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@latest/static/assets/img/brand/favicon.png"
-          type="image/png">
+    <link rel="shortcut icon" href="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@latest/static/assets/img/brand/favicon.ico">
     <!-- Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700">
     <!-- Icons -->
@@ -69,7 +67,8 @@
 
 <script src="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@latest/static/assets/js/argon.js?v=1.2.0"></script>
 <script>
-    {% if 'index' not in segment and 'settings' not in segment %}
+    {% if 'index' not in segment %}
+        {% if 'settings' not in segment %}
     $.ajax({
         url: "/api/get_update/",
         type: "get",
@@ -93,6 +92,7 @@
             }
         }
     })
+            {% endif %}
     {% endif %}
 
 </script>

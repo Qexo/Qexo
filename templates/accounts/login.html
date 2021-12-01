@@ -9,52 +9,163 @@
 
     <!-- Page content -->
     <div class="container mt--8 pb-5">
-      <div class="row justify-content-center">
-        <div class="col-lg-5 col-md-7">
-          <div class="card bg-secondary shadow border-0">
-            <div class="card-header bg-transparent pb-5">
-              <div class="text-muted text-center mt-3">
-                  <h1>Hexo 管理</h1>
-              </div>
-            </div>
-            <div class="card-body px-lg-5 py-lg-5">
-                {% if msg %}
-              <div class="text-center text-muted mb-4">
-                  <h4>{{ msg }}</h4>
-              </div>
-                {% endif %}
-
-              <form method="POST">
-
-                {% csrf_token %}
-
-                <div class="form-group mb-3">
-                  <div class="input-group input-group-alternative">
-                    <div class="input-group-prepend">
-                      <span class="input-group-text"><i class="ni ni-hat-3"></i></span>
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-7">
+                <div class="card bg-secondary shadow border-0">
+                    <div class="card-header bg-transparent">
+                        <div class="text-muted text-center mt-3">
+                            <h1>Hexo 管理</h1>
+                        </div>
                     </div>
-                    {{ form.username }}
-                  </div>
-                </div>
-                <div class="form-group">
-                  <div class="input-group input-group-alternative">
-                    <div class="input-group-prepend">
-                      <span class="input-group-text"><i class="ni ni-lock-circle-open"></i></span>
+                    <div class="card-body px-lg-5 py-lg-5">
+                        <form method="POST" id="login-form">
+                            {% csrf_token %}
+                            <div class="form-group mb-3">
+                                <div class="input-group input-group-alternative">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i
+                                                class="ni ni-hat-3"></i></span>
+                                    </div>
+                                    <input type="text" name="username" class="form-control"
+                                           placeholder="用户名">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="input-group input-group-alternative">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i
+                                                class="ni ni-lock-circle-open"></i></span>
+                                    </div>
+                                    <input type="password" name="password" class="form-control"
+                                           placeholder="密码">
+                                </div>
+                            </div>
+                        </form>
+                        <div class="text-center">
+                            <button onclick="submit()" class="btn btn-primary my-4">登录</button>
+                        </div>
                     </div>
-                    {{ form.password }}
-                  </div>
                 </div>
-                <div class="text-center">
-                  <button type="submit" class="btn btn-primary my-4">登录</button>
-                </div>
-              </form>
             </div>
-          </div>
         </div>
-      </div>
     </div>
 
 {% endblock content %}
 
-<!-- Specific JS goes HERE --> 
-{% block javascripts %}{% endblock javascripts %}
+<!-- Specific JS goes HERE -->
+{% block javascripts %}
+
+    <script src="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@latest/static/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
+    <script>
+        function KZ_Loading(config) {
+            if (this instanceof KZ_Loading) {
+                const domTemplate = '<div class="modal kz-loading" data-kzid="@@KZ_Loadin_ID@@" backdrop="static" keyboard="false"><div style="width: 200px;height:20px; z-index: 20000; position: absolute; text-align: center; left: 50%; top: 50%;margin-left:-100px;margin-top:-10px"><div class="progress progress-striped active" style="margin-bottom: 0;"><div class="progress-bar" style="width: 100%;"></div></div><h5>@@KZ_Loading_Text@@</h5></div></div>';
+                this.config = {
+                    content: 'loading...',
+                    time: 0,
+                };
+                if (config != null) {
+                    if (typeof config === 'string') {
+                        this.config = Object.assign(this.config, {
+                            content: config
+                        });
+                    } else if (typeof config === 'object') {
+                        this.config = Object.assign(this.config, config);
+                    }
+                }
+                this.id = new Date().getTime().toString();
+                this.state = 'hide';
+
+                /*显示 */
+                this.show = function () {
+                    $('.kz-loading[data-kzid=' + this.id + ']').modal({
+                        backdrop: 'static',
+                        keyboard: false
+                    });
+                    this.state = 'show';
+                    if (this.config.time > 0) {
+                        var that = this;
+                        setTimeout(function () {
+                            that.hide();
+                        }, this.config.time);
+                    }
+                };
+                /*隐藏 */
+                this.hide = function (callback) {
+                    $('.kz-loading[data-kzid=' + this.id + ']').modal('hide');
+                    this.state = 'hide';
+                    if (callback) {
+                        callback();
+                    }
+                };
+                /*销毁dom */
+                this.destroy = function () {
+                    var that = this;
+                    this.hide(function () {
+                        var node = $('.kz-loading[data-kzid=' + that.id + ']');
+                        node.next().remove();
+                        node.remove();
+                        that.show = function () {
+                            throw new Error('对象已销毁！');
+                        };
+                        that.hide = function () {
+                        };
+                        that.destroy = function () {
+                        };
+                    });
+                }
+
+                var domHtml = domTemplate.replace('@@KZ_Loadin_ID@@', this.id).replace('@@KZ_Loading_Text@@', this.config.content);
+                $('body').append(domHtml);
+            } else {
+                return new KZ_Loading(config);
+            }
+        }
+
+        function get_direct_link() {
+            let reg = new RegExp("(^|&)next=([^&]*)(&|$)");
+            let r = window.location.search.substr(1).match(reg);
+            if (r != null) return decodeURI(r[2]);
+            return "/";
+        }
+
+        function submit() {
+            if (!($("input[name='username']").val())) {
+                $.notify("用户名不能为空! ", {type: "warning", delay: 1000});
+                return false;
+            }
+            if (!($("input[name='password']").val())) {
+                $.notify("密码不能为空! ", {type: "warning", delay: 1000});
+                return false;
+            }
+            let loading = new KZ_Loading('正在登录中...');
+            loading.show();
+            $.ajax({
+                url: '/api/auth/',
+                method: 'post',
+                data: $('#login-form').serialize(),
+                dataType: "json",
+                success: function (res) {
+                    loading.destroy();
+                    if (res.status) {
+                        $.notify(res.msg, {type: "success", delay: 1000});
+                        setTimeout(window.location = get_direct_link(), 1000);
+                    } else {
+                        $.notify(res.msg, {type: "warning"});
+                    }
+                },
+                error: function (res) {
+                    loading.destroy();
+                    $.notify("网络错误！", {type: "warning"});
+                }
+            })
+        }
+
+        document.onkeydown = function (e) {
+            if (!e) e = window.event;
+            if ((e.keyCode || e.which) == 13) {
+                submit();
+            }
+        }
+    </script>
+{% endblock javascripts %}

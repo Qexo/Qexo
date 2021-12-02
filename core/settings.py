@@ -30,7 +30,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'qexo.apps.ConsoleConfig',
+    'hexoweb.apps.ConsoleConfig',
 ]
 
 MIDDLEWARE = [

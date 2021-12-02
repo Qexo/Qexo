@@ -3,7 +3,7 @@
 venv
 __pycache__
 core/__pycache__
-qexo/__pycache__
-qexo/migrations
+hexoweb/__pycache__
+hexoweb/migrations
 staticfiles_build
 

@@ -1,4 +1,4 @@
-from qexo.views import *
+from hexoweb.views import *
 from django.urls import path, re_path
 # from django.contrib import admin
 from django.views.static import serve

@@ -2,7 +2,7 @@ from pathlib import Path
 import os
 import json
 
-QEXO_VERSION = "1.4.1"
+QEXO_VERSION = "1.4.2"
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

@@ -61,7 +61,7 @@
                                         <div class="form-group">
                                             <label class="form-control-label">API密钥</label>
                                             <input type="text" name="apikey" class="form-control"
-                                                   placeholder="请保管好您的密钥">
+                                                   placeholder="留空将自动生成">
                                         </div>
                                     </div>
                                 </div>
@@ -344,7 +344,7 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        确定要提交自动更新吗？这会创建一个新的 Pull request 尝试合并最新的 master 分支
+                        确定要提交自动更新吗？这会创建一个新的 Pull request 尝试合并最新的分支
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">取消
@@ -388,7 +388,7 @@
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
-    <script src="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@latest/static/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@master/static/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
     <script>
         {% if error %}
             $.notify("{{ error }}", {type: "warning"});

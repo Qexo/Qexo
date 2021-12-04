@@ -20,7 +20,7 @@ def auth(request):
         user = authenticate(username=username, password=password)
         if user is not None:
             login(request, user)
-            context = {"msg": "登录成功", "status": True}
+            context = {"msg": "登录成功，等待转跳", "status": True}
         else:
             context = {"msg": "登录信息错误", "status": False}
     except Exception as e:
@@ -163,7 +163,11 @@ def do_update(request):
         pull.merge()
         context = {"msg": "OK!", "status": True}
     except Exception as error:
-        context = {"msg": repr(error), "status": False}
+        try:
+            msg = json.loads(str(error)[4:])["errors"][0]["message"]
+        except:
+            msg = repr(error)
+        context = {"msg": msg, "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 

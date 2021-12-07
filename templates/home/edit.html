@@ -144,7 +144,7 @@
         }
 
         function SaveDraft() {
-            var loading = new KZ_Loading('正在保存中...');
+            var loading = new KZ_Loading('草稿保存中...');
             loading.show();
             $.ajax({
                 url: '/api/save_draft/',
@@ -154,7 +154,7 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        var notify = $.notify('保存成功！', {type: "success", delay: 1000});
+                        var notify = $.notify('草稿保存成功！', {type: "success", delay: 1000});
                     } else {
                         var notify = $.notify(res.msg, {type: "warning", delay: 1000});
                     }

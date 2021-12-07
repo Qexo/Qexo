@@ -33,6 +33,36 @@ def get_post(post):
                                        branch).decoded_content.decode("utf8")
 
 
+# 获取用户自定义的样式配置
+def get_custom_config():
+    context = dict()
+    try:
+        context["QEXO_NAME"] = SettingModel.objects.get(name="QEXO_NAME").content
+    except:
+        save_setting('QEXO_NAME', 'Hexo管理面板')
+        context["QEXO_NAME"] = SettingModel.objects.get(name="QEXO_NAME").content
+    try:
+        context["QEXO_SPLIT"] = SettingModel.objects.get(name="QEXO_SPLIT").content
+    except:
+        save_setting('QEXO_SPLIT', ' - ')
+        context["QEXO_SPLIT"] = SettingModel.objects.get(name="QEXO_SPLIT").content
+    try:
+        context["QEXO_LOGO"] = SettingModel.objects.get(name="QEXO_LOGO").content
+    except:
+        save_setting('QEXO_LOGO',
+                     'https://cdn.jsdelivr.net/gh/am-abudu/Qexo@master/static/assets' +
+                     '/img/brand/qexo.png')
+        context["QEXO_LOGO"] = SettingModel.objects.get(name="QEXO_LOGO").content
+    try:
+        context["QEXO_ICON"] = SettingModel.objects.get(name="QEXO_ICON").content
+    except:
+        save_setting('QEXO_ICON',
+                     'https://cdn.jsdelivr.net/gh/am-abudu/Qexo@master/static/assets' +
+                     '/img/brand/favicon.ico')
+        context["QEXO_ICON"] = SettingModel.objects.get(name="QEXO_ICON").content
+    return context
+
+
 # 更新缓存
 def update_caches(name, content, _type="json"):
     caches = Cache.objects.filter(name=name)

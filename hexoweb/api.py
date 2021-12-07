@@ -119,6 +119,22 @@ def set_image_bed(request):
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
+@login_required(login_url="/login/")
+def set_cust(request):
+    try:
+        site_name = request.POST.get("name")
+        split_word = request.POST.get("split")
+        logo = request.POST.get("logo")
+        icon = request.POST.get("icon")
+        save_setting("QEXO_NAME", site_name)
+        save_setting("QEXO_SPLIT", split_word)
+        save_setting("QEXO_LOGO", logo)
+        save_setting("QEXO_ICON", icon)
+        context = {"msg": "保存成功!", "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
 
 @login_required(login_url="/login/")
 def set_user(request):

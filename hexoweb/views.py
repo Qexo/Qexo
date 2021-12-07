@@ -19,12 +19,13 @@ def login_view(request):
             return redirect("/")
         else:
             return redirect(request.GET.get("next"))
-    return render(request, "accounts/login.html")
+    return render(request, "accounts/login.html", get_custom_config())
 
 
 def init_view(request):
     msg = None
     context = dict()
+    context.update(get_custom_config())
     try:
         step = SettingModel.objects.get(name="INIT").content
     except:
@@ -175,6 +176,7 @@ def index(request):
     except:
         return redirect("/init/")
     context = {'segment': 'index'}
+    context.update(get_custom_config())
     cache = Cache.objects.filter(name="posts")
     if cache.count():
         posts = json.loads(cache.first().content)
@@ -222,6 +224,7 @@ def pages(request):
     # All resource paths end in .html.
     # Pick out the html file name from the url. And load that template.
     try:
+        context.update(get_custom_config())
         load_template = request.path.split('/')[-1]
         context['segment'] = load_template
         if "index" in load_template:

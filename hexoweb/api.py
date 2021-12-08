@@ -120,6 +120,18 @@ def set_image_bed(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 @login_required(login_url="/login/")
+def set_advanced(request):
+    try:
+        keys = request.POST.keys()
+        for setting in keys:
+            if setting != "csrfmiddlewaretoken":
+                save_setting(setting, request.POST[setting])
+        context = {"msg": "保存成功!", "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+@login_required(login_url="/login/")
 def set_cust(request):
     try:
         site_name = request.POST.get("name")
@@ -341,7 +353,7 @@ def delete_img(request):
     if request.method == "POST":
         image_date = request.POST.get('image')
         try:
-            image = ImageModel.objects.get(date=image_date)
+            image = ImageModel.objects.filter(date=image_date)
             image.delete()
             context = {"msg": "删除成功！", "status": True}
         except Exception as error:

@@ -482,6 +482,11 @@ def pages(request):
                     context["showUpdate"] = True
             except Exception as e:
                 context["error"] = repr(e)
+        elif 'advanced' in load_template:
+            all_settings = SettingModel.objects.all()
+            context["settings"] = list()
+            for setting in all_settings:
+                context["settings"].append({"name": setting.name, "content": setting.content})
         html_template = loader.get_template('home/' + load_template)
         return HttpResponse(html_template.render(context, request))
 

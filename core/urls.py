@@ -29,6 +29,7 @@ urlpatterns = [
     path('api/set_update/', set_update, name='set_update'),
     path('api/set_apikey/', set_api_key, name='set_apikey'),
     path('api/set_cust/', set_cust, name='set_cust'),
+    path('api/set_advanced/', set_advanced, name='set_advanced'),
     path('api/purge/', purge, name='purge'),
     path('api/webhook/', webhook, name='webhook'),
     path('api/create_webhook/', create_webhook_config, name='create_webhook'),

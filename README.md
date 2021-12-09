@@ -31,6 +31,7 @@
 | MONGODB_USER | MongoDB 用户名 | abudu |
 | MONGODB_DB | MongoDB 数据库名 | Cluster0 |
 | MONGODB_PASS | MongoDB 密码 | JWo0xxxxxxxx |
+
 点击 Deploy 开始部署，若没有 Error 信息即可打开域名进入初始化引导
 ## 鸣谢
 - [Ace](https://ace.c9.io/)

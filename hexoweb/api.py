@@ -84,6 +84,7 @@ def set_update(request):
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
+
 @login_required(login_url="/login/")
 def set_api_key(request):
     try:
@@ -119,17 +120,121 @@ def set_image_bed(request):
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
+
 @login_required(login_url="/login/")
 def set_advanced(request):
     try:
-        keys = request.POST.keys()
-        for setting in keys:
-            if setting != "csrfmiddlewaretoken":
-                save_setting(setting, request.POST[setting])
+        save_setting(request.POST.get("name"), request.POST.get("content"))
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+@login_required(login_url="/login/")
+def del_value(request):
+    try:
+        SettingModel.objects.filter(name=request.POST.get("name"), content=request.POST.get(
+            "content")).delete()
+        context = {"msg": "删除成功!", "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+@login_required(login_url="/login/")
+def new_value(request):
+    try:
+        save_setting(request.POST.get("name"), request.POST.get("content"))
+        context = {"msg": "保存成功!", "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+@login_required(login_url="/login/")
+def auto_fix(request):
+    try:
+        counter = 0
+        already = list()
+        settings = SettingModel.objects.all()
+        for query in settings:
+            if query.name not in already:
+                already.append(query.name)
+            else:
+                query.delete()
+                counter += 1
+        try:
+            SettingModel.objects.get(name="GH_REPO_PATH").content
+        except:
+            save_setting('GH_REPO_PATH', '')
+            counter += 1
+        try:
+            SettingModel.objects.get(name="GH_REPO_BRANCH").content
+        except:
+            save_setting('GH_REPO_BRANCH', '')
+            counter += 1
+        try:
+            SettingModel.objects.get(name="GH_REPO").content
+        except:
+            save_setting('GH_REPO', '')
+            counter += 1
+        try:
+            SettingModel.objects.get(name="GH_TOKEN").content
+        except:
+            save_setting('GH_TOKEN', '')
+            counter += 1
+        try:
+            SettingModel.objects.get(name='IMG_CUSTOM_URL').content
+        except:
+            save_setting('IMG_CUSTOM_URL', '')
+            counter += 1
+        try:
+            SettingModel.objects.get(name='IMG_CUSTOM_HEADER').content
+        except:
+            save_setting('IMG_CUSTOM_HEADER', '')
+            counter += 1
+        try:
+            SettingModel.objects.get(name='IMG_CUSTOM_BODY').content
+        except:
+            save_setting('IMG_CUSTOM_BODY', '')
+            counter += 1
+        try:
+            SettingModel.objects.get(name='IMG_JSON_PATH').content
+        except:
+            save_setting('IMG_JSON_PATH', '')
+            counter += 1
+        try:
+            SettingModel.objects.get(name='IMG_POST').content
+        except:
+            save_setting('IMG_POST', '')
+            counter += 1
+        try:
+            SettingModel.objects.get(name='IMG_API').content
+        except:
+            save_setting('IMG_API', '')
+            counter += 1
+        try:
+            SettingModel.objects.get(name="UPDATE_REPO_BRANCH").content
+        except:
+            save_setting('UPDATE_REPO_BRANCH', '')
+            counter += 1
+        try:
+            SettingModel.objects.get(name="UPDATE_REPO").content
+        except:
+            save_setting('UPDATE_REPO', '')
+            counter += 1
+        try:
+            SettingModel.objects.get(name="UPDATE_ORIGIN_BRANCH").content
+        except:
+            save_setting('UPDATE_ORIGIN_BRANCH', 'master')
+            counter += 1
+        msg = "尝试自动修复了{}个字段，请在稍后检查和修改配置".format(counter)
+        context = {"msg": msg, "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
 
 @login_required(login_url="/login/")
 def set_cust(request):
@@ -186,7 +291,7 @@ def do_update(request):
     origin_branch = SettingModel.objects.get(name="UPDATE_ORIGIN_BRANCH").content
     try:
         pull = repo.create_pull(title="Update from {}".format(QEXO_VERSION), body="auto update",
-                                head="am-abudu:"+origin_branch,
+                                head="am-abudu:" + origin_branch,
                                 base=branch, maintainer_can_modify=False)
         pull.merge()
         context = {"msg": "OK!", "status": True}

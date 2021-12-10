@@ -483,10 +483,16 @@ def pages(request):
             except Exception as e:
                 context["error"] = repr(e)
         elif 'advanced' in load_template:
-            all_settings = SettingModel.objects.all()
-            context["settings"] = list()
-            for setting in all_settings:
-                context["settings"].append({"name": setting.name, "content": setting.content})
+            try:
+                all_settings = SettingModel.objects.all()
+                context["settings"] = list()
+                for setting in all_settings:
+                    context["settings"].append({"name": setting.name, "content": setting.content})
+                context["settings"].sort(key=lambda elem: elem["name"])  # 按字段名升序排序
+                context["settings_number"] = len(context["settings"])
+                context["page_number"] = context["settings_number"] // 15 + 1
+            except Exception as e:
+                context["error"] = repr(e)
         html_template = loader.get_template('home/' + load_template)
         return HttpResponse(html_template.render(context, request))
 

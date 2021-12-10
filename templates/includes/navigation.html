@@ -60,7 +60,7 @@
                     <a class="nav-link" href="#" role="button" data-toggle="dropdown"
                        aria-haspopup="true" aria-expanded="false">
                         <i class="ni ni-bell-55">
-                            {% if 'index' not in segment and 'settings' not in segment %}
+                            {% if 'index' not in segment %}
                                 <div class="update-point"
                                      style=""></div>
                             {% else %}
@@ -85,28 +85,17 @@
                                             <div>
                                                 <h4 class="mb-0 text-sm">更新</h4>
                                             </div>
-                                            {% if 'index' not in segment %}
-                                                <div class="text-right text-muted" id="update-time">
-                                                    <small></small>
-                                                </div>
-                                            {% else %}
+                                            {% if 'index' in segment %}
                                                 <div class="text-right text-muted">
                                                     <small>{{ newer_time }}</small>
+                                                </div>
+                                            {% else %}
+                                                <div class="text-right text-muted" id="update-time">
+                                                    <small></small>
                                                 </div>
                                             {% endif %}
                                         </div>
                                         {% if 'index' in segment %}
-                                            {% if hasNew %}
-                                                <p class="text-sm mb-0">有新版本: <a
-                                                        href="{{ newer_link }}"
-                                                        target="_blank">
-                                                    {{ newer }}</a><br>
-                                                    {{ newer_text }}
-                                                </p>
-                                            {% else %}
-                                                <p class="text-sm mb-0">当前是最新版本哟~</p>
-                                            {% endif %}
-                                        {% elif 'settings' in segment %}
                                             {% if hasNew %}
                                                 <p class="text-sm mb-0">有新版本: <a
                                                         href="{{ newer_link }}"

@@ -463,20 +463,6 @@ def pages(request):
                                                   + context['UPDATE_TOKEN'][-1]
                 except:
                     save_setting('UPDATE_TOKEN', '')
-
-                user = github.Github(SettingModel.objects.get(name='GH_TOKEN').content)
-                latest = user.get_repo("am-abudu/Qexo").get_latest_release()
-                if latest.tag_name and (latest.tag_name != QEXO_VERSION):
-                    context["hasNew"] = True
-                else:
-                    context["hasNew"] = False
-                context["newer"] = latest.tag_name
-                context["newer_link"] = latest.html_url
-                context["newer_time"] = latest.created_at.astimezone(
-                    timezone(timedelta(hours=16))).strftime(
-                    "%Y-%m-%d %H:%M:%S")
-                context["newer_text"] = latest.body
-                context["version"] = QEXO_VERSION
                 if context['UPDATE_REPO_BRANCH'] and context['UPDATE_REPO'] \
                         and context['UPDATE_TOKEN']:
                     context["showUpdate"] = True

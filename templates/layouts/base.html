@@ -68,7 +68,6 @@
 <script src="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@master/static/assets/js/argon.js?v=1.2.0"></script>
 <script>
     {% if 'index' not in segment %}
-        {% if 'settings' not in segment %}
     $.ajax({
         url: "/api/get_update/",
         type: "get",
@@ -92,7 +91,6 @@
             }
         }
     })
-            {% endif %}
     {% endif %}
 
 </script>

@@ -297,7 +297,7 @@
                                             <label class="form-control-label">站点名称</label>
                                             <input type="text" name="name" class="form-control"
                                                    placeholder="默认为 Hexo管理面板"
-                                                    value="{{ QEXO_NAME }}">
+                                                   value="{{ QEXO_NAME }}">
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
@@ -305,7 +305,7 @@
                                             <label class="form-control-label">站点连接符</label>
                                             <input type="text" name="split" class="form-control"
                                                    placeholder="默认为“ - ”"
-                                                    value="{{ QEXO_SPLIT }}">
+                                                   value="{{ QEXO_SPLIT }}">
                                         </div>
                                     </div>
                                 </div>
@@ -316,7 +316,7 @@
                                             <input type="text" name="logo"
                                                    class="form-control"
                                                    placeholder="默认为 brand 下的 Qexo.png"
-                                                    value="{{ QEXO_LOGO }}">
+                                                   value="{{ QEXO_LOGO }}">
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
@@ -333,6 +333,8 @@
                                     <div class="col-lg-6">
                                         <input type="button" class="btn btn-primary" value="提交"
                                                onclick="submit_cust_config()">
+                                        <input type="button" class="btn btn-white" value="重置"
+                                               onclick="query_reset_cust()">
                                     </div>
                                 </div>
                             </div>
@@ -429,6 +431,31 @@
                         </button>
                         <button type="button" class="btn btn-primary" data-dismiss="modal"
                                 onclick="set_apikey()">确定
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="queryResetCust" tabindex="-1"
+             aria-labelledby="queryResetCustLabel"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="queryResetCustLabel">提示</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        确定要重置自定义配置吗？该操作不可回退
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消
+                        </button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal"
+                                onclick="reset_cust_config()">确定
                         </button>
                     </div>
                 </div>
@@ -627,6 +654,10 @@
             $("#queryApikey").modal("show");
         }
 
+        function query_reset_cust() {
+            $("#queryResetCust").modal("show");
+        }
+
         function purge() {
             let loading = new KZ_Loading('正在清除中...');
             loading.show();
@@ -704,6 +735,35 @@
                 url: '/api/set_cust/',
                 method: 'post',
                 data: $('#cust-settings').serialize(),
+                dataType: "json",
+                success: function (res) {
+                    loading.destroy();
+                    if (res.status) {
+                        $.notify(res.msg, {type: "success", delay: 1000});
+                    } else {
+                        $.notify(res.msg, {type: "warning"});
+                    }
+                },
+                error: function (res) {
+                    loading.destroy();
+                    $.notify("网络错误！", {type: "warning"});
+                }
+            })
+        }
+
+        function reset_cust_config() {
+            let loading = new KZ_Loading('正在保存中...');
+            loading.show();
+            $.ajax({
+                url: '/api/set_cust/',
+                method: 'post',
+                data: {
+                    csrfmiddlewaretoken: '{{ csrf_token }}', 'logo': 'https://cdn.jsdelivr' +
+                        '.net/gh/am-abudu/Qexo@master/static/assets/img/brand/qexo.png', 'icon':
+                        'https://cdn.jsdelivr' +
+                        '.net/gh/am-abudu/Qexo@master/static/assets/img/brand/favicon.ico',
+                    'name': 'Hexo管理面板', 'split': ' - '
+                },
                 dataType: "json",
                 success: function (res) {
                     loading.destroy();

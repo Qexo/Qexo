@@ -41,3 +41,6 @@ urlpatterns = [
 
     re_path(r'^(?!api).*$\.*', pages, name='pages'),
 ]
+
+handler404 = page_404
+handler500 = page_500

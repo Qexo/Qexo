@@ -8,6 +8,14 @@ from time import strftime, localtime
 from .api import *
 
 
+def page_404(request, exception):
+    return render(request, 'home/page-404.html')
+
+
+def page_500(request):
+    return render(request, 'home/page-500.html', {"error": "程序遇到了错误！"})
+
+
 def login_view(request):
     try:
         if int(SettingModel.objects.get(name="INIT").content) <= 5:

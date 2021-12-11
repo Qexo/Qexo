@@ -9,6 +9,8 @@
 - 较为完善的缓存功能
 - Webhook 清除缓存
 - 自动检查更新
+- 实验性的在线更新
+- 自动填充date模板
 
 ## 如何部署
 ### 申请 MongoDB 
@@ -19,8 +21,8 @@
 打开 [项目主页](https://github.com/am-abudu/Qexo) 点击 Fork 将项目复刻到您的账户下
 ### 创建 Vercel 项目
 打开 [Vercel](https://vercel.com) 注册账号并绑定 Github 新建一个项目并绑定 Fork 的仓库
-### 配置环境变量
-打开项目主页 Settings -> Environment Variables 添加环境变量
+### 部署
+在项目部署界面添加环境变量 Environment Variables
 | 名称 | 意义 | 示例 |
 | --- | --- | --- |
 | DOMAINS | 你所允许通信的安全域名 注意双引号 | [".vercel.app", "127.0.0.1", ".yoursite.com"] |
@@ -29,9 +31,8 @@
 | MONGODB_USER | MongoDB 用户名 | abudu |
 | MONGODB_DB | MongoDB 数据库名 | Cluster0 |
 | MONGODB_PASS | MongoDB 密码 | JWo0xxxxxxxx |
-### 部署
-打开项目主页 Deployments -> 最近的一条部署 -> ⁞ -> Redeploy
 
+点击 Deploy 开始部署，若没有 Error 信息即可打开域名进入初始化引导
 ## 鸣谢
 - [Ace](https://ace.c9.io/)
 - [Argon-Dashboard-Django](https://github.com/creativetimofficial/argon-dashboard-django)

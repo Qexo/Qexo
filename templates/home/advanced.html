@@ -315,7 +315,7 @@
             loading.show();
             let content = $("#edit-content").val();
             $.ajax({
-                url: '/api/set_advanced/',
+                url: '/api/set_value/',
                 method: 'post',
                 data: {"name": name, "content": content},
                 dataType: "json",

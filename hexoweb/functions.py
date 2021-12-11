@@ -298,3 +298,13 @@ def save_setting(name, content):
         new_set.content = ""
     new_set.save()
     return new_set
+
+
+def check_if_api_auth(request):
+    if request.user.is_authenticated:
+        return True
+    if request.POST.get("token") == SettingModel.objects.get(name="APIKEY"):
+        return True
+    if request.GET.get("token") == SettingModel.objects.get(name="APIKEY"):
+        return True
+    return False

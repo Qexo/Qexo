@@ -12,7 +12,7 @@ from datetime import timezone, timedelta
 from time import time
 
 
-# API
+# 登录验证 API api/auth
 def auth(request):
     try:
         username = request.POST.get("username")
@@ -28,6 +28,7 @@ def auth(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 设置 Github 配置 api/set_github
 @login_required(login_url="/login/")
 def set_github(request):
     try:
@@ -55,6 +56,7 @@ def set_github(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 设置自动更新配置 api/set_update
 @login_required(login_url="/login/")
 def set_update(request):
     try:
@@ -85,6 +87,7 @@ def set_update(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 设置APIKEY api/set_apikey
 @login_required(login_url="/login/")
 def set_api_key(request):
     try:
@@ -100,6 +103,7 @@ def set_api_key(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 设置图床配置 api/set_image_bed
 @login_required(login_url="/login/")
 def set_image_bed(request):
     try:
@@ -121,8 +125,57 @@ def set_image_bed(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 设置自定义配置 api/set_cust
 @login_required(login_url="/login/")
-def set_advanced(request):
+def set_cust(request):
+    try:
+        site_name = request.POST.get("name")
+        split_word = request.POST.get("split")
+        logo = request.POST.get("logo")
+        icon = request.POST.get("icon")
+        save_setting("QEXO_NAME", site_name)
+        save_setting("QEXO_SPLIT", split_word)
+        save_setting("QEXO_LOGO", logo)
+        save_setting("QEXO_ICON", icon)
+        context = {"msg": "保存成功!", "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 设置用户信息 api/set_user
+@login_required(login_url="/login/")
+def set_user(request):
+    try:
+        password = request.POST.get("password")
+        username = request.POST.get("username")
+        newpassword = request.POST.get("newpassword")
+        repassword = request.POST.get("repassword")
+        user = authenticate(username=request.user.username, password=password)
+        if user is not None:
+            if repassword != newpassword:
+                context = {"msg": "两次密码不一致!", "status": False}
+                return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+            if not newpassword:
+                context = {"msg": "请输入正确的密码！", "status": False}
+                return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+            if not username:
+                context = {"msg": "请输入正确的用户名！", "status": False}
+                return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+            u = User.objects.get(username__exact=request.user.username)
+            u.delete()
+            User.objects.create_superuser(username=username, password=newpassword)
+            context = {"msg": "保存成功！请重新登录", "status": True}
+        else:
+            context = {"msg": "原密码错误!", "status": False}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 设置 SettingsModel 的字段 api/set_value
+@login_required(login_url="/login/")
+def set_value(request):
     try:
         save_setting(request.POST.get("name"), request.POST.get("content"))
         context = {"msg": "保存成功!", "status": True}
@@ -131,6 +184,7 @@ def set_advanced(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 设置 SettingsModel 的字段 api/del_value
 @login_required(login_url="/login/")
 def del_value(request):
     try:
@@ -142,6 +196,7 @@ def del_value(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 新建 SettingsModel 的字段 api/new_value
 @login_required(login_url="/login/")
 def new_value(request):
     try:
@@ -152,6 +207,7 @@ def new_value(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 自动修复程序 api/fix
 @login_required(login_url="/login/")
 def auto_fix(request):
     try:
@@ -236,52 +292,7 @@ def auto_fix(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
-@login_required(login_url="/login/")
-def set_cust(request):
-    try:
-        site_name = request.POST.get("name")
-        split_word = request.POST.get("split")
-        logo = request.POST.get("logo")
-        icon = request.POST.get("icon")
-        save_setting("QEXO_NAME", site_name)
-        save_setting("QEXO_SPLIT", split_word)
-        save_setting("QEXO_LOGO", logo)
-        save_setting("QEXO_ICON", icon)
-        context = {"msg": "保存成功!", "status": True}
-    except Exception as e:
-        context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
-
-
-@login_required(login_url="/login/")
-def set_user(request):
-    try:
-        password = request.POST.get("password")
-        username = request.POST.get("username")
-        newpassword = request.POST.get("newpassword")
-        repassword = request.POST.get("repassword")
-        user = authenticate(username=request.user.username, password=password)
-        if user is not None:
-            if repassword != newpassword:
-                context = {"msg": "两次密码不一致!", "status": False}
-                return render(request, 'layouts/json.html', {"data": json.dumps(context)})
-            if not newpassword:
-                context = {"msg": "请输入正确的密码！", "status": False}
-                return render(request, 'layouts/json.html', {"data": json.dumps(context)})
-            if not username:
-                context = {"msg": "请输入正确的用户名！", "status": False}
-                return render(request, 'layouts/json.html', {"data": json.dumps(context)})
-            u = User.objects.get(username__exact=request.user.username)
-            u.delete()
-            User.objects.create_superuser(username=username, password=newpassword)
-            context = {"msg": "保存成功！请重新登录", "status": True}
-        else:
-            context = {"msg": "原密码错误!", "status": False}
-    except Exception as e:
-        context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
-
-
+# 执行更新 api/do_update
 @login_required(login_url="/login/")
 def do_update(request):
     repo = SettingModel.objects.get(name="UPDATE_REPO").content
@@ -304,6 +315,7 @@ def do_update(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 保存内容 api/save
 @login_required(login_url="/login/")
 def save(request):
     repo = get_repo()
@@ -323,6 +335,7 @@ def save(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 保存文章 api/save_post
 @login_required(login_url="/login/")
 def save_post(request):
     repo = get_repo()
@@ -356,6 +369,7 @@ def save_post(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 保存草稿 api/save_draft
 @login_required(login_url="/login/")
 def save_draft(request):
     repo = get_repo()
@@ -381,6 +395,7 @@ def save_draft(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 新建内容 api/new
 @login_required(login_url="/login/")
 def new(request):
     repo = get_repo()
@@ -398,6 +413,7 @@ def new(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 删除内容 api/delete
 @login_required(login_url="/login/")
 def delete(request):
     repo = get_repo()
@@ -425,6 +441,7 @@ def delete(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 删除文章 api/delete_post
 @login_required(login_url="/login/")
 def delete_post(request):
     repo = get_repo()
@@ -452,6 +469,7 @@ def delete_post(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 删除图片记录 api/delete_img
 @login_required(login_url="/login/")
 def delete_img(request):
     context = dict(msg="Error!", status=False)
@@ -466,9 +484,9 @@ def delete_img(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 清除缓存 api/purge
 @login_required(login_url="/login/")
 def purge(request):
-    context = dict(msg="Error!", status=False)
     try:
         delete_all_caches()
         context = {"msg": "清除成功！", "status": True}
@@ -477,6 +495,7 @@ def purge(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 自动设置 Webhook 事件 api/create_webhook
 @login_required(login_url="/login/")
 def create_webhook_config(request):
     context = dict(msg="Error!", status=False)
@@ -506,6 +525,7 @@ def create_webhook_config(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# Webhook api/webhook
 @csrf_exempt
 def webhook(request):
     context = dict(msg="Error!", status=False)
@@ -520,6 +540,7 @@ def webhook(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 上传图片 api/upload
 @csrf_exempt
 @login_required(login_url="/login/")
 def upload_img(request):
@@ -577,6 +598,7 @@ def upload_img(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 获取更新 api/get_update
 @login_required(login_url="/login/")
 def get_update(request):
     context = dict()

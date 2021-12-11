@@ -301,10 +301,8 @@ def save_setting(name, content):
 
 
 def check_if_api_auth(request):
-    if request.user.is_authenticated:
+    if request.POST.get("token") == SettingModel.objects.get(name="WEBHOOK_APIKEY").content:
         return True
-    if request.POST.get("token") == SettingModel.objects.get(name="APIKEY"):
-        return True
-    if request.GET.get("token") == SettingModel.objects.get(name="APIKEY"):
+    if request.GET.get("token") == SettingModel.objects.get(name="WEBHOOK_APIKEY").content:
         return True
     return False

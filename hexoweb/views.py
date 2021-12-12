@@ -246,7 +246,7 @@ def pages(request):
                                       name="GH_REPO_BRANCH").content).decoded_content.decode(
                     "utf8")).replace("<",
                                      "\\<").replace(
-                ">", "\\>")
+                ">", "\\>").replace("\"", "\\\"").replace("!", "\\!")
             context['filename'] = file_path.split("/")[-2] + "/" + file_path.split("/")[-1]
             context["file_path"] = file_path
             try:
@@ -262,14 +262,14 @@ def pages(request):
                 SettingModel.objects.get(name="GH_REPO_PATH").content + file_path,
                 ref=SettingModel.objects.get(
                     name="GH_REPO_BRANCH").content).decoded_content.decode(
-                "utf8")).replace("<", "\\<").replace(">", "\\>")
+                "utf8")).replace("<", "\\<").replace(">", "\\>").replace("\"", "\\\"").replace("!", "\\!")
             context["filepath"] = file_path
             context['filename'] = file_path.split("/")[-1]
         elif "edit" in load_template:
             file_path = request.GET.get("file")
             context["file_content"] = repr(get_post(file_path)).replace("<",
                                                                         "\\<").replace(
-                ">", "\\>")
+                ">", "\\>").replace("\"", "\\\"").replace("!", "\\!")
             context['filename'] = file_path.split("/")[-1]
             context['fullname'] = file_path
             try:
@@ -290,7 +290,7 @@ def pages(request):
                                          "\\<").replace(
                     ">", "\\>").replace("{{ date }}", strftime("%Y-%m-%d %H:%M:%S",
                                                                localtime(
-                                                                   time())))
+                                                                   time()))).replace("\"", "\\\"").replace("!", "\\!")
 
             except:
                 pass
@@ -312,7 +312,7 @@ def pages(request):
                                                                localtime(
                                                                    time())))).replace("<",
                                                                                       "\\<").replace(
-                    ">", "\\>")
+                    ">", "\\>").replace("\"", "\\\"").replace("!", "\\!")
 
             except:
                 pass

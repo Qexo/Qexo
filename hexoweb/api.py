@@ -548,44 +548,60 @@ def upload_img(request):
     if request.method == "POST":
         file = request.FILES.getlist('file[]')[0]
         try:
-            api = SettingModel.objects.get(name="IMG_API").content
-            post_params = SettingModel.objects.get(name="IMG_POST").content
-            json_path = SettingModel.objects.get(name="IMG_JSON_PATH").content
-            custom_body = SettingModel.objects.get(name="IMG_CUSTOM_BODY").content
-            custom_header = SettingModel.objects.get(name="IMG_CUSTOM_HEADER").content
-            custom_url = SettingModel.objects.get(name="IMG_CUSTOM_URL").content
-            if custom_header:
-                if custom_body:
-                    response = requests.post(api, data=json.loads(custom_body),
-                                             headers=json.loads(custom_header),
-                                             files={post_params: [file.name, file.read(),
-                                                                  file.content_type]})
-                else:
-                    response = requests.post(api, data={}, headers=json.loads(custom_header),
-                                             files={post_params: [file.name, file.read(),
-                                                                  file.content_type]})
-            else:
-                if custom_body:
-                    response = requests.post(api, data=json.loads(custom_body),
-                                             files={post_params: [file.name, file.read(),
-                                                                  file.content_type]})
-                else:
-                    response = requests.post(api, data={},
-                                             files={post_params: [file.name, file.read(),
-                                                                  file.content_type]})
-            if json_path:
-                json_path = json_path.split(".")
-                response.encoding = "utf8"
-                data = response.json()
-                for path in json_path:
-                    data = data[path]
-                context["url"] = str(custom_url) + data
+            try:
+                img_type = SettingModel.objects.get(name="IMG_TYPE").content
+            except:
+                save_setting("IMG_TYPE", "cust")
+                img_type = "cust"
+            if img_type == "s3":
+                context["url"] = upload_to_s3(file,
+                                              SettingModel.objects.get(name="S3_KEY_ID").content,
+                                              SettingModel.objects.get(name="S3_ACCESS_KEY").content,
+                                              SettingModel.objects.get(name="S3_ENDPOINT").content,
+                                              SettingModel.objects.get(name="S3_BUCKET").content,
+                                              SettingModel.objects.get(name="S3_PATH").content,
+                                              SettingModel.objects.get(name="S3_PREV_URL").content)
                 context["msg"] = "上传成功！"
                 context["status"] = True
             else:
-                context["url"] = str(custom_url) + response.text
-                context["msg"] = "上传成功！"
-                context["status"] = True
+                api = SettingModel.objects.get(name="IMG_API").content
+                post_params = SettingModel.objects.get(name="IMG_POST").content
+                json_path = SettingModel.objects.get(name="IMG_JSON_PATH").content
+                custom_body = SettingModel.objects.get(name="IMG_CUSTOM_BODY").content
+                custom_header = SettingModel.objects.get(name="IMG_CUSTOM_HEADER").content
+                custom_url = SettingModel.objects.get(name="IMG_CUSTOM_URL").content
+                if custom_header:
+                    if custom_body:
+                        response = requests.post(api, data=json.loads(custom_body),
+                                                 headers=json.loads(custom_header),
+                                                 files={post_params: [file.name, file.read(),
+                                                                      file.content_type]})
+                    else:
+                        response = requests.post(api, data={}, headers=json.loads(custom_header),
+                                                 files={post_params: [file.name, file.read(),
+                                                                      file.content_type]})
+                else:
+                    if custom_body:
+                        response = requests.post(api, data=json.loads(custom_body),
+                                                 files={post_params: [file.name, file.read(),
+                                                                      file.content_type]})
+                    else:
+                        response = requests.post(api, data={},
+                                                 files={post_params: [file.name, file.read(),
+                                                                      file.content_type]})
+                if json_path:
+                    json_path = json_path.split(".")
+                    response.encoding = "utf8"
+                    data = response.json()
+                    for path in json_path:
+                        data = data[path]
+                    context["url"] = str(custom_url) + data
+                    context["msg"] = "上传成功！"
+                    context["status"] = True
+                else:
+                    context["url"] = str(custom_url) + response.text
+                    context["msg"] = "上传成功！"
+                    context["status"] = True
             image = ImageModel()
             image.name = file.name
             image.url = context["url"]

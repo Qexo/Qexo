@@ -34,7 +34,8 @@
                     <div class="card-header border-0">
                         <div class="row align-items-center">
                             <div class="col">
-                                <h3 class="mb-0">全部配置 ({{ settings_number }}项)</h3>
+                                <h3 class="mb-0">全部配置 (<a id="count">{{ settings_number }}</a>项)
+                                </h3>
                             </div>
                         </div>
                     </div>
@@ -93,11 +94,6 @@
                     <div class="modal-body" id="query-modal-body">
                     </div>
                     <div class="modal-footer" id="query-modal-footer">
-                        {#                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消#}
-                        {#                    </button>#}
-                        {#                    <button type="button" class="btn btn-primary" data-dismiss="modal"#}
-                        {#                            onclick="submit()">确定#}
-                        {#                    </button>#}
                     </div>
                 </div>
             </div>
@@ -118,6 +114,17 @@
 
         var posts = {{ settings|safe }};
         var _page = 1;
+
+
+        var compare = function (x, y) {
+            if (x["name"] < y["name"]) {
+                return -1;
+            } else if (x["name"] > y["name"]) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
 
         function scrollToTop() {
             let timer = null;
@@ -143,8 +150,7 @@
             }
             let list = "";
             for (let i = 0; i < page_posts.length; i++) {
-                list += "<tr><th scope=\"row\">" + page_posts[i]["name"] + "</th><td id=\"" + page_posts[i]["name"]
-                    + "\">" +
+                list += "<tr><th scope=\"row\">" + page_posts[i]["name"] + "</th><td>" +
                     page_posts[i]["content"] + "</td>";
                 list += "<td><a href=\"javascript:query_edit('" + page_posts[i]["name"] + "', " +
                     "'" + page_posts[i]["content"] + "')\">" +
@@ -260,14 +266,14 @@
             $("#queryLabel").html("编辑");
             let footer = "<button type=\"button\" class=\"btn btn-secondary\" " +
                 "data-dismiss=\"modal\">取消</button><button type=\"button\" class=\"btn " +
-                "btn-primary\" data-dismiss=\"modal\" onclick=\"submit('" + name +
+                "btn-primary\" data-dismiss=\"modal\" onclick=\"change_value('" + name +
                 "')\">确定</button>"
             $("#query-modal-footer").html(footer);
             $("#query").modal("show");
         }
 
         function query_delete(name) {
-            let html = "确认要删除 " + name + "字段吗？该操作不可回退";
+            let html = "确认要删除 " + name + " 字段吗？该操作不可回退";
             $("#query-modal-body").html(html);
             $("#queryLabel").html("提示");
             let footer = "<button type=\"button\" class=\"btn btn-secondary\" " +
@@ -310,7 +316,7 @@
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
         });
 
-        function submit(name) {
+        function change_value(name) {
             let loading = new KZ_Loading('正在保存中...');
             loading.show();
             let content = $("#edit-content").val();
@@ -323,7 +329,13 @@
                     loading.destroy();
                     if (res.status) {
                         $.notify(res.msg, {type: "success", delay: 1000});
-                        $("#" + name).html(content);
+                        for (let i = 0; i < posts.length; i++) {
+                            if (posts[i]["name"] == name) {
+                                posts[i]["content"] = content;
+                                change_page(_page);
+                                break;
+                            }
+                        }
                     } else {
                         $.notify(res.msg, {type: "warning"});
                     }
@@ -338,17 +350,23 @@
         function delete_value(name) {
             let loading = new KZ_Loading('正在删除中...');
             loading.show();
-            let content = $("#" + name).text();
             $.ajax({
                 url: '/api/del_value/',
                 method: 'post',
-                data: {"name": name, "content": content},
+                data: {"name": name},
                 dataType: "json",
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
                         $.notify(res.msg, {type: "success", delay: 1000});
-                        setTimeout(location.reload(), 1000);
+                        for (let i = 0; i < posts.length; i++) {
+                            if (posts[i]["name"] == name) {
+                                posts.splice(i, i);
+                                change_page(_page);
+                                break;
+                            }
+                        }
+                        $("#count").html(posts.length);
                     } else {
                         $.notify(res.msg, {type: "warning"});
                     }
@@ -374,7 +392,10 @@
                     loading.destroy();
                     if (res.status) {
                         $.notify(res.msg, {type: "success", delay: 1000});
-                        setTimeout(location.reload(), 1000);
+                        posts.push({"name": name, "content": content});
+                        posts.sort(compare);
+                        change_page(_page);
+                        $("#count").html(posts.length);
                     } else {
                         $.notify(res.msg, {type: "warning"});
                     }

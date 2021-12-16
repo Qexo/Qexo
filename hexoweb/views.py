@@ -250,8 +250,8 @@ def pages(request):
             context['filename'] = file_path.split("/")[-2] + "/" + file_path.split("/")[-1]
             context["file_path"] = file_path
             try:
-                if SettingModel.objects.get(name="IMG_API").content and SettingModel.objects.get(
-                        name="IMG_POST").content:
+                if SettingModel.objects.get(
+                        name="IMG_TYPE").content:
                     context["img_bed"] = True
             except:
                 pass
@@ -273,8 +273,8 @@ def pages(request):
             context['filename'] = file_path.split("/")[-1]
             context['fullname'] = file_path
             try:
-                if SettingModel.objects.get(name="IMG_API").content and SettingModel.objects.get(
-                        name="IMG_POST").content:
+                if SettingModel.objects.get(
+                        name="IMG_TYPE").content:
                     context["img_bed"] = True
             except:
                 pass
@@ -295,8 +295,8 @@ def pages(request):
             except:
                 pass
             try:
-                if SettingModel.objects.get(name="IMG_API").content and SettingModel.objects.get(
-                        name="IMG_POST").content:
+                if SettingModel.objects.get(
+                        name="IMG_TYPE").content:
                     context["img_bed"] = True
             except:
                 pass
@@ -317,8 +317,8 @@ def pages(request):
             except:
                 pass
             try:
-                if SettingModel.objects.get(name="IMG_API").content and SettingModel.objects.get(
-                        name="IMG_POST").content:
+                if SettingModel.objects.get(
+                        name="IMG_TYPE").content:
                     context["img_bed"] = True
             except:
                 pass
@@ -474,6 +474,42 @@ def pages(request):
                 if context['UPDATE_REPO_BRANCH'] and context['UPDATE_REPO'] \
                         and context['UPDATE_TOKEN']:
                     context["showUpdate"] = True
+                try:
+                    context['S3_KEY_ID'] = SettingModel.objects.get(
+                        name="S3_KEY_ID").content
+                except:
+                    save_setting('S3_KEY_ID', '')
+                try:
+                    context['S3_ACCESS_KEY'] = SettingModel.objects.get(
+                        name="S3_ACCESS_KEY").content
+                except:
+                    save_setting('S3_ACCESS_KEY', '')
+                try:
+                    context['S3_ENDPOINT'] = SettingModel.objects.get(
+                        name="S3_ENDPOINT").content
+                except:
+                    save_setting('S3_ENDPOINT', '')
+                try:
+                    context['S3_BUCKET'] = SettingModel.objects.get(
+                        name="S3_BUCKET").content
+                except:
+                    save_setting('S3_BUCKET', '')
+                try:
+                    context['S3_PATH'] = SettingModel.objects.get(
+                        name="S3_PATH").content
+                except:
+                    save_setting('S3_PATH', '')
+                try:
+                    context['S3_PREV_URL'] = SettingModel.objects.get(
+                        name="S3_PREV_URL").content
+                except:
+                    save_setting('S3_PREV_URL', '')
+                try:
+                    context['IMG_TYPE'] = SettingModel.objects.get(
+                        name="IMG_TYPE").content
+                except:
+                    save_setting('IMG_TYPE', '')
+
             except Exception as e:
                 context["error"] = repr(e)
         elif 'advanced' in load_template:

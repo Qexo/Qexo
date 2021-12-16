@@ -26,6 +26,7 @@ urlpatterns = [
     path('api/set_github/', set_github, name='set_github'),
     path('api/set_user/', set_user, name='set_user'),
     path('api/set_image_bed/', set_image_bed, name='set_image_bed'),
+    path('api/set_s3/', set_s3, name='set_s3'),
     path('api/set_update/', set_update, name='set_update'),
     path('api/set_apikey/', set_api_key, name='set_apikey'),
     path('api/set_cust/', set_cust, name='set_cust'),

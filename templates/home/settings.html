@@ -221,13 +221,24 @@
                         </form>
                         <form id="image-settings">
                             <hr class="my-4"/>
-                            <h6 class="heading-small text-muted mb-4">图床配置</h6>
+                            <h6 class="heading-small text-muted mb-4">远程图床</h6>
                             <div class="pl-lg-4">
                                 <div class="row">
                                     {% csrf_token %}
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">API地址</label>
+                                            <label class="custom-toggle">
+                                                <input type="checkbox" name="cust-status"
+                                                       {% if IMG_TYPE == "custom" %}checked{% endif %}>
+                                                <span class="custom-toggle-slider rounded-circle"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">图床-API地址</label>
                                             <input type="text" name="api" class="form-control"
                                                    placeholder="API 地址 ( 包含 http )"
                                                    value="{{ IMG_API }}">
@@ -235,7 +246,7 @@
                                     </div>
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">POST参数名</label>
+                                            <label class="form-control-label">图床-POST参数名</label>
                                             <input type="text" name="post" class="form-control"
                                                    placeholder="POST 参数名"
                                                    value="{{ IMG_POST }}">
@@ -245,7 +256,7 @@
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">JSON路径</label>
+                                            <label class="form-control-label">图床-JSON路径</label>
                                             <input type="text" name="jsonpath" class="form-control"
                                                    placeholder="JSON 路径 eg: data.img"
                                                    value="{{ IMG_JSON_PATH }}">
@@ -253,7 +264,7 @@
                                     </div>
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">自定义请求头</label>
+                                            <label class="form-control-label">图床-自定义请求头</label>
                                             <input type="text" name="header" class="form-control"
                                                    placeholder="标准 JSON 格式"
                                                    value="{{ IMG_CUSTOM_HEADER }}">
@@ -263,7 +274,7 @@
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">自定义BODY</label>
+                                            <label class="form-control-label">图床-自定义BODY</label>
                                             <input type="text" name="body" class="form-control"
                                                    placeholder="标准 JSON 格式"
                                                    value="{{ IMG_CUSTOM_BODY }}">
@@ -271,7 +282,7 @@
                                     </div>
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">自定义前缀</label>
+                                            <label class="form-control-label">图床-自定义前缀</label>
                                             <input type="text" name="custom" class="form-control"
                                                    placeholder="自定义图片 URL 前缀"
                                                    value="{{ IMG_CUSTOM_URL }}">
@@ -282,6 +293,85 @@
                                     <div class="col-lg-6">
                                         <input type="button" class="btn btn-primary" value="提交"
                                                onclick="submit_image_config()">
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        <form id="s3-settings">
+                            <hr class="my-4"/>
+                            <h6 class="heading-small text-muted mb-4">S3图床</h6>
+                            <div class="pl-lg-4">
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="custom-toggle">
+                                                <input type="checkbox" name="s3-status"
+                                                        {% if IMG_TYPE == "s3" %}checked{% endif %}>
+                                                <span class="custom-toggle-slider rounded-circle"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    {% csrf_token %}
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">应用密钥ID</label>
+                                            <input type="text" name="key-id" class="form-control"
+                                                   placeholder="Access Key ID"
+                                                   value="{{ S3_KEY_ID }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">应用密钥</label>
+                                            <input type="text" name="access-key"
+                                                   class="form-control"
+                                                   placeholder="Access Key"
+                                                   value="{{ S3_ACCESS_KEY }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">储存桶</label>
+                                            <input type="text" name="bucket" class="form-control"
+                                                   placeholder="Bucket名称"
+                                                   value="{{ S3_BUCKET }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">边缘节点</label>
+                                            <input type="text" name="endpoint" class="form-control"
+                                                   placeholder="eg: https://s3.us-west-002.example.com"
+                                                   value="{{ S3_ENDPOINT }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">保存路径</label>
+                                            <input type="text" name="path" class="form-control"
+                                                   placeholder="eg: {year}/{month}/{md5}.{extName}"
+                                                   value="{{ S3_PATH }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">自定义域名</label>
+                                            <input type="text" name="url" class="form-control"
+                                                   placeholder="eg: https://example.com/dir"
+                                                   value="{{ S3_PREV_URL }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <input type="button" class="btn btn-primary" value="提交"
+                                               onclick="submit_s3_config()">
                                     </div>
                                 </div>
                             </div>
@@ -625,14 +715,43 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        let notify = $.notify(res.msg, {type: "success", delay: 1000});
+                        $.notify(res.msg, {type: "success", delay: 1000});
+                        if ($("input:checkbox[name=cust-status]").is(':checked')){
+                            $("input:checkbox[name=s3-status]").prop("checked",false);
+                        }
                     } else {
-                        let notify = $.notify(res.msg, {type: "warning"});
+                        $.notify(res.msg, {type: "warning"});
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    let notify = $.notify("网络错误！", {type: "warning"});
+                    $.notify("网络错误！", {type: "warning"});
+                }
+            })
+        }
+
+        function submit_s3_config() {
+            let loading = new KZ_Loading('正在保存中...');
+            loading.show();
+            $.ajax({
+                url: '/api/set_s3/',
+                method: 'post',
+                data: $('#s3-settings').serialize(),
+                dataType: "json",
+                success: function (res) {
+                    loading.destroy();
+                    if (res.status) {
+                        $.notify(res.msg, {type: "success", delay: 1000});
+                        if ($("input:checkbox[name=s3-status]").is(':checked')){
+                            $("input:checkbox[name=cust-status]").prop("checked",false);
+                        }
+                    } else {
+                        $.notify(res.msg, {type: "warning"});
+                    }
+                },
+                error: function (res) {
+                    loading.destroy();
+                    $.notify("网络错误！", {type: "warning"});
                 }
             })
         }
@@ -824,5 +943,6 @@
                 }
             })
         }
+
     </script>
 {% endblock javascripts %}

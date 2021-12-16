@@ -12,7 +12,7 @@ from datetime import timezone, timedelta
 from time import time
 
 
-# API
+# 登录验证 API api/auth
 def auth(request):
     try:
         username = request.POST.get("username")
@@ -28,6 +28,7 @@ def auth(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 设置 Github 配置 api/set_github
 @login_required(login_url="/login/")
 def set_github(request):
     try:
@@ -55,6 +56,7 @@ def set_github(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 设置自动更新配置 api/set_update
 @login_required(login_url="/login/")
 def set_update(request):
     try:
@@ -84,6 +86,8 @@ def set_update(request):
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
+
+# 设置APIKEY api/set_apikey
 @login_required(login_url="/login/")
 def set_api_key(request):
     try:
@@ -99,6 +103,7 @@ def set_api_key(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 设置图床配置 api/set_image_bed
 @login_required(login_url="/login/")
 def set_image_bed(request):
     try:
@@ -108,18 +113,70 @@ def set_image_bed(request):
         custom_body = request.POST.get("body")
         custom_header = request.POST.get("header")
         custom_url = request.POST.get("custom")
+        status = request.POST.get("cust-status")
         save_setting("IMG_API", api)
         save_setting("IMG_POST", post_params)
         save_setting("IMG_JSON_PATH", json_path)
         save_setting("IMG_CUSTOM_BODY", custom_body)
         save_setting("IMG_CUSTOM_HEADER", custom_header)
         save_setting("IMG_CUSTOM_URL", custom_url)
+        if status == "on":
+            save_setting("IMG_TYPE", "custom")
+        else:
+            if SettingModel.objects.get(name="IMG_TYPE").content == "custom":
+                save_setting("IMG_TYPE", "")
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 设置s3配置 api/set_s3
+@login_required(login_url="/login/")
+def set_s3(request):
+    try:
+        key_id = request.POST.get("key-id")
+        access_key = request.POST.get("access-key")
+        bucket = request.POST.get("bucket")
+        endpoint = request.POST.get("endpoint")
+        path = request.POST.get("path")
+        url = request.POST.get("url")
+        status = request.POST.get("s3-status")
+        save_setting("S3_KEY_ID", key_id)
+        save_setting("S3_ACCESS_KEY", access_key)
+        save_setting("S3_BUCKET", bucket)
+        save_setting("S3_ENDPOINT", endpoint)
+        save_setting("S3_PATH", path)
+        save_setting("S3_PREV_URL", url)
+        if status == "on":
+            save_setting("IMG_TYPE", "s3")
+        else:
+            if SettingModel.objects.get(name="IMG_TYPE").content == "s3":
+                save_setting("IMG_TYPE", "")
+        context = {"msg": "保存成功!", "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+# 设置自定义配置 api/set_cust
+@login_required(login_url="/login/")
+def set_cust(request):
+    try:
+        site_name = request.POST.get("name")
+        split_word = request.POST.get("split")
+        logo = request.POST.get("logo")
+        icon = request.POST.get("icon")
+        save_setting("QEXO_NAME", site_name)
+        save_setting("QEXO_SPLIT", split_word)
+        save_setting("QEXO_LOGO", logo)
+        save_setting("QEXO_ICON", icon)
+        context = {"msg": "保存成功!", "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 设置用户信息 api/set_user
 @login_required(login_url="/login/")
 def set_user(request):
     try:
@@ -149,6 +206,160 @@ def set_user(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 设置 SettingsModel 的字段 api/set_value
+@login_required(login_url="/login/")
+def set_value(request):
+    try:
+        save_setting(request.POST.get("name"), request.POST.get("content"))
+        context = {"msg": "保存成功!", "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 设置 SettingsModel 的字段 api/del_value
+@login_required(login_url="/login/")
+def del_value(request):
+    try:
+        SettingModel.objects.filter(name=request.POST.get("name")).delete()
+        context = {"msg": "删除成功!", "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 新建 SettingsModel 的字段 api/new_value
+@login_required(login_url="/login/")
+def new_value(request):
+    try:
+        save_setting(request.POST.get("name"), request.POST.get("content"))
+        context = {"msg": "保存成功!", "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 自动修复程序 api/fix
+@login_required(login_url="/login/")
+def auto_fix(request):
+    try:
+        counter = 0
+        already = list()
+        settings = SettingModel.objects.all()
+        for query in settings:
+            if query.name not in already:
+                already.append(query.name)
+            else:
+                query.delete()
+                counter += 1
+        try:
+            SettingModel.objects.get(name="GH_REPO_PATH").content
+        except:
+            save_setting('GH_REPO_PATH', '')
+            counter += 1
+        try:
+            SettingModel.objects.get(name="GH_REPO_BRANCH").content
+        except:
+            save_setting('GH_REPO_BRANCH', '')
+            counter += 1
+        try:
+            SettingModel.objects.get(name="GH_REPO").content
+        except:
+            save_setting('GH_REPO', '')
+            counter += 1
+        try:
+            SettingModel.objects.get(name="GH_TOKEN").content
+        except:
+            save_setting('GH_TOKEN', '')
+            counter += 1
+        try:
+            SettingModel.objects.get(name='IMG_CUSTOM_URL').content
+        except:
+            save_setting('IMG_CUSTOM_URL', '')
+            counter += 1
+        try:
+            SettingModel.objects.get(name='IMG_CUSTOM_HEADER').content
+        except:
+            save_setting('IMG_CUSTOM_HEADER', '')
+            counter += 1
+        try:
+            SettingModel.objects.get(name='IMG_CUSTOM_BODY').content
+        except:
+            save_setting('IMG_CUSTOM_BODY', '')
+            counter += 1
+        try:
+            SettingModel.objects.get(name='IMG_JSON_PATH').content
+        except:
+            save_setting('IMG_JSON_PATH', '')
+            counter += 1
+        try:
+            SettingModel.objects.get(name='IMG_POST').content
+        except:
+            save_setting('IMG_POST', '')
+            counter += 1
+        try:
+            SettingModel.objects.get(name='IMG_API').content
+        except:
+            save_setting('IMG_API', '')
+            counter += 1
+        try:
+            SettingModel.objects.get(name="UPDATE_REPO_BRANCH").content
+        except:
+            save_setting('UPDATE_REPO_BRANCH', '')
+            counter += 1
+        try:
+            SettingModel.objects.get(name="UPDATE_REPO").content
+        except:
+            save_setting('UPDATE_REPO', '')
+            counter += 1
+        try:
+            SettingModel.objects.get(name="UPDATE_ORIGIN_BRANCH").content
+        except:
+            save_setting('UPDATE_ORIGIN_BRANCH', 'master')
+            counter += 1
+        try:
+            SettingModel.objects.get(name="S3_KEY_ID").content
+        except:
+            save_setting('S3_KEY_ID', '')
+            counter += 1
+        try:
+            SettingModel.objects.get(name="S3_ACCESS_KEY").content
+        except:
+            save_setting('S3_ACCESS_KEY', '')
+            counter += 1
+        try:
+            SettingModel.objects.get(name="S3_ENDPOINT").content
+        except:
+            save_setting('S3_ENDPOINT', '')
+            counter += 1
+        try:
+            SettingModel.objects.get(name="S3_BUCKET").content
+        except:
+            save_setting('S3_BUCKET', '')
+            counter += 1
+        try:
+            SettingModel.objects.get(name="S3_PATH").content
+        except:
+            save_setting('S3_PATH', '')
+            counter += 1
+        try:
+            SettingModel.objects.get(name="S3_PREV_URL").content
+        except:
+            save_setting('S3_PREV_URL', '')
+            counter += 1
+        try:
+            SettingModel.objects.get(name="IMG_TYPE").content
+        except:
+            save_setting('IMG_TYPE', '')
+            counter += 1
+        msg = "尝试自动修复了{}个字段，请在稍后检查和修改配置".format(counter)
+        context = {"msg": msg, "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 执行更新 api/do_update
 @login_required(login_url="/login/")
 def do_update(request):
     repo = SettingModel.objects.get(name="UPDATE_REPO").content
@@ -158,7 +369,7 @@ def do_update(request):
     origin_branch = SettingModel.objects.get(name="UPDATE_ORIGIN_BRANCH").content
     try:
         pull = repo.create_pull(title="Update from {}".format(QEXO_VERSION), body="auto update",
-                                head="am-abudu:"+origin_branch,
+                                head="am-abudu:" + origin_branch,
                                 base=branch, maintainer_can_modify=False)
         pull.merge()
         context = {"msg": "OK!", "status": True}
@@ -171,6 +382,7 @@ def do_update(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 保存内容 api/save
 @login_required(login_url="/login/")
 def save(request):
     repo = get_repo()
@@ -190,6 +402,7 @@ def save(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 保存文章 api/save_post
 @login_required(login_url="/login/")
 def save_post(request):
     repo = get_repo()
@@ -223,6 +436,7 @@ def save_post(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 保存草稿 api/save_draft
 @login_required(login_url="/login/")
 def save_draft(request):
     repo = get_repo()
@@ -248,6 +462,7 @@ def save_draft(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 新建内容 api/new
 @login_required(login_url="/login/")
 def new(request):
     repo = get_repo()
@@ -265,6 +480,7 @@ def new(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 删除内容 api/delete
 @login_required(login_url="/login/")
 def delete(request):
     repo = get_repo()
@@ -292,6 +508,7 @@ def delete(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 删除文章 api/delete_post
 @login_required(login_url="/login/")
 def delete_post(request):
     repo = get_repo()
@@ -319,13 +536,14 @@ def delete_post(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 删除图片记录 api/delete_img
 @login_required(login_url="/login/")
 def delete_img(request):
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         image_date = request.POST.get('image')
         try:
-            image = ImageModel.objects.get(date=image_date)
+            image = ImageModel.objects.filter(date=image_date)
             image.delete()
             context = {"msg": "删除成功！", "status": True}
         except Exception as error:
@@ -333,9 +551,9 @@ def delete_img(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 清除缓存 api/purge
 @login_required(login_url="/login/")
 def purge(request):
-    context = dict(msg="Error!", status=False)
     try:
         delete_all_caches()
         context = {"msg": "清除成功！", "status": True}
@@ -344,6 +562,7 @@ def purge(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 自动设置 Webhook 事件 api/create_webhook
 @login_required(login_url="/login/")
 def create_webhook_config(request):
     context = dict(msg="Error!", status=False)
@@ -373,6 +592,7 @@ def create_webhook_config(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# Webhook api/webhook
 @csrf_exempt
 def webhook(request):
     context = dict(msg="Error!", status=False)
@@ -387,6 +607,7 @@ def webhook(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 上传图片 api/upload
 @csrf_exempt
 @login_required(login_url="/login/")
 def upload_img(request):
@@ -394,44 +615,61 @@ def upload_img(request):
     if request.method == "POST":
         file = request.FILES.getlist('file[]')[0]
         try:
-            api = SettingModel.objects.get(name="IMG_API").content
-            post_params = SettingModel.objects.get(name="IMG_POST").content
-            json_path = SettingModel.objects.get(name="IMG_JSON_PATH").content
-            custom_body = SettingModel.objects.get(name="IMG_CUSTOM_BODY").content
-            custom_header = SettingModel.objects.get(name="IMG_CUSTOM_HEADER").content
-            custom_url = SettingModel.objects.get(name="IMG_CUSTOM_URL").content
-            if custom_header:
-                if custom_body:
-                    response = requests.post(api, data=json.loads(custom_body),
-                                             headers=json.loads(custom_header),
-                                             files={post_params: [file.name, file.read(),
-                                                                  file.content_type]})
-                else:
-                    response = requests.post(api, data={}, headers=json.loads(custom_header),
-                                             files={post_params: [file.name, file.read(),
-                                                                  file.content_type]})
-            else:
-                if custom_body:
-                    response = requests.post(api, data=json.loads(custom_body),
-                                             files={post_params: [file.name, file.read(),
-                                                                  file.content_type]})
-                else:
-                    response = requests.post(api, data={},
-                                             files={post_params: [file.name, file.read(),
-                                                                  file.content_type]})
-            if json_path:
-                json_path = json_path.split(".")
-                response.encoding = "utf8"
-                data = response.json()
-                for path in json_path:
-                    data = data[path]
-                context["url"] = str(custom_url) + data
+            try:
+                img_type = SettingModel.objects.get(name="IMG_TYPE").content
+            except:
+                save_setting("IMG_TYPE", "cust")
+                img_type = "cust"
+            if img_type == "s3":
+                context["url"] = upload_to_s3(file,
+                                              SettingModel.objects.get(name="S3_KEY_ID").content,
+                                              SettingModel.objects.get(
+                                                  name="S3_ACCESS_KEY").content,
+                                              SettingModel.objects.get(name="S3_ENDPOINT").content,
+                                              SettingModel.objects.get(name="S3_BUCKET").content,
+                                              SettingModel.objects.get(name="S3_PATH").content,
+                                              SettingModel.objects.get(name="S3_PREV_URL").content)
                 context["msg"] = "上传成功！"
                 context["status"] = True
             else:
-                context["url"] = str(custom_url) + response.text
-                context["msg"] = "上传成功！"
-                context["status"] = True
+                api = SettingModel.objects.get(name="IMG_API").content
+                post_params = SettingModel.objects.get(name="IMG_POST").content
+                json_path = SettingModel.objects.get(name="IMG_JSON_PATH").content
+                custom_body = SettingModel.objects.get(name="IMG_CUSTOM_BODY").content
+                custom_header = SettingModel.objects.get(name="IMG_CUSTOM_HEADER").content
+                custom_url = SettingModel.objects.get(name="IMG_CUSTOM_URL").content
+                if custom_header:
+                    if custom_body:
+                        response = requests.post(api, data=json.loads(custom_body),
+                                                 headers=json.loads(custom_header),
+                                                 files={post_params: [file.name, file.read(),
+                                                                      file.content_type]})
+                    else:
+                        response = requests.post(api, data={}, headers=json.loads(custom_header),
+                                                 files={post_params: [file.name, file.read(),
+                                                                      file.content_type]})
+                else:
+                    if custom_body:
+                        response = requests.post(api, data=json.loads(custom_body),
+                                                 files={post_params: [file.name, file.read(),
+                                                                      file.content_type]})
+                    else:
+                        response = requests.post(api, data={},
+                                                 files={post_params: [file.name, file.read(),
+                                                                      file.content_type]})
+                if json_path:
+                    json_path = json_path.split(".")
+                    response.encoding = "utf8"
+                    data = response.json()
+                    for path in json_path:
+                        data = data[path]
+                    context["url"] = str(custom_url) + data
+                    context["msg"] = "上传成功！"
+                    context["status"] = True
+                else:
+                    context["url"] = str(custom_url) + response.text
+                    context["msg"] = "上传成功！"
+                    context["status"] = True
             image = ImageModel()
             image.name = file.name
             image.url = context["url"]
@@ -444,6 +682,7 @@ def upload_img(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 获取更新 api/get_update
 @login_required(login_url="/login/")
 def get_update(request):
     context = dict()

@@ -8,6 +8,14 @@ from time import strftime, localtime
 from .api import *
 
 
+def page_404(request, exception):
+    return render(request, 'home/page-404.html')
+
+
+def page_500(request):
+    return render(request, 'home/page-500.html', {"error": "程序遇到了错误！"})
+
+
 def login_view(request):
     try:
         if int(SettingModel.objects.get(name="INIT").content) <= 5:
@@ -19,12 +27,13 @@ def login_view(request):
             return redirect("/")
         else:
             return redirect(request.GET.get("next"))
-    return render(request, "accounts/login.html")
+    return render(request, "accounts/login.html", get_custom_config())
 
 
 def init_view(request):
     msg = None
     context = dict()
+    context.update(get_custom_config())
     try:
         step = SettingModel.objects.get(name="INIT").content
     except:
@@ -175,6 +184,7 @@ def index(request):
     except:
         return redirect("/init/")
     context = {'segment': 'index'}
+    context.update(get_custom_config())
     cache = Cache.objects.filter(name="posts")
     if cache.count():
         posts = json.loads(cache.first().content)
@@ -222,6 +232,7 @@ def pages(request):
     # All resource paths end in .html.
     # Pick out the html file name from the url. And load that template.
     try:
+        context.update(get_custom_config())
         load_template = request.path.split('/')[-1]
         context['segment'] = load_template
         if "index" in load_template:
@@ -235,12 +246,12 @@ def pages(request):
                                       name="GH_REPO_BRANCH").content).decoded_content.decode(
                     "utf8")).replace("<",
                                      "\\<").replace(
-                ">", "\\>")
+                ">", "\\>").replace("!", "\\!")
             context['filename'] = file_path.split("/")[-2] + "/" + file_path.split("/")[-1]
             context["file_path"] = file_path
             try:
-                if SettingModel.objects.get(name="IMG_API").content and SettingModel.objects.get(
-                        name="IMG_POST").content:
+                if SettingModel.objects.get(
+                        name="IMG_TYPE").content:
                     context["img_bed"] = True
             except:
                 pass
@@ -251,19 +262,19 @@ def pages(request):
                 SettingModel.objects.get(name="GH_REPO_PATH").content + file_path,
                 ref=SettingModel.objects.get(
                     name="GH_REPO_BRANCH").content).decoded_content.decode(
-                "utf8")).replace("<", "\\<").replace(">", "\\>")
+                "utf8")).replace("<", "\\<").replace(">", "\\>").replace("!", "\\!")
             context["filepath"] = file_path
             context['filename'] = file_path.split("/")[-1]
         elif "edit" in load_template:
             file_path = request.GET.get("file")
             context["file_content"] = repr(get_post(file_path)).replace("<",
                                                                         "\\<").replace(
-                ">", "\\>")
+                ">", "\\>").replace("!", "\\!")
             context['filename'] = file_path.split("/")[-1]
             context['fullname'] = file_path
             try:
-                if SettingModel.objects.get(name="IMG_API").content and SettingModel.objects.get(
-                        name="IMG_POST").content:
+                if SettingModel.objects.get(
+                        name="IMG_TYPE").content:
                     context["img_bed"] = True
             except:
                 pass
@@ -279,13 +290,13 @@ def pages(request):
                                          "\\<").replace(
                     ">", "\\>").replace("{{ date }}", strftime("%Y-%m-%d %H:%M:%S",
                                                                localtime(
-                                                                   time())))
+                                                                   time()))).replace("!", "\\!")
 
             except:
                 pass
             try:
-                if SettingModel.objects.get(name="IMG_API").content and SettingModel.objects.get(
-                        name="IMG_POST").content:
+                if SettingModel.objects.get(
+                        name="IMG_TYPE").content:
                     context["img_bed"] = True
             except:
                 pass
@@ -301,13 +312,13 @@ def pages(request):
                                                                localtime(
                                                                    time())))).replace("<",
                                                                                       "\\<").replace(
-                    ">", "\\>")
+                    ">", "\\>").replace("!", "\\!")
 
             except:
                 pass
             try:
-                if SettingModel.objects.get(name="IMG_API").content and SettingModel.objects.get(
-                        name="IMG_POST").content:
+                if SettingModel.objects.get(
+                        name="IMG_TYPE").content:
                     context["img_bed"] = True
             except:
                 pass
@@ -460,23 +471,56 @@ def pages(request):
                                                   + context['UPDATE_TOKEN'][-1]
                 except:
                     save_setting('UPDATE_TOKEN', '')
-
-                user = github.Github(SettingModel.objects.get(name='GH_TOKEN').content)
-                latest = user.get_repo("am-abudu/Qexo").get_latest_release()
-                if latest.tag_name and (latest.tag_name != QEXO_VERSION):
-                    context["hasNew"] = True
-                else:
-                    context["hasNew"] = False
-                context["newer"] = latest.tag_name
-                context["newer_link"] = latest.html_url
-                context["newer_time"] = latest.created_at.astimezone(
-                    timezone(timedelta(hours=16))).strftime(
-                    "%Y-%m-%d %H:%M:%S")
-                context["newer_text"] = latest.body
-                context["version"] = QEXO_VERSION
                 if context['UPDATE_REPO_BRANCH'] and context['UPDATE_REPO'] \
                         and context['UPDATE_TOKEN']:
                     context["showUpdate"] = True
+                try:
+                    context['S3_KEY_ID'] = SettingModel.objects.get(
+                        name="S3_KEY_ID").content
+                except:
+                    save_setting('S3_KEY_ID', '')
+                try:
+                    context['S3_ACCESS_KEY'] = SettingModel.objects.get(
+                        name="S3_ACCESS_KEY").content
+                except:
+                    save_setting('S3_ACCESS_KEY', '')
+                try:
+                    context['S3_ENDPOINT'] = SettingModel.objects.get(
+                        name="S3_ENDPOINT").content
+                except:
+                    save_setting('S3_ENDPOINT', '')
+                try:
+                    context['S3_BUCKET'] = SettingModel.objects.get(
+                        name="S3_BUCKET").content
+                except:
+                    save_setting('S3_BUCKET', '')
+                try:
+                    context['S3_PATH'] = SettingModel.objects.get(
+                        name="S3_PATH").content
+                except:
+                    save_setting('S3_PATH', '')
+                try:
+                    context['S3_PREV_URL'] = SettingModel.objects.get(
+                        name="S3_PREV_URL").content
+                except:
+                    save_setting('S3_PREV_URL', '')
+                try:
+                    context['IMG_TYPE'] = SettingModel.objects.get(
+                        name="IMG_TYPE").content
+                except:
+                    save_setting('IMG_TYPE', '')
+
+            except Exception as e:
+                context["error"] = repr(e)
+        elif 'advanced' in load_template:
+            try:
+                all_settings = SettingModel.objects.all()
+                context["settings"] = list()
+                for setting in all_settings:
+                    context["settings"].append({"name": setting.name, "content": setting.content})
+                context["settings"].sort(key=lambda elem: elem["name"])  # 按字段名升序排序
+                context["settings_number"] = len(context["settings"])
+                context["page_number"] = context["settings_number"] // 15 + 1
             except Exception as e:
                 context["error"] = repr(e)
         html_template = loader.get_template('home/' + load_template)

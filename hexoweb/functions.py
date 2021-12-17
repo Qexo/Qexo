@@ -2,6 +2,13 @@ from django.template.defaulttags import register
 from .models import Cache, SettingModel
 import github
 import json
+import boto3
+from datetime import date
+from time import time
+from hashlib import md5
+from urllib3 import disable_warnings
+
+disable_warnings()
 
 
 @register.filter  # 在模板中使用range()
@@ -31,6 +38,36 @@ def get_post(post):
     except:
         return get_repo().get_contents(repo_path + "source/_posts/" + post,
                                        branch).decoded_content.decode("utf8")
+
+
+# 获取用户自定义的样式配置
+def get_custom_config():
+    context = dict()
+    try:
+        context["QEXO_NAME"] = SettingModel.objects.get(name="QEXO_NAME").content
+    except:
+        save_setting('QEXO_NAME', 'Hexo管理面板')
+        context["QEXO_NAME"] = SettingModel.objects.get(name="QEXO_NAME").content
+    try:
+        context["QEXO_SPLIT"] = SettingModel.objects.get(name="QEXO_SPLIT").content
+    except:
+        save_setting('QEXO_SPLIT', ' - ')
+        context["QEXO_SPLIT"] = SettingModel.objects.get(name="QEXO_SPLIT").content
+    try:
+        context["QEXO_LOGO"] = SettingModel.objects.get(name="QEXO_LOGO").content
+    except:
+        save_setting('QEXO_LOGO',
+                     'https://cdn.jsdelivr.net/gh/am-abudu/Qexo@master/static/assets' +
+                     '/img/brand/qexo.png')
+        context["QEXO_LOGO"] = SettingModel.objects.get(name="QEXO_LOGO").content
+    try:
+        context["QEXO_ICON"] = SettingModel.objects.get(name="QEXO_ICON").content
+    except:
+        save_setting('QEXO_ICON',
+                     'https://cdn.jsdelivr.net/gh/am-abudu/Qexo@master/static/assets' +
+                     '/img/brand/favicon.ico')
+        context["QEXO_ICON"] = SettingModel.objects.get(name="QEXO_ICON").content
+    return context
 
 
 # 更新缓存
@@ -268,3 +305,34 @@ def save_setting(name, content):
         new_set.content = ""
     new_set.save()
     return new_set
+
+
+def upload_to_s3(file, key_id, access_key, endpoint_url, bucket, path, prev_url):
+    # 处理 path
+    now = date.today()
+    photo_stream = file.read()
+    path = path.replace("{year}", str(now.year)).replace("{month}", str(now.month)).replace("{day}",
+                                                                                            str(now.day)) \
+        .replace("{filename}", file.name).replace("{time}", str(time())) \
+        .replace("{extName}", file.name.split(".")[-1]).replace("{md5}",
+                                                                md5(photo_stream).hexdigest())
+
+    s3 = boto3.resource(
+        service_name='s3',
+        aws_access_key_id=key_id,
+        aws_secret_access_key=access_key,
+        endpoint_url=endpoint_url,
+        verify=False,
+    )
+    bucket = s3.Bucket(bucket)
+    bucket.put_object(Key=path, Body=photo_stream, ContentType=file.content_type)
+
+    return prev_url + "/" + path
+
+
+def check_if_api_auth(request):
+    if request.POST.get("token") == SettingModel.objects.get(name="WEBHOOK_APIKEY").content:
+        return True
+    if request.GET.get("token") == SettingModel.objects.get(name="WEBHOOK_APIKEY").content:
+        return True
+    return False

@@ -1,12 +1,15 @@
 from django.template.defaulttags import register
+from core.settings import QEXO_VERSION
 from .models import Cache, SettingModel
 import github
 import json
 import boto3
-from datetime import date
+from datetime import timezone, timedelta, date
 from time import time
 from hashlib import md5
 from urllib3 import disable_warnings
+from markdown import markdown
+from markdown.extensions.abbr import AbbrExtension
 
 disable_warnings()
 
@@ -328,6 +331,27 @@ def upload_to_s3(file, key_id, access_key, endpoint_url, bucket, path, prev_url)
     bucket.put_object(Key=path, Body=photo_stream, ContentType=file.content_type)
 
     return prev_url + "/" + path
+
+
+def get_latest_version():
+    context = dict()
+    try:
+        user = github.Github(SettingModel.objects.get(name='GH_TOKEN').content)
+        latest = user.get_repo("am-abudu/Qexo").get_latest_release()
+        if latest.tag_name and (latest.tag_name != QEXO_VERSION):
+            context["hasNew"] = True
+        else:
+            context["hasNew"] = False
+        context["newer"] = latest.tag_name
+        context["newer_link"] = latest.html_url
+        context["newer_time"] = latest.created_at.astimezone(
+            timezone(timedelta(hours=16))).strftime(
+            "%Y-%m-%d %H:%M:%S")
+        context["newer_text"] = markdown(latest.body).replace("<p>", "<p class=\"text-sm mb-0\">")
+        context["status"] = True
+    except:
+        context["status"] = False
+    return context
 
 
 def check_if_api_auth(request):

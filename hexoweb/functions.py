@@ -60,14 +60,14 @@ def get_custom_config():
         context["QEXO_LOGO"] = SettingModel.objects.get(name="QEXO_LOGO").content
     except:
         save_setting('QEXO_LOGO',
-                     'https://cdn.jsdelivr.net/gh/am-abudu/Qexo@master/static/assets' +
+                     'https://unpkg.zhimg.com/qexo-static@1.0.0/assets' +
                      '/img/brand/qexo.png')
         context["QEXO_LOGO"] = SettingModel.objects.get(name="QEXO_LOGO").content
     try:
         context["QEXO_ICON"] = SettingModel.objects.get(name="QEXO_ICON").content
     except:
         save_setting('QEXO_ICON',
-                     'https://cdn.jsdelivr.net/gh/am-abudu/Qexo@master/static/assets' +
+                     'https://unpkg.zhimg.com/qexo-static@1.0.0/assets' +
                      '/img/brand/favicon.ico')
         context["QEXO_ICON"] = SettingModel.objects.get(name="QEXO_ICON").content
     return context

@@ -685,21 +685,4 @@ def upload_img(request):
 # 获取更新 api/get_update
 @login_required(login_url="/login/")
 def get_update(request):
-    context = dict()
-    try:
-        user = github.Github(SettingModel.objects.get(name='GH_TOKEN').content)
-        latest = user.get_repo("am-abudu/Qexo").get_latest_release()
-        if latest.tag_name and (latest.tag_name != QEXO_VERSION):
-            context["hasNew"] = True
-        else:
-            context["hasNew"] = False
-        context["newer"] = latest.tag_name
-        context["newer_link"] = latest.html_url
-        context["newer_time"] = latest.created_at.astimezone(
-            timezone(timedelta(hours=16))).strftime(
-            "%Y-%m-%d %H:%M:%S")
-        context["newer_text"] = latest.body
-        context["status"] = True
-    except:
-        context["status"] = False
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return render(request, 'layouts/json.html', {"data": json.dumps(get_latest_version())})

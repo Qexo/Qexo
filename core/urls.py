@@ -3,6 +3,7 @@ from django.urls import path, re_path
 # from django.contrib import admin
 from django.views.static import serve
 from django.conf import settings
+import hexoweb.pub as pub
 
 urlpatterns = [
     # path('admin/', admin.site.urls),
@@ -40,7 +41,21 @@ urlpatterns = [
     path('api/get_update/', get_update, name='get_update'),
     path('api/do_update/', do_update, name='do_update'),
 
-    re_path(r'^(?!api).*$\.*', pages, name='pages'),
+    path('pub/save/', pub.save, name='pub_save'),
+    path('pub/save_post/', pub.save_post, name='pub_save_post'),
+    path('pub/save_draft/', pub.save_draft, name='pub_save_draft'),
+    path('pub/new/', pub.new, name='pub_new'),
+    path('pub/delete/', pub.delete, name='pub_delete'),
+    path('pub/delete_post/', pub.delete_post, name='pub_delete_post'),
+    path('pub/create_webhook/', pub.create_webhook_config, name='pub_create_webhook'),
+    path('pub/upload/', pub.upload_img, name='pub_upload'),
+    path('pub/get_update/', pub.get_update, name='pub_get_update'),
+    path('pub/get_posts/', pub.get_posts, name='pub_get_posts'),
+    path('pub/get_pages/', pub.get_pages, name='pub_get_pages'),
+    path('pub/get_configs/', pub.get_configs, name='pub_get_configs'),
+    path('pub/get_images/', pub.get_images, name='pub_get_images'),
+
+    re_path(r'^(?!api)^(?!pub).*$\.*', pages, name='pages'),
 ]
 
 handler404 = page_404

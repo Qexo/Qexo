@@ -46,11 +46,13 @@
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
-    <link href="https://cdn.jsdelivr.net/npm/vditor@3.8.7/dist/index.css" rel="stylesheet"/>
-    <script src="https://cdn.jsdelivr.net/npm/vditor@3.8.7/dist/index.min.js"></script>
+    <link href="https://unpkg.zhimg.com/vditor@3.8.7/dist/index.css" rel="stylesheet"/>
+    <script src="https://unpkg.zhimg.com/vditor@3.8.7/dist/index.min.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@master/static/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
+    <script src="https://unpkg.zhimg.com/qexo-static@1.0.0/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
     <script>
+        var _status=true;
+
         $.ajaxSetup({
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
         });
@@ -121,8 +123,11 @@
         }
 
         function SaveChanges() {
+            if(!_status){
+                return false;
+            }
             var loading = new KZ_Loading('正在保存中...');
-            loading.show();
+            _status=false;
             $.ajax({
                 url: '/api/save/',
                 method: 'post',
@@ -131,14 +136,17 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        var notify = $.notify('保存成功！', {type: "success", delay: 1000});
+                        $.notify('保存成功！', {type: "success", delay: 1000});
+                        _status=true;
                     } else {
-                        var notify = $.notify(res.msg, {type: "warning", delay: 1000});
+                        $.notify(res.msg, {type: "warning", delay: 1000});
+                        _status=true;
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    var notify = $.notify("网络错误！", {type: "warning", delay: 1000});
+                    $.notify("网络错误！", {type: "warning", delay: 1000});
+                    _status=true;
                 }
             })
 

@@ -20,8 +20,7 @@
 ### Vercel 部署
 
 点击按钮开始部署 
-[![部署到 Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://vercel.com/new/clone?s=https://github.com/am-abudu/Qexo)
-
+[![部署到 Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/am-abudu/Qexo)
 
 在项目部署界面添加环境变量 Environment Variables
 | 名称 | 意义 | 示例 |

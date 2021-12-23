@@ -17,7 +17,7 @@
 [注册 MongoDB 账号](https://www.mongodb.com/cloud/atlas/register) 创建免费 MongoDB 数据库，区域推荐选择 AWS / N. 
   Virginia (us-east-1) 在 Clusters 页面点击 CONNECT，按步骤设置允许所有 IP 地址的连接），创建数据库用户，并记录数据库连接信息，密码即为你所设置的值
 ![](https://user-images.githubusercontent.com/51912589/140946317-bafeac24-fe3f-408b-927a-ca9a88168fa8.png)
-### 部署
+### Vercel 部署
 
 点击按钮开始部署 
 [![部署到 Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://vercel.com/new/clone?s=https://github.com/am-abudu/Qexo)

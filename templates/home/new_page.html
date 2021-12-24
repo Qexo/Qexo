@@ -48,11 +48,13 @@
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
-    <link href="https://cdn.jsdelivr.net/npm/vditor@3.8.7/dist/index.css" rel="stylesheet"/>
-    <script src="https://cdn.jsdelivr.net/npm/vditor@3.8.7/dist/index.min.js"></script>
+    <link href="https://unpkg.zhimg.com/vditor@3.8.7/dist/index.css" rel="stylesheet"/>
+    <script src="https://unpkg.zhimg.com/vditor@3.8.7/dist/index.min.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@master/static/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
+    <script src="https://unpkg.zhimg.com/qexo-static@1.0.0/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
     <script>
+        var _status = true;
+
         $.ajaxSetup({
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
         });
@@ -126,7 +128,11 @@
             if (!$("input[name='filename']").val()) {
                 let notify = $.notify("请输入正确的页面名！", {type: "warning", delay: 1500});
             } else {
+                if (!_status) {
+                    return false;
+                }
                 let loading = new KZ_Loading('正在保存中...');
+                _status = false;
                 loading.show();
                 $.ajax({
                     url: '/api/new/',
@@ -143,12 +149,14 @@
                             setTimeout(window.location.href = "edit_page.html?file=source/" + $
                             ("input[name='filename']").val() + "/index.md", 1000);
                         } else {
-                            let notify = $.notify(res.msg, {type: "warning", delay: 1000});
+                            $.notify(res.msg, {type: "warning", delay: 1000});
                         }
+                        _status=true;
                     },
                     error: function (res) {
                         loading.destroy();
-                        let notify = $.notify("网络错误！", {type: "warning", delay: 1000});
+                        $.notify("网络错误！", {type: "warning", delay: 1000});
+                        _status=true;
                     }
                 })
 

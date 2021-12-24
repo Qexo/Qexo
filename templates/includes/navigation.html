@@ -101,8 +101,8 @@
                                                         href="{{ newer_link }}"
                                                         target="_blank">
                                                     {{ newer }}</a><br>
-                                                    {{ newer_text }}
                                                 </p>
+                                                {{ newer_text|safe }}
                                             {% else %}
                                                 <p class="text-sm mb-0">当前是最新版本哟~</p>
                                             {% endif %}

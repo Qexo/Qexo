@@ -162,10 +162,13 @@ def delete_post(request):
         repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
         filename = request.POST.get('file')
         try:
-            repo.delete_file(repo_path + "source/_posts/" + filename, "Delete by Qexo",
+            try:
+                repo.delete_file(repo_path + "source/_posts/" + filename, "Delete by Qexo",
                              repo.get_contents(
                                  repo_path + "source/_posts/" + filename, ref=branch).sha,
                              branch=branch)
+            except:
+                pass
             try:
                 repo.delete_file(repo_path + "source/_drafts/" + filename, "Delete by Qexo",
                                  repo.get_contents(

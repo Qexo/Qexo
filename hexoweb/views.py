@@ -505,6 +505,18 @@ def pages(request):
                         name="IMG_TYPE").content
                 except:
                     save_setting('IMG_TYPE', '')
+                try:
+                    context['ABBRLINK_ALG'] = SettingModel.objects.get(
+                        name="ABBRLINK_ALG").content
+                except:
+                    save_setting('ABBRLINK_ALG', 'crc16')
+                    context['ABBRLINK_ALG'] = "crc16"
+                try:
+                    context['ABBRLINK_REP'] = SettingModel.objects.get(
+                        name="ABBRLINK_REP").content
+                except:
+                    save_setting('ABBRLINK_REP', 'dec')
+                    context['ABBRLINK_REP'] = "dec"
 
             except Exception as e:
                 context["error"] = repr(e)

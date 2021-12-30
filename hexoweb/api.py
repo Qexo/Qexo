@@ -131,6 +131,20 @@ def set_image_bed(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 设置 Abbrlink 配置 api/set_abbrlink
+@login_required(login_url="/login/")
+def set_abbrlink(request):
+    try:
+        alg = request.POST.get("alg")
+        rep = request.POST.get("rep")
+        save_setting("ABBRLINK_ALG", alg)
+        save_setting("ABBRLINK_REP", rep)
+        context = {"msg": "保存成功!", "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
 # 设置s3配置 api/set_s3
 @login_required(login_url="/login/")
 def set_s3(request):
@@ -352,6 +366,16 @@ def auto_fix(request):
             SettingModel.objects.get(name="IMG_TYPE").content
         except:
             save_setting('IMG_TYPE', '')
+            counter += 1
+        try:
+            SettingModel.objects.get(name="ABBRLINK_ALG").content
+        except:
+            save_setting('ABBRLINK_ALG', 'crc16')
+            counter += 1
+        try:
+            SettingModel.objects.get(name="ABBRLINK_REP").content
+        except:
+            save_setting('ABBRLINK_REP', 'dec')
             counter += 1
         msg = "尝试自动修复了{}个字段，请在稍后检查和修改配置".format(counter)
         context = {"msg": msg, "status": True}

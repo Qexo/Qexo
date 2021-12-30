@@ -67,30 +67,32 @@
 
 <script src="https://unpkg.zhimg.com/qexo-static@1.0.0/assets/js/argon.js?v=1.2.0"></script>
 <script>
+    {% if error %}
+        $.notify("{{ error }}", {type: "warning"});
+    {% endif %}
     {% if 'index' not in segment %}
-    $.ajax({
-        url: "/api/get_update/",
-        type: "get",
-        success: function (res) {
-            let data = JSON.parse(res);
-            if (data["status"]) {
-                $("#update-time").html("<small>" + data["newer_time"] + "</small>");
-                if (data["hasNew"]) {
-                    $("#update-body").html("有新版本: <a href=\"" + data["newer_link"] + "\" " +
-                        "target=\"_blank\">" + data["newer"] + "</a><br>" + data["newer_text"])
-                    $(".update-point").css({
-                        "position": "absolute", "top": "-4px", "right": "-3px", "width": "6px",
-                        "height": "6px", "background": "red", "border-radius": "50%"
-                    })
+        $.ajax({
+            url: "/api/get_update/",
+            type: "get",
+            success: function (res) {
+                let data = JSON.parse(res);
+                if (data["status"]) {
+                    $("#update-time").html("<small>" + data["newer_time"] + "</small>");
+                    if (data["hasNew"]) {
+                        $("#update-body").html("有新版本: <a href=\"" + data["newer_link"] + "\" " +
+                            "target=\"_blank\">" + data["newer"] + "</a><br>" + data["newer_text"])
+                        $(".update-point").css({
+                            "position": "absolute", "top": "-4px", "right": "-3px", "width": "6px",
+                            "height": "6px", "background": "red", "border-radius": "50%"
+                        })
+                    } else {
+                        $("#update-body").html("当前是最新版本哟~")
+                    }
                 } else {
-                    $("#update-body").html("当前是最新版本哟~")
+                    $("#update-body").html("检查更新失败！");
                 }
             }
-            else{
-                $("#update-body").html("检查更新失败！");
-            }
-        }
-    })
+        })
     {% endif %}
 
 </script>

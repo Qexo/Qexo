@@ -561,10 +561,6 @@
 {% block javascripts %}
     <script src="https://unpkg.zhimg.com/qexo-static@1.0.0/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
     <script>
-        {% if error %}
-            $.notify("{{ error }}", {type: "warning"});
-        {% endif %}
-
         function getBaseUrl() {
             let ishttps = 'https:' == document.location.protocol ? true : false;
             let url = window.location.host;

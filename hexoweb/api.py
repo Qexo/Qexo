@@ -158,6 +158,7 @@ def set_s3(request):
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
+
 # 设置自定义配置 api/set_cust
 @login_required(login_url="/login/")
 def set_cust(request):
@@ -520,9 +521,9 @@ def delete_post(request):
         try:
             try:
                 repo.delete_file(repo_path + "source/_posts/" + filename, "Delete by Qexo",
-                             repo.get_contents(
-                                 repo_path + "source/_posts/" + filename, ref=branch).sha,
-                             branch=branch)
+                                 repo.get_contents(
+                                     repo_path + "source/_posts/" + filename, ref=branch).sha,
+                                 branch=branch)
             except:
                 pass
             try:

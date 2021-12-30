@@ -9,7 +9,7 @@ from time import time
 from hashlib import md5
 from urllib3 import disable_warnings
 from markdown import markdown
-from markdown.extensions.abbr import AbbrExtension
+from zlib import crc32 as zlib_crc32
 
 disable_warnings()
 
@@ -360,3 +360,34 @@ def check_if_api_auth(request):
     if request.GET.get("token") == SettingModel.objects.get(name="WEBHOOK_APIKEY").content:
         return True
     return False
+
+
+def get_crc16(x, _hex=False):
+    x = str(x)
+    a = 0xFFFF
+    b = 0xA001
+    for byte in x:
+        a ^= ord(byte)
+        for i in range(8):
+            last = a % 2
+            a >>= 1
+            if last == 1:
+                a ^= b
+    s = hex(a)
+    return str(int(s[2:4] + s[4:6], 16)) if _hex is False else (s[2:4] + s[4:6])
+
+
+def get_crc32(x, _hex=False):
+    return str(zlib_crc32(x.encode("utf8"))) if _hex is False else hex(
+        zlib_crc32(x.encode("utf8")))[2:]
+
+
+def get_crc_by_time(_strtime, alg, rep):
+    if rep == "hex":
+        use_hex = True
+    else:
+        use_hex = False
+    if alg != "crc16" and alg != "crc32":
+        return ""
+    return get_crc16(_strtime.replace(".", "0"), _hex=use_hex) if alg == "crc16" else get_crc32(
+        _strtime.replace(".", "0"), _hex=use_hex)

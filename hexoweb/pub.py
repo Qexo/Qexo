@@ -164,9 +164,9 @@ def delete_post(request):
         try:
             try:
                 repo.delete_file(repo_path + "source/_posts/" + filename, "Delete by Qexo",
-                             repo.get_contents(
-                                 repo_path + "source/_posts/" + filename, ref=branch).sha,
-                             branch=branch)
+                                 repo.get_contents(
+                                     repo_path + "source/_posts/" + filename, ref=branch).sha,
+                                 branch=branch)
             except:
                 pass
             try:

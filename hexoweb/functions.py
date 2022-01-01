@@ -95,17 +95,19 @@ def update_posts_cache(s=None, _path=""):
             posts = json.loads(old_cache.first().content)
             i = 0
             while i < len(posts):
-                if s not in posts[i]["name"]:
+                if s.upper() not in posts[i]["name"].upper():
                     del posts[i]
                     i -= 1
                 i += 1
             cache_name = "posts." + str(s)
             update_caches(cache_name, posts)
             return posts
+    else:
+        old_cache = False
+    _posts = list()
+    _drafts = list()
+    names = list()
     try:
-        _posts = list()
-        _drafts = list()
-        names = list()
         posts = repo.get_contents(
             SettingModel.objects.get(name="GH_REPO_PATH").content + 'source/_posts' + _path,
             ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
@@ -153,7 +155,7 @@ def update_posts_cache(s=None, _path=""):
             update_caches("posts", posts)
         i = 0
         while i < len(posts):
-            if s not in posts[i]["name"]:
+            if s.upper() not in posts[i]["name"].upper():
                 del posts[i]
                 i -= 1
             i += 1
@@ -167,6 +169,19 @@ def update_posts_cache(s=None, _path=""):
 
 
 def update_pages_cache(s=None):
+    if s:
+        old_cache = Cache.objects.filter(name="pages")
+        if old_cache.count():
+            posts = json.loads(old_cache.first().content)
+            i = 0
+            while i < len(posts):
+                if s.upper() not in posts[i]["name"].upper():
+                    del posts[i]
+                    i -= 1
+                i += 1
+            cache_name = "pages." + str(s)
+            update_caches(cache_name, posts)
+            return posts
     repo = get_repo()
     posts = repo.get_contents(SettingModel.objects.get(name="GH_REPO_PATH").content + 'source',
                               ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
@@ -177,39 +192,70 @@ def update_pages_cache(s=None):
                     SettingModel.objects.get(name="GH_REPO_PATH").content + post.path,
                     ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content):
                 if i.type == "file":
-                    if s:
-                        if (i.name == "index.md" or i.name == "index.html") and (
-                                str(s) in post.name):
-                            results.append({"name": post.name, "path": i.path, "size": i.size})
-                            break
-                    else:
-                        if i.name == "index.md" or i.name == "index.html":
-                            results.append({"name": post.name, "path": i.path, "size": i.size})
-                            break
-    if s:
-        cache_name = "pages." + str(s)
-    else:
-        cache_name = "pages"
-    update_caches(cache_name, results)
+                    if i.name == "index.md" or i.name == "index.html":
+                        results.append({"name": post.name, "path": i.path, "size": i.size})
+                        break
+    update_caches("pages", results)
+    if not s:
+        return results
+    i = 0
+    while i < len(results):
+        if s.upper() not in results[i]["name"].upper():
+            del results[i]
+            i -= 1
+        i += 1
+    update_caches("pages." + str(s), results)
     return results
 
 
 def update_configs_cache(s=None):
+    if s:
+        old_cache = Cache.objects.filter(name="configs")
+        if old_cache.count():
+            posts = json.loads(old_cache.first().content)
+            i = 0
+            while i < len(posts):
+                if s.upper() not in posts[i]["name"].upper():
+                    del posts[i]
+                    i -= 1
+                i += 1
+            cache_name = "configs." + str(s)
+            update_caches(cache_name, posts)
+            return posts
     repo = get_repo()
     posts = repo.get_contents(SettingModel.objects.get(name="GH_REPO_PATH").content,
                               ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
     results = list()
+    # 检索 .github/workflows 仅最多一层目录
+    sources = repo.get_contents(SettingModel.objects.get(name="GH_REPO_PATH").content +
+                                ".github/workflows",
+                                ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
+    for source in sources:
+        if source.type == "file":
+            try:
+                if source.name[-3:] == "yml":
+                    results.append(
+                        {"name": source.name, "path": source.path, "size": source.size})
+            except:
+                pass
+        if source.type == "dir":
+            for post in repo.get_contents(source.path,
+                                          ref=SettingModel.objects.get(
+                                              name="GH_REPO_BRANCH").content):
+                try:
+                    if post.name[-3:] == "yml":
+                        results.append(
+                            {"name": post.name, "path": post.path, "size": post.size})
+                except:
+                    pass
+    # 检索根目录
     for post in posts:
         try:
-            if s:
-                if post.name[-3:] == "yml" and s in post.name:
-                    results.append({"name": post.name, "path": post.path, "size": post.size})
-            else:
-                if post.name[-3:] == "yml":
-                    results.append({"name": post.name, "path": post.path, "size": post.size})
+            if post.name[-3:] == "yml":
+                results.append({"name": post.name, "path": post.path, "size": post.size})
         except:
             pass
-
+    # 检索 themes 仅下一级目录下的文件
     themes = repo.get_contents(SettingModel.objects.get(name="GH_REPO_PATH").content + "themes",
                                ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
     for theme in themes:
@@ -218,31 +264,21 @@ def update_configs_cache(s=None):
                                           ref=SettingModel.objects.get(
                                               name="GH_REPO_BRANCH").content):
                 try:
-                    if s:
-                        if post.name[-3:] == "yml" and s in post.name:
-                            results.append(
-                                {"name": post.name, "path": post.path, "size": post.size})
-                    else:
-                        if post.name[-3:] == "yml":
-                            results.append(
-                                {"name": post.name, "path": post.path, "size": post.size})
+                    if post.name[-3:] == "yml":
+                        results.append(
+                            {"name": post.name, "path": post.path, "size": post.size})
                 except:
                     pass
-
+    # 检索 source 仅最多一层目录
     sources = repo.get_contents(SettingModel.objects.get(name="GH_REPO_PATH").content +
                                 "source",
                                 ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
     for source in sources:
         if source.type == "file":
             try:
-                if s:
-                    if source.name[-3:] == "yml" and s in source.name:
-                        results.append(
-                            {"name": source.name, "path": source.path, "size": source.size})
-                else:
-                    if source.name[-3:] == "yml":
-                        results.append(
-                            {"name": source.name, "path": source.path, "size": source.size})
+                if source.name[-3:] == "yml":
+                    results.append(
+                        {"name": source.name, "path": source.path, "size": source.size})
             except:
                 pass
         if source.type == "dir":
@@ -250,22 +286,22 @@ def update_configs_cache(s=None):
                                           ref=SettingModel.objects.get(
                                               name="GH_REPO_BRANCH").content):
                 try:
-                    if s:
-                        if post.name[-3:] == "yml" and s in post.name:
-                            results.append(
-                                {"name": post.name, "path": post.path, "size": post.size})
-                    else:
-                        if post.name[-3:] == "yml":
-                            results.append(
-                                {"name": post.name, "path": post.path, "size": post.size})
+                    if post.name[-3:] == "yml":
+                        results.append(
+                            {"name": post.name, "path": post.path, "size": post.size})
                 except:
                     pass
 
-    if s:
-        cache_name = "configs." + str(s)
-    else:
-        cache_name = "configs"
-    update_caches(cache_name, results)
+    update_caches("configs", results)
+    if not s:
+        return results
+    i = 0
+    while i < len(results):
+        if s.upper() not in results[i]["name"].upper():
+            del results[i]
+            i -= 1
+        i += 1
+    update_caches("configs." + str(s), results)
     return results
 
 

@@ -381,7 +381,7 @@ def get_images(request):
 def auto_fix(request):
     try:
         counter = fix_all()
-        msg = "尝试自动修复了{}个字段，请在稍后检查和修改配置".format(counter)
+        msg = "尝试自动修复了 {} 个字段，请在稍后检查和修改配置".format(counter)
         context = {"msg": msg, "status": True}
     except Exception as e:
         context = {"msg": repr(e), "status": False}

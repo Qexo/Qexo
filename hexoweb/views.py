@@ -9,11 +9,12 @@ from .api import *
 
 
 def page_404(request, exception):
-    return render(request, 'home/page-404.html', {"cdn_prev": get_cdn()})
+    return render(request, 'home/page-404.html', {"cdn_prev": "https://cdn.jsdelivr.net/npm/"})
 
 
 def page_500(request):
-    return render(request, 'home/page-500.html', {"error": "程序遇到了错误！", "cdn_prev": get_cdn()})
+    return render(request, 'home/page-500.html',
+                  {"error": "程序遇到了错误！", "cdn_prev": "https://cdn.jsdelivr.net/npm/"})
 
 
 def login_view(request):

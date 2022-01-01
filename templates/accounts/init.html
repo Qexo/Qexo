@@ -234,7 +234,7 @@
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
 
-    <script src="https://unpkg.zhimg.com/qexo-static@1.0.0/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
+    <script src="{{ cdn_prev }}qexo-static@1.0.0/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
     <script>
         {% if msg %}
             $.notify("{{ msg }}", {type: "warning", delay: 1000});

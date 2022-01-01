@@ -106,7 +106,7 @@
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
-    <script src="https://unpkg.zhimg.com/qexo-static@1.0.0/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
+    <script src="{{ cdn_prev }}qexo-static@1.0.0/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
     <script>
         var posts = {{ settings|safe }};
         var _page = 1;

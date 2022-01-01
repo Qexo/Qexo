@@ -374,3 +374,15 @@ def get_images(request):
     except Exception as error:
         context = {"status": False, "error": repr(error)}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 自动修复程序 api/fix
+@csrf_exempt
+def auto_fix(request):
+    try:
+        counter = fix_all()
+        msg = "尝试自动修复了{}个字段，请在稍后检查和修改配置".format(counter)
+        context = {"msg": msg, "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})

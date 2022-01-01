@@ -32,6 +32,15 @@ def get_repo():
     return False
 
 
+def get_cdn():
+    try:
+        cdn_prev = SettingModel.objects.get(name="CDN_PREV").content
+    except:
+        save_setting("CDN_PREV", "https://cdn.jsdelivr.net/npm/")
+        cdn_prev = "https://cdn.jsdelivr.net/npm/"
+    return cdn_prev
+
+
 def get_post(post):
     repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
     branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
@@ -45,7 +54,7 @@ def get_post(post):
 
 # 获取用户自定义的样式配置
 def get_custom_config():
-    context = dict()
+    context = {"cdn_prev": get_cdn()}
     try:
         context["QEXO_NAME"] = SettingModel.objects.get(name="QEXO_NAME").content
     except:
@@ -60,14 +69,14 @@ def get_custom_config():
         context["QEXO_LOGO"] = SettingModel.objects.get(name="QEXO_LOGO").content
     except:
         save_setting('QEXO_LOGO',
-                     'https://unpkg.zhimg.com/qexo-static@1.0.0/assets' +
+                     'https://cdn.jsdelivr.net/npm/qexo-static@1.0.0/assets' +
                      '/img/brand/qexo.png')
         context["QEXO_LOGO"] = SettingModel.objects.get(name="QEXO_LOGO").content
     try:
         context["QEXO_ICON"] = SettingModel.objects.get(name="QEXO_ICON").content
     except:
         save_setting('QEXO_ICON',
-                     'https://unpkg.zhimg.com/qexo-static@1.0.0/assets' +
+                     'https://cdn.jsdelivr.net/npm/qexo-static@1.0.0/assets' +
                      '/img/brand/favicon.ico')
         context["QEXO_ICON"] = SettingModel.objects.get(name="QEXO_ICON").content
     return context
@@ -427,3 +436,134 @@ def get_crc_by_time(_strtime, alg, rep):
         return ""
     return get_crc16(_strtime.replace(".", "0"), _hex=use_hex) if alg == "crc16" else get_crc32(
         _strtime.replace(".", "0"), _hex=use_hex)
+
+
+def fix_all():
+    counter = 0
+    already = list()
+    settings = SettingModel.objects.all()
+    for query in settings:
+        if query.name not in already:
+            already.append(query.name)
+        else:
+            query.delete()
+            counter += 1
+    try:
+        SettingModel.objects.get(name="GH_REPO_PATH").content
+    except:
+        save_setting('GH_REPO_PATH', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name="GH_REPO_BRANCH").content
+    except:
+        save_setting('GH_REPO_BRANCH', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name="GH_REPO").content
+    except:
+        save_setting('GH_REPO', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name="GH_TOKEN").content
+    except:
+        save_setting('GH_TOKEN', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name='IMG_CUSTOM_URL').content
+    except:
+        save_setting('IMG_CUSTOM_URL', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name='IMG_CUSTOM_HEADER').content
+    except:
+        save_setting('IMG_CUSTOM_HEADER', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name='IMG_CUSTOM_BODY').content
+    except:
+        save_setting('IMG_CUSTOM_BODY', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name='IMG_JSON_PATH').content
+    except:
+        save_setting('IMG_JSON_PATH', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name='IMG_POST').content
+    except:
+        save_setting('IMG_POST', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name='IMG_API').content
+    except:
+        save_setting('IMG_API', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name="UPDATE_REPO_BRANCH").content
+    except:
+        save_setting('UPDATE_REPO_BRANCH', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name="UPDATE_REPO").content
+    except:
+        save_setting('UPDATE_REPO', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name="UPDATE_ORIGIN_BRANCH").content
+    except:
+        save_setting('UPDATE_ORIGIN_BRANCH', 'master')
+        counter += 1
+    try:
+        SettingModel.objects.get(name="S3_KEY_ID").content
+    except:
+        save_setting('S3_KEY_ID', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name="S3_ACCESS_KEY").content
+    except:
+        save_setting('S3_ACCESS_KEY', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name="S3_ENDPOINT").content
+    except:
+        save_setting('S3_ENDPOINT', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name="S3_BUCKET").content
+    except:
+        save_setting('S3_BUCKET', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name="S3_PATH").content
+    except:
+        save_setting('S3_PATH', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name="S3_PREV_URL").content
+    except:
+        save_setting('S3_PREV_URL', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name="IMG_TYPE").content
+    except:
+        save_setting('IMG_TYPE', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name="ABBRLINK_ALG").content
+    except:
+        save_setting('ABBRLINK_ALG', 'crc16')
+        counter += 1
+    try:
+        SettingModel.objects.get(name="ABBRLINK_REP").content
+    except:
+        save_setting('ABBRLINK_REP', 'dec')
+        counter += 1
+    try:
+        if SettingModel.objects.get(name="CDN_PREV").content != "https://cdn.jsdelivr.net/npm/":
+            save_setting('CDN_PREV', 'https://cdn.jsdelivr.net/npm/')
+            counter += 1
+    except:
+        save_setting('CDN_PREV', 'https://cdn.jsdelivr.net/npm/')
+        counter += 1
+
+    return counter

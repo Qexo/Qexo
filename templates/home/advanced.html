@@ -146,10 +146,14 @@
             }
             let list = "";
             for (let i = 0; i < page_posts.length; i++) {
+                let content_show = page_posts[i]["content"];
+                if(page_posts[i]["content"].length>53){
+                    content_show = page_posts[i]["content"].slice(0,50) + "...";
+                }
                 list += "<tr><th scope=\"row\">" + page_posts[i]["name"] + "</th><td>" +
-                    page_posts[i]["content"] + "</td>";
+                     content_show + "</td>";
                 list += "<td><a href=\"javascript:query_edit('" + page_posts[i]["name"] + "', " +
-                    "'" + page_posts[i]["content"] + "')\">" +
+                    "'" + page_posts[i]["content"].replaceAll("\"", "&quot;") + "')\">" +
                     "<i class=\"fa fa-edit mr-2\"></i></a>" + "<a href=\"javascript:query_delete('" +
                     page_posts[i]["name"] + "')\"><i class=\"fa fa-trash-alt " +
                     "mr-2\"></i></a></td></tr>";
@@ -257,7 +261,7 @@
             let html = "<div class=\"col\"><label " +
                 "class=\"form-control-label\">" + name + "</label><input type=\"text\" " +
                 "name=\"content\" id=\"edit-content\" " +
-                "class=\"form-control\" value=\"" + content + "\"></div>";
+                "class=\"form-control\" value=\"" + content.toString().replaceAll("\"", "&quot;") +"\"></div>";
             $("#query-modal-body").html(html);
             $("#queryLabel").html("编辑");
             let footer = "<button type=\"button\" class=\"btn btn-secondary\" " +

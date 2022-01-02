@@ -240,12 +240,13 @@ def pages(request):
                 ">", "\\>").replace("!", "\\!")
             context['filename'] = file_path.split("/")[-2] + "/" + file_path.split("/")[-1]
             context["file_path"] = file_path
+            context["emoji"] = SettingModel.objects.get(name="VDITOR_EMOJI").content
             try:
                 if SettingModel.objects.get(
                         name="IMG_TYPE").content:
                     context["img_bed"] = True
-            except:
-                pass
+            except Exception as error:
+                context["error"] = repr(error)
         elif "edit_config" in load_template:
             file_path = request.GET.get("file")
             repo = get_repo()
@@ -263,14 +264,16 @@ def pages(request):
                 ">", "\\>").replace("!", "\\!")
             context['filename'] = file_path.split("/")[-1]
             context['fullname'] = file_path
+            context["emoji"] = SettingModel.objects.get(name="VDITOR_EMOJI").content
             try:
                 if SettingModel.objects.get(
                         name="IMG_TYPE").content:
                     context["img_bed"] = True
-            except:
-                pass
+            except Exception as error:
+                context["error"] = repr(error)
         elif "new_page" in load_template:
             repo = get_repo()
+            context["emoji"] = SettingModel.objects.get(name="VDITOR_EMOJI").content
             try:
                 now = time()
                 alg = SettingModel.objects.get(name="ABBRLINK_ALG").content
@@ -285,9 +288,8 @@ def pages(request):
                                                             strftime("%Y-%m-%d %H:%M:%S",
                                                                      localtime(now))).replace(
                     "{{ abbrlink }}", abbrlink).replace("!", "\\!")
-
-            except:
-                pass
+            except Exception as error:
+                context["error"] = repr(error)
             try:
                 if SettingModel.objects.get(
                         name="IMG_TYPE").content:
@@ -296,6 +298,7 @@ def pages(request):
                 context["error"] = repr(error)
         elif "new" in load_template:
             repo = get_repo()
+            context["emoji"] = SettingModel.objects.get(name="VDITOR_EMOJI").content
             try:
                 now = time()
                 alg = SettingModel.objects.get(name="ABBRLINK_ALG").content
@@ -317,8 +320,8 @@ def pages(request):
                 if SettingModel.objects.get(
                         name="IMG_TYPE").content:
                     context["img_bed"] = True
-            except:
-                pass
+            except Exception as error:
+                context["error"] = repr(error)
         elif "posts" in load_template:
             search = request.GET.get("s")
             if search:

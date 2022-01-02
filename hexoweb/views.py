@@ -307,7 +307,7 @@ def pages(request):
                         ref=SettingModel.objects.get(
                             name="GH_REPO_BRANCH").content).decoded_content.decode("utf8").replace(
                         "{{ date }}", strftime("%Y-%m-%d %H:%M:%S", localtime(
-                            now)))).replace("{{ abbrlink }}", abbrlink).replace("<",
+                            now))).replace("{{ abbrlink }}", abbrlink)).replace("<",
                                                                                 "\\<").replace(
                     ">", "\\>").replace("!", "\\!")
 

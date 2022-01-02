@@ -48,8 +48,8 @@
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
-    <link href="{{ cdn_prev }}vditor@3.8.7/dist/index.css" rel="stylesheet"/>
-    <script src="{{ cdn_prev }}vditor@3.8.7/dist/index.min.js"></script>
+    <link href="{{ cdn_prev }}vditor@3.8.8/dist/index.css" rel="stylesheet"/>
+    <script src="{{ cdn_prev }}vditor@3.8.8/dist/index.min.js"></script>
 
     <script src="{{ cdn_prev }}qexo-static@1.0.0/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
     <script>
@@ -173,6 +173,7 @@
                 toolbarConfig: {
                     pin: true
                 },
+                "cdn": "{{ cdn_prev }}vditor@3.8.8",
                 counter: {
                     enable: true
                 },
@@ -186,6 +187,10 @@
                 "debugger": false,
                 "cache": {
                     "enable": false,
+                },"preview": {
+                    "theme": {
+                        "path": "{{ cdn_prev }}vditor@3.8.8/dist/css/content-theme/light.css"
+                    }
                 },
                 toolbar: [
                     'emoji',
@@ -398,6 +403,7 @@
                     "fullscreen",
                     "preview"
                 ],
+                "cdn": "{{ cdn_prev }}vditor@3.8.8",
                 "fullscreen": {
                     "index": 1050,
                 },
@@ -408,7 +414,10 @@
                 "mode": "sv",
                 "debugger": false,
                 "preview": {
-                    "mode": "both"
+                    "mode": "both",
+                    "theme": {
+                        "path": "{{ cdn_prev }}vditor@3.8.8/dist/css/content-theme/light.css"
+                    }
                 }, hint: {
                     emoji: {
                         "\u5fae\u7b11": "\ud83d\ude42",

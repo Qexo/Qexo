@@ -215,6 +215,7 @@
                     enable: true
                 },
                 "cdn": "{{ cdn_prev }}vditor@3.8.8",
+                "mode": "ir",
                 "height": window.innerHeight / 2,
                 {% if file_content %}
                     "value": {{ file_content|safe }},
@@ -373,7 +374,7 @@
                         if (responseData.status) {
                             let imageUrl = responseData.url;
                             let succFileText = "";
-                            if (vditor && vditor.vditor.currentMode === "wysiwyg") {
+                            if (vditor && vditor.vditor.currentMode === "ir") {
                                 succFileText += `\n <img alt=${imageUrl} src="${imageUrl}">`;
                             } else {
                                 succFileText += `\n![${imageUrl}](${imageUrl})`;
@@ -582,7 +583,7 @@
                         if (responseData.status) {
                             let imageUrl = responseData.url;
                             let succFileText = "";
-                            if (vditor && vditor.vditor.currentMode === "wysiwyg") {
+                            if (vditor && vditor.vditor.currentMode === "ir") {
                                 succFileText += `\n <img alt=${imageUrl} src="${imageUrl}">`;
                             } else {
                                 succFileText += `\n![${imageUrl}](${imageUrl})`;

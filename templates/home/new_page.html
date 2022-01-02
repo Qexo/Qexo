@@ -151,12 +151,12 @@
                         } else {
                             $.notify(res.msg, {type: "warning", delay: 1000});
                         }
-                        _status=true;
+                        _status = true;
                     },
                     error: function (res) {
                         loading.destroy();
                         $.notify("网络错误！", {type: "warning", delay: 1000});
-                        _status=true;
+                        _status = true;
                     }
                 })
 
@@ -174,6 +174,7 @@
                     pin: true
                 },
                 "cdn": "{{ cdn_prev }}vditor@3.8.8",
+                "mode": "ir",
                 counter: {
                     enable: true
                 },
@@ -187,7 +188,7 @@
                 "debugger": false,
                 "cache": {
                     "enable": false,
-                },"preview": {
+                }, "preview": {
                     "theme": {
                         "path": "{{ cdn_prev }}vditor@3.8.8/dist/css/content-theme/light.css"
                     }
@@ -335,7 +336,7 @@
                         if (responseData.status) {
                             let imageUrl = responseData.url;
                             let succFileText = "";
-                            if (vditor && vditor.vditor.currentMode === "wysiwyg") {
+                            if (vditor && vditor.vditor.currentMode === "ir") {
                                 succFileText += `\n <img alt=${imageUrl} src="${imageUrl}">`;
                             } else {
                                 succFileText += `\n![${imageUrl}](${imageUrl})`;
@@ -544,7 +545,7 @@
                         if (responseData.status) {
                             let imageUrl = responseData.url;
                             let succFileText = "";
-                            if (vditor && vditor.vditor.currentMode === "wysiwyg") {
+                            if (vditor && vditor.vditor.currentMode === "ir") {
                                 succFileText += `\n <img alt=${imageUrl} src="${imageUrl}">`;
                             } else {
                                 succFileText += `\n![${imageUrl}](${imageUrl})`;

@@ -236,27 +236,30 @@ def update_configs_cache(s=None):
                               ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
     results = list()
     # 检索 .github/workflows 仅最多一层目录
-    sources = repo.get_contents(SettingModel.objects.get(name="GH_REPO_PATH").content +
-                                ".github/workflows",
-                                ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
-    for source in sources:
-        if source.type == "file":
-            try:
-                if source.name[-3:] == "yml":
-                    results.append(
-                        {"name": source.name, "path": source.path, "size": source.size})
-            except:
-                pass
-        if source.type == "dir":
-            for post in repo.get_contents(source.path,
-                                          ref=SettingModel.objects.get(
-                                              name="GH_REPO_BRANCH").content):
+    try:
+        sources = repo.get_contents(SettingModel.objects.get(name="GH_REPO_PATH").content +
+                                    ".github/workflows",
+                                    ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
+        for source in sources:
+            if source.type == "file":
                 try:
-                    if post.name[-3:] == "yml":
+                    if source.name[-3:] == "yml":
                         results.append(
-                            {"name": post.name, "path": post.path, "size": post.size})
+                            {"name": source.name, "path": source.path, "size": source.size})
                 except:
                     pass
+            if source.type == "dir":
+                for post in repo.get_contents(source.path,
+                                              ref=SettingModel.objects.get(
+                                                  name="GH_REPO_BRANCH").content):
+                    try:
+                        if post.name[-3:] == "yml":
+                            results.append(
+                                {"name": post.name, "path": post.path, "size": post.size})
+                    except:
+                        pass
+    except:
+        pass
     # 检索根目录
     for post in posts:
         try:
@@ -265,19 +268,22 @@ def update_configs_cache(s=None):
         except:
             pass
     # 检索 themes 仅下一级目录下的文件
-    themes = repo.get_contents(SettingModel.objects.get(name="GH_REPO_PATH").content + "themes",
-                               ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
-    for theme in themes:
-        if theme.type == "dir":
-            for post in repo.get_contents(theme.path,
-                                          ref=SettingModel.objects.get(
-                                              name="GH_REPO_BRANCH").content):
-                try:
-                    if post.name[-3:] == "yml":
-                        results.append(
-                            {"name": post.name, "path": post.path, "size": post.size})
-                except:
-                    pass
+    try:
+        themes = repo.get_contents(SettingModel.objects.get(name="GH_REPO_PATH").content + "themes",
+                                   ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
+        for theme in themes:
+            if theme.type == "dir":
+                for post in repo.get_contents(theme.path,
+                                              ref=SettingModel.objects.get(
+                                                  name="GH_REPO_BRANCH").content):
+                    try:
+                        if post.name[-3:] == "yml":
+                            results.append(
+                                {"name": post.name, "path": post.path, "size": post.size})
+                    except:
+                        pass
+    except:
+        pass
     # 检索 source 仅最多一层目录
     sources = repo.get_contents(SettingModel.objects.get(name="GH_REPO_PATH").content +
                                 "source",

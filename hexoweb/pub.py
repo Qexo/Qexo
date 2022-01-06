@@ -162,10 +162,13 @@ def delete_post(request):
         repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
         filename = request.POST.get('file')
         try:
-            repo.delete_file(repo_path + "source/_posts/" + filename, "Delete by Qexo",
-                             repo.get_contents(
-                                 repo_path + "source/_posts/" + filename, ref=branch).sha,
-                             branch=branch)
+            try:
+                repo.delete_file(repo_path + "source/_posts/" + filename, "Delete by Qexo",
+                                 repo.get_contents(
+                                     repo_path + "source/_posts/" + filename, ref=branch).sha,
+                                 branch=branch)
+            except:
+                pass
             try:
                 repo.delete_file(repo_path + "source/_drafts/" + filename, "Delete by Qexo",
                                  repo.get_contents(
@@ -370,4 +373,16 @@ def get_images(request):
         context = {"status": True, "images": posts}
     except Exception as error:
         context = {"status": False, "error": repr(error)}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 自动修复程序 api/fix
+@csrf_exempt
+def auto_fix(request):
+    try:
+        counter = fix_all()
+        msg = "尝试自动修复了 {} 个字段，请在稍后检查和修改配置".format(counter)
+        context = {"msg": msg, "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})

@@ -30,6 +30,7 @@ urlpatterns = [
     path('api/set_s3/', set_s3, name='set_s3'),
     path('api/set_update/', set_update, name='set_update'),
     path('api/set_apikey/', set_api_key, name='set_apikey'),
+    path('api/set_abbrlink/', set_abbrlink, name='set_abbrlink'),
     path('api/set_cust/', set_cust, name='set_cust'),
     path('api/set_value/', set_value, name='set_value'),
     path('api/del_value/', del_value, name='del_value'),
@@ -54,6 +55,7 @@ urlpatterns = [
     path('pub/get_pages/', pub.get_pages, name='pub_get_pages'),
     path('pub/get_configs/', pub.get_configs, name='pub_get_configs'),
     path('pub/get_images/', pub.get_images, name='pub_get_images'),
+    path('pub/fix/', pub.auto_fix, name='pub_auto_fix'),
 
     re_path(r'^(?!api)^(?!pub).*$\.*', pages, name='pages'),
 ]

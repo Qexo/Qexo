@@ -540,6 +540,7 @@ def VercelUpdate(appId, token, sourcePath=""):
 
 
 def OnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
+    vercel_config = get_project_detail()
     tmpPath = '/tmp'
     # 从github下载对应tar.gz，并解压
     url = 'https://github.com/' + auth + '/' + project + '/tarball/' + quote(branch) + '/'
@@ -556,5 +557,4 @@ def OnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
     # print("outPath: " + outPath)
     if outPath == '':
         return 'error: no outPath'
-    vercel_config = get_project_detail()
     return VercelUpdate(vercel_config["id"], vercel_config["token"], outPath)

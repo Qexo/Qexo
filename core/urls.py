@@ -60,6 +60,7 @@ urlpatterns = [
     path('pub/get_configs/', pub.get_configs, name='pub_get_configs'),
     path('pub/get_images/', pub.get_images, name='pub_get_images'),
     path('pub/fix/', pub.auto_fix, name='pub_auto_fix'),
+    path('pub/test/', pub.test, name='pub_test'),
 
     re_path(r'^(?!api)^(?!pub).*$\.*', pages, name='pages'),
 ]

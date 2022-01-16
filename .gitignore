@@ -1,5 +1,6 @@
 .vercel
 .idea
+tmp
 venv
 __pycache__
 core/__pycache__

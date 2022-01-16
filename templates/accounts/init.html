@@ -10,7 +10,7 @@
     <!-- Page content -->
     <div class="container mt--8 pb-5">
         <div class="row justify-content-center">
-            {% if step == "4" or step == "5" or step == "2" %}
+            {% if step == "4" or step == "2" %}
                 <div class="col-lg-8 col-md-5">
             {% else %}
                 <div class="col-lg-5 col-md-5">
@@ -31,7 +31,7 @@
                             <h3>图床配置</h3>
                         {% endif %}
                         {% if step == "5" %}
-                            <h3>更新配置</h3>
+                            <h3>Vercel配置</h3>
                         {% endif %}
                         {% if step == "6" %}
                             <h3>恭喜您初始化完毕</h3>
@@ -39,7 +39,7 @@
                     </div>
                     {% if step == "6" %}
                         <ul>请牢记您的登录信息：
-                            <li>用户名: {{ context.username }}</li>
+                            <li>用户名: {{ username }}</li>
                             <li>密码: 您设定的值</li>
                             <a class="btn btn-primary my-4 text-white" href="/">登录控制台</a>
                         </ul>
@@ -60,7 +60,7 @@
                                     <div class="form-group">
                                         <label class="form-control-label">API密钥</label>
                                         <input type="text" name="apikey" class="form-control"
-                                               placeholder="留空即自动生成" value="{{ context.apikey }}">
+                                               placeholder="留空即自动生成" value="{{ apikey }}">
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
@@ -68,7 +68,7 @@
                                         <label class="form-control-label">用户名</label>
                                         <input type="text" name="username"
                                                class="form-control" placeholder="设置用户名"
-                                               value="{{ context.username }}">
+                                               value="{{ username }}">
                                     </div>
                                 </div>
                             </div>
@@ -77,7 +77,7 @@
                                     <div class="form-group">
                                         <label class="form-control-label">密码</label>
                                         <input type="text" name="password" class="form-control"
-                                               placeholder="设置密码" value="{{ context.password }}">
+                                               placeholder="设置密码" value="{{ password }}">
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
@@ -85,7 +85,7 @@
                                         <label class="form-control-label">重复密码</label>
                                         <input type="text" name="repassword" class="form-control"
                                                placeholder="再次输入以确认密码"
-                                               value="{{ context.repassword }}">
+                                               value="{{ repassword }}">
                                     </div>
                                 </div>
                             </div>
@@ -99,22 +99,22 @@
                                 <label class="form-control-label">Github仓库</label>
                                 <input type="text" name="repo"
                                        class="form-control" placeholder="username/repo"
-                                       value="{{ context.repo }}">
+                                       value="{{ repo }}">
                             </div>
                             <div class="form-group">
                                 <label class="form-control-label">项目分支</label>
                                 <input type="text" name="branch" class="form-control"
-                                       placeholder="main" value="{{ context.branch }}">
+                                       placeholder="main" value="{{ branch }}">
                             </div>
                             <div class="form-group">
                                 <label class="form-control-label">Github密钥</label>
                                 <input type="text" name="token" class="form-control"
-                                       placeholder="你的Github密钥" value="{{ context.token }}">
+                                       placeholder="你的Github密钥" value="{{ token }}">
                             </div>
                             <div class="form-group">
                                 <label class="form-control-label">仓库路径</label>
                                 <input type="text" name="path" class="form-control"
-                                       placeholder="留空即为根目录" value="{{ context.path }}">
+                                       placeholder="留空即为根目录" value="{{ path }}">
                             </div>
                             <div class="text-center">
                                 <button type="submit" class="btn btn-primary my-4">下一步</button>
@@ -128,7 +128,7 @@
                                         <label class="form-control-label">API地址</label>
                                         <input type="text" name="api" class="form-control"
                                                placeholder="API地址(包含http)"
-                                               value="{{ context.api }}">
+                                               value="{{ api }}">
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
@@ -136,7 +136,7 @@
                                         <label class="form-control-label">POST参数名</label>
                                         <input type="text" name="post" class="form-control"
                                                placeholder="POST参数名"
-                                               value="{{ context.post }}">
+                                               value="{{ post }}">
                                     </div>
                                 </div>
                             </div>
@@ -146,7 +146,7 @@
                                         <label class="form-control-label">JSON路径</label>
                                         <input type="text" name="jsonpath" class="form-control"
                                                placeholder="JSON路径 eg: data.img"
-                                               value="{{ context.jsonpath }}">
+                                               value="{{ jsonpath }}">
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
@@ -154,7 +154,7 @@
                                         <label class="form-control-label">自定义请求头</label>
                                         <input type="text" name="header" class="form-control"
                                                placeholder="标准JSON格式"
-                                               value="{{ context.header }}">
+                                               value="{{ header }}">
                                     </div>
                                 </div>
                             </div>
@@ -163,7 +163,7 @@
                                     <div class="form-group">
                                         <label class="form-control-label">自定义BODY</label>
                                         <input type="text" name="body" class="form-control"
-                                               placeholder="标准JSON格式" value="{{ context.body }}">
+                                               placeholder="标准JSON格式" value="{{ body }}">
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
@@ -171,7 +171,7 @@
                                         <label class="form-control-label">自定义前缀</label>
                                         <input type="text" name="custom" class="form-control"
                                                placeholder="自定义图片URL前缀"
-                                               value="{{ context.custom }}">
+                                               value="{{ custom }}">
                                     </div>
                                 </div>
                             </div>
@@ -182,42 +182,18 @@
                         {% endif %}
                         {% if step == "5" %}
                             <hr class="my-4"/>
-                            <div class="row">
-                                <div class="col-lg-6">
-                                    <div class="form-group">
-                                        <label class="form-control-label">在线更新-远程分支</label>
-                                        <input type="text" name="origin" class="form-control"
-                                               placeholder="master" value="{{ context.origin }}">
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="form-group">
-                                        <label class="form-control-label">在线更新-Qexo仓库</label>
-                                        <input type="text" name="repo" class="form-control"
-                                               placeholder="username/repo"
-                                               value="{{ context.repo }}">
-                                    </div>
-                                </div>
+                            <div class="form-group">
+                                <label class="form-control-label">Vercel密钥</label>
+                                <input type="text" name="token" class="form-control"
+                                       placeholder="Vercel Token" value="{{ vercel_token }}">
                             </div>
-                            <div class="row">
-                                <div class="col-lg-6">
-                                    <div class="form-group">
-                                        <label class="form-control-label">在线更新-Github密钥</label>
-                                        <input type="text" name="token" class="form-control"
-                                               placeholder="Qexo所在仓库账户的Token"
-                                               value="{{ context.token }}">
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="form-group">
-                                        <label class="form-control-label">在线更新-项目分支</label>
-                                        <input type="text" name="branch" class="form-control"
-                                               placeholder="master" value="{{ context.branch }}">
-                                    </div>
-                                </div>
+                            <div class="form-group">
+                                <label class="form-control-label">项目ID</label>
+                                <input type="text" name="id" class="form-control"
+                                       placeholder="Project ID"
+                                       value="{{ project_id }}">
                             </div>
                             <div class="text-center">
-                                <a href="javascript:skip()" class="btn btn-white my-4">跳过</a>
                                 <button type="submit" class="btn btn-primary my-4">完成</button>
                             </div>
                         {% endif %}

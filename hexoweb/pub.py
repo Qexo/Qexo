@@ -379,6 +379,9 @@ def get_images(request):
 # 自动修复程序 api/fix
 @csrf_exempt
 def auto_fix(request):
+    if not check_if_api_auth(request):
+        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
+                                                                         "status": False})})
     try:
         counter = fix_all()
         msg = "尝试自动修复了 {} 个字段，请在稍后检查和修改配置".format(counter)
@@ -386,3 +389,4 @@ def auto_fix(request):
     except Exception as e:
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+

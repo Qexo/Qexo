@@ -1,12 +1,15 @@
 from django.template.defaulttags import register
+from core.settings import QEXO_VERSION
 from .models import Cache, SettingModel
 import github
 import json
 import boto3
-from datetime import date
+from datetime import timezone, timedelta, date
 from time import time
 from hashlib import md5
 from urllib3 import disable_warnings
+from markdown import markdown
+from zlib import crc32 as zlib_crc32
 
 disable_warnings()
 
@@ -29,6 +32,15 @@ def get_repo():
     return False
 
 
+def get_cdn():
+    try:
+        cdn_prev = SettingModel.objects.get(name="CDN_PREV").content
+    except:
+        save_setting("CDN_PREV", "https://cdn.jsdelivr.net/npm/")
+        cdn_prev = "https://cdn.jsdelivr.net/npm/"
+    return cdn_prev
+
+
 def get_post(post):
     repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
     branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
@@ -42,7 +54,7 @@ def get_post(post):
 
 # 获取用户自定义的样式配置
 def get_custom_config():
-    context = dict()
+    context = {"cdn_prev": get_cdn()}
     try:
         context["QEXO_NAME"] = SettingModel.objects.get(name="QEXO_NAME").content
     except:
@@ -57,14 +69,14 @@ def get_custom_config():
         context["QEXO_LOGO"] = SettingModel.objects.get(name="QEXO_LOGO").content
     except:
         save_setting('QEXO_LOGO',
-                     'https://cdn.jsdelivr.net/gh/am-abudu/Qexo@master/static/assets' +
+                     'https://cdn.jsdelivr.net/npm/qexo-static@1.0.0/assets' +
                      '/img/brand/qexo.png')
         context["QEXO_LOGO"] = SettingModel.objects.get(name="QEXO_LOGO").content
     try:
         context["QEXO_ICON"] = SettingModel.objects.get(name="QEXO_ICON").content
     except:
         save_setting('QEXO_ICON',
-                     'https://cdn.jsdelivr.net/gh/am-abudu/Qexo@master/static/assets' +
+                     'https://cdn.jsdelivr.net/npm/qexo-static@1.0.0/assets' +
                      '/img/brand/favicon.ico')
         context["QEXO_ICON"] = SettingModel.objects.get(name="QEXO_ICON").content
     return context
@@ -92,17 +104,19 @@ def update_posts_cache(s=None, _path=""):
             posts = json.loads(old_cache.first().content)
             i = 0
             while i < len(posts):
-                if s not in posts[i]["name"]:
+                if s.upper() not in posts[i]["name"].upper():
                     del posts[i]
                     i -= 1
                 i += 1
             cache_name = "posts." + str(s)
             update_caches(cache_name, posts)
             return posts
+    else:
+        old_cache = False
+    _posts = list()
+    _drafts = list()
+    names = list()
     try:
-        _posts = list()
-        _drafts = list()
-        names = list()
         posts = repo.get_contents(
             SettingModel.objects.get(name="GH_REPO_PATH").content + 'source/_posts' + _path,
             ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
@@ -150,7 +164,7 @@ def update_posts_cache(s=None, _path=""):
             update_caches("posts", posts)
         i = 0
         while i < len(posts):
-            if s not in posts[i]["name"]:
+            if s.upper() not in posts[i]["name"].upper():
                 del posts[i]
                 i -= 1
             i += 1
@@ -164,6 +178,19 @@ def update_posts_cache(s=None, _path=""):
 
 
 def update_pages_cache(s=None):
+    if s:
+        old_cache = Cache.objects.filter(name="pages")
+        if old_cache.count():
+            posts = json.loads(old_cache.first().content)
+            i = 0
+            while i < len(posts):
+                if s.upper() not in posts[i]["name"].upper():
+                    del posts[i]
+                    i -= 1
+                i += 1
+            cache_name = "pages." + str(s)
+            update_caches(cache_name, posts)
+            return posts
     repo = get_repo()
     posts = repo.get_contents(SettingModel.objects.get(name="GH_REPO_PATH").content + 'source',
                               ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
@@ -174,72 +201,99 @@ def update_pages_cache(s=None):
                     SettingModel.objects.get(name="GH_REPO_PATH").content + post.path,
                     ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content):
                 if i.type == "file":
-                    if s:
-                        if (i.name == "index.md" or i.name == "index.html") and (
-                                str(s) in post.name):
-                            results.append({"name": post.name, "path": i.path, "size": i.size})
-                            break
-                    else:
-                        if i.name == "index.md" or i.name == "index.html":
-                            results.append({"name": post.name, "path": i.path, "size": i.size})
-                            break
-    if s:
-        cache_name = "pages." + str(s)
-    else:
-        cache_name = "pages"
-    update_caches(cache_name, results)
+                    if i.name == "index.md" or i.name == "index.html":
+                        results.append({"name": post.name, "path": i.path, "size": i.size})
+                        break
+    update_caches("pages", results)
+    if not s:
+        return results
+    i = 0
+    while i < len(results):
+        if s.upper() not in results[i]["name"].upper():
+            del results[i]
+            i -= 1
+        i += 1
+    update_caches("pages." + str(s), results)
     return results
 
 
 def update_configs_cache(s=None):
+    if s:
+        old_cache = Cache.objects.filter(name="configs")
+        if old_cache.count():
+            posts = json.loads(old_cache.first().content)
+            i = 0
+            while i < len(posts):
+                if s.upper() not in posts[i]["name"].upper():
+                    del posts[i]
+                    i -= 1
+                i += 1
+            cache_name = "configs." + str(s)
+            update_caches(cache_name, posts)
+            return posts
     repo = get_repo()
     posts = repo.get_contents(SettingModel.objects.get(name="GH_REPO_PATH").content,
                               ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
     results = list()
-    for post in posts:
-        try:
-            if s:
-                if post.name[-3:] == "yml" and s in post.name:
-                    results.append({"name": post.name, "path": post.path, "size": post.size})
-            else:
-                if post.name[-3:] == "yml":
-                    results.append({"name": post.name, "path": post.path, "size": post.size})
-        except:
-            pass
-
-    themes = repo.get_contents(SettingModel.objects.get(name="GH_REPO_PATH").content + "themes",
-                               ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
-    for theme in themes:
-        if theme.type == "dir":
-            for post in repo.get_contents(theme.path,
-                                          ref=SettingModel.objects.get(
-                                              name="GH_REPO_BRANCH").content):
+    # 检索 .github/workflows 仅最多一层目录
+    try:
+        sources = repo.get_contents(SettingModel.objects.get(name="GH_REPO_PATH").content +
+                                    ".github/workflows",
+                                    ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
+        for source in sources:
+            if source.type == "file":
                 try:
-                    if s:
-                        if post.name[-3:] == "yml" and s in post.name:
-                            results.append(
-                                {"name": post.name, "path": post.path, "size": post.size})
-                    else:
+                    if source.name[-3:] == "yml":
+                        results.append(
+                            {"name": source.name, "path": source.path, "size": source.size})
+                except:
+                    pass
+            if source.type == "dir":
+                for post in repo.get_contents(source.path,
+                                              ref=SettingModel.objects.get(
+                                                  name="GH_REPO_BRANCH").content):
+                    try:
                         if post.name[-3:] == "yml":
                             results.append(
                                 {"name": post.name, "path": post.path, "size": post.size})
-                except:
-                    pass
-
+                    except:
+                        pass
+    except:
+        pass
+    # 检索根目录
+    for post in posts:
+        try:
+            if post.name[-3:] == "yml":
+                results.append({"name": post.name, "path": post.path, "size": post.size})
+        except:
+            pass
+    # 检索 themes 仅下一级目录下的文件
+    try:
+        themes = repo.get_contents(SettingModel.objects.get(name="GH_REPO_PATH").content + "themes",
+                                   ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
+        for theme in themes:
+            if theme.type == "dir":
+                for post in repo.get_contents(theme.path,
+                                              ref=SettingModel.objects.get(
+                                                  name="GH_REPO_BRANCH").content):
+                    try:
+                        if post.name[-3:] == "yml":
+                            results.append(
+                                {"name": post.name, "path": post.path, "size": post.size})
+                    except:
+                        pass
+    except:
+        pass
+    # 检索 source 仅最多一层目录
     sources = repo.get_contents(SettingModel.objects.get(name="GH_REPO_PATH").content +
                                 "source",
                                 ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
     for source in sources:
         if source.type == "file":
             try:
-                if s:
-                    if source.name[-3:] == "yml" and s in source.name:
-                        results.append(
-                            {"name": source.name, "path": source.path, "size": source.size})
-                else:
-                    if source.name[-3:] == "yml":
-                        results.append(
-                            {"name": source.name, "path": source.path, "size": source.size})
+                if source.name[-3:] == "yml":
+                    results.append(
+                        {"name": source.name, "path": source.path, "size": source.size})
             except:
                 pass
         if source.type == "dir":
@@ -247,22 +301,22 @@ def update_configs_cache(s=None):
                                           ref=SettingModel.objects.get(
                                               name="GH_REPO_BRANCH").content):
                 try:
-                    if s:
-                        if post.name[-3:] == "yml" and s in post.name:
-                            results.append(
-                                {"name": post.name, "path": post.path, "size": post.size})
-                    else:
-                        if post.name[-3:] == "yml":
-                            results.append(
-                                {"name": post.name, "path": post.path, "size": post.size})
+                    if post.name[-3:] == "yml":
+                        results.append(
+                            {"name": post.name, "path": post.path, "size": post.size})
                 except:
                     pass
 
-    if s:
-        cache_name = "configs." + str(s)
-    else:
-        cache_name = "configs"
-    update_caches(cache_name, results)
+    update_caches("configs", results)
+    if not s:
+        return results
+    i = 0
+    while i < len(results):
+        if s.upper() not in results[i]["name"].upper():
+            del results[i]
+            i -= 1
+        i += 1
+    update_caches("configs." + str(s), results)
     return results
 
 
@@ -330,9 +384,210 @@ def upload_to_s3(file, key_id, access_key, endpoint_url, bucket, path, prev_url)
     return prev_url + "/" + path
 
 
+def get_latest_version():
+    context = dict()
+    try:
+        user = github.Github(SettingModel.objects.get(name='GH_TOKEN').content)
+        latest = user.get_repo("am-abudu/Qexo").get_latest_release()
+        if latest.tag_name and (latest.tag_name != QEXO_VERSION):
+            context["hasNew"] = True
+        else:
+            context["hasNew"] = False
+        context["newer"] = latest.tag_name
+        context["newer_link"] = latest.html_url
+        context["newer_time"] = latest.created_at.astimezone(
+            timezone(timedelta(hours=16))).strftime(
+            "%Y-%m-%d %H:%M:%S")
+        context["newer_text"] = markdown(latest.body).replace("<p>", "<p class=\"text-sm mb-0\">")
+        context["status"] = True
+    except:
+        context["status"] = False
+    return context
+
+
 def check_if_api_auth(request):
     if request.POST.get("token") == SettingModel.objects.get(name="WEBHOOK_APIKEY").content:
         return True
     if request.GET.get("token") == SettingModel.objects.get(name="WEBHOOK_APIKEY").content:
         return True
     return False
+
+
+def get_crc16(x, _hex=False):
+    x = str(x)
+    a = 0xFFFF
+    b = 0xA001
+    for byte in x:
+        a ^= ord(byte)
+        for i in range(8):
+            last = a % 2
+            a >>= 1
+            if last == 1:
+                a ^= b
+    s = hex(a)
+    return str(int(s[2:4] + s[4:6], 16)) if _hex is False else (s[2:4] + s[4:6])
+
+
+def get_crc32(x, _hex=False):
+    return str(zlib_crc32(x.encode("utf8"))) if _hex is False else hex(
+        zlib_crc32(x.encode("utf8")))[2:]
+
+
+def get_crc_by_time(_strtime, alg, rep):
+    if rep == "hex":
+        use_hex = True
+    else:
+        use_hex = False
+    if alg != "crc16" and alg != "crc32":
+        return ""
+    return get_crc16(_strtime.replace(".", "0"), _hex=use_hex) if alg == "crc16" else get_crc32(
+        _strtime.replace(".", "0"), _hex=use_hex)
+
+
+def fix_all():
+    counter = 0
+    already = list()
+    settings = SettingModel.objects.all()
+    for query in settings:
+        if query.name not in already:
+            already.append(query.name)
+        else:
+            query.delete()
+            counter += 1
+    try:
+        SettingModel.objects.get(name="GH_REPO_PATH").content
+    except:
+        save_setting('GH_REPO_PATH', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name="GH_REPO_BRANCH").content
+    except:
+        save_setting('GH_REPO_BRANCH', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name="GH_REPO").content
+    except:
+        save_setting('GH_REPO', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name="GH_TOKEN").content
+    except:
+        save_setting('GH_TOKEN', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name='IMG_CUSTOM_URL').content
+    except:
+        save_setting('IMG_CUSTOM_URL', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name='IMG_CUSTOM_HEADER').content
+    except:
+        save_setting('IMG_CUSTOM_HEADER', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name='IMG_CUSTOM_BODY').content
+    except:
+        save_setting('IMG_CUSTOM_BODY', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name='IMG_JSON_PATH').content
+    except:
+        save_setting('IMG_JSON_PATH', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name='IMG_POST').content
+    except:
+        save_setting('IMG_POST', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name='IMG_API').content
+    except:
+        save_setting('IMG_API', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name="UPDATE_REPO_BRANCH").content
+    except:
+        save_setting('UPDATE_REPO_BRANCH', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name="UPDATE_REPO").content
+    except:
+        save_setting('UPDATE_REPO', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name="UPDATE_ORIGIN_BRANCH").content
+    except:
+        save_setting('UPDATE_ORIGIN_BRANCH', 'master')
+        counter += 1
+    try:
+        SettingModel.objects.get(name="S3_KEY_ID").content
+    except:
+        save_setting('S3_KEY_ID', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name="S3_ACCESS_KEY").content
+    except:
+        save_setting('S3_ACCESS_KEY', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name="S3_ENDPOINT").content
+    except:
+        save_setting('S3_ENDPOINT', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name="S3_BUCKET").content
+    except:
+        save_setting('S3_BUCKET', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name="S3_PATH").content
+    except:
+        save_setting('S3_PATH', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name="S3_PREV_URL").content
+    except:
+        save_setting('S3_PREV_URL', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name="IMG_TYPE").content
+    except:
+        save_setting('IMG_TYPE', '')
+        counter += 1
+    try:
+        SettingModel.objects.get(name="ABBRLINK_ALG").content
+    except:
+        save_setting('ABBRLINK_ALG', 'crc16')
+        counter += 1
+    try:
+        SettingModel.objects.get(name="ABBRLINK_REP").content
+    except:
+        save_setting('ABBRLINK_REP', 'dec')
+        counter += 1
+    try:
+        if SettingModel.objects.get(name="CDN_PREV").content != "https://cdn.jsdelivr.net/npm/":
+            save_setting('CDN_PREV', 'https://cdn.jsdelivr.net/npm/')
+            counter += 1
+    except:
+        save_setting('CDN_PREV', 'https://cdn.jsdelivr.net/npm/')
+        counter += 1
+    if SettingModel.objects.filter(name="VDITOR_EMOJI").count() == 0:
+        emoji = {"微笑": "🙂", "撇嘴": "😦", "色": "😍", "发呆": "😍", "得意": "😎", "流泪": "😭", "害羞": "😊",
+                 "闭嘴": "😷", "睡": "😴", "大哭 ": "😡", "尴尬": "😡", "发怒": "😛", "调皮": "😀", "呲牙": "😯",
+                 "惊讶": "🙁", "难过": "😎", "酷": "😨", "冷汗": "😱", "抓狂": "😵", "吐 ": "😋", "偷笑": "☺",
+                 "愉快": "🙄", "白眼": "🙄", "傲慢": "😋", "饥饿": "😪", "困": "😫", "惊恐": "😓", "流汗": "😃",
+                 "憨笑": "😃", "悠闲 ": "😆", "奋斗": "😆", "咒骂": "😆", "疑问": "😆", "嘘": "😵", "晕": "😆",
+                 "疯了": "😆", "衰": "😆", "骷髅": "💀", "敲打": "😬", "再见 ": "😘", "擦汗": "😆", "抠鼻": "😆",
+                 "鼓掌": "👏", "糗大了": "😆", "坏笑": "😆", "左哼哼": "😆", "右哼哼": "😆", "哈欠": "😆",
+                 "鄙视": "😆", "委屈 ": "😆", "快哭了": "😆", "阴险": "😆", "亲亲": "😘", "吓": "😓",
+                 "可怜": "😆", "菜刀": "🔪", "西瓜": "🍉", "啤酒": "🍺", "篮球": "🏀", "乒乓 ": "⚪", "咖啡": "☕",
+                 "饭": "🍚", "猪头": "🐷", "玫瑰": "🌹", "凋谢": "🌹", "嘴唇": "👄", "爱心": "💗", "心碎": "💔",
+                 "蛋糕": "🎂", "闪电 ": "⚡", "炸弹": "💣", "刀": "🗡", "足球": "⚽", "瓢虫": "🐞", "便便": "💩",
+                 "月亮": "🌙", "太阳": "☀", "礼物": "🎁", "拥抱": "🤗", "强 ": "👍", "弱": "👎", "握手": "👍",
+                 "胜利": "✌", "抱拳": "✊", "勾引": "✌", "拳头": "✊", "差劲": "✌", "爱你": "✌", "NO": "✌",
+                 "OK": "🙂", "嘿哈": "🙂", "捂脸": "🙂", "奸笑": "🙂", "机智": "🙂", "皱眉": "🙂", "耶": "🙂",
+                 "吃瓜": "🙂", "加油": "🙂", "汗": "🙂", "天啊": "👌", "社会社会": "🙂", "旺柴": "🙂",
+                 "好的": "🙂", "哇": "🙂"}
+        save_setting('VDITOR_EMOJI', json.dumps(emoji))
+        counter += 1
+    return counter

@@ -9,11 +9,12 @@ from .api import *
 
 
 def page_404(request, exception):
-    return render(request, 'home/page-404.html')
+    return render(request, 'home/page-404.html', {"cdn_prev": "https://cdn.jsdelivr.net/npm/"})
 
 
 def page_500(request):
-    return render(request, 'home/page-500.html', {"error": "程序遇到了错误！"})
+    return render(request, 'home/page-500.html',
+                  {"error": "程序遇到了错误！", "cdn_prev": "https://cdn.jsdelivr.net/npm/"})
 
 
 def login_view(request):
@@ -41,6 +42,7 @@ def init_view(request):
         step = "1"
     if request.method == "POST":
         if request.POST.get("step") == "1":
+            fix_all()
             save_setting("INIT", "2")
             step = "2"
         if request.POST.get("step") == "2":
@@ -203,17 +205,7 @@ def index(request):
         context["images"] = images[0:5]
     else:
         context["images"] = images
-    user = github.Github(SettingModel.objects.get(name='GH_TOKEN').content)
-    latest = user.get_repo("am-abudu/Qexo").get_latest_release()
-    if latest.tag_name and (latest.tag_name != QEXO_VERSION):
-        context["hasNew"] = True
-    else:
-        context["hasNew"] = False
-    context["newer"] = latest.tag_name
-    context["newer_link"] = latest.html_url
-    context["newer_time"] = latest.created_at.astimezone(timezone(timedelta(hours=16))).strftime(
-        "%Y-%m-%d %H:%M:%S")
-    context["newer_text"] = latest.body
+    context = dict(context, **get_latest_version())
     context["version"] = QEXO_VERSION
     context["post_number"] = str(len(posts))
     context["images_number"] = str(len(images))
@@ -249,12 +241,13 @@ def pages(request):
                 ">", "\\>").replace("!", "\\!")
             context['filename'] = file_path.split("/")[-2] + "/" + file_path.split("/")[-1]
             context["file_path"] = file_path
+            context["emoji"] = SettingModel.objects.get(name="VDITOR_EMOJI").content
             try:
                 if SettingModel.objects.get(
                         name="IMG_TYPE").content:
                     context["img_bed"] = True
-            except:
-                pass
+            except Exception as error:
+                context["error"] = repr(error)
         elif "edit_config" in load_template:
             file_path = request.GET.get("file")
             repo = get_repo()
@@ -272,56 +265,64 @@ def pages(request):
                 ">", "\\>").replace("!", "\\!")
             context['filename'] = file_path.split("/")[-1]
             context['fullname'] = file_path
+            context["emoji"] = SettingModel.objects.get(name="VDITOR_EMOJI").content
             try:
                 if SettingModel.objects.get(
                         name="IMG_TYPE").content:
                     context["img_bed"] = True
-            except:
-                pass
+            except Exception as error:
+                context["error"] = repr(error)
         elif "new_page" in load_template:
             repo = get_repo()
+            context["emoji"] = SettingModel.objects.get(name="VDITOR_EMOJI").content
             try:
+                now = time()
+                alg = SettingModel.objects.get(name="ABBRLINK_ALG").content
+                rep = SettingModel.objects.get(name="ABBRLINK_REP").content
+                abbrlink = get_crc_by_time(str(now), alg, rep)
                 context["file_content"] = repr(
                     repo.get_contents(
                         SettingModel.objects.get(name="GH_REPO_PATH").content + "scaffolds/page.md",
                         ref=SettingModel.objects.get(
-                            name="GH_REPO_BRANCH").content).decoded_content.decode(
-                        "utf8")).replace("<",
-                                         "\\<").replace(
-                    ">", "\\>").replace("{{ date }}", strftime("%Y-%m-%d %H:%M:%S",
-                                                               localtime(
-                                                                   time()))).replace("!", "\\!")
-
-            except:
-                pass
+                            name="GH_REPO_BRANCH").content).decoded_content.decode("utf8")).replace(
+                    "<", "\\<").replace(">", "\\>").replace("{{ date }}",
+                                                            strftime("%Y-%m-%d %H:%M:%S",
+                                                                     localtime(now))).replace(
+                    "{{ abbrlink }}", abbrlink).replace("!", "\\!")
+            except Exception as error:
+                context["error"] = repr(error)
             try:
                 if SettingModel.objects.get(
                         name="IMG_TYPE").content:
                     context["img_bed"] = True
-            except:
-                pass
+            except Exception as error:
+                context["error"] = repr(error)
         elif "new" in load_template:
             repo = get_repo()
+            context["emoji"] = SettingModel.objects.get(name="VDITOR_EMOJI").content
             try:
+                now = time()
+                alg = SettingModel.objects.get(name="ABBRLINK_ALG").content
+                rep = SettingModel.objects.get(name="ABBRLINK_REP").content
+                abbrlink = get_crc_by_time(str(now), alg, rep)
                 context["file_content"] = repr(
                     repo.get_contents(
                         SettingModel.objects.get(name="GH_REPO_PATH").content + "scaffolds/post.md",
                         ref=SettingModel.objects.get(
-                            name="GH_REPO_BRANCH").content).decoded_content.decode(
-                        "utf8").replace("{{ date }}", strftime("%Y-%m-%d %H:%M:%S",
-                                                               localtime(
-                                                                   time())))).replace("<",
-                                                                                      "\\<").replace(
+                            name="GH_REPO_BRANCH").content).decoded_content.decode("utf8").replace(
+                        "{{ date }}", strftime("%Y-%m-%d %H:%M:%S", localtime(
+                            now))).replace("{{ abbrlink }}", abbrlink)).replace("<",
+                                                                                "\\<").replace(
                     ">", "\\>").replace("!", "\\!")
 
-            except:
-                pass
+            except Exception as error:
+                context["error"] = repr(error)
             try:
                 if SettingModel.objects.get(
                         name="IMG_TYPE").content:
                     context["img_bed"] = True
-            except:
-                pass
+            except Exception as error:
+                context["error"] = repr(error)
         elif "posts" in load_template:
             search = request.GET.get("s")
             if search:
@@ -509,7 +510,38 @@ def pages(request):
                         name="IMG_TYPE").content
                 except:
                     save_setting('IMG_TYPE', '')
-
+                try:
+                    context['ABBRLINK_ALG'] = SettingModel.objects.get(
+                        name="ABBRLINK_ALG").content
+                except:
+                    save_setting('ABBRLINK_ALG', 'crc16')
+                    context['ABBRLINK_ALG'] = "crc16"
+                try:
+                    context['ABBRLINK_REP'] = SettingModel.objects.get(
+                        name="ABBRLINK_REP").content
+                except:
+                    save_setting('ABBRLINK_REP', 'dec')
+                    context['ABBRLINK_REP'] = "dec"
+                if SettingModel.objects.filter(name="VDITOR_EMOJI").count() == 0:
+                    emoji = {"微笑": "🙂", "撇嘴": "😦", "色": "😍", "发呆": "😍", "得意": "😎", "流泪": "😭",
+                             "害羞": "😊", "闭嘴": "😷", "睡": "😴", "大哭 ": "😡", "尴尬": "😡", "发怒": "😛",
+                             "调皮": "😀", "呲牙": "😯", "惊讶": "🙁", "难过": "😎", "酷": "😨", "冷汗": "😱",
+                             "抓狂": "😵", "吐 ": "😋", "偷笑": "☺", "愉快": "🙄", "白眼": "🙄", "傲慢": "😋",
+                             "饥饿": "😪", "困": "😫", "惊恐": "😓", "流汗": "😃", "憨笑": "😃", "悠闲 ": "😆",
+                             "奋斗": "😆", "咒骂": "😆", "疑问": "😆", "嘘": "😵", "晕": "😆", "疯了": "😆",
+                             "衰": "😆", "骷髅": "💀", "敲打": "😬", "再见 ": "😘", "擦汗": "😆", "抠鼻": "😆",
+                             "鼓掌": "👏", "糗大了": "😆", "坏笑": "😆", "左哼哼": "😆", "右哼哼": "😆",
+                             "哈欠": "😆", "鄙视": "😆", "委屈 ": "😆", "快哭了": "😆", "阴险": "😆",
+                             "亲亲": "😘", "吓": "😓", "可怜": "😆", "菜刀": "🔪", "西瓜": "🍉", "啤酒": "🍺",
+                             "篮球": "🏀", "乒乓 ": "⚪", "咖啡": "☕", "饭": "🍚", "猪头": "🐷", "玫瑰": "🌹",
+                             "凋谢": "🌹", "嘴唇": "👄", "爱心": "💗", "心碎": "💔", "蛋糕": "🎂", "闪电 ": "⚡",
+                             "炸弹": "💣", "刀": "🗡", "足球": "⚽", "瓢虫": "🐞", "便便": "💩", "月亮": "🌙",
+                             "太阳": "☀", "礼物": "🎁", "拥抱": "🤗", "强 ": "👍", "弱": "👎", "握手": "👍",
+                             "胜利": "✌", "抱拳": "✊", "勾引": "✌", "拳头": "✊", "差劲": "✌", "爱你": "✌",
+                             "NO": "✌", "OK": "🙂", "嘿哈": "🙂", "捂脸": "🙂", "奸笑": "🙂", "机智": "🙂",
+                             "皱眉": "🙂", "耶": "🙂", "吃瓜": "🙂", "加油": "🙂", "汗": "🙂", "天啊": "👌",
+                             "社会社会": "🙂", "旺柴": "🙂", "好的": "🙂", "哇": "🙂"}
+                    save_setting('VDITOR_EMOJI', json.dumps(emoji))
             except Exception as e:
                 context["error"] = repr(e)
         elif 'advanced' in load_template:

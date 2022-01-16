@@ -131,6 +131,20 @@ def set_image_bed(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 设置 Abbrlink 配置 api/set_abbrlink
+@login_required(login_url="/login/")
+def set_abbrlink(request):
+    try:
+        alg = request.POST.get("alg")
+        rep = request.POST.get("rep")
+        save_setting("ABBRLINK_ALG", alg)
+        save_setting("ABBRLINK_REP", rep)
+        context = {"msg": "保存成功!", "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
 # 设置s3配置 api/set_s3
 @login_required(login_url="/login/")
 def set_s3(request):
@@ -157,6 +171,7 @@ def set_s3(request):
     except Exception as e:
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
 
 # 设置自定义配置 api/set_cust
 @login_required(login_url="/login/")
@@ -243,116 +258,8 @@ def new_value(request):
 @login_required(login_url="/login/")
 def auto_fix(request):
     try:
-        counter = 0
-        already = list()
-        settings = SettingModel.objects.all()
-        for query in settings:
-            if query.name not in already:
-                already.append(query.name)
-            else:
-                query.delete()
-                counter += 1
-        try:
-            SettingModel.objects.get(name="GH_REPO_PATH").content
-        except:
-            save_setting('GH_REPO_PATH', '')
-            counter += 1
-        try:
-            SettingModel.objects.get(name="GH_REPO_BRANCH").content
-        except:
-            save_setting('GH_REPO_BRANCH', '')
-            counter += 1
-        try:
-            SettingModel.objects.get(name="GH_REPO").content
-        except:
-            save_setting('GH_REPO', '')
-            counter += 1
-        try:
-            SettingModel.objects.get(name="GH_TOKEN").content
-        except:
-            save_setting('GH_TOKEN', '')
-            counter += 1
-        try:
-            SettingModel.objects.get(name='IMG_CUSTOM_URL').content
-        except:
-            save_setting('IMG_CUSTOM_URL', '')
-            counter += 1
-        try:
-            SettingModel.objects.get(name='IMG_CUSTOM_HEADER').content
-        except:
-            save_setting('IMG_CUSTOM_HEADER', '')
-            counter += 1
-        try:
-            SettingModel.objects.get(name='IMG_CUSTOM_BODY').content
-        except:
-            save_setting('IMG_CUSTOM_BODY', '')
-            counter += 1
-        try:
-            SettingModel.objects.get(name='IMG_JSON_PATH').content
-        except:
-            save_setting('IMG_JSON_PATH', '')
-            counter += 1
-        try:
-            SettingModel.objects.get(name='IMG_POST').content
-        except:
-            save_setting('IMG_POST', '')
-            counter += 1
-        try:
-            SettingModel.objects.get(name='IMG_API').content
-        except:
-            save_setting('IMG_API', '')
-            counter += 1
-        try:
-            SettingModel.objects.get(name="UPDATE_REPO_BRANCH").content
-        except:
-            save_setting('UPDATE_REPO_BRANCH', '')
-            counter += 1
-        try:
-            SettingModel.objects.get(name="UPDATE_REPO").content
-        except:
-            save_setting('UPDATE_REPO', '')
-            counter += 1
-        try:
-            SettingModel.objects.get(name="UPDATE_ORIGIN_BRANCH").content
-        except:
-            save_setting('UPDATE_ORIGIN_BRANCH', 'master')
-            counter += 1
-        try:
-            SettingModel.objects.get(name="S3_KEY_ID").content
-        except:
-            save_setting('S3_KEY_ID', '')
-            counter += 1
-        try:
-            SettingModel.objects.get(name="S3_ACCESS_KEY").content
-        except:
-            save_setting('S3_ACCESS_KEY', '')
-            counter += 1
-        try:
-            SettingModel.objects.get(name="S3_ENDPOINT").content
-        except:
-            save_setting('S3_ENDPOINT', '')
-            counter += 1
-        try:
-            SettingModel.objects.get(name="S3_BUCKET").content
-        except:
-            save_setting('S3_BUCKET', '')
-            counter += 1
-        try:
-            SettingModel.objects.get(name="S3_PATH").content
-        except:
-            save_setting('S3_PATH', '')
-            counter += 1
-        try:
-            SettingModel.objects.get(name="S3_PREV_URL").content
-        except:
-            save_setting('S3_PREV_URL', '')
-            counter += 1
-        try:
-            SettingModel.objects.get(name="IMG_TYPE").content
-        except:
-            save_setting('IMG_TYPE', '')
-            counter += 1
-        msg = "尝试自动修复了{}个字段，请在稍后检查和修改配置".format(counter)
+        counter = fix_all()
+        msg = "尝试自动修复了 {} 个字段，请在稍后检查和修改配置".format(counter)
         context = {"msg": msg, "status": True}
     except Exception as e:
         context = {"msg": repr(e), "status": False}
@@ -518,10 +425,13 @@ def delete_post(request):
         repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
         filename = request.POST.get('file')
         try:
-            repo.delete_file(repo_path + "source/_posts/" + filename, "Delete by Qexo",
-                             repo.get_contents(
-                                 repo_path + "source/_posts/" + filename, ref=branch).sha,
-                             branch=branch)
+            try:
+                repo.delete_file(repo_path + "source/_posts/" + filename, "Delete by Qexo",
+                                 repo.get_contents(
+                                     repo_path + "source/_posts/" + filename, ref=branch).sha,
+                                 branch=branch)
+            except:
+                pass
             try:
                 repo.delete_file(repo_path + "source/_drafts/" + filename, "Delete by Qexo",
                                  repo.get_contents(
@@ -685,21 +595,4 @@ def upload_img(request):
 # 获取更新 api/get_update
 @login_required(login_url="/login/")
 def get_update(request):
-    context = dict()
-    try:
-        user = github.Github(SettingModel.objects.get(name='GH_TOKEN').content)
-        latest = user.get_repo("am-abudu/Qexo").get_latest_release()
-        if latest.tag_name and (latest.tag_name != QEXO_VERSION):
-            context["hasNew"] = True
-        else:
-            context["hasNew"] = False
-        context["newer"] = latest.tag_name
-        context["newer_link"] = latest.html_url
-        context["newer_time"] = latest.created_at.astimezone(
-            timezone(timedelta(hours=16))).strftime(
-            "%Y-%m-%d %H:%M:%S")
-        context["newer_text"] = latest.body
-        context["status"] = True
-    except:
-        context["status"] = False
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return render(request, 'layouts/json.html', {"data": json.dumps(get_latest_version())})

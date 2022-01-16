@@ -169,7 +169,9 @@ def init_view(request):
             context["username"] = user.username
     elif int(step) >= 6:
         return redirect("/")
-    return render(request, "accounts/init.html", {"msg": msg, "step": step, "context": context})
+    context["msg"] = msg
+    context["step"] = step
+    return render(request, "accounts/init.html", context)
 
 
 def logout_view(request):

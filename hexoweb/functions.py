@@ -460,7 +460,7 @@ def fix_all(all_settings=ALL_SETTINGS):
             query.delete()
             counter += 1
     for setting in all_settings:
-        if setting[0] not in already:
+        if (setting[0] not in already) or (setting[2]):
             save_setting(setting[0], setting[1])
             counter += 1
     return counter

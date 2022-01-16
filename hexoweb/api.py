@@ -56,37 +56,6 @@ def set_github(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
-# 设置自动更新配置 api/set_update
-@login_required(login_url="/login/")
-def set_update(request):
-    try:
-        update_repo = request.POST.get("repo")
-        update_token = request.POST.get("token")
-        update_branch = request.POST.get("branch")
-        origin_branch = request.POST.get("origin")
-        if not update_token:
-            try:
-                update_token = SettingModel.objects.get(name="UPDATE_TOKEN").content
-            except:
-                context = {"msg": "校验失败!", "status": False}
-                return render(request, 'layouts/json.html', {"data": json.dumps(context)})
-        try:
-            user = github.Github(update_token)
-            user.get_repo(update_repo).get_contents("", ref=update_branch)
-            user.get_repo("am-abudu/Qexo").get_contents("", ref=origin_branch)
-        except:
-            context = {"msg": "校验失败!", "status": False}
-            return render(request, 'layouts/json.html', {"data": json.dumps(context)})
-        save_setting("UPDATE_REPO", update_repo)
-        save_setting("UPDATE_TOKEN", update_token)
-        save_setting("UPDATE_REPO_BRANCH", update_branch)
-        save_setting("UPDATE_ORIGIN_BRANCH", origin_branch)
-        context = {"msg": "保存成功!", "status": True}
-    except Exception as e:
-        context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
-
-
 # 设置APIKEY api/set_apikey
 @login_required(login_url="/login/")
 def set_api_key(request):
@@ -272,6 +241,7 @@ def do_update(request):
     branch = request.POST.get("branch")
     try:
         OnekeyUpdate(branch=branch)
+        save_setting("UPDATE_FROM", QEXO_VERSION)
         context = {"msg": "OK!", "status": True}
     except Exception as error:
         context = {"msg": repr(error), "status": False}

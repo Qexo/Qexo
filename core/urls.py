@@ -6,7 +6,6 @@ from django.conf import settings
 import hexoweb.pub as pub
 from django.views.generic import TemplateView
 
-
 urlpatterns = [
     # path('admin/', admin.site.urls),
     re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT},
@@ -17,6 +16,7 @@ urlpatterns = [
     path('login/', login_view, name="login"),
     path("logout/", logout_view, name="logout"),
     path("init/", init_view, name="init"),
+    path("update/", update_view, name="update"),
     path('', index, name='home'),
 
     path('api/auth/', auth, name='auth'),
@@ -32,7 +32,6 @@ urlpatterns = [
     path('api/set_user/', set_user, name='set_user'),
     path('api/set_image_bed/', set_image_bed, name='set_image_bed'),
     path('api/set_s3/', set_s3, name='set_s3'),
-    path('api/set_update/', set_update, name='set_update'),
     path('api/set_apikey/', set_api_key, name='set_apikey'),
     path('api/set_abbrlink/', set_abbrlink, name='set_abbrlink'),
     path('api/set_cust/', set_cust, name='set_cust'),

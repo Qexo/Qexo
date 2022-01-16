@@ -180,17 +180,19 @@
                                     <div class="col-lg-6">
                                         <div class="form-group">
                                             <label class="form-control-label">短链接算法</label>
-                                            <input type="text" name="alg" class="form-control"
-                                                   placeholder="crc16/crc32"
-                                                   value="{{ ABBRLINK_ALG }}">
+                                            <select name="alg" class="form-control">
+                                                <option{% if ABBRLINK_ALG == "crc16" %} selected{% endif %}>crc16</option>
+                                                <option{% if ABBRLINK_ALG == "crc32" %} selected{% endif %}>crc32</option>
+                                            </select>
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
                                         <div class="form-group">
                                             <label class="form-control-label">短链接进制</label>
-                                            <input type="text" name="rep" class="form-control"
-                                                   placeholder="hex/dec"
-                                                   value="{{ ABBRLINK_REP }}">
+                                            <select name="rep" class="form-control">
+                                                <option{% if ABBRLINK_REP == "hex" %} selected{% endif %}>hex</option>
+                                                <option{% if ABBRLINK_REP == "dec" %} selected{% endif %}>dec</option>
+                                            </select>
                                         </div>
                                     </div>
                                 </div>

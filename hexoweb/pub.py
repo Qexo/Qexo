@@ -390,14 +390,3 @@ def auto_fix(request):
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
-
-@csrf_exempt
-def test(request):
-    if not check_if_api_auth(request):
-        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
-                                                                         "status": False})})
-    try:
-        context = {"msg": OnekeyUpdate(branch="dev"), "status": True}
-    except Exception as e:
-        context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})

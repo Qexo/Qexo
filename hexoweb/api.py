@@ -269,23 +269,12 @@ def auto_fix(request):
 # 执行更新 api/do_update
 @login_required(login_url="/login/")
 def do_update(request):
-    repo = SettingModel.objects.get(name="UPDATE_REPO").content
-    token = SettingModel.objects.get(name="UPDATE_TOKEN").content
-    branch = SettingModel.objects.get(name="UPDATE_REPO_BRANCH").content
-    repo = github.Github(token).get_repo(repo)
-    origin_branch = SettingModel.objects.get(name="UPDATE_ORIGIN_BRANCH").content
+    branch = request.POST.get("branch")
     try:
-        pull = repo.create_pull(title="Update from {}".format(QEXO_VERSION), body="auto update",
-                                head="am-abudu:" + origin_branch,
-                                base=branch, maintainer_can_modify=False)
-        pull.merge()
+        OnekeyUpdate(branch=branch)
         context = {"msg": "OK!", "status": True}
     except Exception as error:
-        try:
-            msg = json.loads(str(error)[4:])["errors"][0]["message"]
-        except:
-            msg = repr(error)
-        context = {"msg": msg, "status": False}
+        context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 

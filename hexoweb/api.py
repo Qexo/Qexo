@@ -240,9 +240,12 @@ def auto_fix(request):
 def do_update(request):
     branch = request.POST.get("branch")
     try:
-        OnekeyUpdate(branch=branch)
-        save_setting("UPDATE_FROM", QEXO_VERSION)
-        context = {"msg": "OK!", "status": True}
+        res = OnekeyUpdate(branch=branch)
+        if res["status"]:
+            save_setting("UPDATE_FROM", QEXO_VERSION)
+            context = {"msg": "OK!", "status": True}
+        else:
+            context = {"msg": res["msg"], "status": False}
     except Exception as error:
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})

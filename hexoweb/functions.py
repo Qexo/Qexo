@@ -527,7 +527,7 @@ def getIndexFile(base, path=""):
 
 def VercelUpdate(appId, token, sourcePath=""):
     if checkBuilding(appId, token):
-        return "Another building is in progress."
+        return {"status": False, "msg": "Another building is in progress."}
     url = "https://api.vercel.com/v13/deployments"
     header = dict()
     data = dict()
@@ -540,7 +540,7 @@ def VercelUpdate(appId, token, sourcePath=""):
         sourcePath = os.path.abspath("")
     data["files"] = getEachFiles(sourcePath)
     response = requests.post(url, data=json.dumps(data), headers=header)
-    return response.json()
+    return {"status": True, "msg": response.json()}
 
 
 def OnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
@@ -560,5 +560,5 @@ def OnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
     outPath = os.path.abspath(tmpPath + getIndexFile(tmpPath))
     # print("outPath: " + outPath)
     if outPath == '':
-        return 'error: no outPath'
+        return {"status": False, "msg": 'error: no outPath'}
     return VercelUpdate(vercel_config["id"], vercel_config["token"], outPath)

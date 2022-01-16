@@ -126,8 +126,12 @@ def init_view(request):
                 save_setting("IMG_CUSTOM_BODY", custom_body)
                 save_setting("IMG_CUSTOM_HEADER", custom_header)
                 save_setting("IMG_CUSTOM_URL", custom_url)
-                save_setting("INIT", "5")
-                step = "5"
+                if check_if_vercel():
+                    save_setting("INIT", "5")
+                    step = "5"
+                else:
+                    save_setting("INIT", "6")
+                    step = "6"
             except Exception as e:
                 msg = repr(e)
                 context["api"] = api
@@ -137,33 +141,18 @@ def init_view(request):
                 context["header"] = custom_header
                 context["custom"] = custom_url
         if request.POST.get("step") == "5":
-            update_repo = request.POST.get("repo")
-            update_token = request.POST.get("token")
-            update_branch = request.POST.get("branch")
-            origin_branch = request.POST.get("origin")
-            if update_branch and update_token and update_repo:
-                try:
-                    user = github.Github(update_token)
-                    user.get_repo(update_repo).get_contents("", ref=update_branch)
-                    user.get_repo("am-abudu/Qexo").get_contents("", ref=origin_branch)
-                    save_setting("UPDATE_REPO", update_repo)
-                    save_setting("UPDATE_TOKEN", update_token)
-                    save_setting("UPDATE_REPO_BRANCH", update_branch)
-                    save_setting("INIT", "6")
-                    step = "6"
-                except:
-                    msg = "校验失败"
-                    context["repo"] = update_repo
-                    context["token"] = update_token
-                    context["branch"] = update_branch
-                    context["origin"] = origin_branch
-            else:
-                save_setting("UPDATE_REPO", update_repo)
-                save_setting("UPDATE_TOKEN", update_token)
-                save_setting("UPDATE_REPO_BRANCH", update_branch)
-                save_setting("UPDATE_ORIGIN_BRANCH", origin_branch)
+            project_id = request.POST.get("id")
+            vercel_token = request.POST.get("token")
+            try:
+                checkBuilding(project_id, vercel_token)
+                save_setting("VERCEL_TOKEN", vercel_token)
+                save_setting("PROJECT_ID", project_id)
                 save_setting("INIT", "6")
                 step = "6"
+            except:
+                context["project_id"] = project_id
+                context["vercel_token"] = vercel_token
+                msg = "校验错误"
         if step == "6":
             user = User.objects.all()[0]
             context["username"] = user.username

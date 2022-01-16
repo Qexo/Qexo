@@ -418,6 +418,10 @@ def check_if_api_auth(request):
     return False
 
 
+def check_if_vercel():
+    return True if os.environ.get("VERCEL") else False
+
+
 def get_crc16(x, _hex=False):
     x = str(x)
     a = 0xFFFF

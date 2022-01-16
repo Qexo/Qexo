@@ -31,15 +31,15 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700">
     <!-- Icons -->
     <link rel="stylesheet"
-          href="{{ cdn_prev }}qexo-static@1.0.0/assets/vendor/nucleo/css/nucleo.css"
+          href="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@master/static/assets/vendor/nucleo/css/nucleo.css"
           type="text/css">
     <link rel="stylesheet"
-          href="{{ cdn_prev }}qexo-static@1.0.0/assets/vendor/@fortawesome/fontawesome-free/css/all.min.css"
+          href="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@master/static/assets/vendor/@fortawesome/fontawesome-free/css/all.min.css"
           type="text/css">
     <!-- Page plugins -->
     <!-- Argon CSS -->
     <link rel="stylesheet"
-          href="{{ cdn_prev }}qexo-static@1.0.0/assets/css/argon.css?v=1.2.0"
+          href="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@master/static/assets/css/argon.css?v=1.2.0"
           type="text/css">
     <!-- Specific CSS goes HERE -->
     {% block stylesheets %}{% endblock stylesheets %}
@@ -65,34 +65,32 @@
 
 {% endblock javascripts %}
 
-<script src="{{ cdn_prev }}qexo-static@1.0.0/assets/js/argon.js?v=1.2.0"></script>
+<script src="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@master/static/assets/js/argon.js?v=1.2.0"></script>
 <script>
-    {% if error %}
-        $.notify("{{ error }}", {type: "warning"});
-    {% endif %}
     {% if 'index' not in segment %}
-        $.ajax({
-            url: "/api/get_update/",
-            type: "get",
-            success: function (res) {
-                let data = JSON.parse(res);
-                if (data["status"]) {
-                    $("#update-time").html("<small>" + data["newer_time"] + "</small>");
-                    if (data["hasNew"]) {
-                        $("#update-body").html("有新版本: <a href=\"" + data["newer_link"] + "\" " +
-                            "target=\"_blank\">" + data["newer"] + "</a><br>" + data["newer_text"])
-                        $(".update-point").css({
-                            "position": "absolute", "top": "-4px", "right": "-3px", "width": "6px",
-                            "height": "6px", "background": "red", "border-radius": "50%"
-                        })
-                    } else {
-                        $("#update-body").html("当前是最新版本哟~")
-                    }
+    $.ajax({
+        url: "/api/get_update/",
+        type: "get",
+        success: function (res) {
+            let data = JSON.parse(res);
+            if (data["status"]) {
+                $("#update-time").html("<small>" + data["newer_time"] + "</small>");
+                if (data["hasNew"]) {
+                    $("#update-body").html("有新版本: <a href=\"" + data["newer_link"] + "\" " +
+                        "target=\"_blank\">" + data["newer"] + "</a><br>" + data["newer_text"])
+                    $(".update-point").css({
+                        "position": "absolute", "top": "-4px", "right": "-3px", "width": "6px",
+                        "height": "6px", "background": "red", "border-radius": "50%"
+                    })
                 } else {
-                    $("#update-body").html("检查更新失败！");
+                    $("#update-body").html("当前是最新版本哟~")
                 }
             }
-        })
+            else{
+                $("#update-body").html("检查更新失败！");
+            }
+        }
+    })
     {% endif %}
 
 </script>

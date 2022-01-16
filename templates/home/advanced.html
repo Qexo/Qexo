@@ -106,8 +106,12 @@
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
-    <script src="{{ cdn_prev }}qexo-static@1.0.0/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/am-abudu/Qexo@master/static/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
     <script>
+        {% if error %}
+            $.notify("{{ error }}", {type: "warning"});
+        {% endif %}
+
         var posts = {{ settings|safe }};
         var _page = 1;
 
@@ -146,14 +150,10 @@
             }
             let list = "";
             for (let i = 0; i < page_posts.length; i++) {
-                let content_show = page_posts[i]["content"];
-                if(page_posts[i]["content"].length>53){
-                    content_show = page_posts[i]["content"].slice(0,50) + "...";
-                }
                 list += "<tr><th scope=\"row\">" + page_posts[i]["name"] + "</th><td>" +
-                     content_show + "</td>";
+                    page_posts[i]["content"] + "</td>";
                 list += "<td><a href=\"javascript:query_edit('" + page_posts[i]["name"] + "', " +
-                    "'" + page_posts[i]["content"].replaceAll("\"", "&quot;") + "')\">" +
+                    "'" + page_posts[i]["content"] + "')\">" +
                     "<i class=\"fa fa-edit mr-2\"></i></a>" + "<a href=\"javascript:query_delete('" +
                     page_posts[i]["name"] + "')\"><i class=\"fa fa-trash-alt " +
                     "mr-2\"></i></a></td></tr>";
@@ -261,7 +261,7 @@
             let html = "<div class=\"col\"><label " +
                 "class=\"form-control-label\">" + name + "</label><input type=\"text\" " +
                 "name=\"content\" id=\"edit-content\" " +
-                "class=\"form-control\" value=\"" + content.toString().replaceAll("\"", "&quot;") +"\"></div>";
+                "class=\"form-control\" value=\"" + content + "\"></div>";
             $("#query-modal-body").html(html);
             $("#queryLabel").html("编辑");
             let footer = "<button type=\"button\" class=\"btn btn-secondary\" " +

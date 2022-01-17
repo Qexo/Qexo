@@ -1,10 +1,10 @@
 {
   "builds": [
     {
-      "src": "now_build_staticfiles.sh",
+      "src": "migrate.sh",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "staticfiles_build"
+        "distDir": "templates"
       }
     },
     {

@@ -49,7 +49,7 @@
     <link href="{{ cdn_prev }}vditor@3.8.8/dist/index.css" rel="stylesheet"/>
     <script src="{{ cdn_prev }}vditor@3.8.8/dist/index.min.js"></script>
 
-    <script src="{{ cdn_prev }}qexo-static@1.0.4/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
+    <script src="{{ cdn_prev }}qexo-static@1.0.6/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
     <script>
         var _status = true;
 
@@ -128,6 +128,7 @@
             }
             var loading = new KZ_Loading('正在保存中...');
             _status = false;
+            loading.show();
             $.ajax({
                 url: '/api/save/',
                 method: 'post',

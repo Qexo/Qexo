@@ -550,7 +550,7 @@
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
-    <script src="{{ cdn_prev }}qexo-static@1.0.0/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
+    <script src="{{ cdn_prev }}qexo-static@1.0.3/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
     <script>
         function getBaseUrl() {
             let ishttps = 'https:' == document.location.protocol ? true : false;
@@ -843,9 +843,9 @@
                 method: 'post',
                 data: {
                     csrfmiddlewaretoken: '{{ csrf_token }}', 'logo': 'https://cdn.jsdelivr' +
-                        '.net/gh/am-abudu/Qexo@master/static/assets/img/brand/qexo.png', 'icon':
+                        '.net/npm/qexo-static@1.0.3/assets/img/brand/qexo.png', 'icon':
                         'https://cdn.jsdelivr' +
-                        '.net/gh/am-abudu/Qexo@master/static/assets/img/brand/favicon.ico',
+                        '.net/npm/qexo-static@1.0.3/assets/img/brand/favicon.ico',
                     'name': 'Hexo管理面板', 'split': ' - '
                 },
                 dataType: "json",

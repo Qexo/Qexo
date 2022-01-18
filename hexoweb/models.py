@@ -28,4 +28,5 @@ class FriendModel(models.Model):
     name = models.CharField(max_length=0x7FFFFFFF)
     url = models.CharField(max_length=0x7FFFFFFF)
     imageUrl = models.CharField(max_length=0x7FFFFFFF)
+    time = models.CharField(max_length=0x7FFFFFFF)
     description = models.CharField(max_length=0x7FFFFFFF)

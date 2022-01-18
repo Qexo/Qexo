@@ -430,6 +430,25 @@ def pages(request):
             context["post_number"] = len(posts)
             context["page_number"] = context["post_number"] // 15 + 1
             context["search"] = search
+        elif "friends" in load_template:
+            search = request.GET.get("s")
+            posts = []
+            if search:
+                friends = FriendModel.objects.filter(name__contains=search)
+                for i in friends:
+                    posts.append({"name": i.name, "url": i.url, "image": i.imageUrl,
+                                  "description": i.description,
+                                  "time": i.time})
+            else:
+                images = FriendModel.objects.all()
+                for i in images:
+                    posts.append({"name": i.name, "url": i.url, "image": i.imageUrl,
+                                  "description": i.description,
+                                  "time": i.time})
+            context["posts"] = posts
+            context["post_number"] = len(posts)
+            context["page_number"] = context["post_number"] // 15 + 1
+            context["search"] = search
         elif 'settings' in load_template:
             try:
                 context['GH_REPO_PATH'] = SettingModel.objects.get(name="GH_REPO_PATH").content

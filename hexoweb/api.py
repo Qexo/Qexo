@@ -558,3 +558,46 @@ def upload_img(request):
 @login_required(login_url="/login/")
 def get_update(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(get_latest_version())})
+
+
+# 添加友链 api/add_friend
+@login_required(login_url="/login/")
+def add_friend(request):
+    try:
+        friend = FriendModel()
+        friend.name = request.POST.get("name")
+        friend.url = request.POST.get("url")
+        friend.imageUrl = request.POST.get("image")
+        friend.description = request.POST.get("description")
+        friend.time = str(time())
+        friend.save()
+        context = {"msg": "添加成功！", "time": friend.time, "status": True}
+    except Exception as error:
+        context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+# 修改友链 api/edit_friend
+@login_required(login_url="/login/")
+def edit_friend(request):
+    try:
+        friend = FriendModel.objects.get(time=request.POST.get("time"))
+        friend.name = request.POST.get("name")
+        friend.url = request.POST.get("url")
+        friend.imageUrl = request.POST.get("image")
+        friend.description = request.POST.get("description")
+        friend.save()
+        context = {"msg": "修改成功！", "status": True}
+    except Exception as error:
+        context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+@login_required(login_url="/login/")
+def del_friend(request):
+    try:
+        friend = FriendModel.objects.get(time=request.POST.get("time"))
+        friend.delete()
+        context = {"msg": "删除成功！", "status": True}
+    except Exception as error:
+        context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})

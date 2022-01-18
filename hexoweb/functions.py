@@ -3,7 +3,7 @@ from core.settings import ALL_SETTINGS
 import requests
 from django.template.defaulttags import register
 from core.settings import QEXO_VERSION
-from .models import Cache, SettingModel
+from .models import Cache, SettingModel, FriendModel
 import github
 import json
 import boto3

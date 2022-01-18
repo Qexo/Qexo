@@ -1,6 +1,9 @@
+import os
+from core.settings import ALL_SETTINGS
+import requests
 from django.template.defaulttags import register
 from core.settings import QEXO_VERSION
-from .models import Cache, SettingModel
+from .models import Cache, SettingModel, FriendModel
 import github
 import json
 import boto3
@@ -10,6 +13,8 @@ from hashlib import md5
 from urllib3 import disable_warnings
 from markdown import markdown
 from zlib import crc32 as zlib_crc32
+from urllib.parse import quote
+import tarfile
 
 disable_warnings()
 
@@ -69,14 +74,14 @@ def get_custom_config():
         context["QEXO_LOGO"] = SettingModel.objects.get(name="QEXO_LOGO").content
     except:
         save_setting('QEXO_LOGO',
-                     'https://cdn.jsdelivr.net/npm/qexo-static@1.0.0/assets' +
+                     'https://cdn.jsdelivr.net/npm/qexo-static@1.0.4/assets' +
                      '/img/brand/qexo.png')
         context["QEXO_LOGO"] = SettingModel.objects.get(name="QEXO_LOGO").content
     try:
         context["QEXO_ICON"] = SettingModel.objects.get(name="QEXO_ICON").content
     except:
         save_setting('QEXO_ICON',
-                     'https://cdn.jsdelivr.net/npm/qexo-static@1.0.0/assets' +
+                     'https://cdn.jsdelivr.net/npm/qexo-static@1.0.4/assets' +
                      '/img/brand/favicon.ico')
         context["QEXO_ICON"] = SettingModel.objects.get(name="QEXO_ICON").content
     return context
@@ -413,6 +418,10 @@ def check_if_api_auth(request):
     return False
 
 
+def check_if_vercel():
+    return True if os.environ.get("VERCEL") else False
+
+
 def get_crc16(x, _hex=False):
     x = str(x)
     a = 0xFFFF
@@ -444,7 +453,7 @@ def get_crc_by_time(_strtime, alg, rep):
         _strtime.replace(".", "0"), _hex=use_hex)
 
 
-def fix_all():
+def fix_all(all_settings=ALL_SETTINGS):
     counter = 0
     already = list()
     settings = SettingModel.objects.all()
@@ -454,140 +463,102 @@ def fix_all():
         else:
             query.delete()
             counter += 1
-    try:
-        SettingModel.objects.get(name="GH_REPO_PATH").content
-    except:
-        save_setting('GH_REPO_PATH', '')
-        counter += 1
-    try:
-        SettingModel.objects.get(name="GH_REPO_BRANCH").content
-    except:
-        save_setting('GH_REPO_BRANCH', '')
-        counter += 1
-    try:
-        SettingModel.objects.get(name="GH_REPO").content
-    except:
-        save_setting('GH_REPO', '')
-        counter += 1
-    try:
-        SettingModel.objects.get(name="GH_TOKEN").content
-    except:
-        save_setting('GH_TOKEN', '')
-        counter += 1
-    try:
-        SettingModel.objects.get(name='IMG_CUSTOM_URL').content
-    except:
-        save_setting('IMG_CUSTOM_URL', '')
-        counter += 1
-    try:
-        SettingModel.objects.get(name='IMG_CUSTOM_HEADER').content
-    except:
-        save_setting('IMG_CUSTOM_HEADER', '')
-        counter += 1
-    try:
-        SettingModel.objects.get(name='IMG_CUSTOM_BODY').content
-    except:
-        save_setting('IMG_CUSTOM_BODY', '')
-        counter += 1
-    try:
-        SettingModel.objects.get(name='IMG_JSON_PATH').content
-    except:
-        save_setting('IMG_JSON_PATH', '')
-        counter += 1
-    try:
-        SettingModel.objects.get(name='IMG_POST').content
-    except:
-        save_setting('IMG_POST', '')
-        counter += 1
-    try:
-        SettingModel.objects.get(name='IMG_API').content
-    except:
-        save_setting('IMG_API', '')
-        counter += 1
-    try:
-        SettingModel.objects.get(name="UPDATE_REPO_BRANCH").content
-    except:
-        save_setting('UPDATE_REPO_BRANCH', '')
-        counter += 1
-    try:
-        SettingModel.objects.get(name="UPDATE_REPO").content
-    except:
-        save_setting('UPDATE_REPO', '')
-        counter += 1
-    try:
-        SettingModel.objects.get(name="UPDATE_ORIGIN_BRANCH").content
-    except:
-        save_setting('UPDATE_ORIGIN_BRANCH', 'master')
-        counter += 1
-    try:
-        SettingModel.objects.get(name="S3_KEY_ID").content
-    except:
-        save_setting('S3_KEY_ID', '')
-        counter += 1
-    try:
-        SettingModel.objects.get(name="S3_ACCESS_KEY").content
-    except:
-        save_setting('S3_ACCESS_KEY', '')
-        counter += 1
-    try:
-        SettingModel.objects.get(name="S3_ENDPOINT").content
-    except:
-        save_setting('S3_ENDPOINT', '')
-        counter += 1
-    try:
-        SettingModel.objects.get(name="S3_BUCKET").content
-    except:
-        save_setting('S3_BUCKET', '')
-        counter += 1
-    try:
-        SettingModel.objects.get(name="S3_PATH").content
-    except:
-        save_setting('S3_PATH', '')
-        counter += 1
-    try:
-        SettingModel.objects.get(name="S3_PREV_URL").content
-    except:
-        save_setting('S3_PREV_URL', '')
-        counter += 1
-    try:
-        SettingModel.objects.get(name="IMG_TYPE").content
-    except:
-        save_setting('IMG_TYPE', '')
-        counter += 1
-    try:
-        SettingModel.objects.get(name="ABBRLINK_ALG").content
-    except:
-        save_setting('ABBRLINK_ALG', 'crc16')
-        counter += 1
-    try:
-        SettingModel.objects.get(name="ABBRLINK_REP").content
-    except:
-        save_setting('ABBRLINK_REP', 'dec')
-        counter += 1
-    try:
-        if SettingModel.objects.get(name="CDN_PREV").content != "https://cdn.jsdelivr.net/npm/":
-            save_setting('CDN_PREV', 'https://cdn.jsdelivr.net/npm/')
+    for setting in all_settings:
+        if (setting[0] not in already) or (setting[2]):
+            save_setting(setting[0], setting[1])
             counter += 1
-    except:
-        save_setting('CDN_PREV', 'https://cdn.jsdelivr.net/npm/')
-        counter += 1
-    if SettingModel.objects.filter(name="VDITOR_EMOJI").count() == 0:
-        emoji = {"微笑": "🙂", "撇嘴": "😦", "色": "😍", "发呆": "😍", "得意": "😎", "流泪": "😭", "害羞": "😊",
-                 "闭嘴": "😷", "睡": "😴", "大哭 ": "😡", "尴尬": "😡", "发怒": "😛", "调皮": "😀", "呲牙": "😯",
-                 "惊讶": "🙁", "难过": "😎", "酷": "😨", "冷汗": "😱", "抓狂": "😵", "吐 ": "😋", "偷笑": "☺",
-                 "愉快": "🙄", "白眼": "🙄", "傲慢": "😋", "饥饿": "😪", "困": "😫", "惊恐": "😓", "流汗": "😃",
-                 "憨笑": "😃", "悠闲 ": "😆", "奋斗": "😆", "咒骂": "😆", "疑问": "😆", "嘘": "😵", "晕": "😆",
-                 "疯了": "😆", "衰": "😆", "骷髅": "💀", "敲打": "😬", "再见 ": "😘", "擦汗": "😆", "抠鼻": "😆",
-                 "鼓掌": "👏", "糗大了": "😆", "坏笑": "😆", "左哼哼": "😆", "右哼哼": "😆", "哈欠": "😆",
-                 "鄙视": "😆", "委屈 ": "😆", "快哭了": "😆", "阴险": "😆", "亲亲": "😘", "吓": "😓",
-                 "可怜": "😆", "菜刀": "🔪", "西瓜": "🍉", "啤酒": "🍺", "篮球": "🏀", "乒乓 ": "⚪", "咖啡": "☕",
-                 "饭": "🍚", "猪头": "🐷", "玫瑰": "🌹", "凋谢": "🌹", "嘴唇": "👄", "爱心": "💗", "心碎": "💔",
-                 "蛋糕": "🎂", "闪电 ": "⚡", "炸弹": "💣", "刀": "🗡", "足球": "⚽", "瓢虫": "🐞", "便便": "💩",
-                 "月亮": "🌙", "太阳": "☀", "礼物": "🎁", "拥抱": "🤗", "强 ": "👍", "弱": "👎", "握手": "👍",
-                 "胜利": "✌", "抱拳": "✊", "勾引": "✌", "拳头": "✊", "差劲": "✌", "爱你": "✌", "NO": "✌",
-                 "OK": "🙂", "嘿哈": "🙂", "捂脸": "🙂", "奸笑": "🙂", "机智": "🙂", "皱眉": "🙂", "耶": "🙂",
-                 "吃瓜": "🙂", "加油": "🙂", "汗": "🙂", "天啊": "👌", "社会社会": "🙂", "旺柴": "🙂",
-                 "好的": "🙂", "哇": "🙂"}
-        save_setting('VDITOR_EMOJI', json.dumps(emoji))
-        counter += 1
     return counter
+
+
+def get_project_detail():
+    return {"token": SettingModel.objects.get(name="VERCEL_TOKEN").content,
+            "id": SettingModel.objects.get(name="PROJECT_ID").content}
+
+
+def checkBuilding(projectId, token):
+    r = 0
+    url = "https://api.vercel.com/v6/deployments/?projectId=" + projectId
+    header = dict()
+    header["Authorization"] = "Bearer " + token
+    header["Content-Type"] = "application/json"
+    response = requests.get(url, headers=header).json()
+    result = response["deployments"]
+    for deployment in result:
+        if deployment['state'] == "BUILDING" or deployment['state'] == "INITIALIZING":
+            r += 1
+    return r
+
+
+def file_get_contents(file):
+    with open(file, 'r', encoding="utf8") as f:
+        content = f.read()
+    return content
+
+
+def getEachFiles(base, path=""):
+    file = list()
+    handler = os.listdir(base + "/" + path)
+    for item in handler:
+        if item != '.git':
+            fromfile = base + "/" + path + "/" + item
+            if os.path.isdir(fromfile):
+                file += getEachFiles(base, path + "/" + item)
+            else:
+                file.append({"file": path + "/" + item,
+                             "data": file_get_contents(fromfile)})
+    return file
+
+
+def getIndexFile(base, path=""):
+    index = ""
+    handler = os.listdir(base + "/" + path)
+    for item in handler:
+        if item != 'manage.py':
+            fromfile = base + "/" + path + "/" + item
+            if os.path.isdir(fromfile):
+                tmp = getIndexFile(base, path + "/" + item)
+                if tmp:
+                    index = tmp
+        else:
+            index = path
+            break
+    return index
+
+
+def VercelUpdate(appId, token, sourcePath=""):
+    if checkBuilding(appId, token):
+        return {"status": False, "msg": "Another building is in progress."}
+    url = "https://api.vercel.com/v13/deployments"
+    header = dict()
+    data = dict()
+    header["Authorization"] = "Bearer " + token
+    header["Content-Type"] = "application/json"
+    data["name"] = "qexo"
+    data["project"] = appId
+    data["target"] = "production"
+    if sourcePath == "":
+        sourcePath = os.path.abspath("")
+    data["files"] = getEachFiles(sourcePath)
+    response = requests.post(url, data=json.dumps(data), headers=header)
+    return {"status": True, "msg": response.json()}
+
+
+def OnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
+    vercel_config = get_project_detail()
+    tmpPath = '/tmp'
+    # 从github下载对应tar.gz，并解压
+    url = 'https://github.com/' + auth + '/' + project + '/tarball/' + quote(branch) + '/'
+    # print("download from " + url)
+    _tarfile = tmpPath + '/github.tar.gz'
+    with open(_tarfile, "wb") as file:
+        file.write(requests.get(url).content)
+    # print("ext files")
+    t = tarfile.open(_tarfile)
+    t.extractall(path=tmpPath)
+    t.close()
+    os.remove(_tarfile)
+    outPath = os.path.abspath(tmpPath + getIndexFile(tmpPath))
+    # print("outPath: " + outPath)
+    if outPath == '':
+        return {"status": False, "msg": 'error: no outPath'}
+    return VercelUpdate(vercel_config["id"], vercel_config["token"], outPath)

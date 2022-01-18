@@ -31,6 +31,37 @@ def login_view(request):
     return render(request, "accounts/login.html", get_custom_config())
 
 
+@login_required(login_url="/login/")
+def update_view(request):
+    try:
+        if int(SettingModel.objects.get(name="INIT").content) <= 5:
+            return redirect("/init/")
+    except:
+        return redirect("/init/")
+    if request.method == 'POST':
+        for setting in request.POST.keys():
+            save_setting(setting, request.POST.get(setting))
+    already = list()
+    settings = SettingModel.objects.all()
+    for query in settings:
+        if query.name not in already:
+            already.append(query.name)
+        else:
+            query.delete()
+    context = get_custom_config()
+    context["settings"] = list()
+    context["counter"] = 0
+    for setting in ALL_SETTINGS:
+        if setting[0] not in already:
+            context["settings"].append(dict(name=setting[0], value=setting[1],
+                                            placeholder=setting[3]))
+            context["counter"] += 1
+    if not context["counter"]:
+        save_setting("UPDATE_FROM", QEXO_VERSION)
+        return redirect("/")
+    return render(request, "accounts/update.html", context)
+
+
 def init_view(request):
     msg = None
     context = dict()
@@ -126,8 +157,12 @@ def init_view(request):
                 save_setting("IMG_CUSTOM_BODY", custom_body)
                 save_setting("IMG_CUSTOM_HEADER", custom_header)
                 save_setting("IMG_CUSTOM_URL", custom_url)
-                save_setting("INIT", "5")
-                step = "5"
+                if check_if_vercel():
+                    save_setting("INIT", "5")
+                    step = "5"
+                else:
+                    save_setting("INIT", "6")
+                    step = "6"
             except Exception as e:
                 msg = repr(e)
                 context["api"] = api
@@ -137,39 +172,26 @@ def init_view(request):
                 context["header"] = custom_header
                 context["custom"] = custom_url
         if request.POST.get("step") == "5":
-            update_repo = request.POST.get("repo")
-            update_token = request.POST.get("token")
-            update_branch = request.POST.get("branch")
-            origin_branch = request.POST.get("origin")
-            if update_branch and update_token and update_repo:
-                try:
-                    user = github.Github(update_token)
-                    user.get_repo(update_repo).get_contents("", ref=update_branch)
-                    user.get_repo("am-abudu/Qexo").get_contents("", ref=origin_branch)
-                    save_setting("UPDATE_REPO", update_repo)
-                    save_setting("UPDATE_TOKEN", update_token)
-                    save_setting("UPDATE_REPO_BRANCH", update_branch)
-                    save_setting("INIT", "6")
-                    step = "6"
-                except:
-                    msg = "校验失败"
-                    context["repo"] = update_repo
-                    context["token"] = update_token
-                    context["branch"] = update_branch
-                    context["origin"] = origin_branch
-            else:
-                save_setting("UPDATE_REPO", update_repo)
-                save_setting("UPDATE_TOKEN", update_token)
-                save_setting("UPDATE_REPO_BRANCH", update_branch)
-                save_setting("UPDATE_ORIGIN_BRANCH", origin_branch)
+            project_id = request.POST.get("id")
+            vercel_token = request.POST.get("token")
+            try:
+                checkBuilding(project_id, vercel_token)
+                save_setting("VERCEL_TOKEN", vercel_token)
+                save_setting("PROJECT_ID", project_id)
                 save_setting("INIT", "6")
                 step = "6"
+            except:
+                context["project_id"] = project_id
+                context["vercel_token"] = vercel_token
+                msg = "校验错误"
         if step == "6":
             user = User.objects.all()[0]
             context["username"] = user.username
     elif int(step) >= 6:
         return redirect("/")
-    return render(request, "accounts/init.html", {"msg": msg, "step": step, "context": context})
+    context["msg"] = msg
+    context["step"] = step
+    return render(request, "accounts/init.html", context)
 
 
 def logout_view(request):
@@ -185,6 +207,11 @@ def index(request):
             return redirect("/init/")
     except:
         return redirect("/init/")
+    try:
+        if SettingModel.objects.get(name="UPDATE_FROM").content != QEXO_VERSION:
+            return redirect("/update/")
+    except:
+        return redirect("/update/")
     context = {'segment': 'index'}
     context.update(get_custom_config())
     cache = Cache.objects.filter(name="posts")
@@ -221,6 +248,11 @@ def pages(request):
             return redirect("/init/")
     except:
         pass
+    try:
+        if SettingModel.objects.get(name="UPDATE_FROM").content != QEXO_VERSION:
+            return redirect("/update/")
+    except:
+        return redirect("/update/")
     # All resource paths end in .html.
     # Pick out the html file name from the url. And load that template.
     try:
@@ -398,130 +430,54 @@ def pages(request):
             context["post_number"] = len(posts)
             context["page_number"] = context["post_number"] // 15 + 1
             context["search"] = search
+        elif "friends" in load_template:
+            search = request.GET.get("s")
+            posts = []
+            if search:
+                friends = FriendModel.objects.filter(name__contains=search)
+                for i in friends:
+                    posts.append({"name": i.name, "url": i.url, "image": i.imageUrl,
+                                  "description": i.description,
+                                  "time": i.time})
+            else:
+                images = FriendModel.objects.all()
+                for i in images:
+                    posts.append({"name": i.name, "url": i.url, "image": i.imageUrl,
+                                  "description": i.description,
+                                  "time": i.time})
+            context["posts"] = posts
+            context["post_number"] = len(posts)
+            context["page_number"] = context["post_number"] // 15 + 1
+            context["search"] = search
         elif 'settings' in load_template:
             try:
-                try:
-                    context['GH_REPO_PATH'] = SettingModel.objects.get(name="GH_REPO_PATH").content
-                except:
-                    save_setting('GH_REPO_PATH', '')
-                try:
-                    context['GH_REPO_BRANCH'] = SettingModel.objects.get(
-                        name="GH_REPO_BRANCH").content
-                except:
-                    save_setting('GH_REPO_BRANCH', '')
-                try:
-                    context['GH_REPO'] = SettingModel.objects.get(name="GH_REPO").content
-                except:
-                    save_setting('GH_REPO', '')
-                try:
-                    context['GH_TOKEN'] = SettingModel.objects.get(name="GH_TOKEN").content
-                    token_len = len(context['GH_TOKEN'])
-                    if token_len >= 5:
-                        context['GH_TOKEN'] = context['GH_TOKEN'][:3] + "*" * (token_len - 5) + \
-                                              context['GH_TOKEN'][-1]
-                except:
-                    save_setting('GH_TOKEN', '')
-                try:
-                    context['IMG_CUSTOM_URL'] = SettingModel.objects.get(
-                        name='IMG_CUSTOM_URL').content
-                except:
-                    save_setting('IMG_CUSTOM_URL', '')
-                try:
-                    context['IMG_CUSTOM_HEADER'] = SettingModel.objects.get(
-                        name='IMG_CUSTOM_HEADER').content
-                except:
-                    save_setting('IMG_CUSTOM_HEADER', '')
-                try:
-                    context['IMG_CUSTOM_BODY'] = SettingModel.objects.get(
-                        name='IMG_CUSTOM_BODY').content
-                except:
-                    save_setting('IMG_CUSTOM_BODY', '')
-                try:
-                    context['IMG_JSON_PATH'] = SettingModel.objects.get(
-                        name='IMG_JSON_PATH').content
-                except:
-                    save_setting('IMG_JSON_PATH', '')
-                try:
-                    context['IMG_POST'] = SettingModel.objects.get(name='IMG_POST').content
-                except:
-                    save_setting('IMG_POST', '')
-                try:
-                    context['IMG_API'] = SettingModel.objects.get(name='IMG_API').content
-                except:
-                    save_setting('IMG_API', '')
-                try:
-                    context['UPDATE_REPO_BRANCH'] = SettingModel.objects.get(
-                        name="UPDATE_REPO_BRANCH").content
-                except:
-                    save_setting('UPDATE_REPO_BRANCH', '')
-                try:
-                    context['UPDATE_REPO'] = SettingModel.objects.get(name="UPDATE_REPO").content
-                except:
-                    save_setting('UPDATE_REPO', '')
-                try:
-                    context['UPDATE_ORIGIN_BRANCH'] = SettingModel.objects.get(
-                        name="UPDATE_ORIGIN_BRANCH").content
-                except:
-                    save_setting('UPDATE_ORIGIN_BRANCH', 'master')
-                    context['UPDATE_ORIGIN_BRANCH'] = "master"
-                try:
-                    context['UPDATE_TOKEN'] = SettingModel.objects.get(name="UPDATE_TOKEN").content
-                    if len(context['UPDATE_TOKEN']) >= 5:
-                        context['UPDATE_TOKEN'] = context['UPDATE_TOKEN'][:3] + "*" * (
-                                token_len - 5) \
-                                                  + context['UPDATE_TOKEN'][-1]
-                except:
-                    save_setting('UPDATE_TOKEN', '')
-                if context['UPDATE_REPO_BRANCH'] and context['UPDATE_REPO'] \
-                        and context['UPDATE_TOKEN']:
+                context['GH_REPO_PATH'] = SettingModel.objects.get(name="GH_REPO_PATH").content
+                context['GH_REPO_BRANCH'] = SettingModel.objects.get(name="GH_REPO_BRANCH").content
+                context['GH_REPO'] = SettingModel.objects.get(name="GH_REPO").content
+                context['GH_TOKEN'] = SettingModel.objects.get(name="GH_TOKEN").content
+                token_len = len(context['GH_TOKEN'])
+                if token_len >= 5:
+                    context['GH_TOKEN'] = context['GH_TOKEN'][:3] + "*" * (token_len - 5) + \
+                                          context['GH_TOKEN'][-1]
+                context['IMG_CUSTOM_URL'] = SettingModel.objects.get(name='IMG_CUSTOM_URL').content
+                context['IMG_CUSTOM_HEADER'] = SettingModel.objects.get(
+                    name='IMG_CUSTOM_HEADER').content
+                context['IMG_CUSTOM_BODY'] = SettingModel.objects.get(
+                    name='IMG_CUSTOM_BODY').content
+                context['IMG_JSON_PATH'] = SettingModel.objects.get(name='IMG_JSON_PATH').content
+                context['IMG_POST'] = SettingModel.objects.get(name='IMG_POST').content
+                context['IMG_API'] = SettingModel.objects.get(name='IMG_API').content
+                if check_if_vercel():
                     context["showUpdate"] = True
-                try:
-                    context['S3_KEY_ID'] = SettingModel.objects.get(
-                        name="S3_KEY_ID").content
-                except:
-                    save_setting('S3_KEY_ID', '')
-                try:
-                    context['S3_ACCESS_KEY'] = SettingModel.objects.get(
-                        name="S3_ACCESS_KEY").content
-                except:
-                    save_setting('S3_ACCESS_KEY', '')
-                try:
-                    context['S3_ENDPOINT'] = SettingModel.objects.get(
-                        name="S3_ENDPOINT").content
-                except:
-                    save_setting('S3_ENDPOINT', '')
-                try:
-                    context['S3_BUCKET'] = SettingModel.objects.get(
-                        name="S3_BUCKET").content
-                except:
-                    save_setting('S3_BUCKET', '')
-                try:
-                    context['S3_PATH'] = SettingModel.objects.get(
-                        name="S3_PATH").content
-                except:
-                    save_setting('S3_PATH', '')
-                try:
-                    context['S3_PREV_URL'] = SettingModel.objects.get(
-                        name="S3_PREV_URL").content
-                except:
-                    save_setting('S3_PREV_URL', '')
-                try:
-                    context['IMG_TYPE'] = SettingModel.objects.get(
-                        name="IMG_TYPE").content
-                except:
-                    save_setting('IMG_TYPE', '')
-                try:
-                    context['ABBRLINK_ALG'] = SettingModel.objects.get(
-                        name="ABBRLINK_ALG").content
-                except:
-                    save_setting('ABBRLINK_ALG', 'crc16')
-                    context['ABBRLINK_ALG'] = "crc16"
-                try:
-                    context['ABBRLINK_REP'] = SettingModel.objects.get(
-                        name="ABBRLINK_REP").content
-                except:
-                    save_setting('ABBRLINK_REP', 'dec')
-                    context['ABBRLINK_REP'] = "dec"
+                context['S3_KEY_ID'] = SettingModel.objects.get(name="S3_KEY_ID").content
+                context['S3_ACCESS_KEY'] = SettingModel.objects.get(name="S3_ACCESS_KEY").content
+                context['S3_ENDPOINT'] = SettingModel.objects.get(name="S3_ENDPOINT").content
+                context['S3_BUCKET'] = SettingModel.objects.get(name="S3_BUCKET").content
+                context['S3_PATH'] = SettingModel.objects.get(name="S3_PATH").content
+                context['S3_PREV_URL'] = SettingModel.objects.get(name="S3_PREV_URL").content
+                context['IMG_TYPE'] = SettingModel.objects.get(name="IMG_TYPE").content
+                context['ABBRLINK_ALG'] = SettingModel.objects.get(name="ABBRLINK_ALG").content
+                context['ABBRLINK_REP'] = SettingModel.objects.get(name="ABBRLINK_REP").content
                 if SettingModel.objects.filter(name="VDITOR_EMOJI").count() == 0:
                     emoji = {"微笑": "🙂", "撇嘴": "😦", "色": "😍", "发呆": "😍", "得意": "😎", "流泪": "😭",
                              "害羞": "😊", "闭嘴": "😷", "睡": "😴", "大哭 ": "😡", "尴尬": "😡", "发怒": "😛",
@@ -542,8 +498,8 @@ def pages(request):
                              "皱眉": "🙂", "耶": "🙂", "吃瓜": "🙂", "加油": "🙂", "汗": "🙂", "天啊": "👌",
                              "社会社会": "🙂", "旺柴": "🙂", "好的": "🙂", "哇": "🙂"}
                     save_setting('VDITOR_EMOJI', json.dumps(emoji))
-            except Exception as e:
-                context["error"] = repr(e)
+            except:
+                return redirect("/update/")
         elif 'advanced' in load_template:
             try:
                 all_settings = SettingModel.objects.all()

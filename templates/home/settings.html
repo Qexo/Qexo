@@ -49,7 +49,7 @@
                             </div>
                             {% if showUpdate %}
                                 <div class="pl-lg-4">
-                                    <input type="button" class="btn btn-danger" value="同步更新"
+                                    <input type="button" class="btn btn-danger" value="一键更新"
                                            onclick="query_update()">
                                 </div>
                             {% endif %}
@@ -171,54 +171,6 @@
                                 </div>
                             </div>
                         </form>
-                        <form id="update-settings">
-                            <hr class="my-4"/>
-                            <h6 class="heading-small text-muted mb-4">更新配置</h6>
-                            <div class="pl-lg-4">
-                                <div class="row">
-                                    {% csrf_token %}
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">在线更新-Qexo仓库</label>
-                                            <input type="text" name="repo" class="form-control"
-                                                   placeholder="username/repo"
-                                                   value="{{ UPDATE_REPO }}">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">在线更新-远程分支</label>
-                                            <input type="text" name="origin" class="form-control"
-                                                   placeholder="master"
-                                                   value="{{ UPDATE_ORIGIN_BRANCH }}">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">在线更新-Github密钥</label>
-                                            <input type="text" name="token" class="form-control"
-                                                   placeholder="{{ UPDATE_TOKEN }}" value="">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">在线更新-项目分支</label>
-                                            <input type="text" name="branch" class="form-control"
-                                                   placeholder="master"
-                                                   value="{{ UPDATE_REPO_BRANCH }}">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-lg-6">
-                                        <input type="button" class="btn btn-primary" value="提交"
-                                               onclick="submit_update_config()">
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
                         <form id="abbrlink-settings">
                             <hr class="my-4"/>
                             <h6 class="heading-small text-muted mb-4">短链接配置</h6>
@@ -228,17 +180,19 @@
                                     <div class="col-lg-6">
                                         <div class="form-group">
                                             <label class="form-control-label">短链接算法</label>
-                                            <input type="text" name="alg" class="form-control"
-                                                   placeholder="crc16/crc32"
-                                                   value="{{ ABBRLINK_ALG }}">
+                                            <select name="alg" class="form-control">
+                                                <option{% if ABBRLINK_ALG == "crc16" %} selected{% endif %}>crc16</option>
+                                                <option{% if ABBRLINK_ALG == "crc32" %} selected{% endif %}>crc32</option>
+                                            </select>
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
                                         <div class="form-group">
                                             <label class="form-control-label">短链接进制</label>
-                                            <input type="text" name="rep" class="form-control"
-                                                   placeholder="hex/dec"
-                                                   value="{{ ABBRLINK_REP }}">
+                                            <select name="rep" class="form-control">
+                                                <option{% if ABBRLINK_REP == "hex" %} selected{% endif %}>hex</option>
+                                                <option{% if ABBRLINK_REP == "dec" %} selected{% endif %}>dec</option>
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
@@ -515,13 +469,19 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="queryWebhookLabel">提示</h5>
+                        <h5 class="modal-title" id="queryWebhookLabel">更新</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
                     <div class="modal-body">
-                        确定要提交自动更新吗？这会创建一个新的 Pull request 尝试合并最新的分支
+                        <div class="col">
+                            <label class="form-control-label">更新通道</label>
+                            <select class="form-control" id="update-origin-branch">
+                                <option>master</option>
+                                <option>dev</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">取消
@@ -590,7 +550,7 @@
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
-    <script src="{{ cdn_prev }}qexo-static@1.0.0/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
+    <script src="{{ cdn_prev }}qexo-static@1.0.4/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
     <script>
         function getBaseUrl() {
             let ishttps = 'https:' == document.location.protocol ? true : false;
@@ -851,28 +811,6 @@
             })
         }
 
-        function submit_update_config() {
-            let loading = new KZ_Loading('正在校验并保存中...');
-            loading.show();
-            $.ajax({
-                url: '/api/set_update/',
-                method: 'post',
-                data: $('#update-settings').serialize(),
-                dataType: "json",
-                success: function (res) {
-                    loading.destroy();
-                    if (res.status) {
-                        let notify = $.notify(res.msg, {type: "success", delay: 1000});
-                    } else {
-                        let notify = $.notify(res.msg, {type: "warning"});
-                    }
-                },
-                error: function (res) {
-                    loading.destroy();
-                    let notify = $.notify("网络错误！", {type: "warning"});
-                }
-            })
-        }
 
         function submit_cust_config() {
             let loading = new KZ_Loading('正在保存中...');
@@ -905,9 +843,9 @@
                 method: 'post',
                 data: {
                     csrfmiddlewaretoken: '{{ csrf_token }}', 'logo': 'https://cdn.jsdelivr' +
-                        '.net/gh/am-abudu/Qexo@master/static/assets/img/brand/qexo.png', 'icon':
+                        '.net/npm/qexo-static@1.0.4/assets/img/brand/qexo.png', 'icon':
                         'https://cdn.jsdelivr' +
-                        '.net/gh/am-abudu/Qexo@master/static/assets/img/brand/favicon.ico',
+                        '.net/npm/qexo-static@1.0.4/assets/img/brand/favicon.ico',
                     'name': 'Hexo管理面板', 'split': ' - '
                 },
                 dataType: "json",
@@ -977,12 +915,14 @@
             loading.show();
             $.ajax({
                 url: '/api/do_update/',
-                method: 'get',
+                method: 'post',
                 dataType: "json",
+                data: {"branch": $("#update-origin-branch").val(), csrfmiddlewaretoken:
+                        '{{ csrf_token }}'},
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        $.notify("更新提交成功！请等待自动部署", {type: "success", delay: 1000});
+                        $.notify("更新成功！请等待自动部署", {type: "success", delay: 1000});
                     } else {
                         $.notify(res.msg, {type: "warning"});
                     }

@@ -11,6 +11,9 @@
             {% elif 'configs' in segment %}
                 <form class="navbar-search navbar-search-light form-inline mr-sm-3"
                       id="navbar-search-main" action="/configs.html" method="get">
+            {% elif 'friends' in segment %}
+                <form class="navbar-search navbar-search-light form-inline mr-sm-3"
+                      id="navbar-search-main" action="/friends.html" method="get">
             {% else %}
                 <form class="navbar-search navbar-search-light form-inline mr-sm-3"
                       id="navbar-search-main" action="/posts.html" method="get">
@@ -27,6 +30,8 @@
                         <input class="form-control" placeholder="搜索图片..." type="text" name="s">
                     {% elif 'configs' in segment %}
                         <input class="form-control" placeholder="搜索配置..." type="text" name="s">
+                    {% elif 'friends' in segment %}
+                        <input class="form-control" placeholder="搜索友链..." type="text" name="s">
                     {% else %}
                         <input class="form-control" placeholder="搜索文章..." type="text" name="s">
                     {% endif %}

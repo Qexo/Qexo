@@ -56,37 +56,6 @@ def set_github(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
-# 设置自动更新配置 api/set_update
-@login_required(login_url="/login/")
-def set_update(request):
-    try:
-        update_repo = request.POST.get("repo")
-        update_token = request.POST.get("token")
-        update_branch = request.POST.get("branch")
-        origin_branch = request.POST.get("origin")
-        if not update_token:
-            try:
-                update_token = SettingModel.objects.get(name="UPDATE_TOKEN").content
-            except:
-                context = {"msg": "校验失败!", "status": False}
-                return render(request, 'layouts/json.html', {"data": json.dumps(context)})
-        try:
-            user = github.Github(update_token)
-            user.get_repo(update_repo).get_contents("", ref=update_branch)
-            user.get_repo("am-abudu/Qexo").get_contents("", ref=origin_branch)
-        except:
-            context = {"msg": "校验失败!", "status": False}
-            return render(request, 'layouts/json.html', {"data": json.dumps(context)})
-        save_setting("UPDATE_REPO", update_repo)
-        save_setting("UPDATE_TOKEN", update_token)
-        save_setting("UPDATE_REPO_BRANCH", update_branch)
-        save_setting("UPDATE_ORIGIN_BRANCH", origin_branch)
-        context = {"msg": "保存成功!", "status": True}
-    except Exception as e:
-        context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
-
-
 # 设置APIKEY api/set_apikey
 @login_required(login_url="/login/")
 def set_api_key(request):
@@ -269,23 +238,16 @@ def auto_fix(request):
 # 执行更新 api/do_update
 @login_required(login_url="/login/")
 def do_update(request):
-    repo = SettingModel.objects.get(name="UPDATE_REPO").content
-    token = SettingModel.objects.get(name="UPDATE_TOKEN").content
-    branch = SettingModel.objects.get(name="UPDATE_REPO_BRANCH").content
-    repo = github.Github(token).get_repo(repo)
-    origin_branch = SettingModel.objects.get(name="UPDATE_ORIGIN_BRANCH").content
+    branch = request.POST.get("branch")
     try:
-        pull = repo.create_pull(title="Update from {}".format(QEXO_VERSION), body="auto update",
-                                head="am-abudu:" + origin_branch,
-                                base=branch, maintainer_can_modify=False)
-        pull.merge()
-        context = {"msg": "OK!", "status": True}
+        res = OnekeyUpdate(branch=branch)
+        if res["status"]:
+            save_setting("UPDATE_FROM", QEXO_VERSION)
+            context = {"msg": "OK!", "status": True}
+        else:
+            context = {"msg": res["msg"], "status": False}
     except Exception as error:
-        try:
-            msg = json.loads(str(error)[4:])["errors"][0]["message"]
-        except:
-            msg = repr(error)
-        context = {"msg": msg, "status": False}
+        context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
@@ -596,3 +558,46 @@ def upload_img(request):
 @login_required(login_url="/login/")
 def get_update(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(get_latest_version())})
+
+
+# 添加友链 api/add_friend
+@login_required(login_url="/login/")
+def add_friend(request):
+    try:
+        friend = FriendModel()
+        friend.name = request.POST.get("name")
+        friend.url = request.POST.get("url")
+        friend.imageUrl = request.POST.get("image")
+        friend.description = request.POST.get("description")
+        friend.time = str(time())
+        friend.save()
+        context = {"msg": "添加成功！", "time": friend.time, "status": True}
+    except Exception as error:
+        context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+# 修改友链 api/edit_friend
+@login_required(login_url="/login/")
+def edit_friend(request):
+    try:
+        friend = FriendModel.objects.get(time=request.POST.get("time"))
+        friend.name = request.POST.get("name")
+        friend.url = request.POST.get("url")
+        friend.imageUrl = request.POST.get("image")
+        friend.description = request.POST.get("description")
+        friend.save()
+        context = {"msg": "修改成功！", "status": True}
+    except Exception as error:
+        context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+@login_required(login_url="/login/")
+def del_friend(request):
+    try:
+        friend = FriendModel.objects.get(time=request.POST.get("time"))
+        friend.delete()
+        context = {"msg": "删除成功！", "status": True}
+    except Exception as error:
+        context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})

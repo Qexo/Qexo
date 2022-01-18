@@ -379,10 +379,29 @@ def get_images(request):
 # 自动修复程序 api/fix
 @csrf_exempt
 def auto_fix(request):
+    if not check_if_api_auth(request):
+        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
+                                                                         "status": False})})
     try:
         counter = fix_all()
         msg = "尝试自动修复了 {} 个字段，请在稍后检查和修改配置".format(counter)
         context = {"msg": msg, "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 获取友情链接 pub/friends
+@csrf_exempt
+def friends(request):
+    try:
+        friends = FriendModel.objects.all()
+        data = list()
+        for i in friends:
+            data.append({"name": i.name, "url": i.url, "image": i.imageUrl,
+                          "description": i.description,
+                          "time": i.time})
+        context = {"data": data, "status": True}
     except Exception as e:
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})

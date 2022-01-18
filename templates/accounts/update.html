@@ -1,0 +1,66 @@
+{% extends 'layouts/base-fullscreen.html' %}
+
+{% block title %} 更新配置 {% endblock title %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    <!-- Page content -->
+    <div class="container mt--8 pb-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-5">
+                <div class="card bg-secondary shadow border-0">
+                    <div class="card-body">
+                        <div class="text-center text-muted mb-4">
+                            <h2>更新配置</h2>
+                        </div>
+                        <form method="POST">
+                            {% csrf_token %}
+                            {% for setting in settings %}
+                            <div class="form-group">
+                                <label class="form-control-label">{{ setting.name }}</label>
+                                <input type="text" name="{{ setting.name }}" class="form-control"
+                                       placeholder="{{ setting.placeholder }}" value="{{ setting.value }}">
+                            </div>
+                            {% endfor %}
+                        <div class="text-center">
+                                <button type="submit" class="btn btn-primary my-4">完成</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE -->
+{% block javascripts %}
+
+    <script src="{{ cdn_prev }}qexo-static@1.0.4/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
+    <script>
+        {% if msg %}
+            $.notify("{{ msg }}", {type: "warning", delay: 1000});
+        {% endif %}
+        function skip() {
+            let temp = document.createElement("form");
+            temp.action = "";
+            temp.method = "post";
+            temp.hidden = true;
+            let opt = document.createElement("textarea");
+            opt.name = "csrfmiddlewaretoken";
+            opt.value = "{{ csrf_token }}";
+            temp.appendChild(opt);
+            opt = document.createElement("textarea");
+            opt.name = "step";
+            opt.value = "{{ step }}";
+            temp.appendChild(opt);
+            document.body.appendChild(temp);
+            temp.submit();
+        }
+    </script>
+{% endblock javascripts %}

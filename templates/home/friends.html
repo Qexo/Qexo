@@ -1,6 +1,6 @@
 {% extends 'layouts/base.html' %}
 
-{% block title %} 高级设置 {% endblock title %}
+{% block title %} {% if search %}搜索链接:{{ search }}{% else %}全部链接{% endif %} {% endblock title %}
 
 {% block content %}
 
@@ -9,23 +9,23 @@
             <div class="header-body">
                 <div class="row align-items-center py-4">
                     <div class="col-lg-6 col-7">
-                        <h6 class="h2 text-white d-inline-block mb-0">高级设置</h6>
+                        <h6 class="h2 text-white d-inline-block mb-0">友情链接</h6>
                         <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
                             <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                                 <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i></a>
                                 </li>
-                                <li class="breadcrumb-item active">高级</li>
+                                <li class="breadcrumb-item active" aria-current="page">链接</li>
                             </ol>
                         </nav>
                     </div>
                     <div class="col-lg-6 col-5 text-right">
-                        <a href="javascript:query_fix()" class="btn btn-sm btn-neutral">修复</a>
-                        <a href="javascript:query_new()" class="btn btn-sm btn-neutral">新建字段</a>
+                        <a href="javascript:query_new()" class="btn btn-sm btn-neutral">新增友链</a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
     <!-- Page content -->
     <div class="container-fluid mt--6">
         <div class="row">
@@ -34,8 +34,8 @@
                     <div class="card-header border-0">
                         <div class="row align-items-center">
                             <div class="col">
-                                <h3 class="mb-0">全部配置 (<a id="count">{{ settings_number }}</a>项)
-                                </h3>
+                                <h3 class="mb-0">{% if search %}搜索链接: {{ search }}{% else %}
+                                    全部链接{% endif %}(<a id="count">{{ post_number }}</a>条)</h3>
                             </div>
                         </div>
                     </div>
@@ -44,12 +44,14 @@
                         <table class="table align-items-center table-flush">
                             <thead class="thead-light">
                             <tr>
-                                <th scope="col">字段名</th>
-                                <th scope="col">内容</th>
+                                <th scope="col">名称</th>
+                                <th scope="col">链接</th>
+                                <th scope="col">图片</th>
+                                <th scope="col">描述</th>
                                 <th scope="col">操作</th>
                             </tr>
                             </thead>
-                            <tbody id="settings-list">
+                            <tbody id="posts-list">
                             </tbody>
                         </table>
                         <div class="card-footer py-4">
@@ -72,11 +74,34 @@
                                     <a class="page-link"
                                        href="javascript:next_page()">
                                         <i class="fas fa-angle-right"></i>
-                                        <span class="sr-only">下一页</span>
+                                        <span class="sr-only">Next</span>
                                     </a>
                                 </li>
                             </ul>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">提示</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        确认要删除链接: <a id="delfile"></a> 吗？此操作不可撤回
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消
+                        </button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal"
+                                onclick="delete_file()">确定
+                        </button>
                     </div>
                 </div>
             </div>
@@ -106,21 +131,12 @@
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
+
     <script src="{{ cdn_prev }}qexo-static@1.0.6/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
     <script>
-        var posts = {{ settings|safe }};
+        var del_file = "";
+        var posts = {{ posts|safe }};
         var _page = 1;
-
-
-        var compare = function (x, y) {
-            if (x["name"] < y["name"]) {
-                return -1;
-            } else if (x["name"] > y["name"]) {
-                return 1;
-            } else {
-                return 0;
-            }
-        }
 
         function scrollToTop() {
             let timer = null;
@@ -136,31 +152,50 @@
             });
         }
 
+        var compare = function (x, y) {
+            if (x["name"] < y["name"]) {
+                return -1;
+            } else if (x["name"] > y["name"]) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+
         function change_page(page) {
             scrollToTop();
             let page_posts;
-            if (posts.length > page * 15 + 1) {
-                page_posts = posts.slice(15 * (page - 1), page * 15);
+            if (posts.length) {
+                if (posts.length > page * 15 + 1) {
+                    page_posts = posts.slice(15 * (page - 1), page * 15);
+                } else {
+                    page_posts = posts.slice(15 * (page - 1));
+                }
             } else {
-                page_posts = posts.slice(15 * (page - 1));
+                page_posts = [];
             }
             let list = "";
             for (let i = 0; i < page_posts.length; i++) {
-                let content_show = page_posts[i]["content"];
-                if(page_posts[i]["content"].length>53){
-                    content_show = page_posts[i]["content"].slice(0,50) + "...";
+                let description = page_posts[i]["description"]
+                if (description.length > 13) {
+                    description = description.slice(0, 10) + "...";
                 }
-                list += "<tr><th scope=\"row\">" + page_posts[i]["name"] + "</th><td>" +
-                     content_show + "</td>";
-                list += "<td><a href=\"javascript:query_edit('" + page_posts[i]["name"] + "', " +
-                    "'" + page_posts[i]["content"].replaceAll("\"", "&quot;") + "')\">" +
-                    "<i class=\"fa fa-edit mr-2\"></i></a>" + "<a href=\"javascript:query_delete('" +
-                    page_posts[i]["name"] + "')\"><i class=\"fa fa-trash-alt " +
+                list += "<tr><td scope=\"row\">" + page_posts[i]["name"] +"</td><td>" + "<a " +
+                    "href=\"" +
+                    page_posts[i]["url"] + "\" target=\"_blank\"><i class=\"fas " +
+                    "fa-link\"></i></a> " +
+                    page_posts[i]["url"] + "</td><td>" + "<a href=\"" +
+                    page_posts[i]["image"] + "\" target=\"_blank\"> <i " +
+                    "class=\"fa fa-external-link-alt\"></i></a></td><td>" + description +
+                    "</td><td><a href=\"javascript:query_edit('" + page_posts[i]["time"] + "')\">" +
+                    "<i class=\"fa fa-edit mr-2\"></i></a>" + "<a href=\"javascript:query_delete" +
+                    "('" + page_posts[i]["name"] + "','" +
+                    page_posts[i]["time"] + "')\"><i class=\"fa fa-trash-alt " +
                     "mr-2\"></i></a></td></tr>";
             }
             $("#page-" + _page).removeClass("active");
             $("#page-" + page).addClass("active");
-            $("#settings-list").html(list);
+            $("#posts-list").html(list);
             _page = page;
             if (page <= 1) {
                 $("#prev-page").addClass("disabled");
@@ -191,10 +226,13 @@
         }
 
         change_page(1);
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
 
         function KZ_Loading(config) {
             if (this instanceof KZ_Loading) {
-                const domTemplate = '<div class="modal kz-loading" data-kzid="@@KZ_Loadin_ID@@" backdrop="static" keyboard="false"><div style="width: 200px;height:20px; z-index: 20000; position: absolute; text-align: center; left: 50%; top: 50%;margin-left:-100px;margin-top:-10px"><div class="progress progress-striped active" style="margin-bottom: 0;"><div class="progress-bar" style="width: 100%;"></div></div><h5>@@KZ_Loading_Text@@</h5></div></div>';
+                const domTemplate = '<div class="modal fade kz-loading" data-kzid="@@KZ_Loadin_ID@@" backdrop="static" keyboard="false"><div style="width: 200px;height:20px; z-index: 20000; position: absolute; text-align: center; left: 50%; top: 50%;margin-left:-100px;margin-top:-10px"><div class="progress progress-striped active" style="margin-bottom: 0;"><div class="progress-bar" style="width: 100%;"></div></div><h5>@@KZ_Loading_Text@@</h5></div></div>';
                 this.config = {
                     content: 'loading...',
                     time: 0,
@@ -257,117 +295,116 @@
             }
         }
 
-        function query_edit(name, content) {
-            let html = "<div class=\"col\"><label " +
-                "class=\"form-control-label\">" + name + "</label><input type=\"text\" " +
-                "name=\"content\" id=\"edit-content\" " +
-                "class=\"form-control\" value=\"" + content.toString().replaceAll("\"", "&quot;") +"\"></div>";
+        function query_delete(name, time) {
+            let html = "确认要删除链接 " + name + " 吗？该操作不可回退";
             $("#query-modal-body").html(html);
-            $("#queryLabel").html("编辑");
+            $("#queryLabel").html("提示");
             let footer = "<button type=\"button\" class=\"btn btn-secondary\" " +
                 "data-dismiss=\"modal\">取消</button><button type=\"button\" class=\"btn " +
-                "btn-primary\" data-dismiss=\"modal\" onclick=\"change_value('" + name +
+                "btn-primary\" data-dismiss=\"modal\" onclick=\"del_friend('" + time +
                 "')\">确定</button>"
             $("#query-modal-footer").html(footer);
             $("#query").modal("show");
         }
 
-        function query_delete(name) {
-            let html = "确认要删除 " + name + " 字段吗？该操作不可回退";
-            $("#query-modal-body").html(html);
-            $("#queryLabel").html("提示");
-            let footer = "<button type=\"button\" class=\"btn btn-secondary\" " +
-                "data-dismiss=\"modal\">取消</button><button type=\"button\" class=\"btn " +
-                "btn-primary\" data-dismiss=\"modal\" onclick=\"delete_value('" + name +
-                "')\">确定</button>"
-            $("#query-modal-footer").html(footer);
-            $("#query").modal("show");
-        }
-
-        function query_new() {
-            let html = "<div class=\"col\"><label " +
-                "class=\"form-control-label\">字段名</label><input type=\"text\" " +
-                "name=\"name\" id=\"edit-name\" " +
-                "class=\"form-control\"></div>" + "<div class=\"col\"><label " +
-                "class=\"form-control-label\">内容</label><input type=\"text\" " +
-                "name=\"content\" id=\"edit-content\" " +
-                "class=\"form-control\"></div>";
-            $("#query-modal-body").html(html);
-            $("#queryLabel").html("新建字段");
-            let footer = "<button type=\"button\" class=\"btn btn-secondary\" " +
-                "data-dismiss=\"modal\">取消</button><button type=\"button\" class=\"btn " +
-                "btn-primary\" data-dismiss=\"modal\" onclick=\"new_value()\">确定</button>"
-            $("#query-modal-footer").html(footer);
-            $("#query").modal("show");
-        }
-
-        function query_fix() {
-            let html = "确认要尝试自动修复程序吗？这会检查并创建/删除相应字段";
-            $("#query-modal-body").html(html);
-            $("#queryLabel").html("提示");
-            let footer = "<button type=\"button\" class=\"btn btn-secondary\" " +
-                "data-dismiss=\"modal\">取消</button><button type=\"button\" class=\"btn " +
-                "btn-primary\" data-dismiss=\"modal\" onclick=\"auto_fix()\">确定</button>"
-            $("#query-modal-footer").html(footer);
-            $("#query").modal("show");
-        }
-
-        $.ajaxSetup({
-            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
-        });
-
-        function change_value(name) {
-            let loading = new KZ_Loading('正在保存中...');
+        function del_friend(time) {
+            var loading = new KZ_Loading('正在删除中...');
             loading.show();
-            let content = $("#edit-content").val();
             $.ajax({
-                url: '/api/set_value/',
+                url: '/api/del_friend/',
                 method: 'post',
-                data: {"name": name, "content": content},
-                dataType: "json",
+                data: {"time": time},
+                dataType: 'JSON',
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        $.notify(res.msg, {type: "success", delay: 1000});
-                        for (let i = 0; i < posts.length; i++) {
-                            if (posts[i]["name"] == name) {
-                                posts[i]["content"] = content;
-                                change_page(_page);
-                                break;
+                        $.notify('删除成功！', {type: "success", delay: 1000});
+                        if (posts.length > 1) {
+                            for (let i = 0; i < posts.length; i++) {
+                                if (posts[i]['time'] == time) {
+                                    posts.splice(i, i);
+                                    change_page(_page);
+                                    break;
+                                }
                             }
-                        }
-                    } else {
-                        $.notify(res.msg, {type: "warning"});
-                    }
-                },
-                error: function (res) {
-                    loading.destroy();
-                    $.notify("网络错误！", {type: "warning"});
-                }
-            })
-        }
-
-        function delete_value(name) {
-            let loading = new KZ_Loading('正在删除中...');
-            loading.show();
-            $.ajax({
-                url: '/api/del_value/',
-                method: 'post',
-                data: {"name": name},
-                dataType: "json",
-                success: function (res) {
-                    loading.destroy();
-                    if (res.status) {
-                        $.notify(res.msg, {type: "success", delay: 1000});
-                        for (let i = 0; i < posts.length; i++) {
-                            if (posts[i]["name"] == name) {
-                                posts.splice(i, i);
-                                change_page(_page);
-                                break;
-                            }
+                        } else {
+                            posts = [];
+                            change_page(_page);
                         }
                         $("#count").html(posts.length);
                     } else {
+                        $.notify(res.msg, {type: "warning", delay: 1000});
+                    }
+                },
+                error: function (res) {
+                    loading.destroy();
+                    $.notify("网络错误！", {type: "warning", delay: 1000});
+                }
+            })
+        }
+
+        function query_edit(time) {
+            let name, url, image, description, index;
+            for (let i = 0; i < posts.length; i++) {
+                if (posts[i]["time"] == time) {
+                    name = posts[i]["name"];
+                    url = posts[i]["url"];
+                    image = posts[i]["image"];
+                    description = posts[i]["description"];
+                    index = i;
+                    break;
+                }
+            }
+            let html = "<div class=\"col\"><label " +
+                "class=\"form-control-label\">名称</label><input type=\"text\" " +
+                "name=\"name\" id=\"edit-name\" value=\"" + name + "\"" +
+                "class=\"form-control\"></div>" + "<div class=\"col\"><label " +
+                "class=\"form-control-label\">链接</label><input type=\"text\" " +
+                "name=\"url\" id=\"edit-url\" value=\"" + url + "\"" +
+                "class=\"form-control\"></div>" + "<div class=\"col\"><label " +
+                "class=\"form-control-label\">图片链接</label><input type=\"text\" " +
+                "name=\"image\" id=\"edit-image\" value=\"" + image + "\"" +
+                "class=\"form-control\"></div>" + "<div class=\"col\"><label " +
+                "class=\"form-control-label\">描述</label><input type=\"text\" " +
+                "name=\"description\" id=\"edit-description\" value=\"" + description + "\"" +
+                "class=\"form-control\"></div>";
+            $("#query-modal-body").html(html);
+            $("#queryLabel").html("编辑友链");
+            let footer = "<button type=\"button\" class=\"btn btn-secondary\" " +
+                "data-dismiss=\"modal\">取消</button><button type=\"button\" class=\"btn " +
+                "btn-primary\" data-dismiss=\"modal\" onclick=\"edit_friend("+index+")" +
+                "\">确定</button>"
+            $("#query-modal-footer").html(footer);
+            $("#query").modal("show");
+        }
+
+
+        function edit_friend(index) {
+            let name = $("#edit-name").val();
+            let description = $("#edit-description").val();
+            let url = $("#edit-url").val();
+            let image = $("#edit-image").val();
+            let loading = new KZ_Loading('正在保存中...');
+            loading.show();
+            $.ajax({
+                url: '/api/edit_friend/',
+                method: 'post',
+                data: {
+                    "name": name, "url": url, "image": image, "description":
+                    description, "time": posts[index]["time"]
+                },
+                dataType: "json",
+                success: function (res) {
+                    loading.destroy();
+                    if (res.status) {
+                        $.notify(res.msg, {type: "success", delay: 1000});
+                        posts[index]["name"] = name;
+                        posts[index]["url"] = url;
+                        posts[index]["image"] = image;
+                        posts[index]["description"] = description;
+                        posts.sort(compare);
+                        change_page(_page);
+                    } else {
                         $.notify(res.msg, {type: "warning"});
                     }
                 },
@@ -378,21 +415,56 @@
             })
         }
 
-        function new_value() {
+
+        function query_new() {
+            let html = "<div class=\"col\"><label " +
+                "class=\"form-control-label\">名称</label><input type=\"text\" " +
+                "name=\"name\" id=\"edit-name\" " +
+                "class=\"form-control\"></div>" + "<div class=\"col\"><label " +
+                "class=\"form-control-label\">链接</label><input type=\"text\" " +
+                "name=\"url\" id=\"edit-url\" " +
+                "class=\"form-control\"></div>" + "<div class=\"col\"><label " +
+                "class=\"form-control-label\">图片链接</label><input type=\"text\" " +
+                "name=\"image\" id=\"edit-image\" " +
+                "class=\"form-control\"></div>" + "<div class=\"col\"><label " +
+                "class=\"form-control-label\">描述</label><input type=\"text\" " +
+                "name=\"description\" id=\"edit-description\" " +
+                "class=\"form-control\"></div>";
+            $("#query-modal-body").html(html);
+            $("#queryLabel").html("新增友链");
+            let footer = "<button type=\"button\" class=\"btn btn-secondary\" " +
+                "data-dismiss=\"modal\">取消</button><button type=\"button\" class=\"btn " +
+                "btn-primary\" data-dismiss=\"modal\" onclick=\"new_friend()\">确定</button>"
+            $("#query-modal-footer").html(footer);
+            $("#query").modal("show");
+        }
+
+        function new_friend() {
             let name = $("#edit-name").val();
-            let content = $("#edit-content").val();
+            let description = $("#edit-description").val();
+            let url = $("#edit-url").val();
+            let image = $("#edit-image").val();
             let loading = new KZ_Loading('正在保存中...');
             loading.show();
             $.ajax({
-                url: '/api/new_value/',
+                url: '/api/add_friend/',
                 method: 'post',
-                data: {"name": name, "content": content},
+                data: {
+                    "name": name, "url": url, "image": image, "description":
+                    description
+                },
                 dataType: "json",
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
                         $.notify(res.msg, {type: "success", delay: 1000});
-                        posts.push({"name": name, "content": content});
+                        posts.push({
+                            "name": name,
+                            "url": url,
+                            "image": image,
+                            "time": res.time,
+                            "description": description
+                        });
                         posts.sort(compare);
                         change_page(_page);
                         $("#count").html(posts.length);
@@ -407,29 +479,6 @@
             })
         }
 
-        function auto_fix() {
-            let loading = new KZ_Loading('尝试修复中...请耐心等待');
-            loading.show();
-            $.ajax({
-                url: '/api/fix/',
-                method: 'post',
-                data: {},
-                dataType: "json",
-                success: function (res) {
-                    loading.destroy();
-                    if (res.status) {
-                        $.notify(res.msg, {type: "success", delay: 1000});
-                        setTimeout(location.reload(), 1000);
-                    } else {
-                        $.notify(res.msg, {type: "warning"});
-                    }
-                },
-                error: function (res) {
-                    loading.destroy();
-                    $.notify("网络错误！", {type: "warning"});
-                }
-            })
-        }
 
     </script>
 {% endblock javascripts %}

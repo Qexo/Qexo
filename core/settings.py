@@ -3,7 +3,7 @@ import os
 import json
 import random
 
-QEXO_VERSION = "1.5.0"
+QEXO_VERSION = "1.5.1"
 
 ALL_SETTINGS = [["ABBRLINK_ALG", "crc16", False, "短链接算法"],
                 ["ABBRLINK_REP", "dec", False, "短链接格式dec/hex"],
@@ -21,10 +21,10 @@ ALL_SETTINGS = [["ABBRLINK_ALG", "crc16", False, "短链接算法"],
                 ["IMG_TYPE", "", False, "图床类别"],
                 ["INIT", "2", False, "初始化标识"],
                 ["QEXO_ICON",
-                 "https://cdn.jsdelivr.net/npm/qexo-static@1.0.0/assets/img/brand/favicon.ico",
+                 "https://cdn.jsdelivr.net/npm/qexo-static@1.0.6/assets/img/brand/favicon.ico",
                  False, "站点ICON"],
                 ["QEXO_LOGO",
-                 "https://cdn.jsdelivr.net/npm/qexo-static@1.0.0/assets/img/brand/qexo.png",
+                 "https://cdn.jsdelivr.net/npm/qexo-static@1.0.6/assets/img/brand/qexo.png",
                  False, "站点LOGO"],
                 ["QEXO_NAME", "Hexo管理面板", False, "站点名"],
                 ["QEXO_SPLIT", "-", False, "站点分隔符"],
@@ -86,9 +86,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'hexoweb.apps.ConsoleConfig',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -97,6 +100,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'core.urls'
 

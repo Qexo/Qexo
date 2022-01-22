@@ -3,7 +3,7 @@ from core.settings import ALL_SETTINGS
 import requests
 from django.template.defaulttags import register
 from core.settings import QEXO_VERSION
-from .models import Cache, SettingModel
+from .models import Cache, SettingModel, FriendModel
 import github
 import json
 import boto3
@@ -76,14 +76,14 @@ def get_custom_config():
         context["QEXO_LOGO"] = SettingModel.objects.get(name="QEXO_LOGO").content
     except:
         save_setting('QEXO_LOGO',
-                     'https://cdn.jsdelivr.net/npm/qexo-static@1.0.0/assets' +
+                     'https://cdn.jsdelivr.net/npm/qexo-static@1.0.4/assets' +
                      '/img/brand/qexo.png')
         context["QEXO_LOGO"] = SettingModel.objects.get(name="QEXO_LOGO").content
     try:
         context["QEXO_ICON"] = SettingModel.objects.get(name="QEXO_ICON").content
     except:
         save_setting('QEXO_ICON',
-                     'https://cdn.jsdelivr.net/npm/qexo-static@1.0.0/assets' +
+                     'https://cdn.jsdelivr.net/npm/qexo-static@1.0.4/assets' +
                      '/img/brand/favicon.ico')
         context["QEXO_ICON"] = SettingModel.objects.get(name="QEXO_ICON").content
     return context
@@ -529,7 +529,7 @@ def getIndexFile(base, path=""):
 
 def VercelUpdate(appId, token, sourcePath=""):
     if checkBuilding(appId, token):
-        return "Another building is in progress."
+        return {"status": False, "msg": "Another building is in progress."}
     url = "https://api.vercel.com/v13/deployments"
     header = dict()
     data = dict()
@@ -542,7 +542,7 @@ def VercelUpdate(appId, token, sourcePath=""):
         sourcePath = os.path.abspath("")
     data["files"] = getEachFiles(sourcePath)
     response = requests.post(url, data=json.dumps(data), headers=header)
-    return response.json()
+    return {"status": True, "msg": response.json()}
 
 
 def OnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
@@ -562,7 +562,7 @@ def OnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
     outPath = os.path.abspath(tmpPath + getIndexFile(tmpPath))
     # print("outPath: " + outPath)
     if outPath == '':
-        return 'error: no outPath'
+        return {"status": False, "msg": 'error: no outPath'}
     return VercelUpdate(vercel_config["id"], vercel_config["token"], outPath)
 
 # Twikoo

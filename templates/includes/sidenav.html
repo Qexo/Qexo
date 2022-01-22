@@ -45,11 +45,11 @@
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'logout' %}">
-              <i class="ni ni-user-run text-red"></i>
-              <span class="nav-link-text">注销</span>
+            <a class="nav-link {% if 'friends' in segment %} active {% endif %}" href="/friends.html">
+              <i class="ni ni-align-left-2 text-orange"></i>
+              <span class="nav-link-text">友链</span>
             </a>
-          </li>            
+          </li>
         </ul>
         <!-- Divider -->
         <hr class="my-3">

@@ -390,3 +390,18 @@ def auto_fix(request):
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
+
+# 获取友情链接 pub/friends
+@csrf_exempt
+def friends(request):
+    try:
+        friends = FriendModel.objects.all()
+        data = list()
+        for i in friends:
+            data.append({"name": i.name, "url": i.url, "image": i.imageUrl,
+                          "description": i.description,
+                          "time": i.time})
+        context = {"data": data, "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})

@@ -15,6 +15,8 @@ from markdown import markdown
 from zlib import crc32 as zlib_crc32
 from urllib.parse import quote
 import tarfile
+import requests
+import hashlib
 
 disable_warnings()
 
@@ -562,3 +564,93 @@ def OnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
     if outPath == '':
         return 'error: no outPath'
     return VercelUpdate(vercel_config["id"], vercel_config["token"], outPath)
+
+# Twikoo
+# Twikoo系列
+def LoginTwikoo(TwikooDomain,TwikooPassword):
+    '''
+    参数:
+        TwikooDomain(Twikoo的接口）--String
+        TwikooPassword(Twikoo的管理密码）--String
+    返回:
+        accessToken(Twikoo的Token） --String
+    '''
+    RequestData = {"event":"LOGIN","password":hashlib.new('md5', TwikooPassword.encode(encoding='utf-8')).hexdigest()}
+    LoginRequests=requests.post(url=TwikooDomain,json=RequestData)
+    accessToken=json.loads(LoginRequests.text)['accessToken']
+    return(accessToken)
+
+def GetComments(url,accessToken,TwikooDomain):
+    '''
+    参数:
+        url(需要获取评论的链接，例如/post/qexo） --String
+        TwikooDomain(Twikoo的接口） --String
+        accessToken(Twikoo的Token） --String
+    返回:
+        评论列表:
+        [
+            {"id":评论id,"nick":昵称,"body":正文,"time":时间(unix时间戳),"hidden":是否隐藏}
+        ]
+        其中:
+        hidden  --Bool
+    '''
+    RequestData = {"event":"COMMENT_GET","accessToken":accessToken,"url":url}
+    LoginRequests=requests.post(url=TwikooDomain,json=RequestData)
+    commentData = json.loads(LoginRequests.text)['data']
+    comments = []
+    for i in range(len(commentData)):
+        id = commentData[i]['id']
+        nick = commentData[i]['nick']
+        body = commentData[i]['comment']
+        time = commentData[i]['created']
+        Hidden = commentData[i]['isSpam']
+        comments.append({"id":id,"nick":nick,"body":body,"time":time,"hidden":Hidden})
+    return comments
+
+def GetAllComments(accessToken,TwikooDomain,per,page,key="",type=""):
+    '''
+    参数:
+        per(每一页的评论数） --int
+        pages(页数）--int
+        TwikooDomain(Twikoo的接口）--String
+        accessToken(Twikoo的Token）--String
+        key(可选，搜索关键字）--String
+        type(可选，类型，HIDDEN为被隐藏的评论，VISIBLE为可见评论)
+    返回:
+        评论列表，格式:
+        [
+            {"id":评论id,"nick":昵称,"body":正文,"time":时间(unix时间戳),"hidden":是否隐藏}
+        ]
+        其中:
+        hidden  --Bool
+    '''
+    RequestData = {"event":"COMMENT_GET_FOR_ADMIN","accessToken":accessToken,"per":per,"page":page,"keyword":key,"type":type}
+    LoginRequests=requests.post(url=TwikooDomain,json=RequestData)
+    commentData = json.loads(LoginRequests.text)['data']
+    comments = []
+    for i in range(len(commentData)):
+        id = commentData[i]['_id']
+        nick = commentData[i]['nick']
+        body = commentData[i]['comment']
+        time = commentData[i]['created']
+        Hidden = commentData[i]['isSpam']
+        comments.append({"id":id,"nick":nick,"body":body,"time":time,"hidden":Hidden})
+    return comments
+
+def SetComment(accessToken,TwikooDomain,id,status):
+    '''
+    参数:
+        status(是否隐藏) --Bool
+        id(评论id)  --String
+        TwikooDomain(Twikoo的接口） --String
+        accessToken(Twikoo的Token）--String
+    返回:
+        Succeed或者是Error
+    '''
+    RequestData = {"event":"COMMENT_SET_FOR_ADMIN","accessToken":accessToken,"id":id,"set":{"isSpam":status}}
+    LoginRequests=requests.post(url=TwikooDomain,json=RequestData)
+    code=json.loads(LoginRequests.text)['code']
+    if code == 0:
+        return('Succeed')
+    else:
+        return('Error')

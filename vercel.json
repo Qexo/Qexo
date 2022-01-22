@@ -1,6 +1,13 @@
 {
   "builds": [
     {
+      "src": "migrate.sh",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "templates"
+      }
+    },
+    {
         "src": "core/wsgi.py",
         "use": "@ardnt/vercel-python-wsgi",
         "config": { "maxLambdaSize": "15mb" }

@@ -38,6 +38,9 @@ urlpatterns = [
     path('api/set_value/', set_value, name='set_value'),
     path('api/del_value/', del_value, name='del_value'),
     path('api/new_value/', new_value, name='new_value'),
+    path('api/add_friend/', add_friend, name='add_friend'),
+    path('api/del_friend/', del_friend, name='del_friend'),
+    path('api/edit_friend/', edit_friend, name='edit_friend'),
     path('api/fix/', auto_fix, name='auto_fix'),
     path('api/purge/', purge, name='purge'),
     path('api/webhook/', webhook, name='webhook'),
@@ -59,6 +62,7 @@ urlpatterns = [
     path('pub/get_configs/', pub.get_configs, name='pub_get_configs'),
     path('pub/get_images/', pub.get_images, name='pub_get_images'),
     path('pub/fix/', pub.auto_fix, name='pub_auto_fix'),
+    path('pub/friends/', pub.friends, name='pub_friends'),
 
     re_path(r'^(?!api)^(?!pub).*$\.*', pages, name='pages'),
 ]

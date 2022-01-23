@@ -59,7 +59,7 @@ ALL_SETTINGS = [["ABBRLINK_ALG", "crc16", False, "短链接算法"],
                 ["VERCEL_TOKEN", "", False, "Vercel密钥"],
                 ["PROJECT_ID", "", False, "Qexo项目ID"],
                 ["TWIKOO_HOST", "", False, "Twikoo环境地址"],
-                ["TWIKOO_PASSWORD", "", False, "Twikoo管理密码"]]
+                ["TWIKOO_MD5", "", False, "Twikoo管理密码MD5"]]
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

@@ -567,25 +567,12 @@ def OnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
 
 # Twikoo
 # Twikoo系列
-def LoginTwikoo(TwikooDomain,TwikooPassword):
-    '''
-    参数:
-        TwikooDomain(Twikoo的接口）--String
-        TwikooPassword(Twikoo的管理密码）--String
-    返回:
-        accessToken(Twikoo的Token） --String
-    '''
-    RequestData = {"event":"LOGIN","password":hashlib.new('md5', TwikooPassword.encode(encoding='utf-8')).hexdigest()}
-    LoginRequests=requests.post(url=TwikooDomain,json=RequestData)
-    accessToken=json.loads(LoginRequests.text)['accessToken']
-    return(accessToken)
-
 def GetComments(url,accessToken,TwikooDomain):
     '''
     参数:
         url(需要获取评论的链接，例如/post/qexo） --String
         TwikooDomain(Twikoo的接口） --String
-        accessToken(Twikoo的Token） --String
+        accessToken(Twikoo的密码的md5） --String
     返回:
         评论列表:
         [
@@ -613,7 +600,7 @@ def GetAllComments(accessToken,TwikooDomain,per,page,key="",type=""):
         per(每一页的评论数） --int
         pages(页数）--int
         TwikooDomain(Twikoo的接口）--String
-        accessToken(Twikoo的Token）--String
+        accessToken(Twikoo的密码的md5）--String
         key(可选，搜索关键字）--String
         type(可选，类型，HIDDEN为被隐藏的评论，VISIBLE为可见评论)
     返回:
@@ -643,7 +630,7 @@ def SetComment(accessToken,TwikooDomain,id,status):
         status(是否隐藏) --Bool
         id(评论id)  --String
         TwikooDomain(Twikoo的接口） --String
-        accessToken(Twikoo的Token）--String
+        accessToken(Twikoo的密码的md5）--String
     返回:
         Succeed或者是Error
     '''

@@ -346,7 +346,7 @@
                     },
                     success(editor, msg) {
                         let responseData = JSON.parse(msg)
-                        if (responseData._status) {
+                        if (responseData.status) {
                             let imageUrl = responseData.url;
                             let succFileText = "";
                             if (vditor && vditor.vditor.currentMode === "ir") {

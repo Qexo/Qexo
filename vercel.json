@@ -9,7 +9,7 @@
     },
     {
         "src": "core/wsgi.py",
-        "use": "@ardnt/vercel-python-wsgi",
+        "use": "@abudu/vercel-python-wsgi-fix",
         "config": { "maxLambdaSize": "15mb", "runtime": "python3.9" }
     }
   ],

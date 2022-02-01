@@ -3,7 +3,7 @@ import os
 import json
 import random
 
-QEXO_VERSION = "1.5.2"
+QEXO_VERSION = "1.5.3"
 
 ALL_SETTINGS = [["ABBRLINK_ALG", "crc16", False, "短链接算法"],
                 ["ABBRLINK_REP", "dec", False, "短链接格式dec/hex"],

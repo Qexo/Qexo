@@ -30,3 +30,4 @@ class FriendModel(models.Model):
     imageUrl = models.CharField(max_length=0x7FFFFFFF)
     time = models.CharField(max_length=0x7FFFFFFF)
     description = models.CharField(max_length=0x7FFFFFFF)
+    status = models.BooleanField(default=True)

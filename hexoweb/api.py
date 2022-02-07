@@ -576,6 +576,7 @@ def add_friend(request):
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
+
 # 修改友链 api/edit_friend
 @login_required(login_url="/login/")
 def edit_friend(request):

@@ -1,0 +1,40 @@
+name: "Bug report"
+description: Bug report
+labels: [pending triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: input
+    id: version
+    attributes:
+      label: Qexo Version / Qexo 版本
+      description: What version of our software are you running?
+      placeholder: v1.5.3
+    validations:
+      required: true
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: Describe the bug / 问题描述
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction / 复现链接
+      description: |
+        Please provide a link to a repo that can reproduce the problem you ran into.
+        请提供能复现此问题的链接
+    validations:
+      required: false
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Screenshot / 截图
+      description: |
+        Please copy and paste any screenshots.
+        请复制粘贴错误截图
+    validations:
+      required: true

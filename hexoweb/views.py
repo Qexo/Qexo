@@ -235,9 +235,9 @@ def index(request):
     else:
         context["posts"] = posts
     if len(images) >= 5:
-        context["images"] = images[0:5]
+        context["images"] = images[::-1][0:5]
     else:
-        context["images"] = images
+        context["images"] = images[::-1]
     context = dict(context, **get_latest_version())
     context["version"] = QEXO_VERSION
     context["post_number"] = str(len(posts))
@@ -432,7 +432,7 @@ def pages(request):
                                   "date": strftime("%Y-%m-%d %H:%M:%S",
                                                    localtime(float(i.date))),
                                   "time": i.date})
-            context["posts"] = posts
+            context["posts"] = posts[::-1]
             context["post_number"] = len(posts)
             context["page_number"] = ceil(context["post_number"] / 15)
             context["search"] = search

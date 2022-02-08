@@ -398,7 +398,8 @@ def friends(request):
         friends = FriendModel.objects.all()
         data = list()
         for i in friends:
-            data.append({"name": i.name, "url": i.url, "image": i.imageUrl,
+            if i.status:
+                data.append({"name": i.name, "url": i.url, "image": i.imageUrl,
                           "description": i.description,
                           "time": i.time})
         context = {"data": data, "status": True}

@@ -570,6 +570,7 @@ def add_friend(request):
         friend.imageUrl = request.POST.get("image")
         friend.description = request.POST.get("description")
         friend.time = str(time())
+        friend.status = True if request.POST.get("status") == "显示" else False
         friend.save()
         context = {"msg": "添加成功！", "time": friend.time, "status": True}
     except Exception as error:
@@ -586,6 +587,7 @@ def edit_friend(request):
         friend.url = request.POST.get("url")
         friend.imageUrl = request.POST.get("image")
         friend.description = request.POST.get("description")
+        friend.status = True if request.POST.get("status") == "显示" else False
         friend.save()
         context = {"msg": "修改成功！", "status": True}
     except Exception as error:

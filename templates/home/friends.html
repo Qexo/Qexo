@@ -47,6 +47,7 @@
                                 <th scope="col">名称</th>
                                 <th scope="col">链接</th>
                                 <th scope="col">图片</th>
+                                <th scope="col">状态</th>
                                 <th scope="col">描述</th>
                                 <th scope="col">操作</th>
                             </tr>
@@ -153,9 +154,9 @@
         }
 
         var compare = function (x, y) {
-            if (x["name"] < y["name"]) {
+            if (x["time"] < y["time"]) {
                 return -1;
-            } else if (x["name"] > y["name"]) {
+            } else if (x["time"] > y["time"]) {
                 return 1;
             } else {
                 return 0;
@@ -176,17 +177,20 @@
             }
             let list = "";
             for (let i = 0; i < page_posts.length; i++) {
-                let description = page_posts[i]["description"]
+                let description = page_posts[i]["description"], post_status = "隐藏";
                 if (description.length > 13) {
                     description = description.slice(0, 10) + "...";
                 }
-                list += "<tr><td scope=\"row\">" + page_posts[i]["name"] +"</td><td>" + "<a " +
+                if (page_posts[i]["status"]) post_status = "显示";
+                list += "<tr><td scope=\"row\">" + page_posts[i]["name"] + "</td><td>" + "<a " +
                     "href=\"" +
                     page_posts[i]["url"] + "\" target=\"_blank\"><i class=\"fas " +
                     "fa-link\"></i></a> " +
                     page_posts[i]["url"] + "</td><td>" + "<a href=\"" +
-                    page_posts[i]["image"] + "\" target=\"_blank\"> <i " +
-                    "class=\"fa fa-external-link-alt\"></i></a></td><td>" + description +
+                    page_posts[i]["image"] + "\" target=\"_blank\"><i " +
+                    "class=\"fa fa-external-link-alt\"></i></a></td><td>" + post_status +
+                    "</td><td>" +
+                    description +
                     "</td><td><a href=\"javascript:query_edit('" + page_posts[i]["time"] + "')\">" +
                     "<i class=\"fa fa-edit mr-2\"></i></a>" + "<a href=\"javascript:query_delete" +
                     "('" + page_posts[i]["name"] + "','" +
@@ -344,13 +348,14 @@
         }
 
         function query_edit(time) {
-            let name, url, image, description, index;
+            let name, url, image, description, index, status;
             for (let i = 0; i < posts.length; i++) {
                 if (posts[i]["time"] == time) {
                     name = posts[i]["name"];
                     url = posts[i]["url"];
                     image = posts[i]["image"];
                     description = posts[i]["description"];
+                    status = posts[i]["status"]
                     index = i;
                     break;
                 }
@@ -367,13 +372,20 @@
                 "class=\"form-control\"></div>" + "<div class=\"col\"><label " +
                 "class=\"form-control-label\">描述</label><input type=\"text\" " +
                 "name=\"description\" id=\"edit-description\" value=\"" + description + "\"" +
-                "class=\"form-control\"></div>";
+                "class=\"form-control\"></div>" + "<div class=\"col\"><label " +
+                "class=\"form-control-label\">状态</label><select class=\"form-control\" " +
+                "id=\"edit-status\">";
+            if (status) {
+                html += "<option selected>显示</option><option>隐藏</option></select></div>";
+            } else {
+                html += "<option>显示</option><option selected>隐藏</option></select></div>";
+            }
             $("#query-modal-body").html(html);
             $("#queryLabel").html("编辑友链");
             let footer = "<button type=\"button\" class=\"btn btn-secondary\" " +
                 "data-dismiss=\"modal\">取消</button><button type=\"button\" class=\"btn " +
-                "btn-primary\" data-dismiss=\"modal\" onclick=\"edit_friend("+index+")" +
-                "\">确定</button>"
+                "btn-primary\" data-dismiss=\"modal\" onclick=\"edit_friend(" + index + ")" +
+                "\">确定</button>";
             $("#query-modal-footer").html(footer);
             $("#query").modal("show");
         }
@@ -384,6 +396,7 @@
             let description = $("#edit-description").val();
             let url = $("#edit-url").val();
             let image = $("#edit-image").val();
+            let status = $("#edit-status").val();
             let loading = new KZ_Loading('正在保存中...');
             loading.show();
             $.ajax({
@@ -391,7 +404,7 @@
                 method: 'post',
                 data: {
                     "name": name, "url": url, "image": image, "description":
-                    description, "time": posts[index]["time"]
+                    description, "time": posts[index]["time"], "status": status
                 },
                 dataType: "json",
                 success: function (res) {
@@ -402,6 +415,7 @@
                         posts[index]["url"] = url;
                         posts[index]["image"] = image;
                         posts[index]["description"] = description;
+                        posts[index]["status"] = status === "显示";
                         posts.sort(compare);
                         change_page(_page);
                     } else {
@@ -429,7 +443,9 @@
                 "class=\"form-control\"></div>" + "<div class=\"col\"><label " +
                 "class=\"form-control-label\">描述</label><input type=\"text\" " +
                 "name=\"description\" id=\"edit-description\" " +
-                "class=\"form-control\"></div>";
+                "class=\"form-control\"></div>" + "<div class=\"col\"><label " +
+                "class=\"form-control-label\">状态</label><select class=\"form-control\" " +
+                "id=\"edit-status\"><option selected>显示</option><option>隐藏</option></select></div>";
             $("#query-modal-body").html(html);
             $("#queryLabel").html("新增友链");
             let footer = "<button type=\"button\" class=\"btn btn-secondary\" " +
@@ -445,13 +461,14 @@
             let url = $("#edit-url").val();
             let image = $("#edit-image").val();
             let loading = new KZ_Loading('正在保存中...');
+            let status = $("#edit-status").val()
             loading.show();
             $.ajax({
                 url: '/api/add_friend/',
                 method: 'post',
                 data: {
                     "name": name, "url": url, "image": image, "description":
-                    description
+                    description, "status": status
                 },
                 dataType: "json",
                 success: function (res) {
@@ -463,7 +480,8 @@
                             "url": url,
                             "image": image,
                             "time": res.time,
-                            "description": description
+                            "description": description,
+                            "status": status === "显示"
                         });
                         posts.sort(compare);
                         change_page(_page);

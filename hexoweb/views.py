@@ -6,6 +6,7 @@ from django.http import HttpResponse
 from django.template import loader
 from time import strftime, localtime
 from .api import *
+from math import ceil
 
 
 def page_404(request, exception):
@@ -41,6 +42,11 @@ def update_view(request):
     if request.method == 'POST':
         for setting in request.POST.keys():
             save_setting(setting, request.POST.get(setting))
+    friends = FriendModel.objects.all()  # 历史遗留问题
+    for friend in friends:
+        if friend.status is None:
+            friend.status = True
+            friend.save()
     already = list()
     settings = SettingModel.objects.all()
     for query in settings:
@@ -371,7 +377,7 @@ def pages(request):
                     posts = update_posts_cache(search)
             context["all_posts"] = json.dumps(posts)
             context["post_number"] = len(posts)
-            context["page_number"] = context["post_number"] // 15 + 1
+            context["page_number"] = ceil(context["post_number"] / 15)
             context["search"] = search
         elif "pages" in load_template:
             search = request.GET.get("s")
@@ -389,7 +395,7 @@ def pages(request):
                     posts = update_pages_cache(search)
             context["posts"] = posts
             context["post_number"] = len(posts)
-            context["page_number"] = context["post_number"] // 15 + 1
+            context["page_number"] = ceil(context["post_number"] / 15)
             context["search"] = search
         elif "configs" in load_template:
             search = request.GET.get("s")
@@ -407,7 +413,7 @@ def pages(request):
                     posts = update_configs_cache(search)
             context["posts"] = posts
             context["post_number"] = len(posts)
-            context["page_number"] = context["post_number"] // 15 + 1
+            context["page_number"] = ceil(context["post_number"] / 15)
             context["search"] = search
         elif "images" in load_template:
             search = request.GET.get("s")
@@ -428,7 +434,7 @@ def pages(request):
                                   "time": i.date})
             context["posts"] = posts
             context["post_number"] = len(posts)
-            context["page_number"] = context["post_number"] // 15 + 1
+            context["page_number"] = ceil(context["post_number"] / 15)
             context["search"] = search
         elif "friends" in load_template:
             search = request.GET.get("s")
@@ -438,16 +444,18 @@ def pages(request):
                 for i in friends:
                     posts.append({"name": i.name, "url": i.url, "image": i.imageUrl,
                                   "description": i.description,
-                                  "time": i.time})
+                                  "time": i.time,
+                                  "status": i.status})
             else:
                 images = FriendModel.objects.all()
                 for i in images:
                     posts.append({"name": i.name, "url": i.url, "image": i.imageUrl,
                                   "description": i.description,
-                                  "time": i.time})
-            context["posts"] = posts
+                                  "time": i.time,
+                                  "status": i.status})
+            context["posts"] = json.dumps(posts)
             context["post_number"] = len(posts)
-            context["page_number"] = context["post_number"] // 15 + 1
+            context["page_number"] = ceil(context["post_number"] / 15)
             context["search"] = search
         elif 'settings' in load_template:
             try:
@@ -508,7 +516,7 @@ def pages(request):
                     context["settings"].append({"name": setting.name, "content": setting.content})
                 context["settings"].sort(key=lambda elem: elem["name"])  # 按字段名升序排序
                 context["settings_number"] = len(context["settings"])
-                context["page_number"] = context["settings_number"] // 15 + 1
+                context["page_number"] = ceil(context["settings_number"] / 15)
             except Exception as e:
                 context["error"] = repr(e)
         html_template = loader.get_template('home/' + load_template)

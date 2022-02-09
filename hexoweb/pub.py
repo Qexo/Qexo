@@ -462,3 +462,5 @@ def del_friend(request):
     except Exception as error:
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+

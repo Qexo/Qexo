@@ -47,6 +47,7 @@ urlpatterns = [
     path('api/create_webhook/', create_webhook_config, name='create_webhook'),
     path('api/get_update/', get_update, name='get_update'),
     path('api/do_update/', do_update, name='do_update'),
+    path('api/get_notifications/', get_notifications, name='get_notifications'),
 
     path('pub/save/', pub.save, name='pub_save'),
     path('pub/save_post/', pub.save_post, name='pub_save_post'),

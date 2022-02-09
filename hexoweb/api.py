@@ -604,3 +604,12 @@ def del_friend(request):
     except Exception as error:
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+@login_required(login_url="/login/")
+def get_notifications(request):
+    try:
+        context = {"data": GetNotifications(), "status": True}
+    except Exception as error:
+        context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})

@@ -3,7 +3,7 @@ from core.settings import ALL_SETTINGS
 import requests
 from django.template.defaulttags import register
 from core.settings import QEXO_VERSION
-from .models import Cache, SettingModel, FriendModel
+from .models import Cache, SettingModel, FriendModel, NotificationModel
 import github
 import json
 import boto3
@@ -14,6 +14,7 @@ from urllib3 import disable_warnings
 from markdown import markdown
 from zlib import crc32 as zlib_crc32
 from urllib.parse import quote
+from time import strftime, localtime
 import tarfile
 
 disable_warnings()
@@ -659,3 +660,24 @@ def SetComment(pass_md5, TwikooDomain, id, status):
         return 'Succeed'
     else:
         return 'Error'
+
+
+def CreateNotification(label, content, now):
+    N = NotificationModel()
+    N.label = label
+    N.content = content
+    N.time = str(float(now))
+    N.save()
+    return True
+
+
+def GetNotifications():
+    N = NotificationModel.objects.all()
+    result = list()
+    for notification in N:
+        result.append(dict(
+            label=notification.label,
+            contnet=notification.content,
+            time=strftime("%Y-%m-%d %H:%M:%S", localtime(float(notification.time)))
+        ))
+    return result

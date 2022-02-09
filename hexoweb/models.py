@@ -36,4 +36,5 @@ class FriendModel(models.Model):
 class NotificationModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     time = models.CharField(max_length=0x7FFFFFFF)
+    label = models.CharField(max_length=0x7FFFFFFF, blank=True)
     content = models.CharField(max_length=0x7FFFFFFF, blank=True)

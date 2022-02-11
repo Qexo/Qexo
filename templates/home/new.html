@@ -51,7 +51,7 @@
     <link href="{{ cdn_prev }}vditor@3.8.8/dist/index.css" rel="stylesheet"/>
     <script src="{{ cdn_prev }}vditor@3.8.8/dist/index.min.js"></script>
 
-    <script src="{{ cdn_prev }}qexo-static@1.0.6/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
+
     <script>
         var _status = true;
 
@@ -183,7 +183,7 @@
                     success: function (res) {
                         loading.destroy();
                         if (res.status) {
-                            let notify = $.notify('草稿保存成功！等待转跳...', {type: "success", delay: 1000});
+                            $.notify('草稿保存成功！等待转跳...', {type: "success", delay: 1000});
                             setTimeout(window.location.href = "edit.html?file=" + $
                             ("input[name='filename']").val() + ".md", 1000);
                         } else {

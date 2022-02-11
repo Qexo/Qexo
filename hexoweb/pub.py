@@ -464,3 +464,16 @@ def del_friend(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+
+@csrf_exempt
+def test(request):
+    if not check_if_api_auth(request):
+        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
+                                                                         "status": False})})
+    try:
+        CreateNotification("test", "test_"+str(int(time())), time())
+        context = {"msg": GetNotifications(), "status": True}
+    except Exception as error:
+        context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+

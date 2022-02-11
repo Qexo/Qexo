@@ -66,12 +66,13 @@
                        aria-haspopup="true" aria-expanded="false">
                         <i class="fas fa-arrow-up">
                             {% if 'index' not in segment %}
-                                <div class="update-point"
-                                     style=""></div>
+                                <div id="update-point"
+                                         style=""></div>
                             {% else %}
                                 {% if hasNew %}
-                                    <div class="point"
-                                         style="position: absolute;top: -4px;right: -3px;width: 6px;height: 6px;background: red;border-radius: 50%;"></div>
+                                    <div id="update-point"
+                                         style="position: absolute;top: 0px;right: 12px;width:
+                                         6px;height: 6px;background: red;border-radius: 50%;"></div>
                                 {% endif %}
                             {% endif %}
                         </i>
@@ -124,6 +125,7 @@
                     <a class="nav-link" href="#" role="button" data-toggle="dropdown"
                        aria-haspopup="true" aria-expanded="false">
                         <i class="ni ni-bell-55"></i>
+                        <div id="msg-point" style=""></div>
                     </a>
                     <div class="dropdown-menu dropdown-menu-xl  dropdown-menu-right  py-0
                     overflow-hidden" id="notification-board">

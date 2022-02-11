@@ -678,6 +678,13 @@ def GetNotifications():
         result.append(dict(
             label=notification.label,
             contnet=notification.content,
+            timestamp=notification.time,
             time=strftime("%Y-%m-%d %H:%M:%S", localtime(float(notification.time)))
         ))
     return result
+
+
+def DelNotification(_time):
+    N = NotificationModel.objects.get(time=_time)
+    N.delete()
+    return True

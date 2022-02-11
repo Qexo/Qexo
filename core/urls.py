@@ -32,7 +32,7 @@ urlpatterns = [
     path('api/set_user/', set_user, name='set_user'),
     path('api/set_image_bed/', set_image_bed, name='set_image_bed'),
     path('api/set_s3/', set_s3, name='set_s3'),
-    path('api/set_apikey/', set_api_key, name='set_apikey'),
+    path('api/set_api/', set_api, name='set_api'),
     path('api/set_abbrlink/', set_abbrlink, name='set_abbrlink'),
     path('api/set_cust/', set_cust, name='set_cust'),
     path('api/set_value/', set_value, name='set_value'),
@@ -47,6 +47,8 @@ urlpatterns = [
     path('api/create_webhook/', create_webhook_config, name='create_webhook'),
     path('api/get_update/', get_update, name='get_update'),
     path('api/do_update/', do_update, name='do_update'),
+    path('api/get_notifications/', get_notifications, name='get_notifications'),
+    path('api/del_notifications/', del_notification, name='del_notifications'),
 
     path('pub/save/', pub.save, name='pub_save'),
     path('pub/save_post/', pub.save_post, name='pub_save_post'),
@@ -63,6 +65,10 @@ urlpatterns = [
     path('pub/get_images/', pub.get_images, name='pub_get_images'),
     path('pub/fix/', pub.auto_fix, name='pub_auto_fix'),
     path('pub/friends/', pub.friends, name='pub_friends'),
+    path('pub/ask_friend/', pub.ask_friend, name='ask_friend'),
+    path('pub/add_friend/', pub.add_friend, name='add_friend'),
+    path('pub/edit_friend/', pub.edit_friend, name='edit_friend'),
+    path('pub/del_friend/', pub.del_friend, name='del_friend'),
 
     re_path(r'^(?!api)^(?!pub).*$\.*', pages, name='pages'),
 ]

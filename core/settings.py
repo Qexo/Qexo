@@ -3,7 +3,7 @@ import os
 import json
 import random
 
-QEXO_VERSION = "1.5.3"
+QEXO_VERSION = "1.5.4"
 
 ALL_SETTINGS = [["ABBRLINK_ALG", "crc16", False, "短链接算法"],
                 ["ABBRLINK_REP", "dec", False, "短链接格式dec/hex"],
@@ -57,7 +57,8 @@ ALL_SETTINGS = [["ABBRLINK_ALG", "crc16", False, "短链接算法"],
                 ["WEBHOOK_APIKEY", ''.join(random.choice("qwertyuiopasdfghjklzxcvbnm1234567890")
                                            for x in range(12)), False, "API密钥"],
                 ["VERCEL_TOKEN", "", False, "Vercel密钥"],
-                ["PROJECT_ID", "", False, "Qexo项目ID"]]
+                ["PROJECT_ID", "", False, "Qexo项目ID"],
+                ["ALLOW_FRIEND", "否", False, "是否允许友链申请"]]
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

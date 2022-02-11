@@ -1,7 +1,117 @@
+<script src="{{ cdn_prev }}qexo-static@1.0.6/assets/vendor/jquery/dist/jquery.min.js"></script>
+<script src="{{ cdn_prev }}qexo-static@1.0.6/assets/vendor/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ cdn_prev }}qexo-static@1.0.6/assets/vendor/js-cookie/js.cookie.js"></script>
+<script src="{{ cdn_prev }}qexo-static@1.0.6/assets/vendor/jquery.scrollbar/jquery.scrollbar.min.js"></script>
+<script src="{{ cdn_prev }}qexo-static@1.0.6/assets/vendor/jquery-scroll-lock/dist/jquery-scrollLock.min.js"></script>
+<script src="{{ cdn_prev }}qexo-static@1.0.6/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
+<script>
+    $.ajaxSetup({data: {csrfmiddlewaretoken: '{{ csrf_token }}'}});
 
-  <script src="{{ cdn_prev }}qexo-static@1.0.6/assets/vendor/jquery/dist/jquery.min.js"></script>
-  <script src="{{ cdn_prev }}qexo-static@1.0.6/assets/vendor/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="{{ cdn_prev }}qexo-static@1.0.6/assets/vendor/js-cookie/js.cookie.js"></script>
-  <script src="{{ cdn_prev }}qexo-static@1.0.6/assets/vendor/jquery.scrollbar/jquery.scrollbar.min.js"></script>
-  <script src="{{ cdn_prev }}qexo-static@1.0.6/assets/vendor/jquery-scroll-lock/dist/jquery-scrollLock.min.js"></script>
+    var notifications = [];
 
+    {% if error %}
+        $.notify("{{ error }}", {type: "warning"});
+    {% endif %}
+    {% if 'index' not in segment %}
+        $.ajax({
+            url: "/api/get_update/",
+            type: "get",
+            success: function (res) {
+                let data = JSON.parse(res);
+                if (data["status"]) {
+                    $("#update-time").html("<small>" + data["newer_time"] + "</small>");
+                    if (data["hasNew"]) {
+                        $("#update-body").html("有新版本: <a href=\"" + data["newer_link"] + "\" " +
+                            "target=\"_blank\">" + data["newer"] + "</a><br>" + data["newer_text"]);
+                        $("#update-point").css({
+                            "position": "absolute", "top": "0px", "right": "12px", "width": "6px",
+                            "height": "6px", "background": "red", "border-radius": "50%"
+                        });
+                    } else {
+                        $("#update-body").html("当前是最新版本哟~");
+                    }
+                } else {
+                    $("#update-body").html("检查更新失败！");
+                }
+            }
+        })
+    {% endif %}
+    function showNotifications() {
+        if (!notifications.length) {
+            $("#notification-board").html('<div class="list-group list-group-flush"><ul ' +
+                'href="#!" class="list-group-item list-group-item-action"><div class="row ' +
+                'align-items-center"><div class="col-auto"><i class="fas ' +
+                'fa-check"></i></div><div class="col ml--2"><div class="d-flex ' +
+                'justify-content-between align-items-center"><div><h4 class="mb-0 ' +
+                'text-sm">消息</h4></div></div><p class="text-sm ' +
+                'mb-0">你当前没有消息哟~</p></div></div></ul></div>');
+            $("#msg-point").css({"background": "inherit"});
+        } else {
+            let html = '<div class="px-3 py-3"><h6 class="text-sm text-muted m-0">你有 ' +
+                '<strong class="text-primary">' + notifications.length + '</strong> 则消息' +
+                '</h6></div><div class="list-group list-group-flush">';
+            for (let i = 0; i < notifications.length; i++) {
+                html += '<a href="javascript:delNotification(\'' + notifications[i]["timestamp"]
+                    + '\')" ' + 'class="list-group-item list-group-item-action"><div ' +
+                    'class="row align-items-center"><div class="col-auto"><i class="fas ' +
+                    'fa-quote-left"></i></div><div class="col ml--2"><div ' +
+                    'class="d-flex justify-content-between align-items-center"><div><h4 ' +
+                    'class="mb-0 text-sm">' + notifications[i]["label"] + '</h4></div><div ' +
+                    'class="text-right text-muted"><small>' + notifications[i]["time"] +
+                    '</small></div></div><p class="text-sm mb-0">' +
+                    notifications[i]["content"] + '</p></div></div></a>';
+            }
+            $("#notification-board").html(html + '</div>');
+            $("#msg-point").css({
+                "position": "absolute", "top": "0px", "right": "12px", "width": "6px",
+                "height": "6px", "background": "red", "border-radius": "50%"
+            });
+        }
+    }
+
+    $.ajax({
+        url: "/api/get_notifications/",
+        type: "get",
+        success: function (res) {
+            let data = JSON.parse(res);
+            if (data["status"]) {
+                notifications = data["data"];
+                showNotifications();
+            } else {
+                $("#notification-board").html('<div class="list-group list-group-flush"><ul ' +
+                    'href="#!" class="list-group-item list-group-item-action"><div class="row ' +
+                    'align-items-center"><div class="col-auto"><i class="fas ' +
+                    'fa-exclamation-triangle"></i></div><div class="col ml--2"><div class="d-flex ' +
+                    'justify-content-between align-items-center"><div><h4 class="mb-0 ' +
+                    'text-sm">消息</h4></div></div><p class="text-sm ' +
+                    'mb-0">获取失败咯~</p></div></div></ul></div>');
+            }
+        }
+    })
+
+    function delNotification(timestamp) {
+        $.ajax({
+            url: "/api/del_notifications/",
+            type: "post",
+            dataType: "JSON",
+            data: {"time": timestamp},
+            success: function (res) {
+                if (res.status) {
+                    $.notify(res.msg, {type: "success"});
+                    for (let i = 0; i < notifications.length; i++) {
+                        if (notifications[i]["timestamp"] === timestamp) {
+                            notifications.splice(i, 1);
+                            break;
+                        }
+                    }
+                    showNotifications();
+                } else {
+                    $.notify(res.msg, {type: "warning"});
+                }
+            },
+            error: function (res) {
+                $.notify("网络错误!", {type: "warning"});
+            }
+        })
+    }
+</script>

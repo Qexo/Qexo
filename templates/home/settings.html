@@ -64,14 +64,27 @@
                                         <div class="form-group">
                                             <label class="form-control-label">API密钥</label>
                                             <input type="text" name="apikey" class="form-control"
-                                                   placeholder="留空将自动生成">
+                                                   placeholder="留空将保持不变">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">启用友链申请API</label>
+                                            <select name="allow_friend" class="form-control">
+                                                <option{% if ALLOW_FRIEND == "是" %}
+                                                    selected{% endif %}>是
+                                                </option>
+                                                <option{% if ALLOW_FRIEND != "是" %}
+                                                    selected{% endif %}>否
+                                                </option>
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <input type="button" class="btn btn-primary" value="提交"
-                                               onclick="query_apikey()">
+                                               onclick="set_api()">
                                     </div>
                                 </div>
                             </div>
@@ -181,8 +194,12 @@
                                         <div class="form-group">
                                             <label class="form-control-label">短链接算法</label>
                                             <select name="alg" class="form-control">
-                                                <option{% if ABBRLINK_ALG == "crc16" %} selected{% endif %}>crc16</option>
-                                                <option{% if ABBRLINK_ALG == "crc32" %} selected{% endif %}>crc32</option>
+                                                <option{% if ABBRLINK_ALG == "crc16" %}
+                                                    selected{% endif %}>crc16
+                                                </option>
+                                                <option{% if ABBRLINK_ALG == "crc32" %}
+                                                    selected{% endif %}>crc32
+                                                </option>
                                             </select>
                                         </div>
                                     </div>
@@ -190,8 +207,12 @@
                                         <div class="form-group">
                                             <label class="form-control-label">短链接进制</label>
                                             <select name="rep" class="form-control">
-                                                <option{% if ABBRLINK_REP == "hex" %} selected{% endif %}>hex</option>
-                                                <option{% if ABBRLINK_REP == "dec" %} selected{% endif %}>dec</option>
+                                                <option{% if ABBRLINK_REP == "hex" %}
+                                                    selected{% endif %}>hex
+                                                </option>
+                                                <option{% if ABBRLINK_REP == "dec" %}
+                                                    selected{% endif %}>dec
+                                                </option>
                                             </select>
                                         </div>
                                     </div>
@@ -494,30 +515,6 @@
             </div>
         </div>
 
-        <div class="modal fade" id="queryApikey" tabindex="-1" aria-labelledby="queryApikeyLabel"
-             aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="queryApikeyLabel">提示</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        确定要重设API密钥吗？您之前的API密钥将失效，您可能需要重新设置Webhook，若留空将自动生成API密钥
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消
-                        </button>
-                        <button type="button" class="btn btn-primary" data-dismiss="modal"
-                                onclick="set_apikey()">确定
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div class="modal fade" id="queryResetCust" tabindex="-1"
              aria-labelledby="queryResetCustLabel"
              aria-hidden="true">
@@ -550,7 +547,7 @@
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
-    <script src="{{ cdn_prev }}qexo-static@1.0.6/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
+
     <script>
         function getBaseUrl() {
             let ishttps = 'https:' == document.location.protocol ? true : false;
@@ -756,10 +753,6 @@
             $("#queryUpdate").modal("show");
         }
 
-        function query_apikey() {
-            $("#queryApikey").modal("show");
-        }
-
         function query_reset_cust() {
             $("#queryResetCust").modal("show");
         }
@@ -864,11 +857,11 @@
             })
         }
 
-        function set_apikey() {
+        function set_api() {
             let loading = new KZ_Loading('正在保存中...');
             loading.show();
             $.ajax({
-                url: '/api/set_apikey/',
+                url: '/api/set_api/',
                 method: 'post',
                 data: $('#apikey-settings').serialize(),
                 dataType: "json",
@@ -917,8 +910,10 @@
                 url: '/api/do_update/',
                 method: 'post',
                 dataType: "json",
-                data: {"branch": $("#update-origin-branch").val(), csrfmiddlewaretoken:
-                        '{{ csrf_token }}'},
+                data: {
+                    "branch": $("#update-origin-branch").val(), csrfmiddlewaretoken:
+                        '{{ csrf_token }}'
+                },
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {

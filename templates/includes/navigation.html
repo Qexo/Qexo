@@ -64,14 +64,15 @@
                 <li class="nav-item dropdown">
                     <a class="nav-link" href="#" role="button" data-toggle="dropdown"
                        aria-haspopup="true" aria-expanded="false">
-                        <i class="ni ni-bell-55">
+                        <i class="fas fa-arrow-up">
                             {% if 'index' not in segment %}
-                                <div class="update-point"
+                                <div id="update-point"
                                      style=""></div>
                             {% else %}
                                 {% if hasNew %}
-                                    <div class="point"
-                                         style="position: absolute;top: -4px;right: -3px;width: 6px;height: 6px;background: red;border-radius: 50%;"></div>
+                                    <div id="update-point"
+                                         style="position: absolute;top: 0px;right: 12px;width:
+                                         6px;height: 6px;background: red;border-radius: 50%;"></div>
                                 {% endif %}
                             {% endif %}
                         </i>
@@ -120,6 +121,33 @@
                         </div>
                     </div>
                 </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link" href="#" role="button" data-toggle="dropdown"
+                       aria-haspopup="true" aria-expanded="false">
+                        <i class="ni ni-bell-55"></i>
+                        <div id="msg-point" style=""></div>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-xl  dropdown-menu-right  py-0
+                    overflow-hidden" id="notification-board">
+                        <div class="list-group list-group-flush">
+                            <ul href="#!" class="list-group-item list-group-item-action">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                                        <i class="fas fa-comment"></i>
+                                    </div>
+                                    <div class="col ml--2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h4 class="mb-0 text-sm">消息</h4>
+                                            </div>
+                                        </div>
+                                        <p class="text-sm mb-0">正在获取消息中...</p>
+                                    </div>
+                                </div>
+                            </ul>
+                        </div>
+                    </div>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/settings.html">
                         <i class="ni ni-settings"></i>
@@ -131,7 +159,7 @@
                     <a class="nav-link pr-0" href="#" role="button" data-toggle="dropdown"
                        aria-haspopup="true" aria-expanded="false">
                         <div class="media align-items-center">
-                            <div class="media-body  ml-2  d-none d-lg-block">
+                            <div class="media-body  ml-2  d-lg-block">
                 <span class="mb-0 text-sm  font-weight-bold">
                   {{ request.user.username }}
                 </span>

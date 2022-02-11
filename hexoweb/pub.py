@@ -398,10 +398,89 @@ def friends(request):
         friends = FriendModel.objects.all()
         data = list()
         for i in friends:
-            data.append({"name": i.name, "url": i.url, "image": i.imageUrl,
-                          "description": i.description,
-                          "time": i.time})
+            if i.status:
+                data.append({"name": i.name, "url": i.url, "image": i.imageUrl,
+                             "description": i.description,
+                             "time": i.time})
         context = {"data": data, "status": True}
     except Exception as e:
         context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 新增友链 pub/add_friend
+@csrf_exempt
+def add_friend(request):
+    if not check_if_api_auth(request):
+        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
+                                                                         "status": False})})
+    try:
+        friend = FriendModel()
+        friend.name = request.POST.get("name")
+        friend.url = request.POST.get("url")
+        friend.imageUrl = request.POST.get("image")
+        friend.description = request.POST.get("description")
+        friend.time = str(time())
+        friend.status = request.POST.get("status") == "显示"
+        friend.save()
+        context = {"msg": "添加成功！", "time": friend.time, "status": True}
+    except Exception as error:
+        context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 编辑友链 pub/edit_friend
+@csrf_exempt
+def edit_friend(request):
+    if not check_if_api_auth(request):
+        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
+                                                                         "status": False})})
+    try:
+        friend = FriendModel.objects.get(time=request.POST.get("time"))
+        friend.name = request.POST.get("name")
+        friend.url = request.POST.get("url")
+        friend.imageUrl = request.POST.get("image")
+        friend.description = request.POST.get("description")
+        friend.status = request.POST.get("status") == "显示"
+        friend.save()
+        context = {"msg": "修改成功！", "status": True}
+    except Exception as error:
+        context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 删除友链 pub/del_friend
+@csrf_exempt
+def del_friend(request):
+    if not check_if_api_auth(request):
+        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
+                                                                         "status": False})})
+    try:
+        friend = FriendModel.objects.get(time=request.POST.get("time"))
+        friend.delete()
+        context = {"msg": "删除成功！", "status": True}
+    except Exception as error:
+        context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 申请友链 pub/ask_friend
+@csrf_exempt
+def ask_friend(request):
+    try:
+        if SettingModel.objects.get(name="ALLOW_FRIEND").content != "是":
+            return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
+                                                                             "status": False})})
+        friend = FriendModel()
+        friend.name = request.POST.get("name")
+        friend.url = request.POST.get("url")
+        friend.imageUrl = request.POST.get("image")
+        friend.description = request.POST.get("description")
+        friend.time = str(time())
+        friend.status = False
+        friend.save()
+        CreateNotification("友链请求: " + friend.name, friend.url, time())
+        context = {"msg": "申请成功！", "time": friend.time, "status": True}
+    except Exception as error:
+        context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})

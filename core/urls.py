@@ -65,6 +65,10 @@ urlpatterns = [
     path('pub/get_images/', pub.get_images, name='pub_get_images'),
     path('pub/fix/', pub.auto_fix, name='pub_auto_fix'),
     path('pub/friends/', pub.friends, name='pub_friends'),
+    path('pub/ask_friend/', pub.ask_friend, name='ask_friend'),
+    path('pub/add_friend/', pub.add_friend, name='add_friend'),
+    path('pub/edit_friend/', pub.edit_friend, name='edit_friend'),
+    path('pub/del_friend/', pub.del_friend, name='del_friend'),
 
     re_path(r'^(?!api)^(?!pub).*$\.*', pages, name='pages'),
 ]

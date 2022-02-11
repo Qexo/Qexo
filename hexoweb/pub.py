@@ -421,7 +421,7 @@ def add_friend(request):
         friend.imageUrl = request.POST.get("image")
         friend.description = request.POST.get("description")
         friend.time = str(time())
-        friend.status = True if request.POST.get("status") == "显示" else False
+        friend.status = request.POST.get("status") == "显示"
         friend.save()
         context = {"msg": "添加成功！", "time": friend.time, "status": True}
     except Exception as error:
@@ -441,7 +441,7 @@ def edit_friend(request):
         friend.url = request.POST.get("url")
         friend.imageUrl = request.POST.get("image")
         friend.description = request.POST.get("description")
-        friend.status = True if request.POST.get("status") == "显示" else False
+        friend.status = request.POST.get("status") == "显示"
         friend.save()
         context = {"msg": "修改成功！", "status": True}
     except Exception as error:
@@ -459,6 +459,25 @@ def del_friend(request):
         friend = FriendModel.objects.get(time=request.POST.get("time"))
         friend.delete()
         context = {"msg": "删除成功！", "status": True}
+    except Exception as error:
+        context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 申请友链 pub/ask_friend
+@csrf_exempt
+def ask_friend(request):
+    try:
+        friend = FriendModel()
+        friend.name = request.POST.get("name")
+        friend.url = request.POST.get("url")
+        friend.imageUrl = request.POST.get("image")
+        friend.description = request.POST.get("description")
+        friend.time = str(time())
+        friend.status = False
+        friend.save()
+        CreateNotification("友链请求: " + friend.name, friend.url, time())
+        context = {"msg": "申请成功！", "time": friend.time, "status": True}
     except Exception as error:
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})

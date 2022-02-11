@@ -56,16 +56,18 @@ def set_github(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
-# 设置APIKEY api/set_apikey
+# 设置API api/setapi
 @login_required(login_url="/login/")
-def set_api_key(request):
+def set_api(request):
     try:
         apikey = request.POST.get("apikey")
         if apikey:
             save_setting("WEBHOOK_APIKEY", apikey)
         else:
-            save_setting("WEBHOOK_APIKEY", ''.join(
-                random.choice("qwertyuiopasdfghjklzxcvbnm1234567890") for x in range(12)))
+            if not SettingModel.objects.filter(name="WEBHOOK_APIKEY").count():
+                save_setting("WEBHOOK_APIKEY", ''.join(
+                    random.choice("qwertyuiopasdfghjklzxcvbnm1234567890") for x in range(12)))
+        save_setting("ALLOW_FRIEND", request.POST.get("allow_friend"))
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
         context = {"msg": repr(e), "status": False}

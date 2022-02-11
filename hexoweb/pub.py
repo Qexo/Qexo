@@ -468,6 +468,9 @@ def del_friend(request):
 @csrf_exempt
 def ask_friend(request):
     try:
+        if SettingModel.objects.get(name="ALLOW_FRIEND").content != "是":
+            return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
+                                                                             "status": False})})
         friend = FriendModel()
         friend.name = request.POST.get("name")
         friend.url = request.POST.get("url")

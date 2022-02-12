@@ -3,7 +3,7 @@ from core.settings import ALL_SETTINGS
 import requests
 from django.template.defaulttags import register
 from core.settings import QEXO_VERSION
-from .models import Cache, SettingModel, FriendModel
+from .models import Cache, SettingModel, FriendModel, NotificationModel
 import github
 import json
 import boto3
@@ -14,6 +14,7 @@ from urllib3 import disable_warnings
 from markdown import markdown
 from zlib import crc32 as zlib_crc32
 from urllib.parse import quote
+from time import strftime, localtime
 import tarfile
 
 disable_warnings()
@@ -74,14 +75,14 @@ def get_custom_config():
         context["QEXO_LOGO"] = SettingModel.objects.get(name="QEXO_LOGO").content
     except:
         save_setting('QEXO_LOGO',
-                     'https://cdn.jsdelivr.net/npm/qexo-static@1.0.4/assets' +
+                     'https://cdn.jsdelivr.net/npm/qexo-static@1.0.6/assets' +
                      '/img/brand/qexo.png')
         context["QEXO_LOGO"] = SettingModel.objects.get(name="QEXO_LOGO").content
     try:
         context["QEXO_ICON"] = SettingModel.objects.get(name="QEXO_ICON").content
     except:
         save_setting('QEXO_ICON',
-                     'https://cdn.jsdelivr.net/npm/qexo-static@1.0.4/assets' +
+                     'https://cdn.jsdelivr.net/npm/qexo-static@1.0.6/assets' +
                      '/img/brand/favicon.ico')
         context["QEXO_ICON"] = SettingModel.objects.get(name="QEXO_ICON").content
     return context
@@ -562,3 +563,128 @@ def OnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
     if outPath == '':
         return {"status": False, "msg": 'error: no outPath'}
     return VercelUpdate(vercel_config["id"], vercel_config["token"], outPath)
+
+
+# Twikoo
+# Twikoo系列
+def TestTwikoo(TwikooDomain, TwikooPassword):
+    """
+    参数:
+        TwikooDomain(Twikoo的接口)--String
+        TwikooPassword(Twikoo的管理密码)--String
+    返回:
+        accessToken(Twikoo的Token) --String
+    """
+    RequestData = {"event": "LOGIN", "password": md5(TwikooPassword.encode(
+        encoding='utf-8')).hexdigest()}
+    LoginRequests = requests.post(url=TwikooDomain, json=RequestData)
+    accessToken = json.loads(LoginRequests.text)['accessToken']
+    return accessToken
+
+
+def GetComments(url, pass_md5, TwikooDomain):
+    """
+    参数:
+        url(需要获取评论的链接，例如/post/qexo) --String
+        TwikooDomain(Twikoo的接口) --String
+        pass_md5(Twikoo的密码md5) --String
+    返回:
+        评论列表:
+        [
+            {"id":评论id,"nick":昵称,"body":正文,"time":时间(unix时间戳),"hidden":是否隐藏}
+        ]
+        其中:
+        hidden  --Bool
+    """
+    RequestData = {"event": "COMMENT_GET", "accessToken": pass_md5, "url": url}
+    LoginRequests = requests.post(url=TwikooDomain, data=RequestData)
+    commentData = json.loads(LoginRequests.text)['data']
+    comments = []
+    for i in range(len(commentData)):
+        id = commentData[i]['id']
+        nick = commentData[i]['nick']
+        body = commentData[i]['comment']
+        time = commentData[i]['created']
+        Hidden = commentData[i]['isSpam']
+        comments.append({"id": id, "nick": nick, "body": body, "time": time, "hidden": Hidden})
+    return comments
+
+
+def GetAllComments(pass_md5, TwikooDomain, per=0x7FFFFFFF, page=1, key="", type=""):
+    """
+    参数:
+        per(每一页的评论数) --int
+        pages(页数)--int
+        TwikooDomain(Twikoo的接口)--String
+        pass_md5(Twikoo密码的md5)--String
+        key(可选，搜索关键字)--String
+        type(可选，类型，HIDDEN为被隐藏的评论，VISIBLE为可见评论)
+    返回:
+        评论列表，格式:
+        [
+            {"id":评论id,"nick":昵称,"body":正文,"time":时间(unix时间戳),"hidden":是否隐藏}
+        ]
+        其中:
+        hidden  --Bool
+    """
+    RequestData = {"event": "COMMENT_GET_FOR_ADMIN", "accessToken": pass_md5, "per": per,
+                   "page": page, "keyword": key, "type": type}
+    LoginRequests = requests.post(url=TwikooDomain, json=RequestData)
+    commentData = json.loads(LoginRequests.text)['data']
+    comments = []
+    for i in range(len(commentData)):
+        id = commentData[i]['_id']
+        nick = commentData[i]['nick']
+        body = commentData[i]['comment']
+        time = commentData[i]['created']
+        Hidden = commentData[i]['isSpam']
+        comments.append({"id": id, "nick": nick, "body": body, "time": time, "hidden": Hidden})
+    return comments
+
+
+def SetComment(pass_md5, TwikooDomain, id, status):
+    """
+    参数:
+        status(是否隐藏) --Bool
+        id(评论id)  --String
+        TwikooDomain(Twikoo的接口) --String
+        pass_md5(Twikoo的密码md5)--String
+    返回:
+        Succeed或者是Error
+    """
+    RequestData = {"event": "COMMENT_SET_FOR_ADMIN", "accessToken": pass_md5, "id": id,
+                   "set": {"isSpam": status}}
+    LoginRequests = requests.post(url=TwikooDomain, json=RequestData)
+    code = json.loads(LoginRequests.text)['code']
+    if code == 0:
+        return 'Succeed'
+    else:
+        return 'Error'
+
+
+def CreateNotification(label, content, now):
+    N = NotificationModel()
+    N.label = label
+    N.content = content
+    N.time = str(float(now))
+    N.save()
+    return True
+
+
+def GetNotifications():
+    N = NotificationModel.objects.all()
+    result = list()
+    for notification in N:
+        result.append(dict(
+            label=notification.label,
+            content=notification.content,
+            timestamp=notification.time,
+            time=strftime("%Y-%m-%d %H:%M:%S", localtime(float(notification.time)))
+        ))
+    return result
+
+
+def DelNotification(_time):
+    N = NotificationModel.objects.get(time=_time)
+    N.delete()
+    return True

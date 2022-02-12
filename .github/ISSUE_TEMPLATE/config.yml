@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 问题 & 讨论 & 建议
+    url: https://github.com/am-abudu/Qexo/discussions
+    about: 使用GitHub讨论进行留言板式的问题和讨论或功能建议

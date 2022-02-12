@@ -3,7 +3,7 @@ import os
 import json
 import random
 
-QEXO_VERSION = "1.5.0"
+QEXO_VERSION = "1.5.4"
 
 ALL_SETTINGS = [["ABBRLINK_ALG", "crc16", False, "短链接算法"],
                 ["ABBRLINK_REP", "dec", False, "短链接格式dec/hex"],
@@ -21,10 +21,10 @@ ALL_SETTINGS = [["ABBRLINK_ALG", "crc16", False, "短链接算法"],
                 ["IMG_TYPE", "", False, "图床类别"],
                 ["INIT", "2", False, "初始化标识"],
                 ["QEXO_ICON",
-                 "https://cdn.jsdelivr.net/npm/qexo-static@1.0.4/assets/img/brand/favicon.ico",
+                 "https://cdn.jsdelivr.net/npm/qexo-static@1.0.6/assets/img/brand/favicon.ico",
                  False, "站点ICON"],
                 ["QEXO_LOGO",
-                 "https://cdn.jsdelivr.net/npm/qexo-static@1.0.4/assets/img/brand/qexo.png",
+                 "https://cdn.jsdelivr.net/npm/qexo-static@1.0.6/assets/img/brand/qexo.png",
                  False, "站点LOGO"],
                 ["QEXO_NAME", "Hexo管理面板", False, "站点名"],
                 ["QEXO_SPLIT", "-", False, "站点分隔符"],
@@ -57,7 +57,8 @@ ALL_SETTINGS = [["ABBRLINK_ALG", "crc16", False, "短链接算法"],
                 ["WEBHOOK_APIKEY", ''.join(random.choice("qwertyuiopasdfghjklzxcvbnm1234567890")
                                            for x in range(12)), False, "API密钥"],
                 ["VERCEL_TOKEN", "", False, "Vercel密钥"],
-                ["PROJECT_ID", "", False, "Qexo项目ID"]]
+                ["PROJECT_ID", "", False, "Qexo项目ID"],
+                ["ALLOW_FRIEND", "否", False, "是否允许友链申请"]]
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

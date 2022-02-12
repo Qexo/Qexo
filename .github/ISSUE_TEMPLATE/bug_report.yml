@@ -1,0 +1,38 @@
+name: "BUG 反馈"
+description: 遇到了程序错误?
+labels: [pending triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢您填写此错误报告！
+  - type: input
+    id: version
+    attributes:
+      label: Qexo 版本
+      description: 您正在运行我们的程序的哪个版本？
+      placeholder: v1.5.3
+    validations:
+      required: true
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: 问题描述
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 复现链接
+      description: |
+        请提供能复现此问题的链接
+    validations:
+      required: false
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: 截图
+      description: |
+        请复制粘贴错误截图
+    validations:
+      required: true

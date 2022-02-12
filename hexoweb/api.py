@@ -56,16 +56,18 @@ def set_github(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
-# 设置APIKEY api/set_apikey
+# 设置API api/setapi
 @login_required(login_url="/login/")
-def set_api_key(request):
+def set_api(request):
     try:
         apikey = request.POST.get("apikey")
         if apikey:
             save_setting("WEBHOOK_APIKEY", apikey)
         else:
-            save_setting("WEBHOOK_APIKEY", ''.join(
-                random.choice("qwertyuiopasdfghjklzxcvbnm1234567890") for x in range(12)))
+            if not SettingModel.objects.filter(name="WEBHOOK_APIKEY").count():
+                save_setting("WEBHOOK_APIKEY", ''.join(
+                    random.choice("qwertyuiopasdfghjklzxcvbnm1234567890") for x in range(12)))
+        save_setting("ALLOW_FRIEND", request.POST.get("allow_friend"))
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
         context = {"msg": repr(e), "status": False}
@@ -570,11 +572,13 @@ def add_friend(request):
         friend.imageUrl = request.POST.get("image")
         friend.description = request.POST.get("description")
         friend.time = str(time())
+        friend.status = True if request.POST.get("status") == "显示" else False
         friend.save()
         context = {"msg": "添加成功！", "time": friend.time, "status": True}
     except Exception as error:
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
 
 # 修改友链 api/edit_friend
 @login_required(login_url="/login/")
@@ -585,6 +589,7 @@ def edit_friend(request):
         friend.url = request.POST.get("url")
         friend.imageUrl = request.POST.get("image")
         friend.description = request.POST.get("description")
+        friend.status = True if request.POST.get("status") == "显示" else False
         friend.save()
         context = {"msg": "修改成功！", "status": True}
     except Exception as error:
@@ -597,6 +602,25 @@ def del_friend(request):
     try:
         friend = FriendModel.objects.get(time=request.POST.get("time"))
         friend.delete()
+        context = {"msg": "删除成功！", "status": True}
+    except Exception as error:
+        context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+@login_required(login_url="/login/")
+def get_notifications(request):
+    try:
+        context = {"data": GetNotifications(), "status": True}
+    except Exception as error:
+        context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+@login_required(login_url="/login/")
+def del_notification(request):
+    try:
+        DelNotification(request.POST.get("time"))
         context = {"msg": "删除成功！", "status": True}
     except Exception as error:
         context = {"msg": repr(error), "status": False}

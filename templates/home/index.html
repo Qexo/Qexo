@@ -16,14 +16,15 @@
                         <h6 class="h2 text-white d-inline-block mb-0">Dashboard</h6>
                         <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
                             <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
-                                <li class="breadcrumb-item"><a href="#"><i class="fas fa-home"></i></a></li>
+                                <li class="breadcrumb-item"><a href="#"><i class="fas fa-home"></i></a>
+                                </li>
                                 <li class="breadcrumb-item"><a href="#">控制台</a></li>
                                 <li class="breadcrumb-item active" aria-current="page">主页</li>
                             </ol>
                         </nav>
                     </div>
                     <div class="col-lg-6 col-5 text-right">
-                        <a href="#" class="btn btn-sm btn-neutral">新文章</a>
+                        <a href="/new.html" class="btn btn-sm btn-neutral">新文章</a>
                         <a href="/images.html" class="btn btn-sm btn-neutral">图片</a>
                     </div>
                 </div>
@@ -35,7 +36,8 @@
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col">
-                                        <h5 class="card-title text-uppercase text-muted mb-0">总文章</h5>
+                                        <h5 class="card-title text-uppercase text-muted mb-0">
+                                            总文章</h5>
                                         <span class="h2 font-weight-bold mb-0">{{ post_number }}</span>
                                     </div>
                                     <div class="col-auto">
@@ -57,7 +59,8 @@
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col">
-                                        <h5 class="card-title text-uppercase text-muted mb-0">总图片</h5>
+                                        <h5 class="card-title text-uppercase text-muted mb-0">
+                                            总图片</h5>
                                         <span class="h2 font-weight-bold mb-0">{{ images_number }}</span>
                                     </div>
                                     <div class="col-auto">
@@ -79,7 +82,8 @@
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col">
-                                        <h5 class="card-title text-uppercase text-muted mb-0">当前版本</h5>
+                                        <h5 class="card-title text-uppercase text-muted mb-0">
+                                            当前版本</h5>
                                         <span class="h2 font-weight-bold mb-0">{{ version }}</span>
                                     </div>
                                     <div class="col-auto">
@@ -89,17 +93,19 @@
                                     </div>
                                 </div>
                                 {% if not hasNew %}
-                                <p class="mt-3 mb-0 text-sm">
-                                    <span class="text mr-2"><i class="fa fa-arrow-up"></i></span>
-                                    <span class="text-nowrap">是最新版哦</span>
-                                </p>
+                                    <p class="mt-3 mb-0 text-sm">
+                                        <span class="text mr-2"><i
+                                                class="fa fa-arrow-up"></i></span>
+                                        <span class="text-nowrap">是最新版哦</span>
+                                    </p>
                                 {% else %}
-                                <p class="mt-3 mb-0 text-sm">
-                                    <span class="text mr-2"><i class="fa fa-arrow-up"></i></span>
-                                    <span class="text-nowrap">检测到更新 <a href="{{ newer_link }}"
-                                                                       target="_blank">
+                                    <p class="mt-3 mb-0 text-sm">
+                                        <span class="text mr-2"><i
+                                                class="fa fa-arrow-up"></i></span>
+                                        <span class="text-nowrap">检测到更新 <a href="{{ newer_link }}"
+                                                                           target="_blank">
                                         {{ newer }}</a></span>
-                                </p>
+                                    </p>
                                 {% endif %}
                             </div>
                         </div>
@@ -110,7 +116,8 @@
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col">
-                                        <h5 class="card-title text-uppercase text-muted mb-0">Github</h5>
+                                        <h5 class="card-title text-uppercase text-muted mb-0">
+                                            Github</h5>
                                         <span class="h2 font-weight-bold mb-0">Qexo</span>
                                     </div>
                                     <div class="col-auto">
@@ -209,7 +216,9 @@
                             {% for image in images %}
                                 <tr>
                                     <th scope="row">
-                                        {{ image.name }}  <a href="{{ image.url }}" target="_blank"><i class="fa fa-external-link-alt"></i></a>
+                                        {{ image.name }} <a href="{{ image.url }}"
+                                                            target="_blank"><i
+                                            class="fa fa-external-link-alt"></i></a>
                                     </th>
                                     <td>
                                         {{ image.date }}
@@ -231,7 +240,7 @@
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
 
-    <script src="{{ cdn_prev }}qexo-static@1.0.4/assets/vendor/chart.js/dist/Chart.min.js"></script>
-    <script src="{{ cdn_prev }}qexo-static@1.0.4/assets/vendor/chart.js/dist/Chart.extension.js"></script>
+    <script src="{{ cdn_prev }}qexo-static@1.0.6/assets/vendor/chart.js/dist/Chart.min.js"></script>
+    <script src="{{ cdn_prev }}qexo-static@1.0.6/assets/vendor/chart.js/dist/Chart.extension.js"></script>
 
 {% endblock javascripts %}

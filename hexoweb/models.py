@@ -25,10 +25,10 @@ class ImageModel(models.Model):
 
 class FriendModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=0x7FFFFFFF)
-    url = models.CharField(max_length=0x7FFFFFFF)
+    name = models.CharField(max_length=0x7FFFFFFF, blank=False)
+    url = models.CharField(max_length=0x7FFFFFFF, blank=False)
     imageUrl = models.CharField(max_length=0x7FFFFFFF)
-    time = models.CharField(max_length=0x7FFFFFFF)
+    time = models.CharField(max_length=0x7FFFFFFF, blank=False)
     description = models.CharField(max_length=0x7FFFFFFF)
     status = models.BooleanField(default=True)
 

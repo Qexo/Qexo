@@ -178,8 +178,10 @@
             let list = "";
             for (let i = 0; i < page_posts.length; i++) {
                 let description = page_posts[i]["description"], post_status = "隐藏";
-                if (description.length > 13) {
-                    description = description.slice(0, 10) + "...";
+                if (description) {
+                    if (description.length > 13) {
+                        description = description.slice(0, 10) + "...";
+                    }
                 }
                 if (page_posts[i]["status"]) post_status = "显示";
                 list += "<tr><td scope=\"row\">" + page_posts[i]["name"] + "</td><td>" + "<a " +
@@ -193,7 +195,7 @@
                     description +
                     "</td><td><a href=\"javascript:query_edit('" + page_posts[i]["time"] + "')\">" +
                     "<i class=\"fa fa-edit mr-2\"></i></a>" + "<a href=\"javascript:query_delete" +
-                    "('" + page_posts[i]["name"] + "','" +
+                    "(`" + page_posts[i]["name"] + "`,'" +
                     page_posts[i]["time"] + "')\"><i class=\"fa fa-trash-alt " +
                     "mr-2\"></i></a></td></tr>";
             }

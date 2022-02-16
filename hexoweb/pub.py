@@ -420,7 +420,7 @@ def add_friend(request):
         friend.url = request.POST.get("url")
         friend.imageUrl = request.POST.get("image")
         friend.description = request.POST.get("description")
-        friend.time = str(time())
+        friend.time = str(float(time()))
         friend.status = request.POST.get("status") == "显示"
         friend.save()
         context = {"msg": "添加成功！", "time": friend.time, "status": True}
@@ -476,7 +476,7 @@ def ask_friend(request):
         friend.url = request.POST.get("url")
         friend.imageUrl = request.POST.get("image")
         friend.description = request.POST.get("description")
-        friend.time = str(time())
+        friend.time = str(float(time()))
         friend.status = False
         friend.save()
         CreateNotification("友链请求: " + friend.name, friend.url, time())

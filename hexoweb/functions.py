@@ -677,7 +677,7 @@ def GetNotifications():
     for notification in N:
         result.append(dict(
             label=notification.label,
-            contnet=notification.content,
+            content=notification.content,
             timestamp=notification.time,
             time=strftime("%Y-%m-%d %H:%M:%S", localtime(float(notification.time)))
         ))

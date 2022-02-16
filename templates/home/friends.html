@@ -19,7 +19,8 @@
                         </nav>
                     </div>
                     <div class="col-lg-6 col-5 text-right">
-                        <a href="javascript:query_new()" class="btn btn-sm btn-neutral">新增友链</a>
+                        <a href="javascript:query_new()" class="btn btn-sm btn-neutral">新增</a>
+                        <a href="javascript:query_clean()" class="btn btn-sm btn-neutral">删除隐藏</a>
                     </div>
                 </div>
             </div>
@@ -499,6 +500,41 @@
             })
         }
 
+
+        function query_clean() {
+            let html = "确认要清理隐藏的链接吗？该操作不可回退";
+            $("#query-modal-body").html(html);
+            $("#queryLabel").html("提示");
+            let footer = "<button type=\"button\" class=\"btn btn-secondary\" " +
+                "data-dismiss=\"modal\">取消</button><button type=\"button\" class=\"btn " +
+                "btn-primary\" data-dismiss=\"modal\" onclick=\"clean_friend()\">确定</button>"
+            $("#query-modal-footer").html(footer);
+            $("#query").modal("show");
+        }
+
+
+        function clean_friend() {
+            let loading = new KZ_Loading("正在清理中");
+            loading.show();
+            $.ajax({
+                url: '/api/clean_friend/',
+                method: 'get',
+                dataType: 'json',
+                success: function (res) {
+                    loading.destroy();
+                    if (res.status) {
+                        $.notify(res.msg, {type: "success", delay: 1000});
+                        setTimeout(location.reload(), 1000);
+                    } else {
+                        $.notify(res.msg, {type: "warning", delay: 1000});
+                    }
+                },
+                error: function (res) {
+                    loading.destroy();
+                    $.notify("网络错误！", {type: "warning", delay: 1000});
+                }
+            })
+        }
 
     </script>
 {% endblock javascripts %}

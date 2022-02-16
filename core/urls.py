@@ -41,6 +41,7 @@ urlpatterns = [
     path('api/add_friend/', add_friend, name='add_friend'),
     path('api/del_friend/', del_friend, name='del_friend'),
     path('api/edit_friend/', edit_friend, name='edit_friend'),
+    path('api/clean_friend/', clean_friend, name='clean_friend'),
     path('api/fix/', auto_fix, name='auto_fix'),
     path('api/purge/', purge, name='purge'),
     path('api/webhook/', webhook, name='webhook'),

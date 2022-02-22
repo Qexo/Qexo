@@ -241,6 +241,7 @@ def index(request):
     context["version"] = QEXO_VERSION
     context["post_number"] = str(len(posts))
     context["images_number"] = str(len(images))
+    save_setting("LAST_LOGIN", str(int(time())))
     html_template = loader.get_template('home/index.html')
     return HttpResponse(html_template.render(context, request))
 
@@ -499,6 +500,7 @@ def pages(request):
                 context["page_number"] = ceil(context["settings_number"] / 15)
             except Exception as e:
                 context["error"] = repr(e)
+        save_setting("LAST_LOGIN", str(int(time())))
         html_template = loader.get_template('home/' + load_template)
         return HttpResponse(html_template.render(context, request))
 

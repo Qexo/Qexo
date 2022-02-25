@@ -484,3 +484,13 @@ def ask_friend(request):
     except Exception as error:
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 获取博主最后上线时间 pub/last
+@csrf_exempt
+def last_login(request):
+    try:
+        context = {"msg": SettingModel.objects.get(name="LAST_LOGIN").content, "status": True}
+    except Exception as error:
+        context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})

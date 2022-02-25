@@ -5,6 +5,7 @@ import random
 
 QEXO_VERSION = "1.5.5"
 
+# [名称, 默认值, 是否在尝试修复时重置, 简介]
 ALL_SETTINGS = [["ABBRLINK_ALG", "crc16", False, "短链接算法"],
                 ["ABBRLINK_REP", "dec", False, "短链接格式dec/hex"],
                 ["CDN_PREV", "https://cdn.jsdelivr.net/npm/", True, "调用NPM的CDN前缀"],
@@ -58,7 +59,8 @@ ALL_SETTINGS = [["ABBRLINK_ALG", "crc16", False, "短链接算法"],
                                            for x in range(12)), False, "API密钥"],
                 ["VERCEL_TOKEN", "", False, "Vercel密钥"],
                 ["PROJECT_ID", "", False, "Qexo项目ID"],
-                ["ALLOW_FRIEND", "否", False, "是否允许友链申请"]]
+                ["ALLOW_FRIEND", "否", False, "是否允许友链申请"],
+                ["LAST_LOGIN", "", True, "博主最后上线时间(无需更改)"]]
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

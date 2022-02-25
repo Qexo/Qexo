@@ -8,15 +8,19 @@
       }
     },
     {
-        "src": "core/wsgi.py",
-        "use": "@abudu/vercel-python-wsgi-fix",
-        "config": { "maxLambdaSize": "15mb", "runtime": "python3.9" }
+      "src": "core/wsgi.py",
+      "use": "@abudu/vercel-python-wsgi-fix",
+      "config": {
+        "maxLambdaSize": "15mb",
+        "runtime": "python3.9"
+      }
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/(.*)",
-      "dest": "core/wsgi.py"
+      "source": "(.*)",
+      "destination": "core/wsgi.py"
     }
-  ]
+  ],
+  "trailingSlash": true
 }

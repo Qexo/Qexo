@@ -572,7 +572,7 @@ def add_friend(request):
         friend.imageUrl = request.POST.get("image")
         friend.description = request.POST.get("description")
         friend.time = str(time())
-        friend.status = True if request.POST.get("status") == "显示" else False
+        friend.status = request.POST.get("status") == "显示"
         friend.save()
         context = {"msg": "添加成功！", "time": friend.time, "status": True}
     except Exception as error:
@@ -589,7 +589,7 @@ def edit_friend(request):
         friend.url = request.POST.get("url")
         friend.imageUrl = request.POST.get("image")
         friend.description = request.POST.get("description")
-        friend.status = True if request.POST.get("status") == "显示" else False
+        friend.status = request.POST.get("status") == "显示"
         friend.save()
         context = {"msg": "修改成功！", "status": True}
     except Exception as error:
@@ -597,6 +597,23 @@ def edit_friend(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 清理隐藏友链 api/clean_friend
+@login_required(login_url="/login/")
+def clean_friend(request):
+    try:
+        counter = 0
+        all_friends = FriendModel.objects.all()
+        for friend in all_friends:
+            if friend.status == "隐藏":
+                friend.delete()
+                counter += 1
+        context = {"msg": "成功清理了{}条友链".format(counter) if counter else "无隐藏的友链", "status": True}
+    except Exception as error:
+        context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 删除友链 api/del_friend
 @login_required(login_url="/login/")
 def del_friend(request):
     try:
@@ -608,6 +625,7 @@ def del_friend(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 获取全部消息 api/get_notifications
 @login_required(login_url="/login/")
 def get_notifications(request):
     try:
@@ -617,6 +635,7 @@ def get_notifications(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 删除指定消息 api/del_notifications
 @login_required(login_url="/login/")
 def del_notification(request):
     try:
@@ -625,3 +644,6 @@ def del_notification(request):
     except Exception as error:
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+

@@ -348,8 +348,8 @@
                     if (res.status) {
                         $.notify(res.msg, {type: "success", delay: 1000});
                         for (let i = 0; i < posts.length; i++) {
-                            if (posts[i]["name"] == name) {
-                                posts.splice(i, i);
+                            if (posts[i]["name"] === name) {
+                                posts.splice(i, 1);
                                 change_page(_page);
                                 break;
                             }

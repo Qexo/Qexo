@@ -502,10 +502,14 @@ def pages(request):
                 context["error"] = repr(e)
         elif 'custom' in load_template:
             try:
+                search = request.GET.get("s")
                 all_values = CustomModel.objects.all()
                 context["settings"] = list()
                 for setting in all_values:
-                    context["settings"].append({"name": setting.name, "content": setting.content})
+                    if (not search) or (search in setting.name) or (search in setting.content):
+                        context["settings"].append({"name": setting.name, "content": setting.content})
+                if search:
+                    context["search"] = search
                 context["settings"].sort(key=lambda elem: elem["name"])  # 按字段名升序排序
                 context["settings_number"] = len(context["settings"])
                 context["page_number"] = ceil(context["settings_number"] / 15)

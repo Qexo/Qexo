@@ -1,6 +1,6 @@
 {% extends 'layouts/base.html' %}
 
-{% block title %} 自定义字段 {% endblock title %}
+{% block title %} {% if search %}搜索字段:{{ search }}{% else %}自定义字段{% endif %}  {% endblock title %}
 
 {% block content %}
 
@@ -14,7 +14,7 @@
                             <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                                 <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i></a>
                                 </li>
-                                <li class="breadcrumb-item active">自定义</li>
+                                <li class="breadcrumb-item active">自定</li>
                             </ol>
                         </nav>
                     </div>
@@ -33,7 +33,9 @@
                     <div class="card-header border-0">
                         <div class="row align-items-center">
                             <div class="col">
-                                <h3 class="mb-0">全部字段 (<a id="count">{{ settings_number }}</a>项)
+                                <h3 class="mb-0">{% if search %}搜索字段: {{ search }} (<a id="count">{{ settings_number }}</a>项)
+                                    {% else %}全部字段 (<a id="count">{{ settings_number }}</a>项)
+                                    {% endif %}
                                 </h3>
                             </div>
                         </div>

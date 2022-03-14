@@ -544,38 +544,9 @@ def upload_img(request):
                 custom_body = SettingModel.objects.get(name="IMG_CUSTOM_BODY").content
                 custom_header = SettingModel.objects.get(name="IMG_CUSTOM_HEADER").content
                 custom_url = SettingModel.objects.get(name="IMG_CUSTOM_URL").content
-                if custom_header:
-                    if custom_body:
-                        response = requests.post(api, data=json.loads(custom_body),
-                                                 headers=json.loads(custom_header),
-                                                 files={post_params: [file.name, file.read(),
-                                                                      file.content_type]})
-                    else:
-                        response = requests.post(api, data={}, headers=json.loads(custom_header),
-                                                 files={post_params: [file.name, file.read(),
-                                                                      file.content_type]})
-                else:
-                    if custom_body:
-                        response = requests.post(api, data=json.loads(custom_body),
-                                                 files={post_params: [file.name, file.read(),
-                                                                      file.content_type]})
-                    else:
-                        response = requests.post(api, data={},
-                                                 files={post_params: [file.name, file.read(),
-                                                                      file.content_type]})
-                if json_path:
-                    json_path = json_path.split(".")
-                    response.encoding = "utf8"
-                    data = response.json()
-                    for path in json_path:
-                        data = data[path]
-                    context["url"] = str(custom_url) + data
-                    context["msg"] = "上传成功！"
-                    context["status"] = True
-                else:
-                    context["url"] = str(custom_url) + response.text
-                    context["msg"] = "上传成功！"
-                    context["status"] = True
+                context["url"] = upload_to_custom(file, api, post_params, json_path, custom_body, custom_header, custom_url)
+                context["msg"] = "上传成功！"
+                context["status"] = True
             image = ImageModel()
             image.name = file.name
             image.url = context["url"]

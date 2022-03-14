@@ -61,7 +61,6 @@ urlpatterns = [
     path('pub/delete/', pub.delete, name='pub_delete'),
     path('pub/delete_post/', pub.delete_post, name='pub_delete_post'),
     path('pub/create_webhook/', pub.create_webhook_config, name='pub_create_webhook'),
-    path('pub/upload/', pub.upload_img, name='pub_upload'),
     path('pub/get_update/', pub.get_update, name='pub_get_update'),
     path('pub/get_posts/', pub.get_posts, name='pub_get_posts'),
     path('pub/get_pages/', pub.get_pages, name='pub_get_pages'),

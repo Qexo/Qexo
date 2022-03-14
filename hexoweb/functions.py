@@ -407,6 +407,37 @@ def upload_to_s3(file, key_id, access_key, endpoint_url, bucket, path, prev_url)
     return prev_url + "/" + path
 
 
+def upload_to_custom(file, api, post_params, json_path, custom_body, custom_header, custom_url):
+    if custom_header:
+        if custom_body:
+            response = requests.post(api, data=json.loads(custom_body),
+                                     headers=json.loads(custom_header),
+                                     files={post_params: [file.name, file.read(),
+                                                          file.content_type]})
+        else:
+            response = requests.post(api, data={}, headers=json.loads(custom_header),
+                                     files={post_params: [file.name, file.read(),
+                                                          file.content_type]})
+    else:
+        if custom_body:
+            response = requests.post(api, data=json.loads(custom_body),
+                                     files={post_params: [file.name, file.read(),
+                                                          file.content_type]})
+        else:
+            response = requests.post(api, data={},
+                                     files={post_params: [file.name, file.read(),
+                                                          file.content_type]})
+    if json_path:
+        json_path = json_path.split(".")
+        response.encoding = "utf8"
+        data = response.json()
+        for path in json_path:
+            data = data[path]
+    else:
+        data = response.text
+    return str(custom_url) + data
+
+
 def get_latest_version():
     context = dict()
     try:

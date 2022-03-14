@@ -192,6 +192,38 @@ def set_user(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 设置 CustomModel 的字段 api/set_custom
+@login_required(login_url="/login/")
+def set_custom(request):
+    try:
+        save_custom(request.POST.get("name"), request.POST.get("content"))
+        context = {"msg": "保存成功!", "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 设置 CustomModel 的字段 api/del_custom
+@login_required(login_url="/login/")
+def del_custom(request):
+    try:
+        CustomModel.objects.filter(name=request.POST.get("name")).delete()
+        context = {"msg": "删除成功!", "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 新建 CustomModel 的字段 api/new_custom
+@login_required(login_url="/login/")
+def new_custom(request):
+    try:
+        save_custom(request.POST.get("name"), request.POST.get("content"))
+        context = {"msg": "保存成功!", "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
 # 设置 SettingsModel 的字段 api/set_value
 @login_required(login_url="/login/")
 def set_value(request):

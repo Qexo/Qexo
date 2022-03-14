@@ -494,3 +494,19 @@ def last_login(request):
     except Exception as error:
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 获取自定义字段 pub/get_custom
+@csrf_exempt
+def get_custom(request):
+    if not check_if_api_auth(request):
+        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
+                                                                         "status": False})})
+    try:
+        context = {
+            "data": CustomModel.objects.get(name=request.GET.get("key") if request.GET.get("key") else request.PSOT.get("key")).content,
+            "status": True
+        }
+    except Exception as error:
+        context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})

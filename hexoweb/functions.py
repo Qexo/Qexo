@@ -3,7 +3,7 @@ from core.settings import ALL_SETTINGS
 import requests
 from django.template.defaulttags import register
 from core.settings import QEXO_VERSION
-from .models import Cache, SettingModel, FriendModel, NotificationModel
+from .models import Cache, SettingModel, FriendModel, NotificationModel, CustomModel
 import github
 import json
 import boto3
@@ -358,6 +358,23 @@ def save_setting(name, content):
         for i in obj:
             i.delete()
     new_set = SettingModel()
+    new_set.name = str(name)
+    if content is not None:
+        new_set.content = str(content)
+    else:
+        new_set.content = ""
+    new_set.save()
+    return new_set
+
+
+def save_custom(name, content):
+    obj = CustomModel.objects.filter(name=name)
+    if obj.count() == 1:
+        obj.delete()
+    if obj.count() > 1:
+        for i in obj:
+            i.delete()
+    new_set = CustomModel()
     new_set.name = str(name)
     if content is not None:
         new_set.content = str(content)

@@ -329,7 +329,8 @@ def update_configs_cache(s=None):
 def delete_all_caches():
     caches = Cache.objects.all()
     for cache in caches:
-        cache.delete()
+        if cache.name != "update":
+            cache.delete()
 
 
 def delete_posts_caches():

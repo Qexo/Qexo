@@ -78,24 +78,35 @@ def set_api(request):
 @login_required(login_url="/login/")
 def set_image_bed(request):
     try:
-        api = request.POST.get("api")
-        post_params = request.POST.get("post")
-        json_path = request.POST.get("jsonpath")
-        custom_body = request.POST.get("body")
-        custom_header = request.POST.get("header")
-        custom_url = request.POST.get("custom")
-        status = request.POST.get("cust-status")
-        save_setting("IMG_API", api)
-        save_setting("IMG_POST", post_params)
-        save_setting("IMG_JSON_PATH", json_path)
-        save_setting("IMG_CUSTOM_BODY", custom_body)
-        save_setting("IMG_CUSTOM_HEADER", custom_header)
-        save_setting("IMG_CUSTOM_URL", custom_url)
-        if status == "on":
+        imageType = request.POST.get("imageType")
+        if imageType == "custom":
+            api = request.POST.get("api")
+            post_params = request.POST.get("post")
+            json_path = request.POST.get("jsonpath")
+            custom_body = request.POST.get("body")
+            custom_header = request.POST.get("header")
+            custom_url = request.POST.get("custom")
+            save_setting("IMG_API", api)
+            save_setting("IMG_POST", post_params)
+            save_setting("IMG_JSON_PATH", json_path)
+            save_setting("IMG_CUSTOM_BODY", custom_body)
+            save_setting("IMG_CUSTOM_HEADER", custom_header)
+            save_setting("IMG_CUSTOM_URL", custom_url)
             save_setting("IMG_TYPE", "custom")
-        else:
-            if SettingModel.objects.get(name="IMG_TYPE").content == "custom":
-                save_setting("IMG_TYPE", "")
+        if imageType == "s3":
+            key_id = request.POST.get("key-id")
+            access_key = request.POST.get("access-key")
+            bucket = request.POST.get("bucket")
+            endpoint = request.POST.get("endpoint")
+            path = request.POST.get("path")
+            url = request.POST.get("url")
+            save_setting("S3_KEY_ID", key_id)
+            save_setting("S3_ACCESS_KEY", access_key)
+            save_setting("S3_BUCKET", bucket)
+            save_setting("S3_ENDPOINT", endpoint)
+            save_setting("S3_PATH", path)
+            save_setting("S3_PREV_URL", url)
+            save_setting("IMG_TYPE", "s3")
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
         context = {"msg": repr(e), "status": False}
@@ -110,34 +121,6 @@ def set_abbrlink(request):
         rep = request.POST.get("rep")
         save_setting("ABBRLINK_ALG", alg)
         save_setting("ABBRLINK_REP", rep)
-        context = {"msg": "保存成功!", "status": True}
-    except Exception as e:
-        context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
-
-
-# 设置s3配置 api/set_s3
-@login_required(login_url="/login/")
-def set_s3(request):
-    try:
-        key_id = request.POST.get("key-id")
-        access_key = request.POST.get("access-key")
-        bucket = request.POST.get("bucket")
-        endpoint = request.POST.get("endpoint")
-        path = request.POST.get("path")
-        url = request.POST.get("url")
-        status = request.POST.get("s3-status")
-        save_setting("S3_KEY_ID", key_id)
-        save_setting("S3_ACCESS_KEY", access_key)
-        save_setting("S3_BUCKET", bucket)
-        save_setting("S3_ENDPOINT", endpoint)
-        save_setting("S3_PATH", path)
-        save_setting("S3_PREV_URL", url)
-        if status == "on":
-            save_setting("IMG_TYPE", "s3")
-        else:
-            if SettingModel.objects.get(name="IMG_TYPE").content == "s3":
-                save_setting("IMG_TYPE", "")
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
         context = {"msg": repr(e), "status": False}

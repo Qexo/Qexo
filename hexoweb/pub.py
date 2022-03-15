@@ -216,15 +216,6 @@ def create_webhook_config(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
-# 获取更新 pub/get_update
-@csrf_exempt
-def get_update(request):
-    if not check_if_api_auth(request):
-        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
-                                                                         "status": False})})
-    return render(request, 'layouts/json.html', {"data": json.dumps(get_latest_version())})
-
-
 # 获取所有文章 pub/get_posts
 @csrf_exempt
 def get_posts(request):

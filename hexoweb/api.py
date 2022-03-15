@@ -224,6 +224,7 @@ def new_custom(request):
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
+
 # 设置 SettingsModel 的字段 api/set_value
 @login_required(login_url="/login/")
 def set_value(request):
@@ -559,12 +560,6 @@ def upload_img(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
-# 获取更新 api/get_update
-@login_required(login_url="/login/")
-def get_update(request):
-    return render(request, 'layouts/json.html', {"data": json.dumps(get_latest_version())})
-
-
 # 添加友链 api/add_friend
 @login_required(login_url="/login/")
 def add_friend(request):
@@ -632,6 +627,19 @@ def del_friend(request):
 @login_required(login_url="/login/")
 def get_notifications(request):
     try:
+        # 检查更新
+        latest = get_latest_version()
+        cache = Cache.objects.filter(name="update")
+        if cache.count():
+            if cache.content != latest["newer_time"] and latest["hasNew"]:
+                CreateNotification("程序更新", "检测到更新: " + latest["newer"] + "<br>" + latest[
+                    "newer_text"] + "<p class=\"text-sm mb-0\">可前往 <object><a href=\"/settings.html\">设置</a></object> 在线更新</p>", time())
+                save_cache("update", latest["newer"])
+        else:
+            if latest["hasNew"]:
+                CreateNotification("程序更新", "检测到更新: " + latest["newer"] + "<br>" + latest[
+                    "newer_text"] + "<p class=\"text-sm mb-0\">可前往 <object><a href=\"/settings.html\">设置</a></object> 在线更新</p>", time())
+                save_cache("update", latest["newer"])
         context = {"data": GetNotifications(), "status": True}
     except Exception as error:
         context = {"msg": repr(error), "status": False}
@@ -647,6 +655,3 @@ def del_notification(request):
     except Exception as error:
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
-
-
-

@@ -384,6 +384,23 @@ def save_custom(name, content):
     return new_set
 
 
+def save_cache(name, content):
+    obj = Cache.objects.filter(name=name)
+    if obj.count() == 1:
+        obj.delete()
+    if obj.count() > 1:
+        for i in obj:
+            i.delete()
+    new_set = Cache()
+    new_set.name = str(name)
+    if content is not None:
+        new_set.content = str(content)
+    else:
+        new_set.content = ""
+    new_set.save()
+    return new_set
+
+
 def upload_to_s3(file, key_id, access_key, endpoint_url, bucket, path, prev_url):
     # 处理 path
     now = date.today()
@@ -716,7 +733,7 @@ def CreateNotification(label, content, now):
     N.content = content
     N.time = str(float(now))
     N.save()
-    return True
+    return N
 
 
 def GetNotifications():
@@ -735,4 +752,4 @@ def GetNotifications():
 def DelNotification(_time):
     N = NotificationModel.objects.get(time=_time)
     N.delete()
-    return True
+    return N

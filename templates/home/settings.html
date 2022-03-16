@@ -776,17 +776,37 @@
             })
         }
 
+        var IMG_API = '{{ IMG_API }}';
+        var IMG_POST = '{{ IMG_POST }}';
+        var IMG_JSON_PATH = '{{ IMG_JSON_PATH }}';
+        var IMG_CUSTOM_HEADER = '{{ IMG_CUSTOM_HEADER }}';
+        var IMG_CUSTOM_BODY = '{{ IMG_CUSTOM_BODY }}';
+        var IMG_CUSTOM_URL = '{{ IMG_CUSTOM_URL }}';
+        var S3_KEY_ID = '{{ S3_KEY_ID }}';
+        var S3_ACCESS_KEY = '{{ S3_ACCESS_KEY }}';
+        var S3_BUCKET = '{{ S3_BUCKET }}';
+        var S3_ENDPOINT = '{{ S3_ENDPOINT }}';
+        var S3_PATH = '{{ S3_PATH }}';
+        var S3_PREV_URL = '{{ S3_PREV_URL }}';
+
+
         function change_image_type(t) {
             if (t === "custom") {
+                let form = $('#image-settings').serializeArray();
+                S3_KEY_ID = form[2]["value"];
+                S3_ACCESS_KEY = form[3]["value"];
+                S3_BUCKET = form[4]["value"];
+                S3_ENDPOINT = form[5]["value"];
+                S3_PATH = form[6]["value"];
+                S3_PREV_URL = form[7]["value"];
                 $("#image-form").html(`
                                 <div class="row">
-                                {% csrf_token %}
                                     <div class="col-lg-6">
                                         <div class="form-group">
                                             <label class="form-control-label">图床-API地址</label>
                                             <input type="text" name="api" class="form-control"
                                                    placeholder="API 地址 ( 包含 http )"
-                                                   value="{{ IMG_API }}">
+                                                   value="`+IMG_API+`">
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
@@ -794,7 +814,7 @@
                                             <label class="form-control-label">图床-POST参数名</label>
                                             <input type="text" name="post" class="form-control"
                                                    placeholder="POST 参数名"
-                                                   value="{{ IMG_POST }}">
+                                                   value="`+IMG_POST+`">
                                         </div>
                                     </div>
                                 </div>
@@ -804,7 +824,7 @@
                                             <label class="form-control-label">图床-JSON路径</label>
                                             <input type="text" name="jsonpath" class="form-control"
                                                    placeholder="JSON 路径 eg: data.img"
-                                                   value="{{ IMG_JSON_PATH }}">
+                                                   value="`+IMG_JSON_PATH+`">
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
@@ -812,7 +832,7 @@
                                             <label class="form-control-label">图床-自定义请求头</label>
                                             <input type="text" name="header" class="form-control"
                                                    placeholder="标准 JSON 格式"
-                                                   value="{{ IMG_CUSTOM_HEADER }}">
+                                                   value="`+IMG_CUSTOM_HEADER+`">
                                         </div>
                                     </div>
                                 </div>
@@ -822,7 +842,7 @@
                                             <label class="form-control-label">图床-自定义BODY</label>
                                             <input type="text" name="body" class="form-control"
                                                    placeholder="标准 JSON 格式"
-                                                   value="{{ IMG_CUSTOM_BODY }}">
+                                                   value="`+IMG_CUSTOM_BODY+`">
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
@@ -830,19 +850,26 @@
                                             <label class="form-control-label">图床-自定义前缀</label>
                                             <input type="text" name="custom" class="form-control"
                                                    placeholder="自定义图片 URL 前缀"
-                                                   value="{{ IMG_CUSTOM_URL }}">
+                                                   value="`+IMG_CUSTOM_URL+`">
                                         </div>
                                     </div>
                                 </div>`);
-            } else {
+            }
+            if(t==="s3"){
+                let form = $('#image-settings').serializeArray();
+                IMG_API = form[2]["value"];
+                IMG_POST = form[3]["value"];
+                IMG_JSON_PATH = form[4]["value"];
+                IMG_CUSTOM_HEADER = form[5]["value"];
+                IMG_CUSTOM_BODY = form[6]["value"];
+                IMG_CUSTOM_URL = form[7]["value"];
                 $("#image-form").html(`<div class="row">
-                                    {% csrf_token %}
                                     <div class="col-lg-6">
                                         <div class="form-group">
                                             <label class="form-control-label">应用密钥ID</label>
                                             <input type="text" name="key-id" class="form-control"
                                                    placeholder="Access Key ID"
-                                                   value="{{ S3_KEY_ID }}">
+                                                   value="`+S3_KEY_ID+`">
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
@@ -851,7 +878,7 @@
                                             <input type="text" name="access-key"
                                                    class="form-control"
                                                    placeholder="Access Key"
-                                                   value="{{ S3_ACCESS_KEY }}">
+                                                   value="`+S3_ACCESS_KEY+`">
                                         </div>
                                     </div>
                                 </div>
@@ -861,7 +888,7 @@
                                             <label class="form-control-label">储存桶</label>
                                             <input type="text" name="bucket" class="form-control"
                                                    placeholder="Bucket名称"
-                                                   value="{{ S3_BUCKET }}">
+                                                   value="`+S3_BUCKET+`">
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
@@ -869,7 +896,7 @@
                                             <label class="form-control-label">边缘节点</label>
                                             <input type="text" name="endpoint" class="form-control"
                                                    placeholder="eg: https://s3.us-west-002.example.com"
-                                                   value="{{ S3_ENDPOINT }}">
+                                                   value="`+S3_ENDPOINT+`">
                                         </div>
                                     </div>
                                 </div>
@@ -879,7 +906,7 @@
                                             <label class="form-control-label">保存路径</label>
                                             <input type="text" name="path" class="form-control"
                                                    placeholder="eg: {year}/{month}/{md5}.{extName}"
-                                                   value="{{ S3_PATH }}">
+                                                   value="`+S3_PATH+`">
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
@@ -887,14 +914,127 @@
                                             <label class="form-control-label">自定义域名</label>
                                             <input type="text" name="url" class="form-control"
                                                    placeholder="eg: https://example.com/dir"
-                                                   value="{{ S3_PREV_URL }}">
+                                                   value="`+S3_PREV_URL+`">
                                         </div>
                                     </div>
                                 </div>`);
             }
         }
 
-        change_image_type('{{ IMG_TYPE }}');
+        if ('{{ IMG_TYPE }}' === "custom") {
+                $("#image-form").html(`
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">图床-API地址</label>
+                                            <input type="text" name="api" class="form-control"
+                                                   placeholder="API 地址 ( 包含 http )"
+                                                   value="`+IMG_API+`">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">图床-POST参数名</label>
+                                            <input type="text" name="post" class="form-control"
+                                                   placeholder="POST 参数名"
+                                                   value="`+IMG_POST+`">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">图床-JSON路径</label>
+                                            <input type="text" name="jsonpath" class="form-control"
+                                                   placeholder="JSON 路径 eg: data.img"
+                                                   value="`+IMG_JSON_PATH+`">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">图床-自定义请求头</label>
+                                            <input type="text" name="header" class="form-control"
+                                                   placeholder="标准 JSON 格式"
+                                                   value="`+IMG_CUSTOM_HEADER+`">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">图床-自定义BODY</label>
+                                            <input type="text" name="body" class="form-control"
+                                                   placeholder="标准 JSON 格式"
+                                                   value="`+IMG_CUSTOM_BODY+`">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">图床-自定义前缀</label>
+                                            <input type="text" name="custom" class="form-control"
+                                                   placeholder="自定义图片 URL 前缀"
+                                                   value="`+IMG_CUSTOM_URL+`">
+                                        </div>
+                                    </div>
+                                </div>`);
+            }
+        if('{{ IMG_TYPE }}' ==="s3"){
+                $("#image-form").html(`<div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">应用密钥ID</label>
+                                            <input type="text" name="key-id" class="form-control"
+                                                   placeholder="Access Key ID"
+                                                   value="`+S3_KEY_ID+`">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">应用密钥</label>
+                                            <input type="text" name="access-key"
+                                                   class="form-control"
+                                                   placeholder="Access Key"
+                                                   value="`+S3_ACCESS_KEY+`">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">储存桶</label>
+                                            <input type="text" name="bucket" class="form-control"
+                                                   placeholder="Bucket名称"
+                                                   value="`+S3_BUCKET+`">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">边缘节点</label>
+                                            <input type="text" name="endpoint" class="form-control"
+                                                   placeholder="eg: https://s3.us-west-002.example.com"
+                                                   value="`+S3_ENDPOINT+`">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">保存路径</label>
+                                            <input type="text" name="path" class="form-control"
+                                                   placeholder="eg: {year}/{month}/{md5}.{extName}"
+                                                   value="`+S3_PATH+`">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">自定义域名</label>
+                                            <input type="text" name="url" class="form-control"
+                                                   placeholder="eg: https://example.com/dir"
+                                                   value="`+S3_PREV_URL+`">
+                                        </div>
+                                    </div>
+                                </div>`);
+            }
 
     </script>
 {% endblock javascripts %}

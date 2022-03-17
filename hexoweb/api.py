@@ -7,7 +7,7 @@ from .models import ImageModel
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
-from core.settings import QEXO_VERSION
+from core.QexoSettings import QEXO_VERSION
 from datetime import timezone, timedelta
 from time import time
 

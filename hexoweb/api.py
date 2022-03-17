@@ -107,6 +107,20 @@ def set_image_bed(request):
             save_setting("S3_PATH", path)
             save_setting("S3_PREV_URL", url)
             save_setting("IMG_TYPE", "s3")
+        if imageType == "ftp":
+            host = request.POST.get("FTP_HOST")
+            port = request.POST.get("FTP_PORT")
+            user = request.POST.get("FTP_USER")
+            password = request.POST.get("FTP_PASS")
+            path = request.POST.get("FTP_PATH")
+            prev_url = request.POST.get("FTP_PREV_URL")
+            save_setting("FTP_HOST", host)
+            save_setting("FTP_PORT", port)
+            save_setting("FTP_USER", user)
+            save_setting("FTP_PASS", password)
+            save_setting("FTP_PATH", path)
+            save_setting("FTP_PREV_URL", prev_url)
+            save_setting("IMG_TYPE", "ftp")
         if imageType == "":
             save_setting("IMG_TYPE", "")
         context = {"msg": "保存成功!", "status": True}
@@ -523,7 +537,7 @@ def upload_img(request):
                                               SettingModel.objects.get(name="S3_PREV_URL").content)
                 context["msg"] = "上传成功！"
                 context["status"] = True
-            else:
+            if img_type == "custom":
                 api = SettingModel.objects.get(name="IMG_API").content
                 post_params = SettingModel.objects.get(name="IMG_POST").content
                 json_path = SettingModel.objects.get(name="IMG_JSON_PATH").content
@@ -531,6 +545,16 @@ def upload_img(request):
                 custom_header = SettingModel.objects.get(name="IMG_CUSTOM_HEADER").content
                 custom_url = SettingModel.objects.get(name="IMG_CUSTOM_URL").content
                 context["url"] = upload_to_custom(file, api, post_params, json_path, custom_body, custom_header, custom_url)
+                context["msg"] = "上传成功！"
+                context["status"] = True
+            if img_type == "ftp":
+                context["url"] = upload_to_ftp(file,
+                                              SettingModel.objects.get(name="FTP_HOST").content,
+                                              SettingModel.objects.get(name="FTP_PORT").content,
+                                              SettingModel.objects.get(name="FTP_USER").content,
+                                              SettingModel.objects.get(name="FTP_PASS").content,
+                                              SettingModel.objects.get(name="FTP_PATH").content,
+                                              SettingModel.objects.get(name="FTP_PREV_URL").content)
                 context["msg"] = "上传成功！"
                 context["status"] = True
             image = ImageModel()

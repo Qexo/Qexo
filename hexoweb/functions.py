@@ -409,7 +409,7 @@ def upload_to_s3(file, key_id, access_key, endpoint_url, bucket, path, prev_url)
     photo_stream = file.read()
     path = path.replace("{year}", str(now.year)).replace("{month}", str(now.month)).replace("{day}",
                                                                                             str(now.day)) \
-        .replace("{filename}", file.name).replace("{time}", str(time())) \
+        .replace("{filename}", file.name[0:-len(file.name.split(".")[-1])-1]).replace("{time}", str(time())) \
         .replace("{extName}", file.name.split(".")[-1]).replace("{md5}",
                                                                 md5(photo_stream).hexdigest())
 
@@ -456,19 +456,20 @@ def upload_to_custom(file, api, post_params, json_path, custom_body, custom_head
         data = response.text
     return str(custom_url) + data
 
-def upload_to_ftp(file, ip, port, user, password, path, prev_url):
+def upload_to_ftp(file, host, port, user, password, path, prev_url):
     ftp = FTP()
     ftp.set_debuglevel(0)
-    ftp.connect(ip, int(port))
+    ftp.encoding = 'UTF8'
+    ftp.connect(host, int(port))
     ftp.login(user, password)
     now = date.today()
     path = path.replace("{year}", str(now.year)).replace("{month}", str(now.month)).replace("{day}",
                                                                                             str(now.day)) \
-        .replace("{filename}", file.name).replace("{time}", str(time())) \
+        .replace("{filename}", file.name[0:-len(file.name.split(".")[-1])-1]).replace("{time}", str(time())) \
         .replace("{extName}", file.name.split(".")[-1])
     bufsize = 1024
     ftp.storbinary('STOR ' + path, file, bufsize)
-    return prev_url + '/' + path
+    return prev_url + path
 
 def get_latest_version():
     context = dict()

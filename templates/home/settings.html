@@ -249,6 +249,10 @@
                                                         {% if IMG_TYPE == "s3" %}selected{% endif %}>
                                                     S3协议
                                                 </option>
+                                                <option value="ftp"
+                                                        {% if IMG_TYPE == "ftp" %}selected{% endif %}>
+                                                    FTP
+                                                </option>
                                             </select>
                                         </div>
                                     </div>
@@ -786,12 +790,20 @@
         var IMG_CUSTOM_HEADER = '{{ IMG_CUSTOM_HEADER }}';
         var IMG_CUSTOM_BODY = '{{ IMG_CUSTOM_BODY }}';
         var IMG_CUSTOM_URL = '{{ IMG_CUSTOM_URL }}';
+
         var S3_KEY_ID = '{{ S3_KEY_ID }}';
         var S3_ACCESS_KEY = '{{ S3_ACCESS_KEY }}';
         var S3_BUCKET = '{{ S3_BUCKET }}';
         var S3_ENDPOINT = '{{ S3_ENDPOINT }}';
         var S3_PATH = '{{ S3_PATH }}';
         var S3_PREV_URL = '{{ S3_PREV_URL }}';
+
+        var FTP_HOST = '{{ FTP_HOST }}';
+        var FTP_PORT = '{{ FTP_PORT }}';
+        var FTP_USER = '{{ FTP_USER }}';
+        var FTP_PASS = '{{ FTP_PASS }}';
+        var FTP_PATH = '{{ FTP_PATH }}';
+        var FTP_PREV_URL = '{{ FTP_PREV_URL }}';
 
         function save_image_settings_cache() {
             let form = $('#image-settings').serializeArray();
@@ -818,7 +830,7 @@
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">图床-API地址</label>
+                                            <label class="form-control-label">API地址</label>
                                             <input type="text" name="api" class="form-control"
                                                    placeholder="API 地址 ( 包含 http )"
                                                    value="` + IMG_API + `">
@@ -826,7 +838,7 @@
                                     </div>
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">图床-POST参数名</label>
+                                            <label class="form-control-label">POST参数名</label>
                                             <input type="text" name="post" class="form-control"
                                                    placeholder="POST 参数名"
                                                    value="` + IMG_POST + `">
@@ -836,7 +848,7 @@
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">图床-JSON路径</label>
+                                            <label class="form-control-label">JSON路径</label>
                                             <input type="text" name="jsonpath" class="form-control"
                                                    placeholder="JSON 路径 eg: data.img"
                                                    value="` + IMG_JSON_PATH + `">
@@ -844,7 +856,7 @@
                                     </div>
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">图床-自定义请求头</label>
+                                            <label class="form-control-label">自定义请求头</label>
                                             <input type="text" name="header" class="form-control"
                                                    placeholder="标准 JSON 格式"
                                                    value="` + IMG_CUSTOM_HEADER + `">
@@ -854,7 +866,7 @@
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">图床-自定义BODY</label>
+                                            <label class="form-control-label">自定义BODY</label>
                                             <input type="text" name="body" class="form-control"
                                                    placeholder="标准 JSON 格式"
                                                    value="` + IMG_CUSTOM_BODY + `">
@@ -862,7 +874,7 @@
                                     </div>
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">图床-自定义前缀</label>
+                                            <label class="form-control-label">自定义前缀</label>
                                             <input type="text" name="custom" class="form-control"
                                                    placeholder="自定义图片 URL 前缀"
                                                    value="` + IMG_CUSTOM_URL + `">
@@ -923,6 +935,64 @@
                                             <input type="text" name="url" class="form-control"
                                                    placeholder="eg: https://example.com/dir"
                                                    value="` + S3_PREV_URL + `">
+                                        </div>
+                                    </div>
+                                </div>`);
+            }
+            if (t === "ftp") {
+                $("#image-form").html(`<div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">FTP主机</label>
+                                            <input type="text" name="FTP_HOST" class="form-control"
+                                                   placeholder="连接的主机IP/域名"
+                                                   value="` + FTP_HOST + `">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">FTP端口</label>
+                                            <input type="text" name="FTP_PORT"
+                                                   class="form-control"
+                                                   placeholder="通常为21端口"
+                                                   value="` + FTP_PORT + `">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">用户名</label>
+                                            <input type="text" name="FTP_USER" class="form-control"
+                                                   placeholder="匿名登录请留空"
+                                                   value="` + FTP_USER + `">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">密码</label>
+                                            <input type="text" name="FTP_PASS" class="form-control"
+                                                   placeholder="无需密码请留空"
+                                                   value="` + FTP_PASS + `">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">保存路径</label>
+                                            <input type="text" name="FTP_PATH" class="form-control"
+                                                   placeholder="eg: {year}/{month}/{time}.{extName}"
+                                                   value="` + FTP_PATH + `">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">自定义域名</label>
+                                            <input type="text" name="FTP_PREV_URL"
+                                            class="form-control"
+                                                   placeholder="eg: https://example.com/dir"
+                                                   value="` + FTP_PREV_URL + `">
                                         </div>
                                     </div>
                                 </div>`);
@@ -1046,6 +1116,64 @@
                                     </div>
                                 </div>`);
         }
+        if ('{{ IMG_TYPE }}' === "ftp") {
+                $("#image-form").html(`<div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">FTP主机</label>
+                                            <input type="text" name="FTP_HOST" class="form-control"
+                                                   placeholder="连接的主机IP/域名"
+                                                   value="` + FTP_HOST + `">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">FTP端口</label>
+                                            <input type="text" name="FTP_PORT"
+                                                   class="form-control"
+                                                   placeholder="通常为21端口"
+                                                   value="` + FTP_PORT + `">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">用户名</label>
+                                            <input type="text" name="FTP_USER" class="form-control"
+                                                   placeholder="匿名登录请留空"
+                                                   value="` + FTP_USER + `">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">密码</label>
+                                            <input type="text" name="FTP_PASS" class="form-control"
+                                                   placeholder="无需密码请留空"
+                                                   value="` + FTP_PASS + `">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">保存路径</label>
+                                            <input type="text" name="FTP_PATH" class="form-control"
+                                                   placeholder="eg: {year}/{month}/{time}.{extName}"
+                                                   value="` + FTP_PATH + `">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">自定义域名</label>
+                                            <input type="text" name="FTP_PREV_URL"
+                                            class="form-control"
+                                                   placeholder="eg: https://example.com/dir"
+                                                   value="` + FTP_PREV_URL + `">
+                                        </div>
+                                    </div>
+                                </div>`);
+            }
         if ('{{ IMG_TYPE }}' === "") {
             $("#image-form").html("");
         }

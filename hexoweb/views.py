@@ -483,6 +483,12 @@ def pages(request):
                 context['S3_BUCKET'] = SettingModel.objects.get(name="S3_BUCKET").content
                 context['S3_PATH'] = SettingModel.objects.get(name="S3_PATH").content
                 context['S3_PREV_URL'] = SettingModel.objects.get(name="S3_PREV_URL").content
+                context['FTP_HOST'] = SettingModel.objects.get(name="FTP_HOST").content
+                context['FTP_PORT'] = SettingModel.objects.get(name="FTP_PORT").content
+                context['FTP_USER'] = SettingModel.objects.get(name="FTP_USER").content
+                context['FTP_PASS'] = SettingModel.objects.get(name="FTP_PASS").content
+                context['FTP_PATH'] = SettingModel.objects.get(name="FTP_PATH").content
+                context['FTP_PREV_URL'] = SettingModel.objects.get(name="FTP_PREV_URL").content
                 context['IMG_TYPE'] = SettingModel.objects.get(name="IMG_TYPE").content
                 context['ABBRLINK_ALG'] = SettingModel.objects.get(name="ABBRLINK_ALG").content
                 context['ABBRLINK_REP'] = SettingModel.objects.get(name="ABBRLINK_REP").content

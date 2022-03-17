@@ -107,6 +107,8 @@ def set_image_bed(request):
             save_setting("S3_PATH", path)
             save_setting("S3_PREV_URL", url)
             save_setting("IMG_TYPE", "s3")
+        if imageType == "":
+            save_setting("IMG_TYPE", "")
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
         context = {"msg": repr(e), "status": False}

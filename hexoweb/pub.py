@@ -421,6 +421,7 @@ def get_custom(request):
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
+
 # 获取全部消息 pub/get_notifications
 def get_notifications(request):
     if not check_if_api_auth(request):

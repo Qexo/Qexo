@@ -493,6 +493,7 @@ def pages(request):
                 context['ABBRLINK_ALG'] = SettingModel.objects.get(name="ABBRLINK_ALG").content
                 context['ABBRLINK_REP'] = SettingModel.objects.get(name="ABBRLINK_REP").content
                 context["ALLOW_FRIEND"] = SettingModel.objects.get(name="ALLOW_FRIEND").content
+                context["ONEPUSH"] = SettingModel.objects.get(name="ONEPUSH").content
             except:
                 return redirect("/update/")
         elif 'advanced' in load_template:

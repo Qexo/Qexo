@@ -51,6 +51,8 @@ urlpatterns = [
     path('api/do_update/', do_update, name='do_update'),
     path('api/get_notifications/', get_notifications, name='get_notifications'),
     path('api/del_notifications/', del_notification, name='del_notifications'),
+    path('api/set_onepush/', set_onepush, name='set_onepush'),
+    path('api/test_onepush/', test_onepush, name='test_onepush'),
 
     path('pub/save/', pub.save, name='pub_save'),
     path('pub/save_post/', pub.save_post, name='pub_save_post'),

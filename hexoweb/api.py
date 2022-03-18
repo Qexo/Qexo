@@ -56,6 +56,48 @@ def set_github(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 设置 OnePush api/set_onepush
+@login_required(login_url="/login/")
+def set_onepush(request):
+    try:
+        onepush = request.POST.get("onepush")
+        save_setting("ONEPUSH", onepush)
+        context = {"msg": "保存成功!", "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 测试 OnePush api/test_onepush
+@login_required(login_url="/login/")
+def test_onepush(request):
+    try:
+        onepush = json.loads(request.POST.get("onepush"))
+        data = notify(onepush["notifier"], **onepush["params"], title="Qexo消息测试", content="如果你收到了这则消息, 那么代表您的消息配置成功了").text
+        context = {"msg": data, "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 设置API api/setapi
+@login_required(login_url="/login/")
+def set_api(request):
+    try:
+        apikey = request.POST.get("apikey")
+        if apikey:
+            save_setting("WEBHOOK_APIKEY", apikey)
+        else:
+            if not SettingModel.objects.filter(name="WEBHOOK_APIKEY").count():
+                save_setting("WEBHOOK_APIKEY", ''.join(
+                    random.choice("qwertyuiopasdfghjklzxcvbnm1234567890") for x in range(12)))
+        save_setting("ALLOW_FRIEND", request.POST.get("allow_friend"))
+        context = {"msg": "保存成功!", "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
 # 设置API api/setapi
 @login_required(login_url="/login/")
 def set_api(request):
@@ -549,12 +591,12 @@ def upload_img(request):
                 context["status"] = True
             if img_type == "ftp":
                 context["url"] = upload_to_ftp(file,
-                                              SettingModel.objects.get(name="FTP_HOST").content,
-                                              SettingModel.objects.get(name="FTP_PORT").content,
-                                              SettingModel.objects.get(name="FTP_USER").content,
-                                              SettingModel.objects.get(name="FTP_PASS").content,
-                                              SettingModel.objects.get(name="FTP_PATH").content,
-                                              SettingModel.objects.get(name="FTP_PREV_URL").content)
+                                               SettingModel.objects.get(name="FTP_HOST").content,
+                                               SettingModel.objects.get(name="FTP_PORT").content,
+                                               SettingModel.objects.get(name="FTP_USER").content,
+                                               SettingModel.objects.get(name="FTP_PASS").content,
+                                               SettingModel.objects.get(name="FTP_PATH").content,
+                                               SettingModel.objects.get(name="FTP_PREV_URL").content)
                 context["msg"] = "上传成功！"
                 context["status"] = True
             image = ImageModel()

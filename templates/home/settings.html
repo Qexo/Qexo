@@ -184,6 +184,30 @@
                                 </div>
                             </div>
                         </form>
+                        <form id="notify-settings">
+                            <hr class="my-4"/>
+                            <h6 class="heading-small text-muted mb-4">消息配置</h6>
+                            <div class="pl-lg-4">
+                                <div class="row">
+                                    {% csrf_token %}
+                                    <div class="col-lg-12">
+                                        <div class="form-group">
+                                            <label class="form-control-label">OnePush</label>
+                                            <input type="text" name="onepush" class="form-control"
+                                                   placeholder="配置见 Wiki" value="{{ ONEPUSH }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <input type="button" class="btn btn-primary" value="提交"
+                                               onclick="set_onepush()">
+                                        <input type="button" class="btn btn-info" value="测试"
+                                               onclick="test_onepush()">
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
                         <form id="abbrlink-settings">
                             <hr class="my-4"/>
                             <h6 class="heading-small text-muted mb-4">短链接配置</h6>
@@ -227,7 +251,7 @@
                         </form>
                         <form id="image-settings">
                             <hr class="my-4"/>
-                            <h6 class="heading-small text-muted mb-4">图床设置</h6>
+                            <h6 class="heading-small text-muted mb-4">图床配置</h6>
                             <div class="pl-lg-4">
                                 <div class="row">
                                     {% csrf_token %}
@@ -719,6 +743,52 @@
                 url: '/api/set_api/',
                 method: 'post',
                 data: $('#apikey-settings').serialize(),
+                dataType: "json",
+                success: function (res) {
+                    loading.destroy();
+                    if (res.status) {
+                        $.notify(res.msg, {type: "success", delay: 1000});
+                    } else {
+                        $.notify(res.msg, {type: "warning"});
+                    }
+                },
+                error: function (res) {
+                    loading.destroy();
+                    $.notify("网络错误！", {type: "warning"});
+                }
+            })
+        }
+
+        function set_onepush() {
+            let loading = new KZ_Loading('正在保存中...');
+            loading.show();
+            $.ajax({
+                url: '/api/set_onepush/',
+                method: 'post',
+                data: $('#notify-settings').serialize(),
+                dataType: "json",
+                success: function (res) {
+                    loading.destroy();
+                    if (res.status) {
+                        $.notify(res.msg, {type: "success", delay: 1000});
+                    } else {
+                        $.notify(res.msg, {type: "warning"});
+                    }
+                },
+                error: function (res) {
+                    loading.destroy();
+                    $.notify("网络错误！", {type: "warning"});
+                }
+            })
+        }
+
+        function test_onepush() {
+            let loading = new KZ_Loading('正在保存中...');
+            loading.show();
+            $.ajax({
+                url: '/api/test_onepush/',
+                method: 'post',
+                data: $('#notify-settings').serialize(),
                 dataType: "json",
                 success: function (res) {
                     loading.destroy();

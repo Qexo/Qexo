@@ -17,6 +17,7 @@ from urllib.parse import quote
 from time import strftime, localtime
 import tarfile
 from ftplib import FTP
+from onepush import notify
 
 disable_warnings()
 
@@ -409,7 +410,7 @@ def upload_to_s3(file, key_id, access_key, endpoint_url, bucket, path, prev_url)
     photo_stream = file.read()
     path = path.replace("{year}", str(now.year)).replace("{month}", str(now.month)).replace("{day}",
                                                                                             str(now.day)) \
-        .replace("{filename}", file.name[0:-len(file.name.split(".")[-1])-1]).replace("{time}", str(time())) \
+        .replace("{filename}", file.name[0:-len(file.name.split(".")[-1]) - 1]).replace("{time}", str(time())) \
         .replace("{extName}", file.name.split(".")[-1]).replace("{md5}",
                                                                 md5(photo_stream).hexdigest())
 
@@ -456,6 +457,7 @@ def upload_to_custom(file, api, post_params, json_path, custom_body, custom_head
         data = response.text
     return str(custom_url) + data
 
+
 def upload_to_ftp(file, host, port, user, password, path, prev_url):
     ftp = FTP()
     ftp.set_debuglevel(0)
@@ -465,11 +467,12 @@ def upload_to_ftp(file, host, port, user, password, path, prev_url):
     now = date.today()
     path = path.replace("{year}", str(now.year)).replace("{month}", str(now.month)).replace("{day}",
                                                                                             str(now.day)) \
-        .replace("{filename}", file.name[0:-len(file.name.split(".")[-1])-1]).replace("{time}", str(time())) \
+        .replace("{filename}", file.name[0:-len(file.name.split(".")[-1]) - 1]).replace("{time}", str(time())) \
         .replace("{extName}", file.name.split(".")[-1])
     bufsize = 1024
     ftp.storbinary('STOR ' + path, file, bufsize)
     return prev_url + path
+
 
 def get_latest_version():
     context = dict()
@@ -749,6 +752,10 @@ def CreateNotification(label, content, now):
     N.content = content
     N.time = str(float(now))
     N.save()
+    try:
+        notify_me(label, content)
+    except:
+        pass
     return N
 
 
@@ -769,3 +776,12 @@ def DelNotification(_time):
     N = NotificationModel.objects.get(time=_time)
     N.delete()
     return N
+
+
+def notify_me(title, content):
+    config = SettingModel.objects.get(name="ONEPUSH").content
+    if config:
+        config = json.loads(config)
+    else:
+        return False
+    return notify(config["notifier"], **config["params"], title="Qexo消息: "+title, content=content).text

@@ -420,3 +420,13 @@ def get_custom(request):
     except Exception as error:
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+# 获取全部消息 pub/get_notifications
+def get_notifications(request):
+    if not check_if_api_auth(request):
+        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！", "status": False})})
+    try:
+        context = {"data": GetNotifications(), "status": True}
+    except Exception as error:
+        context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})

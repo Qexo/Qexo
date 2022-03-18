@@ -1,7 +1,7 @@
 import json
 import random
 
-QEXO_VERSION = "1.5.5"
+QEXO_VERSION = "1.6.0"
 
 # [名称, 默认值, 是否在尝试修复时重置, 简介]
 ALL_SETTINGS = [["ABBRLINK_ALG", "crc16", False, "短链接算法"],

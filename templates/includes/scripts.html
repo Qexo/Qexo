@@ -37,6 +37,9 @@
                     '</small></div></div><p class="text-sm mb-0">' +
                     notifications[i]["content"] + '</p></div></div></a>';
             }
+            html += '<div class="px-3 py-3"><h6 class="text-sm text-primary m-0 text-right" ' +
+                'style="cursor: pointer" onclick="clearNotification()">清除全部' +
+                '</h6></div>'
             $("#notification-board").html(html + '</div>');
             $("#msg-point").css({
                 "position": "absolute", "top": "0px", "right": "12px", "width": "6px",
@@ -80,6 +83,25 @@
                             break;
                         }
                     }
+                    showNotifications();
+                } else {
+                    $.notify(res.msg, {type: "warning"});
+                }
+            },
+            error: function (res) {
+                $.notify("网络错误!", {type: "warning"});
+            }
+        })
+    }
+    function clearNotification() {
+        $.ajax({
+            url: "/api/clear_notifications/",
+            type: "post",
+            dataType: "JSON",
+            success: function (res) {
+                if (res.status) {
+                    $.notify(res.msg, {type: "success"});
+                    notifications = [];
                     showNotifications();
                 } else {
                     $.notify(res.msg, {type: "warning"});

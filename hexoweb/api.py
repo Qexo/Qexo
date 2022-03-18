@@ -682,15 +682,15 @@ def get_notifications(request):
         latest = get_latest_version()
         cache = Cache.objects.filter(name="update")
         if cache.count():
-            if cache.content != latest["newer_time"] and latest["hasNew"]:
+            if (cache.first().content != latest["newer_time"]) and latest["hasNew"]:
                 CreateNotification("程序更新", "检测到更新: " + latest["newer"] + "<br>" + latest[
                     "newer_text"] + "<p class=\"text-sm mb-0\">可前往 <object><a href=\"/settings.html\">设置</a></object> 在线更新</p>", time())
-                save_cache("update", latest["newer"])
+                save_cache("update", latest["newer_time"])
         else:
             if latest["hasNew"]:
                 CreateNotification("程序更新", "检测到更新: " + latest["newer"] + "<br>" + latest[
                     "newer_text"] + "<p class=\"text-sm mb-0\">可前往 <object><a href=\"/settings.html\">设置</a></object> 在线更新</p>", time())
-                save_cache("update", latest["newer"])
+                save_cache("update", latest["newer_time"])
         context = {"data": GetNotifications(), "status": True}
     except Exception as error:
         context = {"msg": repr(error), "status": False}
@@ -702,6 +702,19 @@ def get_notifications(request):
 def del_notification(request):
     try:
         DelNotification(request.POST.get("time"))
+        context = {"msg": "删除成功！", "status": True}
+    except Exception as error:
+        context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 清理全部消息 api/clear_notifications
+@login_required(login_url="/login/")
+def clear_notification(request):
+    try:
+        all_notify = NotificationModel.objects.all()
+        for N in all_notify:
+            N.delete()
         context = {"msg": "删除成功！", "status": True}
     except Exception as error:
         context = {"msg": repr(error), "status": False}

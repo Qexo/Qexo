@@ -296,7 +296,7 @@ def save(request):
         try:
             repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
             branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
-            repo.update_file(repo_path + file_path, "Update by Qexo", content,
+            repo.update_file(repo_path + file_path, "Update by QexoAPI", content,
                              repo.get_contents(repo_path + file_path, ref=branch).sha,
                              branch=branch)
             context = {"msg": "OK!", "status": True}
@@ -318,7 +318,7 @@ def save_post(request):
             branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
             # 删除草稿
             try:
-                repo.delete_file(repo_path + "source/_drafts/" + file_name, "Delete by Qexo",
+                repo.delete_file(repo_path + "source/_drafts/" + file_name, "Delete by QexoAPI",
                                  repo.get_contents(repo_path + "source/_drafts/" + file_name,
                                                    ref=branch).sha,
                                  branch=branch)
@@ -326,12 +326,12 @@ def save_post(request):
                 pass
             # 创建/更新文章
             try:
-                repo.update_file(repo_path + "source/_posts/" + file_name, "Update by Qexo",
+                repo.update_file(repo_path + "source/_posts/" + file_name, "Update by QexoAPI",
                                  content,
                                  repo.get_contents(repo_path + "source/_posts/" + file_name,
                                                    ref=branch).sha, branch=branch)
             except:
-                repo.create_file(repo_path + "source/_posts/" + file_name, "Update by Qexo",
+                repo.create_file(repo_path + "source/_posts/" + file_name, "Update by QexoAPI",
                                  content, branch=branch)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
@@ -352,12 +352,12 @@ def save_draft(request):
             branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
             # 创建/更新草稿
             try:
-                repo.update_file(repo_path + "source/_drafts/" + file_name, "Update by Qexo",
+                repo.update_file(repo_path + "source/_drafts/" + file_name, "Update by QexoAPI",
                                  content,
                                  repo.get_contents(repo_path + "source/_drafts/" + file_name,
                                                    ref=branch).sha, branch=branch)
             except:
-                repo.create_file(repo_path + "source/_drafts/" + file_name, "Update by Qexo",
+                repo.create_file(repo_path + "source/_drafts/" + file_name, "Update by QexoAPI",
                                  content, branch=branch)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
@@ -375,7 +375,7 @@ def new(request):
         content = request.POST.get('content')
         try:
             repo.create_file(path=SettingModel.objects.get(name="GH_REPO_PATH").content + file_path,
-                             message="Create by Qexo", content=content,
+                             message="Create by QexoAPI", content=content,
                              branch=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
@@ -395,11 +395,11 @@ def delete(request):
         try:
             file = repo.get_contents(file_path, ref=branch)
             if not isinstance(file, list):
-                repo.delete_file(repo_path + file_path, "Delete by Qexo", file.sha, branch=branch)
+                repo.delete_file(repo_path + file_path, "Delete by QexoAPI", file.sha, branch=branch)
 
             else:
                 for i in file:
-                    repo.delete_file(repo_path + i.path, "Delete by Qexo", i.sha, branch=branch)
+                    repo.delete_file(repo_path + i.path, "Delete by QexoAPI", i.sha, branch=branch)
             context = {"msg": "OK!", "status": True}
             # Delete Caches
             if ("_posts" in file_path) or ("_drafts" in file_path):
@@ -422,14 +422,14 @@ def delete_post(request):
         filename = request.POST.get('file')
         try:
             try:
-                repo.delete_file(repo_path + "source/_posts/" + filename, "Delete by Qexo",
+                repo.delete_file(repo_path + "source/_posts/" + filename, "Delete by QexoAPI",
                                  repo.get_contents(
                                      repo_path + "source/_posts/" + filename, ref=branch).sha,
                                  branch=branch)
             except:
                 pass
             try:
-                repo.delete_file(repo_path + "source/_drafts/" + filename, "Delete by Qexo",
+                repo.delete_file(repo_path + "source/_drafts/" + filename, "Delete by QexoAPI",
                                  repo.get_contents(
                                      repo_path + "source/_drafts/" + filename, ref=branch).sha,
                                  branch=branch)

@@ -483,10 +483,17 @@ def pages(request):
                 context['S3_BUCKET'] = SettingModel.objects.get(name="S3_BUCKET").content
                 context['S3_PATH'] = SettingModel.objects.get(name="S3_PATH").content
                 context['S3_PREV_URL'] = SettingModel.objects.get(name="S3_PREV_URL").content
+                context['FTP_HOST'] = SettingModel.objects.get(name="FTP_HOST").content
+                context['FTP_PORT'] = SettingModel.objects.get(name="FTP_PORT").content
+                context['FTP_USER'] = SettingModel.objects.get(name="FTP_USER").content
+                context['FTP_PASS'] = SettingModel.objects.get(name="FTP_PASS").content
+                context['FTP_PATH'] = SettingModel.objects.get(name="FTP_PATH").content
+                context['FTP_PREV_URL'] = SettingModel.objects.get(name="FTP_PREV_URL").content
                 context['IMG_TYPE'] = SettingModel.objects.get(name="IMG_TYPE").content
                 context['ABBRLINK_ALG'] = SettingModel.objects.get(name="ABBRLINK_ALG").content
                 context['ABBRLINK_REP'] = SettingModel.objects.get(name="ABBRLINK_REP").content
                 context["ALLOW_FRIEND"] = SettingModel.objects.get(name="ALLOW_FRIEND").content
+                context["ONEPUSH"] = SettingModel.objects.get(name="ONEPUSH").content
             except:
                 return redirect("/update/")
         elif 'advanced' in load_template:
@@ -495,6 +502,21 @@ def pages(request):
                 context["settings"] = list()
                 for setting in all_settings:
                     context["settings"].append({"name": setting.name, "content": setting.content})
+                context["settings"].sort(key=lambda elem: elem["name"])  # 按字段名升序排序
+                context["settings_number"] = len(context["settings"])
+                context["page_number"] = ceil(context["settings_number"] / 15)
+            except Exception as e:
+                context["error"] = repr(e)
+        elif 'custom' in load_template:
+            try:
+                search = request.GET.get("s")
+                all_values = CustomModel.objects.all()
+                context["settings"] = list()
+                for setting in all_values:
+                    if (not search) or (search in setting.name) or (search in setting.content):
+                        context["settings"].append({"name": setting.name, "content": setting.content})
+                if search:
+                    context["search"] = search
                 context["settings"].sort(key=lambda elem: elem["name"])  # 按字段名升序排序
                 context["settings_number"] = len(context["settings"])
                 context["page_number"] = ceil(context["settings_number"] / 15)

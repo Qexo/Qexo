@@ -1,6 +1,6 @@
 {% extends 'layouts/base.html' %}
 
-{% block title %} 高级设置 {% endblock title %}
+{% block title %} {% if search %}搜索字段:{{ search }}{% else %}自定义字段{% endif %}  {% endblock title %}
 
 {% block content %}
 
@@ -9,18 +9,17 @@
             <div class="header-body">
                 <div class="row align-items-center py-4">
                     <div class="col-lg-6 col-7">
-                        <h6 class="h2 text-white d-inline-block mb-0">高级设置</h6>
+                        <h6 class="h2 text-white d-inline-block mb-0">自定义字段</h6>
                         <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
                             <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                                 <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i></a>
                                 </li>
-                                <li class="breadcrumb-item active">高级</li>
+                                <li class="breadcrumb-item active">自定</li>
                             </ol>
                         </nav>
                     </div>
                     <div class="col-lg-6 col-5 text-right">
-                        <a href="javascript:query_fix()" class="btn btn-sm btn-neutral">修复</a>
-                        <a href="javascript:query_new()" class="btn btn-sm btn-neutral">新建字段</a>
+                        <a href="javascript:query_new()" class="btn btn-sm btn-neutral">新建</a>
                     </div>
                 </div>
             </div>
@@ -34,7 +33,9 @@
                     <div class="card-header border-0">
                         <div class="row align-items-center">
                             <div class="col">
-                                <h3 class="mb-0">全部配置 (<a id="count">{{ settings_number }}</a>项)
+                                <h3 class="mb-0">{% if search %}搜索字段: {{ search }} (<a id="count">{{ settings_number }}</a>项)
+                                    {% else %}全部字段 (<a id="count">{{ settings_number }}</a>项)
+                                    {% endif %}
                                 </h3>
                             </div>
                         </div>
@@ -301,17 +302,6 @@
             $("#query").modal("show");
         }
 
-        function query_fix() {
-            let html = "确认要尝试自动修复程序吗？这会检查并创建/删除相应字段";
-            $("#query-modal-body").html(html);
-            $("#queryLabel").html("提示");
-            let footer = "<button type=\"button\" class=\"btn btn-secondary\" " +
-                "data-dismiss=\"modal\">取消</button><button type=\"button\" class=\"btn " +
-                "btn-primary\" data-dismiss=\"modal\" onclick=\"auto_fix()\">确定</button>"
-            $("#query-modal-footer").html(footer);
-            $("#query").modal("show");
-        }
-
         $.ajaxSetup({
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
         });
@@ -321,7 +311,7 @@
             loading.show();
             let content = $("#edit-content").val();
             $.ajax({
-                url: '/api/set_value/',
+                url: '/api/set_custom/',
                 method: 'post',
                 data: {"name": name, "content": content},
                 dataType: "json",
@@ -351,7 +341,7 @@
             let loading = new KZ_Loading('正在删除中...');
             loading.show();
             $.ajax({
-                url: '/api/del_value/',
+                url: '/api/del_custom/',
                 method: 'post',
                 data: {"name": name},
                 dataType: "json",
@@ -384,7 +374,7 @@
             let loading = new KZ_Loading('正在保存中...');
             loading.show();
             $.ajax({
-                url: '/api/new_value/',
+                url: '/api/new_custom/',
                 method: 'post',
                 data: {"name": name, "content": content},
                 dataType: "json",
@@ -396,30 +386,6 @@
                         posts.sort(compare);
                         change_page(_page);
                         $("#count").html(posts.length);
-                    } else {
-                        $.notify(res.msg, {type: "warning"});
-                    }
-                },
-                error: function (res) {
-                    loading.destroy();
-                    $.notify("网络错误！", {type: "warning"});
-                }
-            })
-        }
-
-        function auto_fix() {
-            let loading = new KZ_Loading('尝试修复中...请耐心等待');
-            loading.show();
-            $.ajax({
-                url: '/api/fix/',
-                method: 'post',
-                data: {},
-                dataType: "json",
-                success: function (res) {
-                    loading.destroy();
-                    if (res.status) {
-                        $.notify(res.msg, {type: "success", delay: 1000});
-                        setTimeout(location.reload(), 1000);
                     } else {
                         $.notify(res.msg, {type: "warning"});
                     }

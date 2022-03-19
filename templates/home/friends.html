@@ -328,8 +328,8 @@
                         $.notify('删除成功！', {type: "success", delay: 1000});
                         if (posts.length > 1) {
                             for (let i = 0; i < posts.length; i++) {
-                                if (posts[i]['time'] == time) {
-                                    posts.splice(i, i);
+                                if (posts[i]['time'] === time) {
+                                    posts.splice(i, 1);
                                     change_page(_page);
                                     break;
                                 }

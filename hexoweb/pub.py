@@ -393,7 +393,7 @@ def ask_friend(request):
         friend.status = False
         friend.save()
         CreateNotification("友链申请 " + friend.name,
-                           "站点名:{}\n链接:{}\n图片:{}\n简介:{}\n".format(friend.name, friend.url, friend.imageUrl, friend.description), time())
+                           "站点名: {}\n链接: {}\n图片: {}\n简介: {}\n".format(friend.name, friend.url, friend.imageUrl, friend.description), time())
         context = {"msg": "申请成功！", "time": friend.time, "status": True}
     except Exception as error:
         context = {"msg": repr(error), "status": False}

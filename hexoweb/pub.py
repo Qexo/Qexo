@@ -414,7 +414,7 @@ def last_login(request):
 def get_custom(request):
     try:
         context = {
-            "data": CustomModel.objects.get(name=request.GET.get("key") if request.GET.get("key") else request.PSOT.get("key")).content,
+            "data": CustomModel.objects.get(name=request.GET.get("key") if request.GET.get("key") else request.POST.get("key")).content,
             "status": True
         }
     except Exception as error:

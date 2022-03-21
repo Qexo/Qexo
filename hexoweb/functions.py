@@ -17,6 +17,7 @@ from urllib.parse import quote
 from time import strftime, localtime
 import tarfile
 from ftplib import FTP
+import re
 from onepush import notify
 
 disable_warnings()
@@ -784,4 +785,6 @@ def notify_me(title, content):
         config = json.loads(config)
     else:
         return False
-    return notify(config["notifier"], **config["params"], title="Qexo消息: "+title, content=content).text
+    content = content.replace("<br>", "\n").replace("</br>", "\n")
+    content = re.compile('<[^>]*>').sub(' ', content)
+    return notify(config["notifier"], **config["params"], title="Qexo消息: " + title, content=content).text

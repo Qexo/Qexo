@@ -1,6 +1,6 @@
 # Qexo
 一个快速、强大、漂亮的在线 Hexo 编辑器，您的 Star 是对我最大的支持。 [Wiki](https://github.com/am-abudu/Qexo/wiki)
-![](https://user-images.githubusercontent.com/51912589/155160613-f5e8caa2-978b-406a-8ecb-23ce9c2f72ac.png)
+![](https://user-images.githubusercontent.com/51912589/159258766-19a1ce22-d34b-4b29-b291-7d70e8942859.png)
 ## 特色功能
 - 自定义图床上传图片
 - 在线配置编辑
@@ -36,4 +36,5 @@
 - [Djongo](https://github.com/nesdis/djongo)
 - [HexoPlusPlus](https://github.com/HexoPlusPlus/HexoPlusPlus)
 - [jQuery](https://jquery.com/)
+- [OnePush](https://github.com/y1ndan/onepush)
 - [Vercel-Python-WSGI](https://github.com/ardnt/vercel-python-wsgi)

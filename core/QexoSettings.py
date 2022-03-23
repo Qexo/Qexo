@@ -1,7 +1,7 @@
 import json
 import random
 
-QEXO_VERSION = "1.6.1"
+QEXO_VERSION = "1.6.2"
 
 
 ALL_SETTINGS = [  # [名称, 默认值, 是否在尝试修复时重置, 简介]

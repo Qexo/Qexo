@@ -143,7 +143,7 @@
             if (_page > 1) {
                 change_page(_page - 1);
             } else {
-                $.notify("已是第一页", {type: "warning", delay: 1000});
+                notyf.error("已是第一页");
             }
         }
 
@@ -151,7 +151,7 @@
             if (_page <{{ page_number }}) {
                 change_page(_page + 1);
             } else {
-                $.notify("已是最后一页", {type: "warning", delay: 1000});
+                notyf.error("已是最后一页");
             }
         }
 

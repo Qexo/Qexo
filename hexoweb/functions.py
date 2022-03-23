@@ -17,6 +17,7 @@ from urllib.parse import quote
 from time import strftime, localtime
 import tarfile
 from ftplib import FTP
+import re
 from onepush import notify
 
 disable_warnings()
@@ -77,14 +78,14 @@ def get_custom_config():
         context["QEXO_LOGO"] = SettingModel.objects.get(name="QEXO_LOGO").content
     except:
         save_setting('QEXO_LOGO',
-                     'https://cdn.jsdelivr.net/npm/qexo-static@1.0.6/assets' +
+                     'https://cdn.jsdelivr.net/npm/qexo-static@1.2.0/assets' +
                      '/img/brand/qexo.png')
         context["QEXO_LOGO"] = SettingModel.objects.get(name="QEXO_LOGO").content
     try:
         context["QEXO_ICON"] = SettingModel.objects.get(name="QEXO_ICON").content
     except:
         save_setting('QEXO_ICON',
-                     'https://cdn.jsdelivr.net/npm/qexo-static@1.0.6/assets' +
+                     'https://cdn.jsdelivr.net/npm/qexo-static@1.2.0/assets' +
                      '/img/brand/favicon.ico')
         context["QEXO_ICON"] = SettingModel.objects.get(name="QEXO_ICON").content
     return context
@@ -784,4 +785,6 @@ def notify_me(title, content):
         config = json.loads(config)
     else:
         return False
-    return notify(config["notifier"], **config["params"], title="Qexo消息: "+title, content=content).text
+    content = content.replace("<br>", "\n").replace("</br>", "\n")
+    content = re.compile('<[^>]*>').sub(' ', content)
+    return notify(config["notifier"], **config["params"], title="Qexo消息: " + title, content=content).text

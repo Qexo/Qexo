@@ -1,16 +1,18 @@
-<script src="{{ cdn_prev }}qexo-static@1.0.6/assets/vendor/jquery/dist/jquery.min.js"></script>
-<script src="{{ cdn_prev }}qexo-static@1.0.6/assets/vendor/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-<script src="{{ cdn_prev }}qexo-static@1.0.6/assets/vendor/js-cookie/js.cookie.js"></script>
-<script src="{{ cdn_prev }}qexo-static@1.0.6/assets/vendor/jquery.scrollbar/jquery.scrollbar.min.js"></script>
-<script src="{{ cdn_prev }}qexo-static@1.0.6/assets/vendor/jquery-scroll-lock/dist/jquery-scrollLock.min.js"></script>
-<script src="{{ cdn_prev }}qexo-static@1.0.6/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
+<script src="{{ cdn_prev }}qexo-static@1.2.0/assets/vendor/jquery/dist/jquery.min.js"></script>
+<script src="{{ cdn_prev }}qexo-static@1.2.0/assets/vendor/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ cdn_prev }}qexo-static@1.2.0/assets/vendor/js-cookie/js.cookie.js"></script>
+<script src="{{ cdn_prev }}qexo-static@1.2.0/assets/vendor/jquery.scrollbar/jquery.scrollbar.min.js"></script>
+<script src="{{ cdn_prev }}qexo-static@1.2.0/assets/vendor/jquery-scroll-lock/dist/jquery-scrollLock.min.js"></script>
+<script src="{{ cdn_prev }}qexo-static@1.2.0/assets/js/notyf.min.js"></script>
 <script>
     $.ajaxSetup({data: {csrfmiddlewaretoken: '{{ csrf_token }}'}});
+
+    var notyf = new Notyf({position: {x: 'right', y: 'top'}});
 
     var notifications = [];
 
     {% if error %}
-        $.notify("{{ error }}", {type: "warning"});
+        notyf.error("{{ error }}");
     {% endif %}
     function showNotifications() {
         if (!notifications.length) {
@@ -76,7 +78,7 @@
             data: {"time": timestamp},
             success: function (res) {
                 if (res.status) {
-                    $.notify(res.msg, {type: "success"});
+                    notyf.success(res.msg);
                     for (let i = 0; i < notifications.length; i++) {
                         if (notifications[i]["timestamp"] === timestamp) {
                             notifications.splice(i, 1);
@@ -85,14 +87,15 @@
                     }
                     showNotifications();
                 } else {
-                    $.notify(res.msg, {type: "warning"});
+                    notyf.error(res.msg);
                 }
             },
             error: function (res) {
-                $.notify("网络错误!", {type: "warning"});
+                notyf.error("网络错误!");
             }
         })
     }
+
     function clearNotification() {
         $.ajax({
             url: "/api/clear_notifications/",
@@ -100,15 +103,15 @@
             dataType: "JSON",
             success: function (res) {
                 if (res.status) {
-                    $.notify(res.msg, {type: "success"});
+                    notyf.success(res.msg);
                     notifications = [];
                     showNotifications();
                 } else {
-                    $.notify(res.msg, {type: "warning"});
+                    notyf.error(res.msg);
                 }
             },
             error: function (res) {
-                $.notify("网络错误!", {type: "warning"});
+                notyf.error("网络错误!");
             }
         })
     }

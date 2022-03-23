@@ -1,7 +1,7 @@
 import json
 import random
 
-QEXO_VERSION = "1.6.1"
+QEXO_VERSION = "1.6.2"
 
 
 ALL_SETTINGS = [  # [名称, 默认值, 是否在尝试修复时重置, 简介]
@@ -21,10 +21,10 @@ ALL_SETTINGS = [  # [名称, 默认值, 是否在尝试修复时重置, 简介]
                     ["IMG_TYPE", "", False, "图床类别"],
                     ["INIT", "2", False, "初始化标识"],
                     ["QEXO_ICON",
-                     "https://cdn.jsdelivr.net/npm/qexo-static@1.0.6/assets/img/brand/favicon.ico",
+                     "https://cdn.jsdelivr.net/npm/qexo-static@1.2.0/assets/img/brand/favicon.ico",
                      False, "站点ICON"],
                     ["QEXO_LOGO",
-                     "https://cdn.jsdelivr.net/npm/qexo-static@1.0.6/assets/img/brand/qexo.png",
+                     "https://cdn.jsdelivr.net/npm/qexo-static@1.2.0/assets/img/brand/qexo.png",
                      False, "站点LOGO"],
                     ["QEXO_NAME", "Hexo管理面板", False, "站点名"],
                     ["QEXO_SPLIT", "-", False, "站点分隔符"],

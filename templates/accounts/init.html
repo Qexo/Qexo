@@ -210,10 +210,9 @@
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
 
-    <script src="{{ cdn_prev }}qexo-static@1.0.6/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
     <script>
         {% if msg %}
-            $.notify("{{ msg }}", {type: "warning", delay: 1000});
+            notyf.error("{{ msg }}");
         {% endif %}
         function skip() {
             let temp = document.createElement("form");

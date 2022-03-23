@@ -31,7 +31,7 @@
 - [Ace](https://ace.c9.io/)
 - [Argon-Dashboard-Django](https://github.com/creativetimofficial/argon-dashboard-django)
 - [Bootstrap](https://getbootstrap.com/)
-- [Bootstrap-Notify](https://github.com/mouse0270/bootstrap-notify)
+- [Notyf](https://github.com/caroso1222/notyf)
 - [Django](https://github.com/django/django)
 - [Djongo](https://github.com/nesdis/djongo)
 - [HexoPlusPlus](https://github.com/HexoPlusPlus/HexoPlusPlus)

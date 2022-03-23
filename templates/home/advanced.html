@@ -178,7 +178,7 @@
             if (_page > 1) {
                 change_page(_page - 1);
             } else {
-                $.notify("已是第一页", {type: "warning", delay: 1000});
+                notyf.error("已是第一页");
             }
         }
 
@@ -186,7 +186,7 @@
             if (_page <{{ page_number }}) {
                 change_page(_page + 1);
             } else {
-                $.notify("已是最后一页", {type: "warning", delay: 1000});
+                notyf.error("已是最后一页");
             }
         }
 
@@ -328,7 +328,7 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        $.notify(res.msg, {type: "success", delay: 1000});
+                        notyf.success(res.msg);
                         for (let i = 0; i < posts.length; i++) {
                             if (posts[i]["name"] == name) {
                                 posts[i]["content"] = content;
@@ -337,12 +337,12 @@
                             }
                         }
                     } else {
-                        $.notify(res.msg, {type: "warning"});
+                        notyf.error(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    $.notify("网络错误！", {type: "warning"});
+                    notyf.error("网络错误！");
                 }
             })
         }
@@ -358,7 +358,7 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        $.notify(res.msg, {type: "success", delay: 1000});
+                        notyf.success(res.msg);
                         for (let i = 0; i < posts.length; i++) {
                             if (posts[i]["name"] === name) {
                                 posts.splice(i, 1);
@@ -368,12 +368,12 @@
                         }
                         $("#count").html(posts.length);
                     } else {
-                        $.notify(res.msg, {type: "warning"});
+                        notyf.error(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    $.notify("网络错误！", {type: "warning"});
+                    notyf.error("网络错误！");
                 }
             })
         }
@@ -391,18 +391,18 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        $.notify(res.msg, {type: "success", delay: 1000});
+                        notyf.success(res.msg);
                         posts.push({"name": name, "content": content});
                         posts.sort(compare);
                         change_page(_page);
                         $("#count").html(posts.length);
                     } else {
-                        $.notify(res.msg, {type: "warning"});
+                        notyf.error(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    $.notify("网络错误！", {type: "warning"});
+                    notyf.error("网络错误！");
                 }
             })
         }
@@ -418,15 +418,15 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        $.notify(res.msg, {type: "success", delay: 1000});
+                        notyf.success(res.msg);
                         setTimeout(location.reload(), 1000);
                     } else {
-                        $.notify(res.msg, {type: "warning"});
+                        notyf.error(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    $.notify("网络错误！", {type: "warning"});
+                    notyf.error("网络错误！");
                 }
             })
         }

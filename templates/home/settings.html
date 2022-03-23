@@ -457,6 +457,7 @@
 {% block javascripts %}
 
     <script>
+
         function getBaseUrl() {
             let ishttps = 'https:' == document.location.protocol ? true : false;
             let url = window.location.host;
@@ -544,33 +545,33 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        $.notify(res.msg, {type: "success", delay: 1000});
+                        notyf.(res.msg);
                     } else {
-                        $.notify(res.msg, {type: "warning"});
+                        notyf.(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    $.notify("网络错误！", {type: "warning"});
+                    notyf.("网络错误！");
                 }
             })
         }
 
         function submit_user_config() {
             if (!$("input[name='username']").val()) {
-                $.notify("请输入正确的用户名！", {type: "warning", delay: 1500});
+                notyf.("请输入正确的用户名！");
                 return false;
             }
             if (!$("input[name='password']").val()) {
-                $.notify("原密码不能为空！", {type: "warning", delay: 1500});
+                notyf.("原密码不能为空！");
                 return false;
             }
             if (!$("input[name='newpassword']").val()) {
-                $.notify("请输入正确的新密码！", {type: "warning", delay: 1500});
+                notyf.("请输入正确的新密码！");
                 return false;
             }
             if ($("input[name='newpassword']").val() != $("input[name='repassword']").val()) {
-                $.notify("两次输入的密码不相同！", {type: "warning", delay: 1500});
+                notyf.("两次输入的密码不相同！");
                 return false;
             }
             let loading = new KZ_Loading('正在校验并保存中...');
@@ -583,15 +584,15 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        $.notify(res.msg, {type: "success", delay: 1000});
+                        notyf.(res.msg);
                         setTimeout(location.reload(), 1000);
                     } else {
-                        $.notify(res.msg, {type: "warning"});
+                        notyf.(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    $.notify("网络错误！", {type: "warning"});
+                    notyf.("网络错误！");
                 }
             })
         }
@@ -607,14 +608,14 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        $.notify(res.msg, {type: "success", delay: 1000});
+                        notyf.(res.msg);
                     } else {
-                        $.notify(res.msg, {type: "warning"});
+                        notyf.(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    $.notify("网络错误！", {type: "warning"});
+                    notyf.("网络错误！");
                 }
             })
         }
@@ -646,14 +647,14 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        $.notify(res.msg, {type: "success", delay: 1000});
+                        notyf.(res.msg);
                     } else {
-                        $.notify(res.msg, {type: "warning"});
+                        notyf.(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    $.notify("网络错误！", {type: "warning"});
+                    notyf.("网络错误！");
                 }
             })
         }
@@ -671,14 +672,14 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        $.notify(res.msg, {type: "success", delay: 1000});
+                        notyf.(res.msg);
                     } else {
-                        $.notify(res.msg, {type: "warning"});
+                        notyf.(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    $.notify("网络错误！", {type: "warning"});
+                    notyf.("网络错误！");
                 }
             })
         }
@@ -695,14 +696,14 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        $.notify(res.msg, {type: "success", delay: 1000});
+                        notyf.(res.msg);
                     } else {
-                        $.notify(res.msg, {type: "warning"});
+                        notyf.(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    $.notify("网络错误！", {type: "warning"});
+                    notyf.("网络错误！");
                 }
             })
         }
@@ -715,23 +716,23 @@
                 method: 'post',
                 data: {
                     csrfmiddlewaretoken: '{{ csrf_token }}', 'logo': 'https://cdn.jsdelivr' +
-                        '.net/npm/qexo-static@1.0.6/assets/img/brand/qexo.png', 'icon':
+                        '.net/npm/qexo-static@1.2.0/assets/img/brand/qexo.png', 'icon':
                         'https://cdn.jsdelivr' +
-                        '.net/npm/qexo-static@1.0.6/assets/img/brand/favicon.ico',
+                        '.net/npm/qexo-static@1.2.0/assets/img/brand/favicon.ico',
                     'name': 'Hexo管理面板', 'split': ' - '
                 },
                 dataType: "json",
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        $.notify(res.msg, {type: "success", delay: 1000});
+                        notyf.(res.msg);
                     } else {
-                        $.notify(res.msg, {type: "warning"});
+                        notyf.(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    $.notify("网络错误！", {type: "warning"});
+                    notyf.("网络错误！");
                 }
             })
         }
@@ -747,14 +748,14 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        $.notify(res.msg, {type: "success", delay: 1000});
+                        notyf.(res.msg);
                     } else {
-                        $.notify(res.msg, {type: "warning"});
+                        notyf.(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    $.notify("网络错误！", {type: "warning"});
+                    notyf.("网络错误！");
                 }
             })
         }
@@ -770,14 +771,14 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        $.notify(res.msg, {type: "success", delay: 1000});
+                        notyf.(res.msg);
                     } else {
-                        $.notify(res.msg, {type: "warning"});
+                        notyf.(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    $.notify("网络错误！", {type: "warning"});
+                    notyf.("网络错误！");
                 }
             })
         }
@@ -793,14 +794,14 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        $.notify(res.msg, {type: "success", delay: 1000});
+                        notyf.(res.msg);
                     } else {
-                        $.notify(res.msg, {type: "warning"});
+                        notyf.(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    $.notify("网络错误！", {type: "warning"});
+                    notyf.("网络错误！");
                 }
             })
         }
@@ -816,14 +817,14 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        $.notify(res.msg, {type: "success", delay: 1000});
+                        notyf.(res.msg);
                     } else {
-                        $.notify(res.msg, {type: "warning"});
+                        notyf.(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    $.notify("网络错误！", {type: "warning"});
+                    notyf.("网络错误！");
                 }
             })
         }
@@ -842,14 +843,14 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        $.notify("更新成功！请等待自动部署", {type: "success", delay: 1000});
+                        notyf.("更新成功！请等待自动部署");
                     } else {
-                        $.notify(res.msg, {type: "warning"});
+                        notyf.(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    $.notify("网络错误！", {type: "warning"});
+                    notyf.("网络错误！");
                 }
             })
         }

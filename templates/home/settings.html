@@ -545,33 +545,33 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        notyf.(res.msg);
+                        notyf.success(res.msg);
                     } else {
-                        notyf.(res.msg);
+                        notyf.error(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.("网络错误！");
+                    notyf.error("网络错误！");
                 }
             })
         }
 
         function submit_user_config() {
             if (!$("input[name='username']").val()) {
-                notyf.("请输入正确的用户名！");
+                notyf.error("请输入正确的用户名！");
                 return false;
             }
             if (!$("input[name='password']").val()) {
-                notyf.("原密码不能为空！");
+                notyf.error("原密码不能为空！");
                 return false;
             }
             if (!$("input[name='newpassword']").val()) {
-                notyf.("请输入正确的新密码！");
+                notyf.error("请输入正确的新密码！");
                 return false;
             }
             if ($("input[name='newpassword']").val() != $("input[name='repassword']").val()) {
-                notyf.("两次输入的密码不相同！");
+                notyf.error("两次输入的密码不相同！");
                 return false;
             }
             let loading = new KZ_Loading('正在校验并保存中...');
@@ -584,15 +584,15 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        notyf.(res.msg);
+                        notyf.success(res.msg);
                         setTimeout(location.reload(), 1000);
                     } else {
-                        notyf.(res.msg);
+                        notyf.error(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.("网络错误！");
+                    notyf.error("网络错误！");
                 }
             })
         }
@@ -608,14 +608,14 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        notyf.(res.msg);
+                        notyf.success(res.msg);
                     } else {
-                        notyf.(res.msg);
+                        notyf.error(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.("网络错误！");
+                    notyf.error("网络错误！");
                 }
             })
         }
@@ -647,14 +647,14 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        notyf.(res.msg);
+                        notyf.success(res.msg);
                     } else {
-                        notyf.(res.msg);
+                        notyf.error(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.("网络错误！");
+                    notyf.error("网络错误！");
                 }
             })
         }
@@ -672,14 +672,14 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        notyf.(res.msg);
+                        notyf.success(res.msg);
                     } else {
-                        notyf.(res.msg);
+                        notyf.error(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.("网络错误！");
+                    notyf.error("网络错误！");
                 }
             })
         }
@@ -696,14 +696,14 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        notyf.(res.msg);
+                        notyf.success(res.msg);
                     } else {
-                        notyf.(res.msg);
+                        notyf.error(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.("网络错误！");
+                    notyf.error("网络错误！");
                 }
             })
         }
@@ -725,14 +725,14 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        notyf.(res.msg);
+                        notyf.success(res.msg);
                     } else {
-                        notyf.(res.msg);
+                        notyf.error(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.("网络错误！");
+                    notyf.error("网络错误！");
                 }
             })
         }
@@ -748,14 +748,14 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        notyf.(res.msg);
+                        notyf.success(res.msg);
                     } else {
-                        notyf.(res.msg);
+                        notyf.error(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.("网络错误！");
+                    notyf.error("网络错误！");
                 }
             })
         }
@@ -771,14 +771,14 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        notyf.(res.msg);
+                        notyf.success(res.msg);
                     } else {
-                        notyf.(res.msg);
+                        notyf.error(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.("网络错误！");
+                    notyf.error("网络错误！");
                 }
             })
         }
@@ -794,14 +794,14 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        notyf.(res.msg);
+                        notyf.success(res.msg);
                     } else {
-                        notyf.(res.msg);
+                        notyf.error(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.("网络错误！");
+                    notyf.error("网络错误！");
                 }
             })
         }
@@ -817,14 +817,14 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        notyf.(res.msg);
+                        notyf.success(res.msg);
                     } else {
-                        notyf.(res.msg);
+                        notyf.error(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.("网络错误！");
+                    notyf.error("网络错误！");
                 }
             })
         }
@@ -843,14 +843,14 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        notyf.("更新成功！请等待自动部署");
+                        notyf.success("更新成功！请等待自动部署");
                     } else {
-                        notyf.(res.msg);
+                        notyf.error(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.("网络错误！");
+                    notyf.error("网络错误！");
                 }
             })
         }

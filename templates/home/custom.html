@@ -332,7 +332,7 @@
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.("网络错误！");
+                    notyf.error("网络错误！");
                 }
             })
         }
@@ -348,7 +348,7 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        notyf.(res.msg);
+                        notyf.success(res.msg);
                         for (let i = 0; i < posts.length; i++) {
                             if (posts[i]["name"] === name) {
                                 posts.splice(i, 1);
@@ -358,12 +358,12 @@
                         }
                         $("#count").html(posts.length);
                     } else {
-                        notyf.(res.msg);
+                        notyf.error(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.("网络错误！");
+                    notyf.error("网络错误！");
                 }
             })
         }
@@ -381,18 +381,18 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        notyf.(res.msg);
+                        notyf.success(res.msg);
                         posts.push({"name": name, "content": content});
                         posts.sort(compare);
                         change_page(_page);
                         $("#count").html(posts.length);
                     } else {
-                        notyf.(res.msg);
+                        notyf.error(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.("网络错误！");
+                    notyf.error("网络错误！");
                 }
             })
         }

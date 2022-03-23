@@ -72,9 +72,9 @@ urlpatterns = [
     path('pub/add_friend/', pub.add_friend, name='pub_add_friend'),
     path('pub/edit_friend/', pub.edit_friend, name='pub_edit_friend'),
     path('pub/del_friend/', pub.del_friend, name='pub_del_friend'),
-    path('pub/last/', pub.last_login, name='pub_ast_login'),
     path('pub/get_custom/', pub.get_custom, name='pub_get_custom'),
     path('pub/get_notifications/', pub.get_notifications, name='pub_get_notifications'),
+    path('pub/status/', pub.status, name='pub_status'),
 
     re_path(r'^(?!api)^(?!pub).*$\.*', pages, name='pages'),
 ]

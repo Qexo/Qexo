@@ -1,4 +1,5 @@
 .vercel
+*.py[cod]
 .idea
 tmp
 venv

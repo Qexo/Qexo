@@ -73,7 +73,11 @@ def set_onepush(request):
 def test_onepush(request):
     try:
         onepush = json.loads(request.POST.get("onepush"))
-        data = notify(onepush["notifier"], **onepush["params"], title="Qexo消息测试", content="如果你收到了这则消息, 那么代表您的消息配置成功了").text
+        ntfy = notify(onepush["notifier"], **onepush["params"], title="Qexo消息测试", content="如果你收到了这则消息, 那么代表您的消息配置成功了")
+        try:
+            data = ntfy.text
+        except:
+            data = "OK"
         context = {"msg": data, "status": True}
     except Exception as e:
         context = {"msg": repr(e), "status": False}

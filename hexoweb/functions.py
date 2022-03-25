@@ -18,7 +18,8 @@ from time import strftime, localtime
 import tarfile
 from ftplib import FTP
 import re
-from onepush import notify
+from hexoweb.libs.onepush import notify
+import html2text as ht
 
 disable_warnings()
 
@@ -785,6 +786,11 @@ def notify_me(title, content):
         config = json.loads(config)
     else:
         return False
-    content = content.replace("<br>", "\n").replace("</br>", "\n")
-    content = re.compile('<[^>]*>').sub(' ', content)
-    return notify(config["notifier"], **config["params"], title="Qexo消息: " + title, content=content).text
+    text_maker = ht.HTML2Text()
+    text_maker.bypass_tables = False
+    content = text_maker.handle(content)
+    ntfy = notify(config["notifier"], **config["params"], title="Qexo消息: " + title, content=content)
+    try:
+        return ntfy.text
+    except:
+        return "OK"

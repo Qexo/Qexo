@@ -34,7 +34,7 @@ class Smtp(Provider):
                       **kwargs):
         from email.mime.text import MIMEText
         from email.header import Header
-        self.message = MIMEText(content, 'plain', 'utf-8')
+        self.message = MIMEText(content, 'html', 'utf-8')
         self.message['From'] = Header(sender_name+" <%s>" % self.sender, 'utf-8')
         self.message['To'] = Header(receiver, 'utf-8')
         self.message['Subject'] = Header(title, 'utf-8')

@@ -786,7 +786,7 @@ def notify_me(title, content):
         config = json.loads(config)
     else:
         return False
-    if config["markdown"] is True:
+    if config.get("markdown") is True:
         text_maker = ht.HTML2Text()
         text_maker.bypass_tables = False
         content = text_maker.handle(content)

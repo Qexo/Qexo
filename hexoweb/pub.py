@@ -414,6 +414,7 @@ def get_custom(request):
 
 
 # 获取全部消息 pub/get_notifications
+@csrf_exempt
 def get_notifications(request):
     if not check_if_api_auth(request):
         return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！", "status": False})})
@@ -425,6 +426,7 @@ def get_notifications(request):
 
 
 # 获取博客基本信息 pub/status
+@csrf_exempt
 def status(request):
     try:
         cache = Cache.objects.filter(name="posts")

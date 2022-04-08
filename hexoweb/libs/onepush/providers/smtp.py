@@ -14,6 +14,7 @@ class Smtp(Provider):
         'required': ['host', 'port', 'user', 'passwd', 'sender', 'receiver', 'title', 'content'],
         'optional': ['type', 'sender_name']
     }
+
     def _prepare_url(self, host: str, user: str, passwd: str, receiver: str, sender: str, port: str = "25", type: str = "", **kwargs):
         if type.upper() == "SSL" or port == "465":
             self.smtpObj = self.smtplib.SMTP_SSL(host, int(port))
@@ -26,6 +27,7 @@ class Smtp(Provider):
         self.receiver = receiver
         self.sender = sender
         return self.smtpObj
+
     def _prepare_data(self,
                       content: str,
                       title: str,
@@ -33,11 +35,12 @@ class Smtp(Provider):
                       sender_name: str = "邮件提醒",
                       **kwargs):
         from email.mime.text import MIMEText
-        from email.header import Header
+        from email.utils import formataddr, parseaddr
         self.message = MIMEText(content, 'html', 'utf-8')
-        self.message['From'] = Header(sender_name+" <%s>" % self.sender, 'utf-8')
-        self.message['To'] = Header(receiver, 'utf-8')
-        self.message['Subject'] = Header(title, 'utf-8')
+        self.message['From'] = formataddr(parseaddr(sender_name + " <%s>" % self.sender))
+        self.message['To'] = formataddr(parseaddr(receiver))
+        self.message['Subject'] = title
         return self.message
+
     def _send_message(self):
         return self.smtpObj.sendmail(self.sender, self.receiver, self.message.as_string())

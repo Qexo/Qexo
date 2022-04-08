@@ -46,8 +46,8 @@
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
-    <link href="{{ cdn_prev }}vditor@3.8.8/dist/index.css" rel="stylesheet"/>
-    <script src="{{ cdn_prev }}vditor@3.8.8/dist/index.min.js"></script>
+    <link href="{{ cdn_prev }}vditor@3.8.13/dist/index.css" rel="stylesheet"/>
+    <script src="{{ cdn_prev }}vditor@3.8.13/dist/index.min.js"></script>
 
 
     <script>
@@ -194,7 +194,7 @@
                 toolbarConfig: {
                     pin: true
                 },
-                "cdn": "{{ cdn_prev }}vditor@3.8.8",
+                "cdn": "{{ cdn_prev }}vditor@3.8.13",
                 "mode": "ir",
                 counter: {
                     enable: true
@@ -206,7 +206,7 @@
                 },
                 "preview": {
                     "theme": {
-                        "path": "{{ cdn_prev }}vditor@3.8.8/dist/css/content-theme"
+                        "path": "{{ cdn_prev }}vditor@3.8.13/dist/css/content-theme"
                     }
                 },
                 "debugger": false,
@@ -286,7 +286,7 @@
                 // _lutePath: "lib/vditor-3.7.3/src/js/lute/lute.min.js",
                 // 这个是自定义导航栏
                 toolbar,
-                "cdn": "{{ cdn_prev }}vditor@3.8.8",
+                "cdn": "{{ cdn_prev }}vditor@3.8.13",
                 "fullscreen": {
                     "index": 1050,
                 },
@@ -300,7 +300,7 @@
                 "preview": {
                     "mode": "both",
                     "theme": {
-                        "path": "{{ cdn_prev }}vditor@3.8.8/dist/css/content-theme"
+                        "path": "{{ cdn_prev }}vditor@3.8.13/dist/css/content-theme"
                     }
                 }, hint: {
                     emoji: {{ emoji|safe }}

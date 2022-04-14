@@ -3,7 +3,7 @@ from core.QexoSettings import ALL_SETTINGS
 import requests
 from django.template.defaulttags import register
 from core.QexoSettings import QEXO_VERSION
-from .models import Cache, SettingModel, FriendModel, NotificationModel, CustomModel
+from .models import Cache, SettingModel, FriendModel, NotificationModel, CustomModel, StatisticUV, StatisticPV
 import github
 import json
 import boto3
@@ -17,7 +17,6 @@ from urllib.parse import quote
 from time import strftime, localtime
 import tarfile
 from ftplib import FTP
-import re
 from hexoweb.libs.onepush import notify
 import html2text as ht
 
@@ -795,3 +794,4 @@ def notify_me(title, content):
         return ntfy.text
     except:
         return "OK"
+

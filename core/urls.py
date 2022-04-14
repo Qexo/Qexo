@@ -75,6 +75,7 @@ urlpatterns = [
     path('pub/get_custom/', pub.get_custom, name='pub_get_custom'),
     path('pub/get_notifications/', pub.get_notifications, name='pub_get_notifications'),
     path('pub/status/', pub.status, name='pub_status'),
+    path('pub/statistic/', pub.statistic, name='pub_statistic'),
 
     re_path(r'^(?!api)^(?!pub).*$\.*', pages, name='pages'),
 ]

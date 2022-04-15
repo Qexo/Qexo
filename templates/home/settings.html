@@ -89,6 +89,43 @@
                                 </div>
                             </div>
                         </form>
+                        <form id="statistic-settings" onsubmit="javascript: return false;">
+                            <hr class="my-4"/>
+                            <h6 class="heading-small text-muted mb-4">统计配置</h6>
+                            <div class="pl-lg-4">
+                                <div class="row">
+                                    {% csrf_token %}
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">启用统计API(不算子)</label>
+                                            <select name="allow_statistic" class="form-control">
+                                                <option{% if STATISTIC_ALLOW == "是" %}
+                                                    selected{% endif %}>是
+                                                </option>
+                                                <option{% if STATISTIC_ALLOW != "是" %}
+                                                    selected{% endif %}>否
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">统计安全域名</label>
+                                            <input type="text" name="statistic_domains"
+                                                   class="form-control"
+                                                   placeholder="输入域名包含的关键字, 英文半角逗号间隔"
+                                                   value="{{ STATISTIC_DOMAINS }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <input type="button" class="btn btn-primary" value="提交"
+                                               onclick="set_statistic()">
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
                         <form id="user-settings" onsubmit="javascript: return false;">
                             <hr class="my-4"/>
                             <h6 class="heading-small text-muted mb-4">用户配置</h6>
@@ -744,6 +781,29 @@
                 url: '/api/set_api/',
                 method: 'post',
                 data: $('#apikey-settings').serialize(),
+                dataType: "json",
+                success: function (res) {
+                    loading.destroy();
+                    if (res.status) {
+                        notyf.success(res.msg);
+                    } else {
+                        notyf.error(res.msg);
+                    }
+                },
+                error: function (res) {
+                    loading.destroy();
+                    notyf.error("网络错误！");
+                }
+            })
+        }
+
+        function set_statistic() {
+            let loading = new KZ_Loading('正在保存中...');
+            loading.show();
+            $.ajax({
+                url: '/api/set_statistic/',
+                method: 'post',
+                data: $('#statistic-settings').serialize(),
                 dataType: "json",
                 success: function (res) {
                     loading.destroy();

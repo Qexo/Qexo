@@ -67,5 +67,5 @@ ALL_SETTINGS = [  # [名称, 默认值, 是否在尝试修复时重置, 简介]
     ["FTP_PREV_URL", "", False, "FTP图床链接"],
     ["ONEPUSH", "", False, "OnePush消息通知"],
     ["STATISTIC_ALLOW", "否", False, "是否开启统计功能 是/否"],
-    ["STATISTIC_DOMAINS", "", False, "统计安全域名 英文半角分号间隔"],
+    ["STATISTIC_DOMAINS", "", False, "统计安全域名 英文半角逗号间隔"],
 ]

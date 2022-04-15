@@ -219,6 +219,20 @@ def set_user(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 设置统计配置 api/set_statistic
+@login_required(login_url="/login/")
+def set_statistic(request):
+    try:
+        domains = request.POST.get("statistic_domains")
+        allow = request.POST.get("allow_statistic")
+        save_setting("STATISTIC_ALLOW", allow)
+        save_setting("STATISTIC_DOMAINS", domains)
+        context = {"msg": "保存成功!", "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
 # 设置 CustomModel 的字段 api/set_custom
 @login_required(login_url="/login/")
 def set_custom(request):

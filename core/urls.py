@@ -82,3 +82,4 @@ urlpatterns = [
 
 handler404 = page_404
 handler500 = page_500
+handler403 = page_403

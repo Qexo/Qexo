@@ -795,3 +795,6 @@ def notify_me(title, content):
     except:
         return "OK"
 
+
+def get_domain(domain):
+    return domain.split("/")[2].split(":")[0] if domain[:4] == "http" else domain.split(":")[0]

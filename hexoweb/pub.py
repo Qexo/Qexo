@@ -5,6 +5,7 @@ from .models import ImageModel
 from django.shortcuts import render
 from time import strftime, localtime
 from time import time
+from django.http.response import HttpResponseForbidden
 
 
 # 保存内容 pub/save
@@ -443,7 +444,16 @@ def status(request):
 # 统计API pub/statistic
 def statistic(request):
     try:
-        url = request.META['HTTP_REFERER']
+        url = str(request.META.get('HTTP_REFERER'))
+        allow_domains = SettingModel.objects.get(name="STATISTIC_DOMAINS").content.split(",")
+        t, allow = get_domain(url), False
+        for allow_domain in allow_domains:
+            if allow_domain in t:
+                allow = True
+                break
+        if not (allow and (t and SettingModel.objects.get(name="STATISTIC_ALLOW").content == "是")):
+            print("Not allowed domain: " + url)
+            return HttpResponseForbidden()
         if url[:7] == "http://":
             url = url[7:]
         elif url[:8] == "https://":
@@ -461,7 +471,6 @@ def statistic(request):
             pv.url = url
             pv.number = 1
             pv.save()
-        print(pv.url + ": " + str(pv.number))
         site_pv = StatisticPV.objects.filter(url=domain)
         if site_pv.count() == 1:
             site_pv = site_pv.first()
@@ -483,9 +492,9 @@ def statistic(request):
         uv = StatisticUV()
         uv.ip = ip
         uv.save()
-        print("register uv: " + ip)
+        print("Register uv: " + ip)
         data = json.dumps(
-                {"site_pv": site_pv.number, "page_pv": pv.number, "site_uv": StatisticUV.objects.all().count(), "status": True})
+            {"site_pv": site_pv.number, "page_pv": pv.number, "site_uv": StatisticUV.objects.all().count(), "status": True})
         return render(request, 'layouts/json.html', {"data": data})
     except Exception as e:
         print(repr(e))

@@ -3,7 +3,7 @@ from core.QexoSettings import ALL_SETTINGS
 import requests
 from django.template.defaulttags import register
 from core.QexoSettings import QEXO_VERSION
-from .models import Cache, SettingModel, FriendModel, NotificationModel, CustomModel
+from .models import Cache, SettingModel, FriendModel, NotificationModel, CustomModel, StatisticUV, StatisticPV
 import github
 import json
 import boto3
@@ -17,8 +17,8 @@ from urllib.parse import quote
 from time import strftime, localtime
 import tarfile
 from ftplib import FTP
-import re
-from onepush import notify
+from hexoweb.libs.onepush import notify
+import html2text as ht
 
 disable_warnings()
 
@@ -785,6 +785,16 @@ def notify_me(title, content):
         config = json.loads(config)
     else:
         return False
-    content = content.replace("<br>", "\n").replace("</br>", "\n")
-    content = re.compile('<[^>]*>').sub(' ', content)
-    return notify(config["notifier"], **config["params"], title="Qexo消息: " + title, content=content).text
+    if config.get("markdown") is True:
+        text_maker = ht.HTML2Text()
+        text_maker.bypass_tables = False
+        content = text_maker.handle(content)
+    ntfy = notify(config["notifier"], **config["params"], title="Qexo消息: " + title, content=content)
+    try:
+        return ntfy.text
+    except:
+        return "OK"
+
+
+def get_domain(domain):
+    return domain.split("/")[2].split(":")[0] if domain[:4] == "http" else domain.split(":")[0]

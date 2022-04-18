@@ -73,26 +73,12 @@ def set_onepush(request):
 def test_onepush(request):
     try:
         onepush = json.loads(request.POST.get("onepush"))
-        data = notify(onepush["notifier"], **onepush["params"], title="Qexo消息测试", content="如果你收到了这则消息, 那么代表您的消息配置成功了").text
+        ntfy = notify(onepush["notifier"], **onepush["params"], title="Qexo消息测试", content="如果你收到了这则消息, 那么代表您的消息配置成功了")
+        try:
+            data = ntfy.text
+        except:
+            data = "OK"
         context = {"msg": data, "status": True}
-    except Exception as e:
-        context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
-
-
-# 设置API api/setapi
-@login_required(login_url="/login/")
-def set_api(request):
-    try:
-        apikey = request.POST.get("apikey")
-        if apikey:
-            save_setting("WEBHOOK_APIKEY", apikey)
-        else:
-            if not SettingModel.objects.filter(name="WEBHOOK_APIKEY").count():
-                save_setting("WEBHOOK_APIKEY", ''.join(
-                    random.choice("qwertyuiopasdfghjklzxcvbnm1234567890") for x in range(12)))
-        save_setting("ALLOW_FRIEND", request.POST.get("allow_friend"))
-        context = {"msg": "保存成功!", "status": True}
     except Exception as e:
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
@@ -228,6 +214,20 @@ def set_user(request):
             context = {"msg": "保存成功！请重新登录", "status": True}
         else:
             context = {"msg": "原密码错误!", "status": False}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 设置统计配置 api/set_statistic
+@login_required(login_url="/login/")
+def set_statistic(request):
+    try:
+        domains = request.POST.get("statistic_domains")
+        allow = request.POST.get("allow_statistic")
+        save_setting("STATISTIC_ALLOW", allow)
+        save_setting("STATISTIC_DOMAINS", domains)
+        context = {"msg": "保存成功!", "status": True}
     except Exception as e:
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})

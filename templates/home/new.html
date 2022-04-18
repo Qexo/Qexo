@@ -23,7 +23,7 @@
                     </div>
                     <div class="col-lg-6 col-5 text-right">
                         <a href="javascript:SaveDraft()" class="btn btn-sm btn-neutral">保存草稿</a>
-                        <a href="javascript:SaveChanges()" class="btn btn-sm btn-neutral">保存</a>
+                        <a href="javascript:SaveChanges()" class="btn btn-sm btn-neutral">发布</a>
                     </div>
                 </div>
             </div>
@@ -48,8 +48,8 @@
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
-    <link href="{{ cdn_prev }}vditor@3.8.8/dist/index.css" rel="stylesheet"/>
-    <script src="{{ cdn_prev }}vditor@3.8.8/dist/index.min.js"></script>
+    <link href="{{ cdn_prev }}vditor@3.8.13/dist/index.css" rel="stylesheet"/>
+    <script src="{{ cdn_prev }}vditor@3.8.13/dist/index.min.js"></script>
 
 
     <script>
@@ -214,7 +214,7 @@
                 counter: {
                     enable: true
                 },
-                "cdn": "{{ cdn_prev }}vditor@3.8.8",
+                "cdn": "{{ cdn_prev }}vditor@3.8.13",
                 "mode": "ir",
                 "height": window.innerHeight / 2,
                 {% if file_content %}
@@ -228,7 +228,7 @@
                     "enable": false,
                 }, "preview": {
                     "theme": {
-                        "path": "{{ cdn_prev }}vditor@3.8.8/dist/css/content-theme"
+                        "path": "{{ cdn_prev }}vditor@3.8.13/dist/css/content-theme"
                     }
                 },
                 toolbar: [
@@ -333,7 +333,7 @@
                     "edit-mode",
                     "preview"
                 ],
-                "cdn": "{{ cdn_prev }}vditor@3.8.8",
+                "cdn": "{{ cdn_prev }}vditor@3.8.13",
                 "fullscreen": {
                     "index": 1050,
                 },
@@ -346,7 +346,7 @@
                 "preview": {
                     "mode": "both",
                     "theme": {
-                        "path": "{{ cdn_prev }}vditor@3.8.8/dist/css/content-theme"
+                        "path": "{{ cdn_prev }}vditor@3.8.13/dist/css/content-theme"
                     }
                 }, hint: {
                     emoji: {{ emoji|safe }}

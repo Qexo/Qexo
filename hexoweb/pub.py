@@ -5,6 +5,7 @@ from .models import ImageModel
 from django.shortcuts import render
 from time import strftime, localtime
 from time import time
+from django.http.response import HttpResponseForbidden
 
 
 # 保存内容 pub/save
@@ -438,3 +439,63 @@ def status(request):
     except Exception as error:
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 统计API pub/statistic
+def statistic(request):
+    try:
+        url = str(request.META.get('HTTP_REFERER'))
+        allow_domains = SettingModel.objects.get(name="STATISTIC_DOMAINS").content.split(",")
+        t, allow = get_domain(url), False
+        for allow_domain in allow_domains:
+            if allow_domain in t:
+                allow = True
+                break
+        if not (allow and (t and SettingModel.objects.get(name="STATISTIC_ALLOW").content == "是")):
+            print("Not allowed domain: " + url)
+            return HttpResponseForbidden()
+        if url[:7] == "http://":
+            url = url[7:]
+        elif url[:8] == "https://":
+            url = url[8:]
+        domain = url.split("/")[0]
+        pv = StatisticPV.objects.filter(url=url)
+        if pv.count() == 1:
+            pv = StatisticPV.objects.get(url=url)
+            pv.number += 1
+            pv.save()
+        else:
+            for i in pv:
+                i.delete()
+            pv = StatisticPV()
+            pv.url = url
+            pv.number = 1
+            pv.save()
+        site_pv = StatisticPV.objects.filter(url=domain)
+        if site_pv.count() == 1:
+            site_pv = site_pv.first()
+            site_pv.number += 1
+            site_pv.save()
+        else:
+            for i in site_pv:
+                i.delete()
+            site_pv = StatisticPV()
+            site_pv.url = domain
+            site_pv.number = 1
+            site_pv.save()
+        ip = request.META['HTTP_X_FORWARDED_FOR'] if 'HTTP_X_FORWARDED_FOR' in request.META.keys() else request.META['REMOTE_ADDR']
+        uv = StatisticUV.objects.filter(ip=ip)
+        if uv.count() >= 1:
+            data = json.dumps(
+                {"site_pv": site_pv.number, "page_pv": pv.number, "site_uv": StatisticUV.objects.all().count(), "status": True})
+            return render(request, 'layouts/json.html', {"data": data})
+        uv = StatisticUV()
+        uv.ip = ip
+        uv.save()
+        print("Register uv: " + ip)
+        data = json.dumps(
+            {"site_pv": site_pv.number, "page_pv": pv.number, "site_uv": StatisticUV.objects.all().count(), "status": True})
+        return render(request, 'layouts/json.html', {"data": data})
+    except Exception as e:
+        print(repr(e))
+        return render(request, 'layouts/json.html', {"data": json.dumps({"status": False, "error": repr(e)})})

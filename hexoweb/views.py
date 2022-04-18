@@ -12,6 +12,10 @@ def page_404(request, exception):
     return render(request, 'home/page-404.html', {"cdn_prev": "https://cdn.jsdelivr.net/npm/"})
 
 
+def page_403(request, exception):
+    return render(request, 'home/page-403.html', {"cdn_prev": "https://cdn.jsdelivr.net/npm/"})
+
+
 def page_500(request):
     return render(request, 'home/page-500.html',
                   {"error": "程序遇到了错误！", "cdn_prev": "https://cdn.jsdelivr.net/npm/"})
@@ -494,6 +498,8 @@ def pages(request):
                 context['ABBRLINK_REP'] = SettingModel.objects.get(name="ABBRLINK_REP").content
                 context["ALLOW_FRIEND"] = SettingModel.objects.get(name="ALLOW_FRIEND").content
                 context["ONEPUSH"] = SettingModel.objects.get(name="ONEPUSH").content
+                context["STATISTIC_DOMAINS"] = SettingModel.objects.get(name="STATISTIC_DOMAINS").content
+                context["STATISTIC_ALLOW"] = SettingModel.objects.get(name="STATISTIC_ALLOW").content
             except:
                 return redirect("/update/")
         elif 'advanced' in load_template:

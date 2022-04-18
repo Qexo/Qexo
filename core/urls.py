@@ -34,6 +34,7 @@ urlpatterns = [
     path('api/set_api/', set_api, name='set_api'),
     path('api/set_abbrlink/', set_abbrlink, name='set_abbrlink'),
     path('api/set_cust/', set_cust, name='set_cust'),
+    path('api/set_statistic/', set_statistic, name='set_statistic'),
     path('api/set_value/', set_value, name='set_value'),
     path('api/del_value/', del_value, name='del_value'),
     path('api/new_value/', new_value, name='new_value'),
@@ -75,9 +76,11 @@ urlpatterns = [
     path('pub/get_custom/', pub.get_custom, name='pub_get_custom'),
     path('pub/get_notifications/', pub.get_notifications, name='pub_get_notifications'),
     path('pub/status/', pub.status, name='pub_status'),
+    path('pub/statistic/', pub.statistic, name='pub_statistic'),
 
     re_path(r'^(?!api)^(?!pub).*$\.*', pages, name='pages'),
 ]
 
 handler404 = page_404
 handler500 = page_500
+handler403 = page_403

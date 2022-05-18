@@ -6,7 +6,7 @@ QEXO_VERSION = "1.7.0"
 ALL_SETTINGS = [  # [名称, 默认值, 是否在尝试修复时重置, 简介]
     ["ABBRLINK_ALG", "crc16", False, "短链接算法"],
     ["ABBRLINK_REP", "dec", False, "短链接格式dec/hex"],
-    ["CDN_PREV", "https://cdn.jsdelivr.net/npm/", True, "调用NPM的CDN前缀"],
+    ["CDN_PREV", "https://unpkg.com/", True, "调用NPM的CDN前缀"],
     ["GH_REPO", "", False, "Github用户名"],
     ["GH_REPO_BRANCH", "", False, "仓库分支"],
     ["GH_REPO_PATH", "", False, "仓库路径"],

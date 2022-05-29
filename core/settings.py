@@ -18,7 +18,7 @@ SECRET_KEY = 'django-insecure-mrf1flh+i8*!ao73h6)ne#%gowhtype!ld#+(j^r*!^11al2vz
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = json.loads(os.environ["DOMAINS"])
+ALLOWED_HOSTS = json.loads(os.getenv("DOMAINS",[]))
 
 # Application definition
 
@@ -81,11 +81,11 @@ DATABASES = {
         },
         'NAME': 'django',
         'CLIENT': {
-            'host': os.environ["MONGODB_HOST"],
-            'port': int(os.environ["MONGODB_PORT"]),
-            'username': os.environ["MONGODB_USER"],
-            'password': os.environ["MONGODB_PASS"],
-            'authSource': os.environ["MONGODB_DB"],
+            'host': os.getenv("MONGODB_HOST","null"),
+            'port': int(os.getenv("MONGODB_PORT",0)),
+            'username': os.getenv("MONGODB_USER","null"),
+            'password': os.getenv("MONGODB_PASS","null"),
+            'authSource': os.getenv("MONGODB_DB","null"),
             'authMechanism': 'SCRAM-SHA-1'
         }
     }

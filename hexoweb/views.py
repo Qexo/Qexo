@@ -9,16 +9,16 @@ from math import ceil
 
 
 def page_404(request, exception):
-    return render(request, 'home/page-404.html', {"cdn_prev": "https://unpkg.com/"})
+    return render(request, 'home/page-404.html', {"cdn_prev": "https://unpkg.com/", "cdnjs": "https://cdnjs.cloudflare.com/ajax/libs/"})
 
 
 def page_403(request, exception):
-    return render(request, 'home/page-403.html', {"cdn_prev": "https://unpkg.com/"})
+    return render(request, 'home/page-403.html', {"cdn_prev": "https://unpkg.com/", "cdnjs": "https://cdnjs.cloudflare.com/ajax/libs/"})
 
 
 def page_500(request):
     return render(request, 'home/page-500.html',
-                  {"error": "程序遇到了错误！", "cdn_prev": "https://unpkg.com/"})
+                  {"error": "程序遇到了错误！", "cdn_prev": "https://unpkg.com/", "cdnjs": "https://cdnjs.cloudflare.com/ajax/libs/"})
 
 
 def login_view(request):
@@ -55,15 +55,21 @@ def update_view(request):
     for query in settings:
         if query.name not in already:
             already.append(query.name)
-        else:
-            query.delete()
     context = get_custom_config()
     context["settings"] = list()
     context["counter"] = 0
     for setting in ALL_SETTINGS:
         if setting[0] not in already:
-            context["settings"].append(dict(name=setting[0], value=setting[1],
-                                            placeholder=setting[3]))
+            if setting[0] == "PROVIDER":  # update from 1.x
+                context["settings"].append(dict(name=setting[0], value=json.dumps({"provider": "github",
+                                                                                   "params": {"token": get_setting("GK_TOKEN"),
+                                                                                              "branch": get_setting("GK_REPO_BRANCH"),
+                                                                                              "repo": get_setting("GK_REPO"),
+                                                                                              "path": get_setting("GK_PATH")}}),
+                                                placeholder=setting[3]))
+            else:
+                context["settings"].append(dict(name=setting[0], value=setting[1],
+                                                placeholder=setting[3]))
             context["counter"] += 1
     if not context["counter"]:
         save_setting("UPDATE_FROM", QEXO_VERSION)
@@ -138,8 +144,12 @@ def init_view(request):
                     save_setting("GH_REPO_BRANCH", branch)
                     save_setting("GH_REPO", repo)
                     save_setting("GH_TOKEN", token)
-                    save_setting("INIT", "4")
-                    step = "4"
+                    if check_if_vercel():
+                        save_setting("INIT", "5")
+                        step = "5"
+                    else:
+                        save_setting("INIT", "6")
+                        step = "6"
                 except:
                     msg = "校验失败"
                     context["repo"] = repo
@@ -152,34 +162,6 @@ def init_view(request):
                 context["branch"] = branch
                 context["token"] = token
                 context["path"] = path
-        if request.POST.get("step") == "4":
-            api = request.POST.get("api")
-            post_params = request.POST.get("post")
-            json_path = request.POST.get("jsonpath")
-            custom_body = request.POST.get("body")
-            custom_header = request.POST.get("header")
-            custom_url = request.POST.get("custom")
-            try:
-                save_setting("IMG_API", api)
-                save_setting("IMG_POST", post_params)
-                save_setting("IMG_JSON_PATH", json_path)
-                save_setting("IMG_CUSTOM_BODY", custom_body)
-                save_setting("IMG_CUSTOM_HEADER", custom_header)
-                save_setting("IMG_CUSTOM_URL", custom_url)
-                if check_if_vercel():
-                    save_setting("INIT", "5")
-                    step = "5"
-                else:
-                    save_setting("INIT", "6")
-                    step = "6"
-            except Exception as e:
-                msg = repr(e)
-                context["api"] = api
-                context["post"] = post_params
-                context["jsonpath"] = json_path
-                context["body"] = custom_body
-                context["header"] = custom_header
-                context["custom"] = custom_url
         if request.POST.get("step") == "5":
             project_id = request.POST.get("id")
             vercel_token = request.POST.get("token")
@@ -272,15 +254,8 @@ def pages(request):
         if "index" in load_template:
             return index(request)
         elif "edit_page" in load_template:
-            repo = get_repo()
             file_path = request.GET.get("file")
-            context["file_content"] = repr(
-                repo.get_contents(SettingModel.objects.get(name="GH_REPO_PATH").content + file_path,
-                                  ref=SettingModel.objects.get(
-                                      name="GH_REPO_BRANCH").content).decoded_content.decode(
-                    "utf8")).replace("<",
-                                     "\\<").replace(
-                ">", "\\>").replace("!", "\\!")
+            context["file_content"] = repr(Provider.get_content(file_path)).replace("<", "\\<").replace(">", "\\>").replace("!", "\\!")
             context['filename'] = file_path.split("/")[-2] + "/" + file_path.split("/")[-1]
             context["file_path"] = file_path
             context["emoji"] = SettingModel.objects.get(name="VDITOR_EMOJI").content
@@ -292,12 +267,7 @@ def pages(request):
                 context["error"] = repr(error)
         elif "edit_config" in load_template:
             file_path = request.GET.get("file")
-            repo = get_repo()
-            context["file_content"] = repr(repo.get_contents(
-                SettingModel.objects.get(name="GH_REPO_PATH").content + file_path,
-                ref=SettingModel.objects.get(
-                    name="GH_REPO_BRANCH").content).decoded_content.decode(
-                "utf8")).replace("<", "\\<").replace(">", "\\>").replace("!", "\\!")
+            context["file_content"] = repr(Provider.get_content(file_path)).replace("<", "\\<").replace(">", "\\>").replace("!", "\\!")
             context["filepath"] = file_path
             context['filename'] = file_path.split("/")[-1]
         elif "edit" in load_template:
@@ -315,21 +285,14 @@ def pages(request):
             except Exception as error:
                 context["error"] = repr(error)
         elif "new_page" in load_template:
-            repo = get_repo()
             context["emoji"] = SettingModel.objects.get(name="VDITOR_EMOJI").content
             try:
                 now = time()
                 alg = SettingModel.objects.get(name="ABBRLINK_ALG").content
                 rep = SettingModel.objects.get(name="ABBRLINK_REP").content
                 abbrlink = get_crc_by_time(str(now), alg, rep)
-                context["file_content"] = repr(
-                    repo.get_contents(
-                        SettingModel.objects.get(name="GH_REPO_PATH").content + "scaffolds/page.md",
-                        ref=SettingModel.objects.get(
-                            name="GH_REPO_BRANCH").content).decoded_content.decode("utf8")).replace(
-                    "<", "\\<").replace(">", "\\>").replace("{{ date }}",
-                                                            strftime("%Y-%m-%d %H:%M:%S",
-                                                                     localtime(now))).replace(
+                context["file_content"] = repr(Provider.get_content("scaffolds/page.md")).replace("<", "\\<").replace(">", "\\>").replace(
+                    "{{ date }}", strftime("%Y-%m-%d %H:%M:%S", localtime(now))).replace(
                     "{{ abbrlink }}", abbrlink).replace("!", "\\!")
             except Exception as error:
                 context["error"] = repr(error)
@@ -340,7 +303,6 @@ def pages(request):
             except Exception as error:
                 context["error"] = repr(error)
         elif "new" in load_template:
-            repo = get_repo()
             context["emoji"] = SettingModel.objects.get(name="VDITOR_EMOJI").content
             try:
                 now = time()
@@ -348,14 +310,8 @@ def pages(request):
                 rep = SettingModel.objects.get(name="ABBRLINK_REP").content
                 abbrlink = get_crc_by_time(str(now), alg, rep)
                 context["file_content"] = repr(
-                    repo.get_contents(
-                        SettingModel.objects.get(name="GH_REPO_PATH").content + "scaffolds/post.md",
-                        ref=SettingModel.objects.get(
-                            name="GH_REPO_BRANCH").content).decoded_content.decode("utf8").replace(
-                        "{{ date }}", strftime("%Y-%m-%d %H:%M:%S", localtime(
-                            now))).replace("{{ abbrlink }}", abbrlink)).replace("<",
-                                                                                "\\<").replace(
-                    ">", "\\>").replace("!", "\\!")
+                    Provider.get_content("scaffolds/post.md").replace("{{ date }}", strftime("%Y-%m-%d %H:%M:%S", localtime(now))).replace(
+                        "{{ abbrlink }}", abbrlink)).replace("<", "\\<").replace(">", "\\>").replace("!", "\\!")
 
             except Exception as error:
                 context["error"] = repr(error)

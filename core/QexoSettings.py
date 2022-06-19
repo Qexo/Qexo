@@ -1,16 +1,13 @@
 import json
 import random
 
-QEXO_VERSION = "1.7.0"
+QEXO_VERSION = "1.8.0"
 
 ALL_SETTINGS = [  # [名称, 默认值, 是否在尝试修复时重置, 简介]
     ["ABBRLINK_ALG", "crc16", False, "短链接算法"],
     ["ABBRLINK_REP", "dec", False, "短链接格式dec/hex"],
     ["CDN_PREV", "https://unpkg.com/", True, "调用NPM的CDN前缀"],
-    ["GH_REPO", "", False, "Github用户名"],
-    ["GH_REPO_BRANCH", "", False, "仓库分支"],
-    ["GH_REPO_PATH", "", False, "仓库路径"],
-    ["GH_TOKEN", "", False, "Github密钥"],
+    ["CDNJS", "https://cdnjs.cloudflare.com/ajax/libs/", True, "调用CDNJS的CDN前缀"],
     ["IMG_API", "", False, "图床API地址"],
     ["IMG_CUSTOM_BODY", "", False, "图床自定义请求主体"],
     ["IMG_CUSTOM_HEADER", "", False, "图床自定义请求头"],
@@ -66,6 +63,7 @@ ALL_SETTINGS = [  # [名称, 默认值, 是否在尝试修复时重置, 简介]
     ["FTP_PATH", "", False, "FTP文件上传地址"],
     ["FTP_PREV_URL", "", False, "FTP图床链接"],
     ["ONEPUSH", "", False, "OnePush消息通知"],
+    ["PROVIDER", "", False, "2.0之后的平台JSON"],
     ["STATISTIC_ALLOW", "否", False, "是否开启统计功能 是/否"],
     ["STATISTIC_DOMAINS", "", False, "统计安全域名 英文半角逗号间隔"],
 ]

@@ -19,8 +19,12 @@ import tarfile
 from ftplib import FTP
 from hexoweb.libs.onepush import notify
 import html2text as ht
+from hexoweb.libs.platforms import get_provider
 
 disable_warnings()
+
+Provider = json.loads(SettingModel.objects.get(name="PROVIDER").content)
+Provider = get_provider(Provider["provider"], **Provider["params"])
 
 
 @register.filter  # 在模板中使用range()
@@ -33,37 +37,39 @@ def div(value, div):  # 保留两位小数的除法
     return round((value / div), 2)
 
 
-def get_repo():
-    if SettingModel.objects.filter(name__contains="GH_").count() >= 4:
-        repo = github.Github(SettingModel.objects.get(name='GH_TOKEN').content).get_repo(
-            SettingModel.objects.get(name="GH_REPO").content)
-        return repo
-    return False
-
-
 def get_cdn():
     try:
         cdn_prev = SettingModel.objects.get(name="CDN_PREV").content
+
     except:
         save_setting("CDN_PREV", "https://unpkg.com/")
         cdn_prev = "https://unpkg.com/"
     return cdn_prev
 
 
-def get_post(post):
-    repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
-    branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
+def get_cdnjs():
     try:
-        return get_repo().get_contents(repo_path + "source/_drafts/" + post,
-                                       branch).decoded_content.decode("utf8")
+        cdnjs = SettingModel.objects.get(name="CDNJS").content
+
     except:
-        return get_repo().get_contents(repo_path + "source/_posts/" + post,
-                                       branch).decoded_content.decode("utf8")
+        save_setting("CDNJS", "https://cdnjs.cloudflare.com/ajax/libs/")
+        cdnjs = "https://cdnjs.cloudflare.com/ajax/libs/"
+    return cdnjs
+
+
+def get_post(post):
+    return Provider.get_post(post)
+
+def get_setting(name):
+    try:
+        return SettingModel.objects.get(name=name).content
+    except:
+        return ""
 
 
 # 获取用户自定义的样式配置
 def get_custom_config():
-    context = {"cdn_prev": get_cdn()}
+    context = {"cdn_prev": get_cdn(), "cdnjs": get_cdnjs()}
     try:
         context["QEXO_NAME"] = SettingModel.objects.get(name="QEXO_NAME").content
     except:
@@ -105,8 +111,7 @@ def update_caches(name, content, _type="json"):
     posts_cache.save()
 
 
-def update_posts_cache(s=None, _path=""):
-    repo = get_repo()
+def update_posts_cache(s=None):
     if s:
         old_cache = Cache.objects.filter(name="posts")
         if old_cache.count():
@@ -122,52 +127,7 @@ def update_posts_cache(s=None, _path=""):
             return posts
     else:
         old_cache = False
-    _posts = list()
-    _drafts = list()
-    names = list()
-    try:
-        posts = repo.get_contents(
-            SettingModel.objects.get(name="GH_REPO_PATH").content + 'source/_posts' + _path,
-            ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
-        for i in range(len(posts)):
-            if posts[i].type == "file":
-                _posts.append(
-                    {"name": posts[i].path.split("source/_posts/")[1][0:-3],
-                     "fullname": posts[i].path.split("source/_posts/")[1],
-                     "path": posts[i].path,
-                     "size": posts[i].size,
-                     "status": True})
-                names.append(posts[i].path.split("source/_posts/")[1])
-            if posts[i].type == "dir":
-                dir_content = update_posts_cache(_path=posts[i].path.split("source/_posts")[1])
-                for file in dir_content:
-                    if "source/_posts" in file["path"]:
-                        _posts.append(file)
-                        names.append(file["fullname"])
-    except:
-        pass
-    try:
-        drafts = repo.get_contents(
-            SettingModel.objects.get(name="GH_REPO_PATH").content + 'source/_drafts' + _path,
-            ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
-        for i in range(len(drafts)):
-            if drafts[i].type == "file":
-                if drafts[i].path.split(
-                        "source/_drafts/")[1] not in names:
-                    _drafts.append({"name": drafts[i].path.split(
-                        "source/_drafts/")[1][0:-3], "fullname": drafts[i].path.split(
-                        "source/_drafts/")[1],
-                                    "path": drafts[i].path,
-                                    "size": drafts[i].size, "status": False})
-            if drafts[i].type == "dir":
-                dir_content = update_posts_cache(_path=drafts[i].path.split("source/_drafts")[1])
-                for file in dir_content:
-                    if ("source/_drafts" in file["path"]) and (file["fullname"] not in names):
-                        _posts.append(file)
-                        names.append(file["fullname"])
-    except:
-        pass
-    posts = _posts + _drafts
+    posts = Provider.get_posts()
     if s:
         if not old_cache.count():
             update_caches("posts", posts)
@@ -177,12 +137,11 @@ def update_posts_cache(s=None, _path=""):
                 del posts[i]
                 i -= 1
             i += 1
-    if not _path:
-        if s:
-            cache_name = "posts." + str(s)
-        else:
-            cache_name = "posts"
-        update_caches(cache_name, posts)
+    if s:
+        cache_name = "posts." + str(s)
+    else:
+        cache_name = "posts"
+    update_caches(cache_name, posts)
     return posts
 
 
@@ -200,19 +159,7 @@ def update_pages_cache(s=None):
             cache_name = "pages." + str(s)
             update_caches(cache_name, posts)
             return posts
-    repo = get_repo()
-    posts = repo.get_contents(SettingModel.objects.get(name="GH_REPO_PATH").content + 'source',
-                              ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
-    results = list()
-    for post in posts:
-        if post.type == "dir":
-            for i in repo.get_contents(
-                    SettingModel.objects.get(name="GH_REPO_PATH").content + post.path,
-                    ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content):
-                if i.type == "file":
-                    if i.name == "index.md" or i.name == "index.html":
-                        results.append({"name": post.name, "path": i.path, "size": i.size})
-                        break
+    results = Provider.get_pages()
     update_caches("pages", results)
     if not s:
         return results
@@ -240,82 +187,7 @@ def update_configs_cache(s=None):
             cache_name = "configs." + str(s)
             update_caches(cache_name, posts)
             return posts
-    repo = get_repo()
-    posts = repo.get_contents(SettingModel.objects.get(name="GH_REPO_PATH").content,
-                              ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
-    results = list()
-    # 检索 .github/workflows 仅最多一层目录
-    try:
-        sources = repo.get_contents(SettingModel.objects.get(name="GH_REPO_PATH").content +
-                                    ".github/workflows",
-                                    ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
-        for source in sources:
-            if source.type == "file":
-                try:
-                    if source.name[-3:] == "yml":
-                        results.append(
-                            {"name": source.name, "path": source.path, "size": source.size})
-                except:
-                    pass
-            if source.type == "dir":
-                for post in repo.get_contents(source.path,
-                                              ref=SettingModel.objects.get(
-                                                  name="GH_REPO_BRANCH").content):
-                    try:
-                        if post.name[-3:] == "yml":
-                            results.append(
-                                {"name": post.name, "path": post.path, "size": post.size})
-                    except:
-                        pass
-    except:
-        pass
-    # 检索根目录
-    for post in posts:
-        try:
-            if post.name[-3:] == "yml":
-                results.append({"name": post.name, "path": post.path, "size": post.size})
-        except:
-            pass
-    # 检索 themes 仅下一级目录下的文件
-    try:
-        themes = repo.get_contents(SettingModel.objects.get(name="GH_REPO_PATH").content + "themes",
-                                   ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
-        for theme in themes:
-            if theme.type == "dir":
-                for post in repo.get_contents(theme.path,
-                                              ref=SettingModel.objects.get(
-                                                  name="GH_REPO_BRANCH").content):
-                    try:
-                        if post.name[-3:] == "yml":
-                            results.append(
-                                {"name": post.name, "path": post.path, "size": post.size})
-                    except:
-                        pass
-    except:
-        pass
-    # 检索 source 仅最多一层目录
-    sources = repo.get_contents(SettingModel.objects.get(name="GH_REPO_PATH").content +
-                                "source",
-                                ref=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
-    for source in sources:
-        if source.type == "file":
-            try:
-                if source.name[-3:] == "yml":
-                    results.append(
-                        {"name": source.name, "path": source.path, "size": source.size})
-            except:
-                pass
-        if source.type == "dir":
-            for post in repo.get_contents(source.path,
-                                          ref=SettingModel.objects.get(
-                                              name="GH_REPO_BRANCH").content):
-                try:
-                    if post.name[-3:] == "yml":
-                        results.append(
-                            {"name": post.name, "path": post.path, "size": post.size})
-                except:
-                    pass
-
+    results = Provider.get_configs()
     update_caches("configs", results)
     if not s:
         return results
@@ -648,103 +520,6 @@ def OnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
     if outPath == '':
         return {"status": False, "msg": 'error: no outPath'}
     return VercelUpdate(vercel_config["id"], vercel_config["token"], outPath)
-
-
-# Twikoo
-# Twikoo系列
-def TestTwikoo(TwikooDomain, TwikooPassword):
-    """
-    参数:
-        TwikooDomain(Twikoo的接口)--String
-        TwikooPassword(Twikoo的管理密码)--String
-    返回:
-        accessToken(Twikoo的Token) --String
-    """
-    RequestData = {"event": "LOGIN", "password": md5(TwikooPassword.encode(
-        encoding='utf-8')).hexdigest()}
-    LoginRequests = requests.post(url=TwikooDomain, json=RequestData)
-    accessToken = json.loads(LoginRequests.text)['accessToken']
-    return accessToken
-
-
-def GetComments(url, pass_md5, TwikooDomain):
-    """
-    参数:
-        url(需要获取评论的链接，例如/post/qexo) --String
-        TwikooDomain(Twikoo的接口) --String
-        pass_md5(Twikoo的密码md5) --String
-    返回:
-        评论列表:
-        [
-            {"id":评论id,"nick":昵称,"body":正文,"time":时间(unix时间戳),"hidden":是否隐藏}
-        ]
-        其中:
-        hidden  --Bool
-    """
-    RequestData = {"event": "COMMENT_GET", "accessToken": pass_md5, "url": url}
-    LoginRequests = requests.post(url=TwikooDomain, data=RequestData)
-    commentData = json.loads(LoginRequests.text)['data']
-    comments = []
-    for i in range(len(commentData)):
-        id = commentData[i]['id']
-        nick = commentData[i]['nick']
-        body = commentData[i]['comment']
-        time = commentData[i]['created']
-        Hidden = commentData[i]['isSpam']
-        comments.append({"id": id, "nick": nick, "body": body, "time": time, "hidden": Hidden})
-    return comments
-
-
-def GetAllComments(pass_md5, TwikooDomain, per=0x7FFFFFFF, page=1, key="", type=""):
-    """
-    参数:
-        per(每一页的评论数) --int
-        pages(页数)--int
-        TwikooDomain(Twikoo的接口)--String
-        pass_md5(Twikoo密码的md5)--String
-        key(可选，搜索关键字)--String
-        type(可选，类型，HIDDEN为被隐藏的评论，VISIBLE为可见评论)
-    返回:
-        评论列表，格式:
-        [
-            {"id":评论id,"nick":昵称,"body":正文,"time":时间(unix时间戳),"hidden":是否隐藏}
-        ]
-        其中:
-        hidden  --Bool
-    """
-    RequestData = {"event": "COMMENT_GET_FOR_ADMIN", "accessToken": pass_md5, "per": per,
-                   "page": page, "keyword": key, "type": type}
-    LoginRequests = requests.post(url=TwikooDomain, json=RequestData)
-    commentData = json.loads(LoginRequests.text)['data']
-    comments = []
-    for i in range(len(commentData)):
-        id = commentData[i]['_id']
-        nick = commentData[i]['nick']
-        body = commentData[i]['comment']
-        time = commentData[i]['created']
-        Hidden = commentData[i]['isSpam']
-        comments.append({"id": id, "nick": nick, "body": body, "time": time, "hidden": Hidden})
-    return comments
-
-
-def SetComment(pass_md5, TwikooDomain, id, status):
-    """
-    参数:
-        status(是否隐藏) --Bool
-        id(评论id)  --String
-        TwikooDomain(Twikoo的接口) --String
-        pass_md5(Twikoo的密码md5)--String
-    返回:
-        Succeed或者是Error
-    """
-    RequestData = {"event": "COMMENT_SET_FOR_ADMIN", "accessToken": pass_md5, "id": id,
-                   "set": {"isSpam": status}}
-    LoginRequests = requests.post(url=TwikooDomain, json=RequestData)
-    code = json.loads(LoginRequests.text)['code']
-    if code == 0:
-        return 'Succeed'
-    else:
-        return 'Error'
 
 
 def CreateNotification(label, content, now):

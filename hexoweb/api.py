@@ -330,17 +330,12 @@ def do_update(request):
 # 保存内容 api/save
 @login_required(login_url="/login/")
 def save(request):
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         file_path = request.POST.get('file')
         content = request.POST.get('content')
         try:
-            repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
-            branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
-            repo.update_file(repo_path + file_path, "Update by Qexo", content,
-                             repo.get_contents(repo_path + file_path, ref=branch).sha,
-                             branch=branch)
+            Provider.save(file_path, content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -350,31 +345,18 @@ def save(request):
 # 保存文章 api/save_post
 @login_required(login_url="/login/")
 def save_post(request):
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         file_name = request.POST.get('file')
         content = request.POST.get('content')
         try:
-            repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
-            branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
             # 删除草稿
             try:
-                repo.delete_file(repo_path + "source/_drafts/" + file_name, "Delete by Qexo",
-                                 repo.get_contents(repo_path + "source/_drafts/" + file_name,
-                                                   ref=branch).sha,
-                                 branch=branch)
+                Provider.delete("source/_drafts/" + file_name)
             except:
                 pass
             # 创建/更新文章
-            try:
-                repo.update_file(repo_path + "source/_posts/" + file_name, "Update by Qexo",
-                                 content,
-                                 repo.get_contents(repo_path + "source/_posts/" + file_name,
-                                                   ref=branch).sha, branch=branch)
-            except:
-                repo.create_file(repo_path + "source/_posts/" + file_name, "Update by Qexo",
-                                 content, branch=branch)
+            Provider.save("source/_posts/" + file_name, content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -384,23 +366,13 @@ def save_post(request):
 # 保存草稿 api/save_draft
 @login_required(login_url="/login/")
 def save_draft(request):
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         file_name = request.POST.get('file')
         content = request.POST.get('content')
         try:
-            repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
-            branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
             # 创建/更新草稿
-            try:
-                repo.update_file(repo_path + "source/_drafts/" + file_name, "Update by Qexo",
-                                 content,
-                                 repo.get_contents(repo_path + "source/_drafts/" + file_name,
-                                                   ref=branch).sha, branch=branch)
-            except:
-                repo.create_file(repo_path + "source/_drafts/" + file_name, "Update by Qexo",
-                                 content, branch=branch)
+            Provider.save("source/_drafts/" + file_name, content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -410,15 +382,12 @@ def save_draft(request):
 # 新建内容 api/new
 @login_required(login_url="/login/")
 def new(request):
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         file_path = request.POST.get('file')
         content = request.POST.get('content')
         try:
-            repo.create_file(path=SettingModel.objects.get(name="GH_REPO_PATH").content + file_path,
-                             message="Create by Qexo", content=content,
-                             branch=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
+            Provider.save(file_path, content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -428,20 +397,11 @@ def new(request):
 # 删除内容 api/delete
 @login_required(login_url="/login/")
 def delete(request):
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
-        branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
-        repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
         file_path = request.POST.get('file')
         try:
-            file = repo.get_contents(file_path, ref=branch)
-            if not isinstance(file, list):
-                repo.delete_file(repo_path + file_path, "Delete by Qexo", file.sha, branch=branch)
-
-            else:
-                for i in file:
-                    repo.delete_file(repo_path + i.path, "Delete by Qexo", i.sha, branch=branch)
+            Provider.delete(file_path)
             context = {"msg": "OK!", "status": True}
             # Delete Caches
             if ("_posts" in file_path) or ("_drafts" in file_path):
@@ -456,25 +416,16 @@ def delete(request):
 # 删除文章 api/delete_post
 @login_required(login_url="/login/")
 def delete_post(request):
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
-        branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
-        repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
         filename = request.POST.get('file')
         try:
             try:
-                repo.delete_file(repo_path + "source/_posts/" + filename, "Delete by Qexo",
-                                 repo.get_contents(
-                                     repo_path + "source/_posts/" + filename, ref=branch).sha,
-                                 branch=branch)
+                Provider.delete("source/_posts/" + filename)
             except:
                 pass
             try:
-                repo.delete_file(repo_path + "source/_drafts/" + filename, "Delete by Qexo",
-                                 repo.get_contents(
-                                     repo_path + "source/_drafts/" + filename, ref=branch).sha,
-                                 branch=branch)
+                Provider.delete("source/_drafts/" + filename)
             except:
                 pass
             delete_posts_caches()
@@ -530,10 +481,8 @@ def create_webhook_config(request):
                     "url": request.POST.get("uri") + "?token=" + SettingModel.objects.get(
                         name="WEBHOOK_APIKEY").content
                 }
-            repo = get_repo()
-            for hook in repo.get_hooks():  # 删除所有HOOK
-                hook.delete()
-            repo.create_hook(active=True, config=config, events=["push"], name="web")
+            Provider.delete_hooks()
+            Provider.create_hook(config)
             context = {"msg": "设置成功！", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}

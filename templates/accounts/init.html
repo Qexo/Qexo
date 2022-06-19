@@ -120,66 +120,6 @@
                                 <button type="submit" class="btn btn-primary my-4">下一步</button>
                             </div>
                         {% endif %}
-                        {% if step == "4" %}
-                            <hr class="my-4"/>
-                            <div class="row">
-                                <div class="col-lg-6">
-                                    <div class="form-group">
-                                        <label class="form-control-label">API地址</label>
-                                        <input type="text" name="api" class="form-control"
-                                               placeholder="API地址(包含http)"
-                                               value="{{ api }}">
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="form-group">
-                                        <label class="form-control-label">POST参数名</label>
-                                        <input type="text" name="post" class="form-control"
-                                               placeholder="POST参数名"
-                                               value="{{ post }}">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-lg-6">
-                                    <div class="form-group">
-                                        <label class="form-control-label">JSON路径</label>
-                                        <input type="text" name="jsonpath" class="form-control"
-                                               placeholder="JSON路径 eg: data.img"
-                                               value="{{ jsonpath }}">
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="form-group">
-                                        <label class="form-control-label">自定义请求头</label>
-                                        <input type="text" name="header" class="form-control"
-                                               placeholder="标准JSON格式"
-                                               value="{{ header }}">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-lg-6">
-                                    <div class="form-group">
-                                        <label class="form-control-label">自定义BODY</label>
-                                        <input type="text" name="body" class="form-control"
-                                               placeholder="标准JSON格式" value="{{ body }}">
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="form-group">
-                                        <label class="form-control-label">自定义前缀</label>
-                                        <input type="text" name="custom" class="form-control"
-                                               placeholder="自定义图片URL前缀"
-                                               value="{{ custom }}">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="text-center">
-                                <a href="javascript:skip()" class="btn btn-white my-4">跳过</a>
-                                <button type="submit" class="btn btn-primary my-4">下一步</button>
-                            </div>
-                        {% endif %}
                         {% if step == "5" %}
                             <hr class="my-4"/>
                             <div class="form-group">

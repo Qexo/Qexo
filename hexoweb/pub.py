@@ -14,17 +14,12 @@ def save(request):
     if not check_if_api_auth(request):
         return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
                                                                          "status": False})})
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         file_path = request.POST.get('file')
         content = request.POST.get('content')
         try:
-            repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
-            branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
-            repo.update_file(repo_path + file_path, "Update by QexoPubAPI", content,
-                             repo.get_contents(repo_path + file_path, ref=branch).sha,
-                             branch=branch)
+            Provider.save(file_path, content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -37,31 +32,18 @@ def save_post(request):
     if not check_if_api_auth(request):
         return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
                                                                          "status": False})})
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         file_name = request.POST.get('file')
         content = request.POST.get('content')
         try:
-            repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
-            branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
             # 删除草稿
             try:
-                repo.delete_file(repo_path + "source/_drafts/" + file_name, "Delete by QexoPubAPI",
-                                 repo.get_contents(repo_path + "source/_drafts/" + file_name,
-                                                   ref=branch).sha,
-                                 branch=branch)
+                Provider.delete("source/_drafts/" + file_name)
             except:
                 pass
             # 创建/更新文章
-            try:
-                repo.update_file(repo_path + "source/_posts/" + file_name, "Update by QexoPubAPI",
-                                 content,
-                                 repo.get_contents(repo_path + "source/_posts/" + file_name,
-                                                   ref=branch).sha, branch=branch)
-            except:
-                repo.create_file(repo_path + "source/_posts/" + file_name, "Update by QexoPubAPI",
-                                 content, branch=branch)
+            Provider.save("source/_posts/" + file_name, content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -74,23 +56,13 @@ def save_draft(request):
     if not check_if_api_auth(request):
         return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
                                                                          "status": False})})
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         file_name = request.POST.get('file')
         content = request.POST.get('content')
         try:
-            repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
-            branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
             # 创建/更新草稿
-            try:
-                repo.update_file(repo_path + "source/_drafts/" + file_name, "Update by QexoPubAPI",
-                                 content,
-                                 repo.get_contents(repo_path + "source/_drafts/" + file_name,
-                                                   ref=branch).sha, branch=branch)
-            except:
-                repo.create_file(repo_path + "source/_drafts/" + file_name, "Update by QexoPubAPI",
-                                 content, branch=branch)
+            Provider.save("source/_drafts/" + file_name, content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -103,15 +75,12 @@ def new(request):
     if not check_if_api_auth(request):
         return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
                                                                          "status": False})})
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         file_path = request.POST.get('file')
         content = request.POST.get('content')
         try:
-            repo.create_file(path=SettingModel.objects.get(name="GH_REPO_PATH").content + file_path,
-                             message="Create by QexoPubAPI", content=content,
-                             branch=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
+            Provider.save(file_path, content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -124,20 +93,11 @@ def delete(request):
     if not check_if_api_auth(request):
         return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
                                                                          "status": False})})
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
-        branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
-        repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
         file_path = request.POST.get('file')
         try:
-            file = repo.get_contents(file_path, ref=branch)
-            if not isinstance(file, list):
-                repo.delete_file(repo_path + file_path, "Delete by QexoPubAPI", file.sha, branch=branch)
-
-            else:
-                for i in file:
-                    repo.delete_file(repo_path + i.path, "Delete by QexoPubAPI", i.sha, branch=branch)
+            Provider.delete(file_path)
             context = {"msg": "OK!", "status": True}
             # Delete Caches
             if ("_posts" in file_path) or ("_drafts" in file_path):
@@ -155,25 +115,17 @@ def delete_post(request):
     if not check_if_api_auth(request):
         return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
                                                                          "status": False})})
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
-        branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
-        repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
         filename = request.POST.get('file')
         try:
             try:
-                repo.delete_file(repo_path + "source/_posts/" + filename, "Delete by QexoPubAPI",
-                                 repo.get_contents(
-                                     repo_path + "source/_posts/" + filename, ref=branch).sha,
-                                 branch=branch)
+
+                Provider.delete("source/_posts/" + filename)
             except:
                 pass
             try:
-                repo.delete_file(repo_path + "source/_drafts/" + filename, "Delete by QexoPubAPI",
-                                 repo.get_contents(
-                                     repo_path + "source/_drafts/" + filename, ref=branch).sha,
-                                 branch=branch)
+                Provider.delete("source/_drafts/" + filename)
             except:
                 pass
             delete_posts_caches()
@@ -206,10 +158,8 @@ def create_webhook_config(request):
                     "url": request.POST.get("uri") + "?token=" + SettingModel.objects.get(
                         name="WEBHOOK_APIKEY").content
                 }
-            repo = get_repo()
-            for hook in repo.get_hooks():  # 删除所有HOOK
-                hook.delete()
-            repo.create_hook(active=True, config=config, events=["push"], name="web")
+            Provider.delete_hooks()
+            Provider.create_hook(config)
             context = {"msg": "设置成功！", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -383,8 +333,14 @@ def del_friend(request):
 def ask_friend(request):
     try:
         if SettingModel.objects.get(name="ALLOW_FRIEND").content != "是":
-            return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
-                                                                             "status": False})})
+            return HttpResponseForbidden()
+        all_friend = FriendModel.objects.all()
+        counter = 0
+        for friend in all_friend:
+            if not friend.status:
+                counter+=1
+        if counter >= 30:
+            return HttpResponseForbidden()
         friend = FriendModel()
         friend.name = request.POST.get("name")
         friend.url = request.POST.get("url")

@@ -456,6 +456,8 @@ def pages(request):
                 context["ONEPUSH"] = SettingModel.objects.get(name="ONEPUSH").content
                 context["STATISTIC_DOMAINS"] = SettingModel.objects.get(name="STATISTIC_DOMAINS").content
                 context["STATISTIC_ALLOW"] = SettingModel.objects.get(name="STATISTIC_ALLOW").content
+                context["FRIEND_RECAPTCHA"] = SettingModel.objects.get(name="FRIEND_RECAPTCHA").content
+                context["RECAPTCHA_TOKEN"] = SettingModel.objects.get(name="RECAPTCHA_TOKEN").content
             except:
                 return redirect("/update/")
         elif 'advanced' in load_template:

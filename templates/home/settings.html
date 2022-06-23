@@ -83,6 +83,32 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label
+                                                    class="form-control-label">使用 reCaptchaV3
+                                                验证友链申请</label>
+                                            <select name="friend-recaptcha" class="form-control">
+                                                <option{% if FRIEND_RECAPTCHA == "是" %}
+                                                    selected{% endif %}>是
+                                                </option>
+                                                <option{% if FRIEND_RECAPTCHA != "是" %}
+                                                    selected{% endif %}>否
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">reCaptchaV3 密钥</label>
+                                            <input type="text" name="recaptcha-token"
+                                                   class="form-control"
+                                                   placeholder="reCaptchaV3 服务器端 Token"
+                                                   value="{{ RECAPTCHA_TOKEN }}" >
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
                                         <input type="button" class="btn btn-primary" value="提交"
                                                onclick="set_api()">
                                     </div>

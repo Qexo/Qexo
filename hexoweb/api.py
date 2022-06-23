@@ -96,6 +96,8 @@ def set_api(request):
                 save_setting("WEBHOOK_APIKEY", ''.join(
                     random.choice("qwertyuiopasdfghjklzxcvbnm1234567890") for x in range(12)))
         save_setting("ALLOW_FRIEND", request.POST.get("allow_friend"))
+        save_setting("FRIEND_RECAPTCHA", request.POST.get("friend-recaptcha"))
+        save_setting("RECAPTCHA_TOKEN", request.POST.get("recaptcha-token"))
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
         context = {"msg": repr(e), "status": False}

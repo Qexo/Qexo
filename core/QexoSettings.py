@@ -66,4 +66,6 @@ ALL_SETTINGS = [  # [名称, 默认值, 是否在尝试修复时重置, 简介]
     ["PROVIDER", "", False, "2.0之后的平台JSON"],
     ["STATISTIC_ALLOW", "否", False, "是否开启统计功能 是/否"],
     ["STATISTIC_DOMAINS", "", False, "统计安全域名 英文半角逗号间隔"],
+    ["FRIEND_RECAPTCHA", "否", False, "是否启用友链验证码reCaptchaV3 是/否"],
+    ["RECAPTCHA_TOKEN", "", False, "reCaptchaV3服务器端密钥"],
 ]

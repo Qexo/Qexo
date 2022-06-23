@@ -334,13 +334,17 @@ def ask_friend(request):
     try:
         if SettingModel.objects.get(name="ALLOW_FRIEND").content != "是":
             return HttpResponseForbidden()
-        all_friend = FriendModel.objects.all()
-        counter = 0
-        for friend in all_friend:
-            if not friend.status:
-                counter+=1
-        if counter >= 30:
-            return HttpResponseForbidden()
+        # 人机验证
+        verify = request.POST.get("verify")
+        token = get_setting("RECAPTCHA_TOKEN")
+        if get_setting("FRIEND_RECAPTCHA") == "是":
+            if verify:
+                captcha = requests.get("https://recaptcha.net/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
+                if captcha["score"] <= 0.5:
+                    return HttpResponseForbidden()
+            else:
+                return HttpResponseForbidden()
+        # 通过验证
         friend = FriendModel()
         friend.name = request.POST.get("name")
         friend.url = request.POST.get("url")

@@ -85,13 +85,16 @@
                                     <div class="col-lg-6">
                                         <div class="form-group">
                                             <label
-                                                    class="form-control-label">使用 reCaptchaV3
+                                                    class="form-control-label">使用 reCaptcha
                                                 验证友链申请</label>
                                             <select name="friend-recaptcha" class="form-control">
-                                                <option{% if FRIEND_RECAPTCHA == "是" %}
-                                                    selected{% endif %}>是
+                                                <option{% if FRIEND_RECAPTCHA == "v2" %}
+                                                    selected{% endif %}>v2
                                                 </option>
-                                                <option{% if FRIEND_RECAPTCHA != "是" %}
+                                                <option{% if FRIEND_RECAPTCHA == "v3" %}
+                                                    selected{% endif %}>v3
+                                                </option>
+                                                <option{% if FRIEND_RECAPTCHA == "否" %}
                                                     selected{% endif %}>否
                                                 </option>
                                             </select>
@@ -99,11 +102,11 @@
                                     </div>
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">reCaptchaV3 密钥</label>
+                                            <label class="form-control-label">reCaptcha 密钥</label>
                                             <input type="text" name="recaptcha-token"
                                                    class="form-control"
                                                    placeholder="reCaptchaV3 服务器端 Token"
-                                                   value="{{ RECAPTCHA_TOKEN }}" >
+                                                   value="{{ RECAPTCHA_TOKEN }}">
                                         </div>
                                     </div>
                                 </div>
@@ -1274,7 +1277,7 @@
                                 </div>`);
         }
         if ('{{ IMG_TYPE }}' === "ftp") {
-                $("#image-form").html(`<div class="row">
+            $("#image-form").html(`<div class="row">
                                     <div class="col-lg-6">
                                         <div class="form-group">
                                             <label class="form-control-label">FTP主机</label>
@@ -1330,7 +1333,7 @@
                                         </div>
                                     </div>
                                 </div>`);
-            }
+        }
         if ('{{ IMG_TYPE }}' === "") {
             $("#image-form").html("");
         }

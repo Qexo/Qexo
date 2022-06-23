@@ -337,13 +337,21 @@ def ask_friend(request):
         # 人机验证
         verify = request.POST.get("verify")
         token = get_setting("RECAPTCHA_TOKEN")
-        if get_setting("FRIEND_RECAPTCHA") == "是":
+        typ = get_setting("FRIEND_RECAPTCHA")
+        if typ == "v3":
             if verify:
                 captcha = requests.get("https://recaptcha.net/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
                 if captcha["score"] <= 0.5:
-                    return HttpResponseForbidden()
+                    return {"msg": "验证失败！", "status": False}
             else:
-                return HttpResponseForbidden()
+                return {"msg": "验证失败！", "status": False}
+        if typ == "v2":
+            if verify:
+                captcha = requests.get("https://recaptcha.net/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
+                if not captcha["success"]:
+                    return {"msg": "验证失败！", "status": False}
+            else:
+                return {"msg": "验证失败！", "status": False}
         # 通过验证
         friend = FriendModel()
         friend.name = request.POST.get("name")

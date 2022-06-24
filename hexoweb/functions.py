@@ -39,7 +39,7 @@ def div(value, div):  # 保留两位小数的除法
 
 def get_cdn():
     try:
-        cdn_prev = SettingModel.objects.get(name="CDN_PREV").content
+        cdn_prev = get_setting("CDN_PREV")
 
     except:
         save_setting("CDN_PREV", "https://unpkg.com/")
@@ -49,7 +49,7 @@ def get_cdn():
 
 def get_cdnjs():
     try:
-        cdnjs = SettingModel.objects.get(name="CDNJS").content
+        cdnjs = get_setting("CDNJS")
 
     except:
         save_setting("CDNJS", "https://cdnjs.cloudflare.com/ajax/libs/")
@@ -71,29 +71,29 @@ def get_setting(name):
 def get_custom_config():
     context = {"cdn_prev": get_cdn(), "cdnjs": get_cdnjs()}
     try:
-        context["QEXO_NAME"] = SettingModel.objects.get(name="QEXO_NAME").content
+        context["QEXO_NAME"] = get_setting("QEXO_NAME")
     except:
         save_setting('QEXO_NAME', 'Hexo管理面板')
-        context["QEXO_NAME"] = SettingModel.objects.get(name="QEXO_NAME").content
+        context["QEXO_NAME"] = get_setting("QEXO_NAME")
     try:
-        context["QEXO_SPLIT"] = SettingModel.objects.get(name="QEXO_SPLIT").content
+        context["QEXO_SPLIT"] = get_setting("QEXO_SPLIT")
     except:
         save_setting('QEXO_SPLIT', ' - ')
-        context["QEXO_SPLIT"] = SettingModel.objects.get(name="QEXO_SPLIT").content
+        context["QEXO_SPLIT"] = get_setting("QEXO_SPLIT")
     try:
-        context["QEXO_LOGO"] = SettingModel.objects.get(name="QEXO_LOGO").content
+        context["QEXO_LOGO"] = get_setting("QEXO_LOGO")
     except:
         save_setting('QEXO_LOGO',
                      'https://unpkg.com/qexo-static@1.4.0/assets' +
                      '/img/brand/qexo.png')
-        context["QEXO_LOGO"] = SettingModel.objects.get(name="QEXO_LOGO").content
+        context["QEXO_LOGO"] = get_setting("QEXO_LOGO")
     try:
-        context["QEXO_ICON"] = SettingModel.objects.get(name="QEXO_ICON").content
+        context["QEXO_ICON"] = get_setting("QEXO_ICON")
     except:
         save_setting('QEXO_ICON',
                      'https://unpkg.com/qexo-static@1.4.0/assets' +
                      '/img/brand/favicon.ico')
-        context["QEXO_ICON"] = SettingModel.objects.get(name="QEXO_ICON").content
+        context["QEXO_ICON"] = get_setting("QEXO_ICON")
     return context
 
 
@@ -350,7 +350,7 @@ def upload_to_ftp(file, host, port, user, password, path, prev_url):
 def get_latest_version():
     context = dict()
     try:
-        user = github.Github(SettingModel.objects.get(name='GH_TOKEN').content)
+        user = github.Github(get_setting('GH_TOKEN'))
         latest = user.get_repo("am-abudu/Qexo").get_latest_release()
         if latest.tag_name and (latest.tag_name != QEXO_VERSION):
             context["hasNew"] = True
@@ -369,9 +369,9 @@ def get_latest_version():
 
 
 def check_if_api_auth(request):
-    if request.POST.get("token") == SettingModel.objects.get(name="WEBHOOK_APIKEY").content:
+    if request.POST.get("token") == get_setting("WEBHOOK_APIKEY"):
         return True
-    if request.GET.get("token") == SettingModel.objects.get(name="WEBHOOK_APIKEY").content:
+    if request.GET.get("token") == get_setting("WEBHOOK_APIKEY"):
         return True
     return False
 
@@ -429,8 +429,8 @@ def fix_all(all_settings=ALL_SETTINGS):
 
 
 def get_project_detail():
-    return {"token": SettingModel.objects.get(name="VERCEL_TOKEN").content,
-            "id": SettingModel.objects.get(name="PROJECT_ID").content}
+    return {"token": get_setting("VERCEL_TOKEN"),
+            "id": get_setting("PROJECT_ID")}
 
 
 def checkBuilding(projectId, token):
@@ -555,7 +555,7 @@ def DelNotification(_time):
 
 
 def notify_me(title, content):
-    config = SettingModel.objects.get(name="ONEPUSH").content
+    config = get_setting("ONEPUSH")
     if config:
         config = json.loads(config)
     else:

@@ -35,6 +35,7 @@ urlpatterns = [
     path('api/set_abbrlink/', set_abbrlink, name='set_abbrlink'),
     path('api/set_cust/', set_cust, name='set_cust'),
     path('api/set_statistic/', set_statistic, name='set_statistic'),
+    path('api/set_security/', set_security, name='set_security'),
     path('api/set_value/', set_value, name='set_value'),
     path('api/del_value/', del_value, name='del_value'),
     path('api/new_value/', new_value, name='new_value'),

@@ -17,6 +17,17 @@ def auth(request):
     try:
         username = request.POST.get("username")
         password = request.POST.get("password")
+        verify = request.POST.get("verify")
+        token = get_setting("LOGIN_RECAPTCHA_SERVER_TOKEN")
+        site_token = get_setting("LOGIN_RECAPTCHA_SITE_TOKEN")
+        if token and site_token:
+            if verify:
+                captcha = requests.get("https://recaptcha.net/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
+                if captcha["score"] <= 0.5:
+                    return {"msg": "人机验证失败！", "status": False}
+            else:
+                return {"msg": "人机验证失败！", "status": False}
+        # print(captcha)
         user = authenticate(username=username, password=password)
         if user is not None:
             login(request, user)
@@ -37,7 +48,7 @@ def set_github(request):
         token = request.POST.get("token")
         if not token:
             try:
-                token = SettingModel.objects.get(name="GH_TOKEN").content
+                token = get_setting("GH_TOKEN")
             except:
                 pass
         path = request.POST.get("path")
@@ -98,6 +109,18 @@ def set_api(request):
         save_setting("ALLOW_FRIEND", request.POST.get("allow_friend"))
         save_setting("FRIEND_RECAPTCHA", request.POST.get("friend-recaptcha"))
         save_setting("RECAPTCHA_TOKEN", request.POST.get("recaptcha-token"))
+        context = {"msg": "保存成功!", "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 安全设置 api/et_security
+@login_required(login_url="/login/")
+def set_security(request):
+    try:
+        save_setting("LOGIN_RECAPTCHA_SERVER_TOKEN", request.POST.get("server-token"))
+        save_setting("LOGIN_RECAPTCHA_SITE_TOKEN", request.POST.get("site-token"))
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
         context = {"msg": repr(e), "status": False}
@@ -496,7 +519,7 @@ def create_webhook_config(request):
 def webhook(request):
     context = dict(msg="Error!", status=False)
     try:
-        if request.GET.get("token") == SettingModel.objects.get(name="WEBHOOK_APIKEY").content:
+        if request.GET.get("token") == get_setting("WEBHOOK_APIKEY"):
             delete_all_caches()
             context = {"msg": "操作成功！", "status": True}
         else:
@@ -515,39 +538,39 @@ def upload_img(request):
         file = request.FILES.getlist('file[]')[0]
         try:
             try:
-                img_type = SettingModel.objects.get(name="IMG_TYPE").content
+                img_type = get_setting("IMG_TYPE")
             except:
                 save_setting("IMG_TYPE", "cust")
                 img_type = "cust"
             if img_type == "s3":
                 context["url"] = upload_to_s3(file,
-                                              SettingModel.objects.get(name="S3_KEY_ID").content,
+                                              get_setting("S3_KEY_ID"),
                                               SettingModel.objects.get(
                                                   name="S3_ACCESS_KEY").content,
-                                              SettingModel.objects.get(name="S3_ENDPOINT").content,
-                                              SettingModel.objects.get(name="S3_BUCKET").content,
-                                              SettingModel.objects.get(name="S3_PATH").content,
-                                              SettingModel.objects.get(name="S3_PREV_URL").content)
+                                              get_setting("S3_ENDPOINT"),
+                                              get_setting("S3_BUCKET"),
+                                              get_setting("S3_PATH"),
+                                              get_setting("S3_PREV_URL"))
                 context["msg"] = "上传成功！"
                 context["status"] = True
             if img_type == "custom":
-                api = SettingModel.objects.get(name="IMG_API").content
-                post_params = SettingModel.objects.get(name="IMG_POST").content
-                json_path = SettingModel.objects.get(name="IMG_JSON_PATH").content
-                custom_body = SettingModel.objects.get(name="IMG_CUSTOM_BODY").content
-                custom_header = SettingModel.objects.get(name="IMG_CUSTOM_HEADER").content
-                custom_url = SettingModel.objects.get(name="IMG_CUSTOM_URL").content
+                api = get_setting("IMG_API")
+                post_params = get_setting("IMG_POST")
+                json_path = get_setting("IMG_JSON_PATH")
+                custom_body = get_setting("IMG_CUSTOM_BODY")
+                custom_header = get_setting("IMG_CUSTOM_HEADER")
+                custom_url = get_setting("IMG_CUSTOM_URL")
                 context["url"] = upload_to_custom(file, api, post_params, json_path, custom_body, custom_header, custom_url)
                 context["msg"] = "上传成功！"
                 context["status"] = True
             if img_type == "ftp":
                 context["url"] = upload_to_ftp(file,
-                                               SettingModel.objects.get(name="FTP_HOST").content,
-                                               SettingModel.objects.get(name="FTP_PORT").content,
-                                               SettingModel.objects.get(name="FTP_USER").content,
-                                               SettingModel.objects.get(name="FTP_PASS").content,
-                                               SettingModel.objects.get(name="FTP_PATH").content,
-                                               SettingModel.objects.get(name="FTP_PREV_URL").content)
+                                               get_setting("FTP_HOST"),
+                                               get_setting("FTP_PORT"),
+                                               get_setting("FTP_USER"),
+                                               get_setting("FTP_PASS"),
+                                               get_setting("FTP_PATH"),
+                                               get_setting("FTP_PREV_URL"))
                 context["msg"] = "上传成功！"
                 context["status"] = True
             image = ImageModel()

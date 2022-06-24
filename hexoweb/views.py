@@ -23,7 +23,7 @@ def page_500(request):
 
 def login_view(request):
     try:
-        if int(SettingModel.objects.get(name="INIT").content) <= 5:
+        if int(get_setting("INIT")) <= 5:
             return redirect("/init/")
     except:
         return redirect("/init/")
@@ -32,13 +32,18 @@ def login_view(request):
             return redirect("/")
         else:
             return redirect(request.GET.get("next"))
-    return render(request, "accounts/login.html", get_custom_config())
+    context = get_custom_config()
+    site_token = get_setting("LOGIN_RECAPTCHA_SITE_TOKEN")
+    server_token = get_setting("LOGIN_RECAPTCHA_SERVER_TOKEN")
+    if site_token and server_token:
+        context["site_token"] = site_token
+    return render(request, "accounts/login.html", context)
 
 
 @login_required(login_url="/login/")
 def update_view(request):
     try:
-        if int(SettingModel.objects.get(name="INIT").content) <= 5:
+        if int(get_setting("INIT")) <= 5:
             return redirect("/init/")
     except:
         return redirect("/init/")
@@ -82,7 +87,7 @@ def init_view(request):
     context = dict()
     context.update(get_custom_config())
     try:
-        step = SettingModel.objects.get(name="INIT").content
+        step = get_setting("INIT")
     except:
         save_setting("INIT", "1")
         step = "1"
@@ -194,12 +199,12 @@ def logout_view(request):
 @login_required(login_url="/login/")
 def index(request):
     try:
-        if int(SettingModel.objects.get(name="INIT").content) <= 5:
+        if int(get_setting("INIT")) <= 5:
             return redirect("/init/")
     except:
         return redirect("/init/")
     try:
-        if SettingModel.objects.get(name="UPDATE_FROM").content != QEXO_VERSION:
+        if get_setting("UPDATE_FROM") != QEXO_VERSION:
             return redirect("/update/")
     except:
         return redirect("/update/")
@@ -236,12 +241,12 @@ def index(request):
 def pages(request):
     context = dict()
     try:
-        if int(SettingModel.objects.get(name="INIT").content) <= 5:
+        if int(get_setting("INIT")) <= 5:
             return redirect("/init/")
     except:
         pass
     try:
-        if SettingModel.objects.get(name="UPDATE_FROM").content != QEXO_VERSION:
+        if get_setting("UPDATE_FROM") != QEXO_VERSION:
             return redirect("/update/")
     except:
         return redirect("/update/")
@@ -258,7 +263,7 @@ def pages(request):
             context["file_content"] = repr(Provider.get_content(file_path)).replace("<", "\\<").replace(">", "\\>").replace("!", "\\!")
             context['filename'] = file_path.split("/")[-2] + "/" + file_path.split("/")[-1]
             context["file_path"] = file_path
-            context["emoji"] = SettingModel.objects.get(name="VDITOR_EMOJI").content
+            context["emoji"] = get_setting("VDITOR_EMOJI")
             try:
                 if SettingModel.objects.get(
                         name="IMG_TYPE").content:
@@ -277,7 +282,7 @@ def pages(request):
                 ">", "\\>").replace("!", "\\!")
             context['filename'] = file_path.split("/")[-1]
             context['fullname'] = file_path
-            context["emoji"] = SettingModel.objects.get(name="VDITOR_EMOJI").content
+            context["emoji"] = get_setting("VDITOR_EMOJI")
             try:
                 if SettingModel.objects.get(
                         name="IMG_TYPE").content:
@@ -285,11 +290,11 @@ def pages(request):
             except Exception as error:
                 context["error"] = repr(error)
         elif "new_page" in load_template:
-            context["emoji"] = SettingModel.objects.get(name="VDITOR_EMOJI").content
+            context["emoji"] = get_setting("VDITOR_EMOJI")
             try:
                 now = time()
-                alg = SettingModel.objects.get(name="ABBRLINK_ALG").content
-                rep = SettingModel.objects.get(name="ABBRLINK_REP").content
+                alg = get_setting("ABBRLINK_ALG")
+                rep = get_setting("ABBRLINK_REP")
                 abbrlink = get_crc_by_time(str(now), alg, rep)
                 context["file_content"] = repr(Provider.get_content("scaffolds/page.md")).replace("<", "\\<").replace(">", "\\>").replace(
                     "{{ date }}", strftime("%Y-%m-%d %H:%M:%S", localtime(now))).replace(
@@ -303,11 +308,11 @@ def pages(request):
             except Exception as error:
                 context["error"] = repr(error)
         elif "new" in load_template:
-            context["emoji"] = SettingModel.objects.get(name="VDITOR_EMOJI").content
+            context["emoji"] = get_setting("VDITOR_EMOJI")
             try:
                 now = time()
-                alg = SettingModel.objects.get(name="ABBRLINK_ALG").content
-                rep = SettingModel.objects.get(name="ABBRLINK_REP").content
+                alg = get_setting("ABBRLINK_ALG")
+                rep = get_setting("ABBRLINK_REP")
                 abbrlink = get_crc_by_time(str(now), alg, rep)
                 context["file_content"] = repr(
                     Provider.get_content("scaffolds/post.md").replace("{{ date }}", strftime("%Y-%m-%d %H:%M:%S", localtime(now))).replace(
@@ -419,45 +424,46 @@ def pages(request):
             context["search"] = search
         elif 'settings' in load_template:
             try:
-                context['GH_REPO_PATH'] = SettingModel.objects.get(name="GH_REPO_PATH").content
-                context['GH_REPO_BRANCH'] = SettingModel.objects.get(name="GH_REPO_BRANCH").content
-                context['GH_REPO'] = SettingModel.objects.get(name="GH_REPO").content
-                context['GH_TOKEN'] = SettingModel.objects.get(name="GH_TOKEN").content
+                context['GH_REPO_PATH'] = get_setting("GH_REPO_PATH")
+                context['GH_REPO_BRANCH'] = get_setting("GH_REPO_BRANCH")
+                context['GH_REPO'] = get_setting("GH_REPO")
+                context['GH_TOKEN'] = get_setting("GH_TOKEN")
                 token_len = len(context['GH_TOKEN'])
                 if token_len >= 5:
                     context['GH_TOKEN'] = context['GH_TOKEN'][:3] + "*" * (token_len - 5) + \
                                           context['GH_TOKEN'][-1]
-                context['IMG_CUSTOM_URL'] = SettingModel.objects.get(name='IMG_CUSTOM_URL').content
-                context['IMG_CUSTOM_HEADER'] = SettingModel.objects.get(
-                    name='IMG_CUSTOM_HEADER').content
+                context['IMG_CUSTOM_URL'] = get_setting('IMG_CUSTOM_URL')
+                context['IMG_CUSTOM_HEADER'] = get_setting('IMG_CUSTOM_HEADER')
                 context['IMG_CUSTOM_BODY'] = SettingModel.objects.get(
                     name='IMG_CUSTOM_BODY').content
-                context['IMG_JSON_PATH'] = SettingModel.objects.get(name='IMG_JSON_PATH').content
-                context['IMG_POST'] = SettingModel.objects.get(name='IMG_POST').content
-                context['IMG_API'] = SettingModel.objects.get(name='IMG_API').content
+                context['IMG_JSON_PATH'] = get_setting('IMG_JSON_PATH')
+                context['IMG_POST'] = get_setting('IMG_POST')
+                context['IMG_API'] = get_setting('IMG_API')
                 if check_if_vercel():
                     context["showUpdate"] = True
-                context['S3_KEY_ID'] = SettingModel.objects.get(name="S3_KEY_ID").content
-                context['S3_ACCESS_KEY'] = SettingModel.objects.get(name="S3_ACCESS_KEY").content
-                context['S3_ENDPOINT'] = SettingModel.objects.get(name="S3_ENDPOINT").content
-                context['S3_BUCKET'] = SettingModel.objects.get(name="S3_BUCKET").content
-                context['S3_PATH'] = SettingModel.objects.get(name="S3_PATH").content
-                context['S3_PREV_URL'] = SettingModel.objects.get(name="S3_PREV_URL").content
-                context['FTP_HOST'] = SettingModel.objects.get(name="FTP_HOST").content
-                context['FTP_PORT'] = SettingModel.objects.get(name="FTP_PORT").content
-                context['FTP_USER'] = SettingModel.objects.get(name="FTP_USER").content
-                context['FTP_PASS'] = SettingModel.objects.get(name="FTP_PASS").content
-                context['FTP_PATH'] = SettingModel.objects.get(name="FTP_PATH").content
-                context['FTP_PREV_URL'] = SettingModel.objects.get(name="FTP_PREV_URL").content
-                context['IMG_TYPE'] = SettingModel.objects.get(name="IMG_TYPE").content
-                context['ABBRLINK_ALG'] = SettingModel.objects.get(name="ABBRLINK_ALG").content
-                context['ABBRLINK_REP'] = SettingModel.objects.get(name="ABBRLINK_REP").content
-                context["ALLOW_FRIEND"] = SettingModel.objects.get(name="ALLOW_FRIEND").content
-                context["ONEPUSH"] = SettingModel.objects.get(name="ONEPUSH").content
-                context["STATISTIC_DOMAINS"] = SettingModel.objects.get(name="STATISTIC_DOMAINS").content
-                context["STATISTIC_ALLOW"] = SettingModel.objects.get(name="STATISTIC_ALLOW").content
-                context["FRIEND_RECAPTCHA"] = SettingModel.objects.get(name="FRIEND_RECAPTCHA").content
-                context["RECAPTCHA_TOKEN"] = SettingModel.objects.get(name="RECAPTCHA_TOKEN").content
+                context['S3_KEY_ID'] = get_setting("S3_KEY_ID")
+                context['S3_ACCESS_KEY'] = get_setting("S3_ACCESS_KEY")
+                context['S3_ENDPOINT'] = get_setting("S3_ENDPOINT")
+                context['S3_BUCKET'] = get_setting("S3_BUCKET")
+                context['S3_PATH'] = get_setting("S3_PATH")
+                context['S3_PREV_URL'] = get_setting("S3_PREV_URL")
+                context['FTP_HOST'] = get_setting("FTP_HOST")
+                context['FTP_PORT'] = get_setting("FTP_PORT")
+                context['FTP_USER'] = get_setting("FTP_USER")
+                context['FTP_PASS'] = get_setting("FTP_PASS")
+                context['FTP_PATH'] = get_setting("FTP_PATH")
+                context['FTP_PREV_URL'] = get_setting("FTP_PREV_URL")
+                context['IMG_TYPE'] = get_setting("IMG_TYPE")
+                context['ABBRLINK_ALG'] = get_setting("ABBRLINK_ALG")
+                context['ABBRLINK_REP'] = get_setting("ABBRLINK_REP")
+                context["ALLOW_FRIEND"] = get_setting("ALLOW_FRIEND")
+                context["ONEPUSH"] = get_setting("ONEPUSH")
+                context["STATISTIC_DOMAINS"] = get_setting("STATISTIC_DOMAINS")
+                context["STATISTIC_ALLOW"] = get_setting("STATISTIC_ALLOW")
+                context["FRIEND_RECAPTCHA"] = get_setting("FRIEND_RECAPTCHA")
+                context["RECAPTCHA_TOKEN"] = get_setting("RECAPTCHA_TOKEN")
+                context["LOGIN_RECAPTCHA_SITE_TOKEN"] = get_setting("LOGIN_RECAPTCHA_SITE_TOKEN")
+                context["LOGIN_RECAPTCHA_SERVER_TOKEN"] = get_setting("LOGIN_RECAPTCHA_SERVER_TOKEN")
             except:
                 return redirect("/update/")
         elif 'advanced' in load_template:

@@ -332,7 +332,7 @@ def del_friend(request):
 @csrf_exempt
 def ask_friend(request):
     try:
-        if SettingModel.objects.get(name="ALLOW_FRIEND").content != "是":
+        if get_setting("ALLOW_FRIEND") != "是":
             return HttpResponseForbidden()
         # 人机验证
         verify = request.POST.get("verify")
@@ -342,16 +342,16 @@ def ask_friend(request):
             if verify:
                 captcha = requests.get("https://recaptcha.net/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
                 if captcha["score"] <= 0.5:
-                    return {"msg": "验证失败！", "status": False}
+                    return {"msg": "人机验证失败！", "status": False}
             else:
-                return {"msg": "验证失败！", "status": False}
+                return {"msg": "人机验证失败！", "status": False}
         if typ == "v2":
             if verify:
                 captcha = requests.get("https://recaptcha.net/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
                 if not captcha["success"]:
-                    return {"msg": "验证失败！", "status": False}
+                    return {"msg": "人机验证失败！", "status": False}
             else:
-                return {"msg": "验证失败！", "status": False}
+                return {"msg": "人机验证失败！", "status": False}
         # 通过验证
         friend = FriendModel()
         friend.name = request.POST.get("name")
@@ -402,7 +402,7 @@ def status(request):
         else:
             posts = update_posts_cache()
         posts_count = len(posts)
-        last = SettingModel.objects.get(name="LAST_LOGIN").content
+        last = get_setting("LAST_LOGIN")
         context = {"data": {"posts": str(posts_count), "last": last}, "status": True}
     except Exception as error:
         context = {"msg": repr(error), "status": False}
@@ -413,13 +413,13 @@ def status(request):
 def statistic(request):
     try:
         url = str(request.META.get('HTTP_REFERER'))
-        allow_domains = SettingModel.objects.get(name="STATISTIC_DOMAINS").content.split(",")
+        allow_domains = get_setting("STATISTIC_DOMAINS").split(",")
         t, allow = get_domain(url), False
         for allow_domain in allow_domains:
             if allow_domain in t:
                 allow = True
                 break
-        if not (allow and (t and SettingModel.objects.get(name="STATISTIC_ALLOW").content == "是")):
+        if not (allow and (t and get_setting("STATISTIC_ALLOW") == "是")):
             print("Not allowed domain: " + url)
             return HttpResponseForbidden()
         if url[:7] == "http://":

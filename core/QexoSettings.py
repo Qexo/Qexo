@@ -66,6 +66,8 @@ ALL_SETTINGS = [  # [名称, 默认值, 是否在尝试修复时重置, 简介]
     ["PROVIDER", "", False, "2.0之后的平台JSON"],
     ["STATISTIC_ALLOW", "否", False, "是否开启统计功能 是/否"],
     ["STATISTIC_DOMAINS", "", False, "统计安全域名 英文半角逗号间隔"],
-    ["FRIEND_RECAPTCHA", "否", False, "启用友链验证码reCaptcha 是/v2/v3"],
-    ["RECAPTCHA_TOKEN", "", False, "reCaptcha服务器端密钥"],
+    ["FRIEND_RECAPTCHA", "否", False, "启用友链验证码reCaptcha 关闭/v2/v3"],
+    ["RECAPTCHA_TOKEN", "", False, "用于友链reCaptcha服务器端密钥"],
+    ["LOGIN_RECAPTCHA_SITE_TOKEN", "", False, "用于登录验证的reCaptchaV3网站密钥"],
+    ["LOGIN_RECAPTCHA_SERVER_TOKEN", "", False, "用于登录验证的reCaptchaV3服务端密钥"]
 ]

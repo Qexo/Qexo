@@ -39,29 +39,51 @@ def auth(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
-# 设置 Github 配置 api/set_github
+# 设置 Hexo Provider 配置 api/set_hexo
 @login_required(login_url="/login/")
-def set_github(request):
+def set_hexo(request):
     try:
-        repo = request.POST.get("repo")
-        branch = request.POST.get("branch")
-        token = request.POST.get("token")
-        if not token:
-            try:
-                token = get_setting("GH_TOKEN")
-            except:
-                pass
-        path = request.POST.get("path")
-        try:
-            _repo = github.Github(token).get_repo(repo).get_contents(path + "source/_posts",
-                                                                     ref=branch)
-            save_setting("GH_REPO_PATH", path)
-            save_setting("GH_REPO_BRANCH", branch)
-            save_setting("GH_REPO", repo)
-            save_setting("GH_TOKEN", token)
-            context = {"msg": "保存成功!", "status": True}
-        except:
-            context = {"msg": "校验失败!", "status": False}
+        provider = request.POST.get('provider')
+        verify = verify_provider(json.loads(provider))
+        msg = ""
+        if verify["status"] == -1:
+            return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "远程连接错误!", "status": False})})
+        if verify["hexo"]:
+            msg += "检测到Hexo版本: " + verify["hexo"]
+        else:
+            msg += "未检测到Hexo"
+        if verify["indexhtml"]:
+            msg += "\n检测到index.html, 这可能不是正确的仓库"
+        if verify["config_hexo"]:
+            msg += "\n检测到Hexo配置文件"
+        else:
+            msg += "\n未检测到Hexo配置"
+        if verify["theme"]:
+            msg += "\n检测到主题: " + verify["theme"]
+        else:
+            msg += "\n未检测到主题"
+        if verify["config_theme"]:
+            msg += "\n检测到主题配置" + verify["config_theme"]
+        else:
+            msg += "\n未检测到主题配置"
+        if verify["theme_dir"]:
+            msg += "\n检测到主题目录"
+        else:
+            msg += "\n未检测到主题目录"
+        if verify["package"]:
+            msg += "\n检测到package.json"
+        else:
+            msg += "\n未检测到package.json"
+        if verify["source"]:
+            msg += "\n检测到source目录 "
+        else:
+            msg += "\n未检测到source目录"
+        msg = msg.replace("\n", "<br>")
+        if verify["status"]:
+            save_setting("PROVIDER", provider)
+            context = {"msg": msg + "\n保存配置成功!", "status": True}
+        else:
+            context = {"msg": msg + "\n配置校验失败", "status": False}
     except Exception as e:
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})

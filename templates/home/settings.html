@@ -212,7 +212,8 @@
                                         <div class="form-group">
                                             <label class="form-control-label">登录页 reCaptchaV3
                                                 用户端密钥</label>
-                                            <input type="text" name="site-token" class="form-control"
+                                            <input type="text" name="site-token"
+                                                   class="form-control"
                                                    placeholder="留空即关闭该功能"
                                                    value="{{ LOGIN_RECAPTCHA_SITE_TOKEN }}">
                                         </div>
@@ -236,50 +237,27 @@
                                 </div>
                             </div>
                         </form>
-                        <form id="github-settings" onsubmit="javascript: return false;">
+                        <form id="hexo-settings" onsubmit="javascript: return false;">
                             <hr class="my-4"/>
-                            <h6 class="heading-small text-muted mb-4">Github配置</h6>
+                            <h6 class="heading-small text-muted mb-4">Hexo配置</h6>
                             <div class="pl-lg-4">
-                                <div class="row">
-                                    {% csrf_token %}
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">Github仓库</label>
-                                            <input type="text" name="repo" class="form-control"
-                                                   placeholder="username/repo"
-                                                   value="{{ GH_REPO }}">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">项目分支</label>
-                                            <input type="text" name="branch" class="form-control"
-                                                   placeholder="main"
-                                                   value="{{ GH_REPO_BRANCH }}">
-                                        </div>
-                                    </div>
-                                </div>
+                                {% csrf_token %}
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">Github密钥</label>
-                                            <input type="text" name="token" class="form-control"
-                                                   placeholder="{{ GH_TOKEN }}" value="">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">仓库路径</label>
-                                            <input type="text" name="path" class="form-control"
-                                                   placeholder="若为根目录请留空"
-                                                   value="{{ GH_REPO_PATH }}">
+                                            <label class="form-control-label">服务商</label>
+                                            <select name="provider" id="provider-container"
+                                                    class="form-control"
+                                                    onchange="change_provider(this.value)">
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
+                                <div id="hexo-settings-container"></div>
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <input type="button" class="btn btn-primary" value="提交"
-                                               onclick="submit_github_config()">
+                                               onclick="set_hexo()">
                                     </div>
                                 </div>
                             </div>
@@ -634,13 +612,25 @@
             }
         }
 
-        function submit_github_config() {
-            var loading = new KZ_Loading('正在校验并保存中...');
+        function set_hexo() {
+            let loading = new KZ_Loading('正在校验并保存中...');
             loading.show();
+            let form = $('#hexo-settings').serializeArray();
+            let params = {};
+            for (let i = 0; i < form.length; i++) {
+                params[form[i]["name"]] = form[i]["value"];
+            }
+            delete params["provider"]; // remove provider name from params array
+            delete params["csrfmiddlewaretoken"]; // remove the CSRF token from params array
             $.ajax({
-                url: '/api/set_github/',
+                url: '/api/set_hexo/',
                 method: 'post',
-                data: $('#github-settings').serialize(),
+                data: {
+                    "provider": JSON.stringify({
+                        "provider": $("#provider-container").val(),
+                        "params": params
+                    })
+                },
                 dataType: "json",
                 success: function (res) {
                     loading.destroy();
@@ -952,7 +942,7 @@
             })
         }
 
-        function submit_security_config(){
+        function submit_security_config() {
             let loading = new KZ_Loading('正在保存中... ');
             loading.show();
             $.ajax({
@@ -1394,6 +1384,87 @@
         if ('{{ IMG_TYPE }}' === "") {
             $("#image-form").html("");
         }
+
+
+        const all_providers = {{ all_providers | safe }};
+        var now_provider = {{ PROVIDER | safe }};
+
+        function change_provider(provider) {
+            let params = all_providers[provider];
+            let t = 0;
+            let html = '';
+            if (provider === now_provider["provider"]) {
+                for (let key in params) {
+                    if (t % 2 === 0) {  // first param
+                        html += `<div class="row">
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label class="form-control-label">` + params[key] + `</label>
+                                        <input type="text" name="` + key + `" class="form-control"
+                                               placeholder="` + key + `"
+                                               value="` + now_provider["params"][key] + `">
+                                    </div>
+                                </div>`
+                        t += 1;
+                    } else {
+                        html += `<div class="col-lg-6">
+                                <div class="form-group">
+                                    <label class="form-control-label">` + params[key] + `</label>
+                                    <input type="text" name="` + key + `" class="form-control"
+                                           placeholder="` + key + `"
+                                           value="` + now_provider["params"][key] + `">
+                                </div>
+                            </div>
+                        </div>`
+                        t += 1;
+                    }
+                }
+                if (t % 2 === 1) {
+                    html += '</div>';
+                }
+            } else {
+                for (let key in params) {
+                    if (t % 2 === 0) {  // first param
+                        html += `<div class="row">
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label class="form-control-label">` + params[key] + `</label>
+                                        <input type="text" name="` + key + `" class="form-control"
+                                               placeholder="` + key + `"
+                                               value="">
+                                    </div>
+                                </div>`
+                        t += 1;
+                    } else {
+                        html += `<div class="col-lg-6">
+                                <div class="form-group">
+                                    <label class="form-control-label">` + params[key] + `</label>
+                                    <input type="text" name="` + key + `" class="form-control"
+                                           placeholder="` + key + `"
+                                           value="">
+                                </div>
+                            </div>
+                        </div>`
+                        t += 1;
+                    }
+                }
+                if (t % 2 === 1) {
+                    html += '</div>';
+                }
+            }
+            $("#hexo-settings-container").html(html);
+        }
+
+        let provider_container = "";
+        for (let key in all_providers) {
+            if (now_provider["provider"] === key) {
+                provider_container += `<option selected>` + key + `</option>`;
+                change_provider(key);
+            } else {
+                provider_container += `<option>` + key + `</option>`;
+            }
+        }
+        $("#provider-container").html(provider_container);
 
     </script>
 {% endblock javascripts %}

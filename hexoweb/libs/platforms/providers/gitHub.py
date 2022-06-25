@@ -12,9 +12,7 @@ class Github(Provider):
         self.path = path
         self.repo = github.Github(self.token).get_repo(self._repo)
 
-    _params = {
-        'required': ['token', '_repo', 'branch', 'path']
-    }
+    params = {'token': "Github密钥(Token)", 'repo': "Github仓库", 'branch': "项目分支", 'path': "博客路径 留空为根目录"}
 
     def get_post(self, post):
         try:

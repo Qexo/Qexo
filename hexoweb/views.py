@@ -1,4 +1,6 @@
 # -*- encoding: utf-8 -*-
+import json
+
 from django.shortcuts import redirect
 from django.contrib.auth import logout
 from django import template
@@ -464,6 +466,13 @@ def pages(request):
                 context["RECAPTCHA_TOKEN"] = get_setting("RECAPTCHA_TOKEN")
                 context["LOGIN_RECAPTCHA_SITE_TOKEN"] = get_setting("LOGIN_RECAPTCHA_SITE_TOKEN")
                 context["LOGIN_RECAPTCHA_SERVER_TOKEN"] = get_setting("LOGIN_RECAPTCHA_SERVER_TOKEN")
+                context["PROVIDER"] = get_setting("PROVIDER")
+                # Get Provider Settings
+                all_provider = all_providers()
+                context["all_providers"] = dict()
+                for provider in all_provider:
+                    params = get_params(provider)
+                    context["all_providers"][provider] = params
             except:
                 return redirect("/update/")
         elif 'advanced' in load_template:

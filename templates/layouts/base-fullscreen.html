@@ -38,7 +38,18 @@
           href="{{ cdn_prev }}qexo-static@1.4.0/assets/css/notyf.min.css"
           type="text/css">
     <!-- Specific CSS goes HERE -->
-    {% block stylesheets %}{% endblock stylesheets %}
+    {% block stylesheets %}
+        <style>
+            .notyf__toast {
+                max-width: 24em !important;
+            }
+
+            .notyf__ripple {
+                height: 60em !important;
+                width: 60em !important;
+            }
+        </style>
+    {% endblock stylesheets %}
 
 </head>
 

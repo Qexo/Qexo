@@ -19,12 +19,29 @@ import tarfile
 from ftplib import FTP
 from hexoweb.libs.onepush import notify
 import html2text as ht
-from hexoweb.libs.platforms import get_provider
+from hexoweb.libs.platforms import get_provider, all_providers, get_params
+import yaml
 
 disable_warnings()
 
-Provider = json.loads(SettingModel.objects.get(name="PROVIDER").content)
-Provider = get_provider(Provider["provider"], **Provider["params"])
+
+def get_setting(name):
+    try:
+        return SettingModel.objects.get(name=name).content
+    except:
+        return ""
+
+
+Provider = ''
+
+
+def update_provider():
+    global Provider
+    provider = json.loads(get_setting("PROVIDER"))
+    Provider = get_provider(provider["provider"], **provider["params"])
+
+
+update_provider()
 
 
 @register.filter  # 在模板中使用range()
@@ -59,12 +76,6 @@ def get_cdnjs():
 
 def get_post(post):
     return Provider.get_post(post)
-
-def get_setting(name):
-    try:
-        return SettingModel.objects.get(name=name).content
-    except:
-        return ""
 
 
 # 获取用户自定义的样式配置
@@ -573,3 +584,78 @@ def notify_me(title, content):
 
 def get_domain(domain):
     return domain.split("/")[2].split(":")[0] if domain[:4] == "http" else domain.split(":")[0]
+
+
+def verify_provider(provider):
+    try:
+        provider = get_provider(provider["provider"], **provider["params"])
+        home = provider.get_path("")
+        hexo = 0
+        indexhtml = 0
+        source = 0
+        pack = 0
+        theme = 0
+        theme_dir = 0
+        config_hexo = 0
+        config_theme = 0
+        status = 0
+        # 校验根目录文件
+        for file in home["data"]:
+            if file["name"] == "index.html" and file["type"] == "file":
+                indexhtml = 1
+            if file["name"] == "source" and file["type"] == "dir":
+                source = 1
+            if file["name"] == "themes" and file["type"] == "dir":
+                theme_dir = 1
+            if file["name"] == "package.json" and file["type"] == "file":
+                pack = "package.json"
+            if file["name"] == "_config.yml" and file["type"] == "file":
+                config_hexo = "_config.yml"
+        # 读取主题 校验主题配置
+        # try:
+        if config_hexo:
+            res = provider.get_content("_config.yml")
+            content = yaml.load(res, Loader=yaml.SafeLoader)
+            if content.get("theme"):
+                theme = content.get("theme")
+                for file in home["data"]:
+                    if file["name"] == "_config.{}.yml".format(theme) and file["type"] == "file":
+                        config_theme = "_config.{}.yml".format(theme)
+                        break
+                if (not config_theme) and theme_dir:
+                    theme_path = provider.get_path("themes/" + theme)
+                    for file in theme_path["data"]:
+                        if file["name"] == "_config.yml" and file["type"] == "file":
+                            config_theme = "themes/" + theme + "_config.yml"
+                            break
+        # except:
+        #    pass
+        # 校验 Package.json 及 Hexo
+        if pack:
+            try:
+                content = json.loads(provider.get_content("package.json"))
+                if content:
+                    if content.get("hexo"):
+                        if content["hexo"].get("version"):
+                            hexo = content["hexo"].get("version")
+                    if content.get("dependencies"):
+                        if content["dependencies"].get("hexo"):
+                            hexo = content["dependencies"].get("hexo")
+            except:
+                pass
+        # 总结校验
+        if hexo and config_hexo and (not indexhtml) and source and theme and pack and config_theme:
+            status = 1
+        return {
+            "status": status,
+            "hexo": hexo,
+            "config_theme": config_theme,
+            "config_hexo": config_hexo,
+            "indexhtml": indexhtml,
+            "source": source,
+            "theme": theme,
+            "theme_dir": theme_dir,
+            "package": pack,
+        }
+    except:
+        return {"status": -1}

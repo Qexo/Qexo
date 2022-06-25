@@ -2,7 +2,7 @@ from .exceptions import NoSuchProviderError
 
 
 class Provider(object):
-    _params = None
+    params = None
 
     def get_post(self, post):
         ...
@@ -34,9 +34,6 @@ class Provider(object):
     def create_hook(self, config):
         ...
 
-    @property
-    def params(self):
-        return self._params
 
 
 from .providers import _all_providers
@@ -44,6 +41,12 @@ from .providers import _all_providers
 
 def all_providers():
     return list(_all_providers.keys())
+
+
+def get_params(provider_name):
+    if provider_name not in _all_providers:
+        raise NoSuchProviderError(provider_name)
+    return _all_providers[provider_name].params
 
 
 def get_provider(provider_name: str, **kwargs):

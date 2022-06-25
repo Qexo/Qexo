@@ -41,7 +41,10 @@ def update_provider():
     Provider = get_provider(provider["provider"], **provider["params"])
 
 
-update_provider()
+try:
+    update_provider()
+except:
+    pass
 
 
 @register.filter  # 在模板中使用range()
@@ -612,24 +615,24 @@ def verify_provider(provider):
             if file["name"] == "_config.yml" and file["type"] == "file":
                 config_hexo = "_config.yml"
         # 读取主题 校验主题配置
-        # try:
-        if config_hexo:
-            res = provider.get_content("_config.yml")
-            content = yaml.load(res, Loader=yaml.SafeLoader)
-            if content.get("theme"):
-                theme = content.get("theme")
-                for file in home["data"]:
-                    if file["name"] == "_config.{}.yml".format(theme) and file["type"] == "file":
-                        config_theme = "_config.{}.yml".format(theme)
-                        break
-                if (not config_theme) and theme_dir:
-                    theme_path = provider.get_path("themes/" + theme)
-                    for file in theme_path["data"]:
-                        if file["name"] == "_config.yml" and file["type"] == "file":
-                            config_theme = "themes/" + theme + "_config.yml"
+        try:
+            if config_hexo:
+                res = provider.get_content("_config.yml")
+                content = yaml.load(res, Loader=yaml.SafeLoader)
+                if content.get("theme"):
+                    theme = content.get("theme")
+                    for file in home["data"]:
+                        if file["name"] == "_config.{}.yml".format(theme) and file["type"] == "file":
+                            config_theme = "_config.{}.yml".format(theme)
                             break
-        # except:
-        #    pass
+                    if (not config_theme) and theme_dir:
+                        theme_path = provider.get_path("themes/" + theme)
+                        for file in theme_path["data"]:
+                            if file["name"] == "_config.yml" and file["type"] == "file":
+                                config_theme = "themes/" + theme + "_config.yml"
+                                break
+        except:
+           pass
         # 校验 Package.json 及 Hexo
         if pack:
             try:

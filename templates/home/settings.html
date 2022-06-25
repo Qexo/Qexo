@@ -636,6 +636,10 @@
                     loading.destroy();
                     if (res.status) {
                         notyf.success(res.msg);
+                        now_provider = {
+                            "provider": $("#provider-container").val(),
+                            "params": params
+                        };
                     } else {
                         notyf.error(res.msg);
                     }

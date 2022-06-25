@@ -140,35 +140,72 @@ def init_view(request):
                 context["repassword"] = repassword
         if request.POST.get("step") == "3":
             try:
-                repo = request.POST.get("repo")
-                branch = request.POST.get("branch")
-                token = request.POST.get("token")
-                path = request.POST.get("path")
-                try:
-                    _repo = github.Github(token).get_repo(repo).get_contents(path + "source/_posts",
-                                                                             ref=branch)
-                    save_setting("GH_REPO_PATH", path)
-                    save_setting("GH_REPO_BRANCH", branch)
-                    save_setting("GH_REPO", repo)
-                    save_setting("GH_TOKEN", token)
-                    if check_if_vercel():
-                        save_setting("INIT", "5")
-                        step = "5"
+                provider = {
+                    "provider": request.POST.get("provider"),
+                    "params": dict(request.POST)
+                }
+                del provider["params"]["provider"]
+                del provider["params"]["step"]
+                del provider["params"]["csrfmiddlewaretoken"]
+                for key in provider["params"].keys():
+                    provider["params"][key] = provider["params"][key][0]
+                verify = verify_provider(provider)
+                if verify["status"] and verify["status"] != -1:
+                    save_setting("PROVIDER", json.dumps(provider))
+                    update_provider()
+                    step = "5" if check_if_vercel() else "6"
+                    save_setting("INIT", step)
+                else:
+                    msg = ""
+                    if verify["status"] == -1:
+                        msg = "远程连接错误!"
+                    if verify["hexo"]:
+                        msg += "检测到Hexo版本: " + verify["hexo"]
                     else:
-                        save_setting("INIT", "6")
-                        step = "6"
-                except:
-                    msg = "校验失败"
-                    context["repo"] = repo
-                    context["branch"] = branch
-                    context["token"] = token
-                    context["path"] = path
+                        msg += "未检测到Hexo"
+                    if verify["indexhtml"]:
+                        msg += "\n检测到index.html, 这可能不是正确的仓库"
+                    if verify["config_hexo"]:
+                        msg += "\n检测到Hexo配置文件"
+                    else:
+                        msg += "\n未检测到Hexo配置"
+                    if verify["theme"]:
+                        msg += "\n检测到主题: " + verify["theme"]
+                    else:
+                        msg += "\n未检测到主题"
+                    if verify["config_theme"]:
+                        msg += "\n检测到主题配置" + verify["config_theme"]
+                    else:
+                        msg += "\n未检测到主题配置"
+                    if verify["theme_dir"]:
+                        msg += "\n检测到主题目录"
+                    else:
+                        msg += "\n未检测到主题目录"
+                    if verify["package"]:
+                        msg += "\n检测到package.json"
+                    else:
+                        msg += "\n未检测到package.json"
+                    if verify["source"]:
+                        msg += "\n检测到source目录 "
+                    else:
+                        msg += "\n未检测到source目录"
+                    msg = msg.replace("\n", "<br>")
+                    context["PROVIDER"] = provider
+                    # Get Provider Settings
+                    all_provider = all_providers()
+                    context["all_providers"] = dict()
+                    for provider in all_provider:
+                        params = get_params(provider)
+                        context["all_providers"][provider] = params
             except Exception as e:
                 msg = repr(e)
-                context["repo"] = repo
-                context["branch"] = branch
-                context["token"] = token
-                context["path"] = path
+                context["PROVIDER"] = get_setting("PROVIDER")
+                # Get Provider Settings
+                all_provider = all_providers()
+                context["all_providers"] = dict()
+                for provider in all_provider:
+                    params = get_params(provider)
+                    context["all_providers"][provider] = params
         if request.POST.get("step") == "5":
             project_id = request.POST.get("id")
             vercel_token = request.POST.get("token")
@@ -187,6 +224,14 @@ def init_view(request):
             context["username"] = user.username
     elif int(step) >= 6:
         return redirect("/")
+    if int(step) == 3:
+        context["PROVIDER"] = get_setting("PROVIDER")
+        # Get Provider Settings
+        all_provider = all_providers()
+        context["all_providers"] = dict()
+        for provider in all_provider:
+            params = get_params(provider)
+            context["all_providers"][provider] = params
     context["msg"] = msg
     context["step"] = step
     return render(request, "accounts/init.html", context)

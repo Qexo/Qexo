@@ -3,14 +3,25 @@
 {% block title %} 初始化 {% endblock title %}
 
 <!-- Specific CSS goes HERE -->
-{% block stylesheets %}{% endblock stylesheets %}
+{% block stylesheets %}
+    <style>
+        .notyf__toast {
+            max-width: 24em !important;
+        }
+
+        .notyf__ripple {
+            height: 60em !important;
+            width: 60em !important;
+        }
+    </style>
+{% endblock stylesheets %}
 
 {% block content %}
 
     <!-- Page content -->
     <div class="container mt--8 pb-5">
         <div class="row justify-content-center">
-            {% if step == "4" or step == "2" %}
+            {% if step == "4" or step == "2" or step == "3" %}
                 <div class="col-lg-8 col-md-5">
             {% else %}
                 <div class="col-lg-5 col-md-5">
@@ -25,13 +36,13 @@
                             <h3>用户配置</h3>
                         {% endif %}
                         {% if step == "3" %}
-                            <h3>Github配置</h3>
+                            <h2>Hexo 配置</h2>
                         {% endif %}
                         {% if step == "4" %}
                             <h3>图床配置</h3>
                         {% endif %}
                         {% if step == "5" %}
-                            <h3>Vercel配置</h3>
+                            <h3>Vercel 配置</h3>
                         {% endif %}
                         {% if step == "6" %}
                             <h3>恭喜您初始化完毕</h3>
@@ -95,28 +106,21 @@
                         {% endif %}
                         {% if step == "3" %}
                             <hr class="my-4"/>
-                            <div class="form-group">
-                                <label class="form-control-label">Github仓库</label>
-                                <input type="text" name="repo"
-                                       class="form-control" placeholder="username/repo"
-                                       value="{{ repo }}">
+                            <div class="pl-lg-4">
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">服务商</label>
+                                            <select name="provider" id="provider-container"
+                                                    class="form-control"
+                                                    onchange="change_provider(this.value)">
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="hexo-settings-container"></div>
                             </div>
-                            <div class="form-group">
-                                <label class="form-control-label">项目分支</label>
-                                <input type="text" name="branch" class="form-control"
-                                       placeholder="main" value="{{ branch }}">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-control-label">Github密钥</label>
-                                <input type="text" name="token" class="form-control"
-                                       placeholder="你的Github密钥" value="{{ token }}">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-control-label">仓库路径</label>
-                                <input type="text" name="path" class="form-control"
-                                       placeholder="留空即为根目录" value="{{ path }}">
-                            </div>
-                            <div class="text-center">
+                            <div class="text-center" id="submit-button">
                                 <button type="submit" class="btn btn-primary my-4">下一步</button>
                             </div>
                         {% endif %}
@@ -152,7 +156,7 @@
 
     <script>
         {% if msg %}
-            notyf.error("{{ msg }}");
+            notyf.error("{{ msg|safe }}");
         {% endif %}
         function skip() {
             let temp = document.createElement("form");
@@ -170,5 +174,89 @@
             document.body.appendChild(temp);
             temp.submit();
         }
+
+
+        {% if step == "3" %}
+            const all_providers = {{ all_providers | safe }};
+            var now_provider = {{ PROVIDER | safe }};
+
+            function change_provider(provider) {
+                let params = all_providers[provider];
+                let t = 0;
+                let html = '';
+                if (provider === now_provider["provider"]) {
+                    for (let key in params) {
+                        if (t % 2 === 0) {  // first param
+                            html += `<div class="row">
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label class="form-control-label">` + params[key] + `</label>
+                                        <input type="text" name="` + key + `" class="form-control"
+                                               placeholder="` + key + `"
+                                               value="` + now_provider["params"][key] + `">
+                                    </div>
+                                </div>`
+                            t += 1;
+                        } else {
+                            html += `<div class="col-lg-6">
+                                <div class="form-group">
+                                    <label class="form-control-label">` + params[key] + `</label>
+                                    <input type="text" name="` + key + `" class="form-control"
+                                           placeholder="` + key + `"
+                                           value="` + now_provider["params"][key] + `">
+                                </div>
+                            </div>
+                        </div>`
+                            t += 1;
+                        }
+                    }
+                    if (t % 2 === 1) {
+                        html += '</div>';
+                    }
+                } else {
+                    for (let key in params) {
+                        if (t % 2 === 0) {  // first param
+                            html += `<div class="row">
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label class="form-control-label">` + params[key] + `</label>
+                                        <input type="text" name="` + key + `" class="form-control"
+                                               placeholder="` + key + `"
+                                               value="">
+                                    </div>
+                                </div>`
+                            t += 1;
+                        } else {
+                            html += `<div class="col-lg-6">
+                                <div class="form-group">
+                                    <label class="form-control-label">` + params[key] + `</label>
+                                    <input type="text" name="` + key + `" class="form-control"
+                                           placeholder="` + key + `"
+                                           value="">
+                                </div>
+                            </div>
+                        </div>`
+                            t += 1;
+                        }
+                    }
+                    if (t % 2 === 1) {
+                        html += '</div>';
+                    }
+                }
+                $("#hexo-settings-container").html(html);
+            }
+
+            let provider_container = "";
+            for (let key in all_providers) {
+                if (now_provider["provider"] === key) {
+                    provider_container += `<option selected>` + key + `</option>`;
+                    change_provider(key);
+                } else {
+                    provider_container += `<option>` + key + `</option>`;
+                }
+            }
+            $("#provider-container").html(provider_container);
+        {% endif %}
+
     </script>
 {% endblock javascripts %}

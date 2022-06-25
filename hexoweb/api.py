@@ -82,6 +82,7 @@ def set_hexo(request):
         if verify["status"]:
             save_setting("PROVIDER", provider)
             update_provider()
+            delete_all_caches()
             context = {"msg": msg + "\n保存配置成功!", "status": True}
         else:
             context = {"msg": msg + "\n配置校验失败", "status": False}

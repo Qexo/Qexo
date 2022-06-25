@@ -1,6 +1,4 @@
 # -*- encoding: utf-8 -*-
-import json
-
 from django.shortcuts import redirect
 from django.contrib.auth import logout
 from django import template
@@ -52,6 +50,8 @@ def update_view(request):
     if request.method == 'POST':
         for setting in request.POST.keys():
             save_setting(setting, request.POST.get(setting))
+            if setting == "PROVIDER":
+                update_provider()
     friends = FriendModel.objects.all()  # 历史遗留问题
     for friend in friends:
         if friend.status is None:
@@ -69,10 +69,10 @@ def update_view(request):
         if setting[0] not in already:
             if setting[0] == "PROVIDER":  # update from 1.x
                 context["settings"].append(dict(name=setting[0], value=json.dumps({"provider": "github",
-                                                                                   "params": {"token": get_setting("GK_TOKEN"),
-                                                                                              "branch": get_setting("GK_REPO_BRANCH"),
-                                                                                              "repo": get_setting("GK_REPO"),
-                                                                                              "path": get_setting("GK_PATH")}}),
+                                                                                   "params": {"token": get_setting("GH_TOKEN"),
+                                                                                              "branch": get_setting("GH_REPO_BRANCH"),
+                                                                                              "repo": get_setting("GH_REPO"),
+                                                                                              "path": get_setting("GH_PATH")}}),
                                                 placeholder=setting[3]))
             else:
                 context["settings"].append(dict(name=setting[0], value=setting[1],

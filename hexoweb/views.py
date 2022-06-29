@@ -522,6 +522,10 @@ def pages(request):
                         params["optional"].remove("content")
                     if "title" in params["optional"]:
                         params["optional"].remove("title")
+                    if "content" in params["required"]:
+                        params["required"].remove("content")
+                    if "title" in params["required"]:
+                        params["required"].remove("title")
                     if "markdown" not in params["optional"]:
                         params["optional"].append("markdown")
                     context["all_pushers"][pusher] = params

@@ -52,11 +52,6 @@ def update_view(request):
             save_setting(setting, request.POST.get(setting))
             if setting == "PROVIDER":
                 update_provider()
-    friends = FriendModel.objects.all()  # 历史遗留问题
-    for friend in friends:
-        if friend.status is None:
-            friend.status = True
-            friend.save()
     already = list()
     settings = SettingModel.objects.all()
     for query in settings:
@@ -518,6 +513,18 @@ def pages(request):
                 for provider in all_provider:
                     params = get_params(provider)
                     context["all_providers"][provider] = params
+                # Get OnePush Settings
+                all_pusher = onepush_providers()
+                context["all_pushers"] = dict()
+                for pusher in all_pusher:
+                    params = get_notifier(pusher).params
+                    if "content" in params["optional"]:
+                        params["optional"].remove("content")
+                    if "title" in params["optional"]:
+                        params["optional"].remove("title")
+                    if "markdown" not in params["optional"]:
+                        params["optional"].append("markdown")
+                    context["all_pushers"][pusher] = params
             except:
                 return redirect("/update/")
         elif 'advanced' in load_template:

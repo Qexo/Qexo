@@ -1,9 +1,9 @@
 <script src="{{ cdnjs }}jquery/3.4.1/jquery.min.js"></script>
 <script src="{{ cdnjs }}twitter-bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
 <script src="{{ cdnjs }}js-cookie/2.2.0/js.cookie.min.js"></script>
-<script src="{{ cdn_prev }}qexo-static@1.4.0/assets/vendor/jquery.scrollbar/jquery.scrollbar.min.js"></script>
-<script src="{{ cdn_prev }}qexo-static@1.4.0/assets/vendor/jquery-scroll-lock/dist/jquery-scrollLock.min.js"></script>
-<script src="{{ cdn_prev }}qexo-static@1.4.0/assets/js/notyf.min.js"></script>
+<script src="{{ cdnjs }}jquery.scrollbar/0.2.11/jquery.scrollbar.min.js"></script>
+<script src="{{ cdnjs }}jquery-scroll-lock/3.1.3/jquery-scrollLock.min.js"></script>
+<script src="{{ cdnjs }}notyf/3.2.0/notyf.min.js"></script>
 <script>
     $.ajaxSetup({data: {csrfmiddlewaretoken: '{{ csrf_token }}'}});
 
@@ -14,105 +14,4 @@
     {% if error %}
         notyf.error("{{ error }}");
     {% endif %}
-    function showNotifications() {
-        if (!notifications.length) {
-            $("#notification-board").html('<div class="list-group list-group-flush"><ul ' +
-                'href="#!" class="list-group-item list-group-item-action"><div class="row ' +
-                'align-items-center"><div class="col-auto"><i class="fas ' +
-                'fa-check"></i></div><div class="col ml--2"><div class="d-flex ' +
-                'justify-content-between align-items-center"><div><h4 class="mb-0 ' +
-                'text-sm">消息</h4></div></div><p class="text-sm ' +
-                'mb-0">你当前没有消息哟~</p></div></div></ul></div>');
-            $("#msg-point").css({"background": "inherit"});
-        } else {
-            let html = '<div class="px-3 py-3"><h6 class="text-sm text-muted m-0">你有 ' +
-                '<strong class="text-primary">' + notifications.length + '</strong> 则消息' +
-                '</h6></div><div class="list-group list-group-flush">';
-            for (let i = 0; i < notifications.length; i++) {
-                html += '<a href="javascript:delNotification(\'' + notifications[i]["timestamp"]
-                    + '\')" ' + 'class="list-group-item list-group-item-action"><div ' +
-                    'class="row align-items-center"><div class="col-auto"><i class="fas ' +
-                    'fa-quote-left"></i></div><div class="col ml--2"><div ' +
-                    'class="d-flex justify-content-between align-items-center"><div><h4 ' +
-                    'class="mb-0 text-sm">' + notifications[i]["label"] + '</h4></div><div ' +
-                    'class="text-right text-muted"><small>' + notifications[i]["time"] +
-                    '</small></div></div><p class="text-sm mb-0">' +
-                    notifications[i]["content"] + '</p></div></div></a>';
-            }
-            html += '<div class="px-3 py-3"><h6 class="text-sm text-primary m-0 text-right" ' +
-                'style="cursor: pointer" onclick="clearNotification()">清除全部' +
-                '</h6></div>'
-            $("#notification-board").html(html + '</div>');
-            $("#msg-point").css({
-                "position": "absolute", "top": "0px", "right": "12px", "width": "6px",
-                "height": "6px", "background": "red", "border-radius": "50%"
-            });
-        }
-    }
-
-    $.ajax({
-        url: "/api/get_notifications/",
-        type: "get",
-        success: function (res) {
-            let data = JSON.parse(res);
-            if (data["status"]) {
-                notifications = data["data"];
-                showNotifications();
-            } else {
-                $("#notification-board").html('<div class="list-group list-group-flush"><ul ' +
-                    'href="#!" class="list-group-item list-group-item-action"><div class="row ' +
-                    'align-items-center"><div class="col-auto"><i class="fas ' +
-                    'fa-exclamation-triangle"></i></div><div class="col ml--2"><div class="d-flex ' +
-                    'justify-content-between align-items-center"><div><h4 class="mb-0 ' +
-                    'text-sm">消息</h4></div></div><p class="text-sm ' +
-                    'mb-0">获取失败咯~</p></div></div></ul></div>');
-            }
-        }
-    })
-
-    function delNotification(timestamp) {
-        $.ajax({
-            url: "/api/del_notifications/",
-            type: "post",
-            dataType: "JSON",
-            data: {"time": timestamp},
-            success: function (res) {
-                if (res.status) {
-                    notyf.success(res.msg);
-                    for (let i = 0; i < notifications.length; i++) {
-                        if (notifications[i]["timestamp"] === timestamp) {
-                            notifications.splice(i, 1);
-                            break;
-                        }
-                    }
-                    showNotifications();
-                } else {
-                    notyf.error(res.msg);
-                }
-            },
-            error: function (res) {
-                notyf.error("网络错误!");
-            }
-        })
-    }
-
-    function clearNotification() {
-        $.ajax({
-            url: "/api/clear_notifications/",
-            type: "post",
-            dataType: "JSON",
-            success: function (res) {
-                if (res.status) {
-                    notyf.success(res.msg);
-                    notifications = [];
-                    showNotifications();
-                } else {
-                    notyf.error(res.msg);
-                }
-            },
-            error: function (res) {
-                notyf.error("网络错误!");
-            }
-        })
-    }
 </script>

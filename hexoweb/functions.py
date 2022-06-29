@@ -17,7 +17,8 @@ from urllib.parse import quote
 from time import strftime, localtime
 import tarfile
 from ftplib import FTP
-from hexoweb.libs.onepush import notify
+from hexoweb.libs.onepush import notify, get_notifier
+from hexoweb.libs.onepush import all_providers as onepush_providers
 import html2text as ht
 from hexoweb.libs.platforms import get_provider, all_providers, get_params
 import yaml

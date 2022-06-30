@@ -339,34 +339,18 @@
                                     <div class="col-lg-6">
                                         <div class="form-group">
                                             <label class="form-control-label">图床类型</label>
-                                            <select name="imageType" id="imageType"
+                                            <select name="image-type" id="image-type"
                                                     class="form-control"
-                                                    onchange="change_image_type(this.value)">
-                                                <option value=""
-                                                        {% if IMG_TYPE == "" %}selected{% endif %}>
-                                                    关闭
-                                                </option>
-                                                <option value="custom"
-                                                        {% if IMG_TYPE == "custom" %} selected
-                                                        {% endif %}>远程API
-                                                </option>
-                                                <option value="s3"
-                                                        {% if IMG_TYPE == "s3" %}selected{% endif %}>
-                                                    S3协议
-                                                </option>
-                                                <option value="ftp"
-                                                        {% if IMG_TYPE == "ftp" %}selected{% endif %}>
-                                                    FTP
-                                                </option>
+                                                    onchange="change_image_host(this.value)">
                                             </select>
                                         </div>
                                     </div>
                                 </div>
-                                <div id="image-form"></div>
+                                <div id="image-host-container"></div>
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <input type="button" class="btn btn-primary" value="提交"
-                                               onclick="submit_image_config()">
+                                               onclick="set_image_host()">
                                     </div>
                                 </div>
                             </div>
@@ -694,13 +678,25 @@
             })
         }
 
-        function submit_image_config() {
+        function set_image_host() {
             let loading = new KZ_Loading('正在保存中...');
             loading.show();
+            let form = $('#image-settings').serializeArray();
+            let params = {};
+            for (let i = 0; i < form.length; i++) {
+                params[form[i]["name"]] = form[i]["value"];
+            }
+            delete params["image-type"]; // remove provider name from params array
+            delete params["csrfmiddlewaretoken"]; // remove the CSRF token from params array
             $.ajax({
-                url: '/api/set_image_bed/',
+                url: '/api/set_image_host/',
                 method: 'post',
-                data: $('#image-settings').serialize(),
+                data: {
+                    "image_host": JSON.stringify({
+                        "type": $("#image-type").val(),
+                        "params": params
+                    })
+                },
                 dataType: "json",
                 success: function (res) {
                     loading.destroy();
@@ -1029,401 +1025,6 @@
             })
         }
 
-        var IMG_API = '{{ IMG_API }}';
-        var IMG_POST = '{{ IMG_POST }}';
-        var IMG_JSON_PATH = '{{ IMG_JSON_PATH }}';
-        var IMG_CUSTOM_HEADER = '{{ IMG_CUSTOM_HEADER }}';
-        var IMG_CUSTOM_BODY = '{{ IMG_CUSTOM_BODY }}';
-        var IMG_CUSTOM_URL = '{{ IMG_CUSTOM_URL }}';
-
-        var S3_KEY_ID = '{{ S3_KEY_ID }}';
-        var S3_ACCESS_KEY = '{{ S3_ACCESS_KEY }}';
-        var S3_BUCKET = '{{ S3_BUCKET }}';
-        var S3_ENDPOINT = '{{ S3_ENDPOINT }}';
-        var S3_PATH = '{{ S3_PATH }}';
-        var S3_PREV_URL = '{{ S3_PREV_URL }}';
-
-        var FTP_HOST = '{{ FTP_HOST }}';
-        var FTP_PORT = '{{ FTP_PORT }}';
-        var FTP_USER = '{{ FTP_USER }}';
-        var FTP_PASS = '{{ FTP_PASS }}';
-        var FTP_PATH = '{{ FTP_PATH }}';
-        var FTP_PREV_URL = '{{ FTP_PREV_URL }}';
-
-        function save_image_settings_cache() {
-            let form = $('#image-settings').serializeArray();
-            for (let i = 0; i < form.length; i += 1) {
-                if (form[i]["name"] === 'api') IMG_API = form[i]["value"];
-                if (form[i]["name"] === 'post') IMG_POST = form[i]["value"];
-                if (form[i]["name"] === 'jsonpath') IMG_JSON_PATH = form[i]["value"];
-                if (form[i]["name"] === 'header') IMG_CUSTOM_HEADER = form[i]["value"];
-                if (form[i]["name"] === 'body') IMG_CUSTOM_BODY = form[i]["value"];
-                if (form[i]["name"] === 'custom') IMG_CUSTOM_URL = form[i]["value"];
-                if (form[i]["name"] === 'key-id') S3_KEY_ID = form[i]["value"];
-                if (form[i]["name"] === 'access-key') S3_ACCESS_KEY = form[i]["value"];
-                if (form[i]["name"] === 'bucket') S3_BUCKET = form[i]["value"];
-                if (form[i]["name"] === 'endpoint') S3_ENDPOINT = form[i]["value"];
-                if (form[i]["name"] === 'path') S3_PATH = form[i]["value"];
-                if (form[i]["name"] === 'url') S3_PREV_URL = form[i]["value"];
-            }
-        }
-
-        function change_image_type(t) {
-            save_image_settings_cache()
-            if (t === "custom") {
-                $("#image-form").html(`
-                                <div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">API地址</label>
-                                            <input type="text" name="api" class="form-control"
-                                                   placeholder="API 地址 ( 包含 http )"
-                                                   value="` + IMG_API + `">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">POST参数名</label>
-                                            <input type="text" name="post" class="form-control"
-                                                   placeholder="POST 参数名"
-                                                   value="` + IMG_POST + `">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">JSON路径</label>
-                                            <input type="text" name="jsonpath" class="form-control"
-                                                   placeholder="JSON 路径 eg: data.img"
-                                                   value="` + IMG_JSON_PATH + `">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">自定义请求头</label>
-                                            <input type="text" name="header" class="form-control"
-                                                   placeholder="标准 JSON 格式"
-                                                   value='` + IMG_CUSTOM_HEADER + `'>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">自定义BODY</label>
-                                            <input type="text" name="body" class="form-control"
-                                                   placeholder="标准 JSON 格式"
-                                                   value='` + IMG_CUSTOM_BODY + `'>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">自定义前缀</label>
-                                            <input type="text" name="custom" class="form-control"
-                                                   placeholder="自定义图片 URL 前缀"
-                                                   value="` + IMG_CUSTOM_URL + `">
-                                        </div>
-                                    </div>
-                                </div>`);
-            }
-            if (t === "s3") {
-                $("#image-form").html(`<div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">应用密钥ID</label>
-                                            <input type="text" name="key-id" class="form-control"
-                                                   placeholder="Access Key ID"
-                                                   value="` + S3_KEY_ID + `">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">应用密钥</label>
-                                            <input type="text" name="access-key"
-                                                   class="form-control"
-                                                   placeholder="Access Key"
-                                                   value="` + S3_ACCESS_KEY + `">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">储存桶</label>
-                                            <input type="text" name="bucket" class="form-control"
-                                                   placeholder="Bucket名称"
-                                                   value="` + S3_BUCKET + `">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">边缘节点</label>
-                                            <input type="text" name="endpoint" class="form-control"
-                                                   placeholder="eg: https://s3.us-west-002.example.com"
-                                                   value="` + S3_ENDPOINT + `">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">保存路径</label>
-                                            <input type="text" name="path" class="form-control"
-                                                   placeholder="eg: {year}/{month}/{md5}.{extName}"
-                                                   value="` + S3_PATH + `">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">自定义域名</label>
-                                            <input type="text" name="url" class="form-control"
-                                                   placeholder="eg: https://example.com/dir"
-                                                   value="` + S3_PREV_URL + `">
-                                        </div>
-                                    </div>
-                                </div>`);
-            }
-            if (t === "ftp") {
-                $("#image-form").html(`<div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">FTP主机</label>
-                                            <input type="text" name="FTP_HOST" class="form-control"
-                                                   placeholder="连接的主机IP/域名"
-                                                   value="` + FTP_HOST + `">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">FTP端口</label>
-                                            <input type="text" name="FTP_PORT"
-                                                   class="form-control"
-                                                   placeholder="通常为21端口"
-                                                   value="` + FTP_PORT + `">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">用户名</label>
-                                            <input type="text" name="FTP_USER" class="form-control"
-                                                   placeholder="匿名登录请留空"
-                                                   value="` + FTP_USER + `">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">密码</label>
-                                            <input type="text" name="FTP_PASS" class="form-control"
-                                                   placeholder="无需密码请留空"
-                                                   value="` + FTP_PASS + `">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">保存路径</label>
-                                            <input type="text" name="FTP_PATH" class="form-control"
-                                                   placeholder="eg: {year}/{month}/{time}.{extName}"
-                                                   value="` + FTP_PATH + `">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">自定义域名</label>
-                                            <input type="text" name="FTP_PREV_URL"
-                                            class="form-control"
-                                                   placeholder="eg: https://example.com/dir"
-                                                   value="` + FTP_PREV_URL + `">
-                                        </div>
-                                    </div>
-                                </div>`);
-            }
-            if (t === "") {
-                $("#image-form").html("");
-            }
-        }
-
-        if ('{{ IMG_TYPE }}' === "custom") {
-            $("#image-form").html(`
-                                <div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">图床-API地址</label>
-                                            <input type="text" name="api" class="form-control"
-                                                   placeholder="API 地址 ( 包含 http )"
-                                                   value="` + IMG_API + `">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">图床-POST参数名</label>
-                                            <input type="text" name="post" class="form-control"
-                                                   placeholder="POST 参数名"
-                                                   value="` + IMG_POST + `">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">图床-JSON路径</label>
-                                            <input type="text" name="jsonpath" class="form-control"
-                                                   placeholder="JSON 路径 eg: data.img"
-                                                   value="` + IMG_JSON_PATH + `">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">图床-自定义请求头</label>
-                                            <input type="text" name="header" class="form-control"
-                                                   placeholder="标准 JSON 格式"
-                                                   value="` + IMG_CUSTOM_HEADER + `">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">图床-自定义BODY</label>
-                                            <input type="text" name="body" class="form-control"
-                                                   placeholder="标准 JSON 格式"
-                                                   value="` + IMG_CUSTOM_BODY + `">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">图床-自定义前缀</label>
-                                            <input type="text" name="custom" class="form-control"
-                                                   placeholder="自定义图片 URL 前缀"
-                                                   value="` + IMG_CUSTOM_URL + `">
-                                        </div>
-                                    </div>
-                                </div>`);
-        }
-        if ('{{ IMG_TYPE }}' === "s3") {
-            $("#image-form").html(`<div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">应用密钥ID</label>
-                                            <input type="text" name="key-id" class="form-control"
-                                                   placeholder="Access Key ID"
-                                                   value="` + S3_KEY_ID + `">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">应用密钥</label>
-                                            <input type="text" name="access-key"
-                                                   class="form-control"
-                                                   placeholder="Access Key"
-                                                   value="` + S3_ACCESS_KEY + `">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">储存桶</label>
-                                            <input type="text" name="bucket" class="form-control"
-                                                   placeholder="Bucket名称"
-                                                   value="` + S3_BUCKET + `">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">边缘节点</label>
-                                            <input type="text" name="endpoint" class="form-control"
-                                                   placeholder="eg: https://s3.us-west-002.example.com"
-                                                   value="` + S3_ENDPOINT + `">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">保存路径</label>
-                                            <input type="text" name="path" class="form-control"
-                                                   placeholder="eg: {year}/{month}/{md5}.{extName}"
-                                                   value="` + S3_PATH + `">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">自定义域名</label>
-                                            <input type="text" name="url" class="form-control"
-                                                   placeholder="eg: https://example.com/dir"
-                                                   value="` + S3_PREV_URL + `">
-                                        </div>
-                                    </div>
-                                </div>`);
-        }
-        if ('{{ IMG_TYPE }}' === "ftp") {
-            $("#image-form").html(`<div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">FTP主机</label>
-                                            <input type="text" name="FTP_HOST" class="form-control"
-                                                   placeholder="连接的主机IP/域名"
-                                                   value="` + FTP_HOST + `">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">FTP端口</label>
-                                            <input type="text" name="FTP_PORT"
-                                                   class="form-control"
-                                                   placeholder="通常为21端口"
-                                                   value="` + FTP_PORT + `">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">用户名</label>
-                                            <input type="text" name="FTP_USER" class="form-control"
-                                                   placeholder="匿名登录请留空"
-                                                   value="` + FTP_USER + `">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">密码</label>
-                                            <input type="text" name="FTP_PASS" class="form-control"
-                                                   placeholder="无需密码请留空"
-                                                   value="` + FTP_PASS + `">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">保存路径</label>
-                                            <input type="text" name="FTP_PATH" class="form-control"
-                                                   placeholder="eg: {year}/{month}/{time}.{extName}"
-                                                   value="` + FTP_PATH + `">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">自定义域名</label>
-                                            <input type="text" name="FTP_PREV_URL"
-                                            class="form-control"
-                                                   placeholder="eg: https://example.com/dir"
-                                                   value="` + FTP_PREV_URL + `">
-                                        </div>
-                                    </div>
-                                </div>`);
-        }
-        if ('{{ IMG_TYPE }}' === "") {
-            $("#image-form").html("");
-        }
-
-
         const all_providers = {{ all_providers | safe }};
         {% if PROVIDER %}
             var now_provider = {{ PROVIDER | safe }};
@@ -1440,9 +1041,11 @@
                         html += `<div class="row">
                                 <div class="col-lg-6">
                                     <div class="form-group">
-                                        <label class="form-control-label">` + params[key] + `</label>
+                                        <label class="form-control-label">` +
+                            params[key]["description"] +
+                            `</label>
                                         <input type="text" name="` + key + `" class="form-control"
-                                               placeholder="` + key + `"
+                                               placeholder="` + params[key]["placeholder"] + `"
                                                value="` + now_provider["params"][key] + `">
                                     </div>
                                 </div>`
@@ -1450,9 +1053,9 @@
                     } else {
                         html += `<div class="col-lg-6">
                                 <div class="form-group">
-                                    <label class="form-control-label">` + params[key] + `</label>
+                                    <label class="form-control-label">` + params[key]["description"] + `</label>
                                     <input type="text" name="` + key + `" class="form-control"
-                                           placeholder="` + key + `"
+                                           placeholder="` + params[key]["placeholder"] + `"
                                            value="` + now_provider["params"][key] + `">
                                 </div>
                             </div>
@@ -1469,9 +1072,9 @@
                         html += `<div class="row">
                                 <div class="col-lg-6">
                                     <div class="form-group">
-                                        <label class="form-control-label">` + params[key] + `</label>
+                                        <label class="form-control-label">` + params[key]["description"] + `</label>
                                         <input type="text" name="` + key + `" class="form-control"
-                                               placeholder="` + key + `"
+                                               placeholder="` + params[key]["placeholder"] + `"
                                                value="">
                                     </div>
                                 </div>`
@@ -1479,9 +1082,9 @@
                     } else {
                         html += `<div class="col-lg-6">
                                 <div class="form-group">
-                                    <label class="form-control-label">` + params[key] + `</label>
+                                    <label class="form-control-label">` + params[key]["description"] + `</label>
                                     <input type="text" name="` + key + `" class="form-control"
-                                           placeholder="` + key + `"
+                                           placeholder="` + params[key]["placeholder"] + `"
                                            value="">
                                 </div>
                             </div>
@@ -1495,7 +1098,6 @@
             }
             $("#hexo-settings-container").html(html);
         }
-
         let provider_container = "";
         for (let key in all_providers) {
             if (now_provider["provider"] === key) {
@@ -1656,6 +1258,97 @@
             change_pusher("bark");
         }
         $("#onepush-container").html(onepush_container);
+
+        const all_image_hosts = {{ all_image_hosts | safe }};
+        {% if IMG_HOST %}
+            var now_image_host = {{ IMG_HOST | safe }};
+        {% else %}
+            var now_image_host = "";
+        {% endif %}
+        function change_image_host(provider) {
+            let params = all_image_hosts[provider];
+            let t = 0;
+            let html = '';
+            if (provider === "关闭"){
+                $("#image-host-container").html(html);
+                return;
+            }
+            if (provider === now_image_host["type"]) {
+                for (let key in params) {
+                    if (t % 2 === 0) {  // first param
+                        html += `<div class="row">
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label class="form-control-label">` +
+                            params[key]["description"] +
+                            `</label>
+                                        <input type="text" name="` + key + `" class="form-control"
+                                               placeholder="` + params[key]["placeholder"] + `"
+                                               value="` + now_image_host["params"][key] + `">
+                                    </div>
+                                </div>`
+                        t += 1;
+                    } else {
+                        html += `<div class="col-lg-6">
+                                <div class="form-group">
+                                    <label class="form-control-label">` + params[key]["description"] + `</label>
+                                    <input type="text" name="` + key + `" class="form-control"
+                                           placeholder="` + params[key]["placeholder"] + `"
+                                           value="` + now_image_host["params"][key] + `">
+                                </div>
+                            </div>
+                        </div>`
+                        t += 1;
+                    }
+                }
+                if (t % 2 === 1) {
+                    html += '</div>';
+                }
+            } else {
+                for (let key in params) {
+                    if (t % 2 === 0) {  // first param
+                        html += `<div class="row">
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label class="form-control-label">` + params[key]["description"] + `</label>
+                                        <input type="text" name="` + key + `" class="form-control"
+                                               placeholder="` + params[key]["placeholder"] + `"
+                                               value="">
+                                    </div>
+                                </div>`
+                        t += 1;
+                    } else {
+                        html += `<div class="col-lg-6">
+                                <div class="form-group">
+                                    <label class="form-control-label">` + params[key]["description"] + `</label>
+                                    <input type="text" name="` + key + `" class="form-control"
+                                           placeholder="` + params[key]["placeholder"] + `"
+                                           value="">
+                                </div>
+                            </div>
+                        </div>`
+                        t += 1;
+                    }
+                }
+                if (t % 2 === 1) {
+                    html += '</div>';
+                }
+            }
+            $("#image-host-container").html(html);
+        }
+        let image_type_container = "<option>关闭</option>";
+        for (let key in all_image_hosts) {
+            if (now_image_host["type"] === key) {
+                image_type_container += `<option selected>` + key + `</option>`;
+                change_image_host(key);
+            } else {
+                image_type_container += `<option>` + key + `</option>`;
+            }
+        }
+        if (!now_image_host["type"]) {
+            change_image_host("关闭");
+        }
+        $("#image-type").html(image_type_container);
 
     </script>
 {% endblock javascripts %}

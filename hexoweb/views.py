@@ -474,46 +474,27 @@ def pages(request):
                 if token_len >= 5:
                     context['GH_TOKEN'] = context['GH_TOKEN'][:3] + "*" * (token_len - 5) + \
                                           context['GH_TOKEN'][-1]
-                context['IMG_CUSTOM_URL'] = get_setting('IMG_CUSTOM_URL')
-                context['IMG_CUSTOM_HEADER'] = get_setting('IMG_CUSTOM_HEADER')
-                context['IMG_CUSTOM_BODY'] = SettingModel.objects.get(
-                    name='IMG_CUSTOM_BODY').content
-                context['IMG_JSON_PATH'] = get_setting('IMG_JSON_PATH')
-                context['IMG_POST'] = get_setting('IMG_POST')
-                context['IMG_API'] = get_setting('IMG_API')
                 if check_if_vercel():
                     context["showUpdate"] = True
-                context['S3_KEY_ID'] = get_setting("S3_KEY_ID")
-                context['S3_ACCESS_KEY'] = get_setting("S3_ACCESS_KEY")
-                context['S3_ENDPOINT'] = get_setting("S3_ENDPOINT")
-                context['S3_BUCKET'] = get_setting("S3_BUCKET")
-                context['S3_PATH'] = get_setting("S3_PATH")
-                context['S3_PREV_URL'] = get_setting("S3_PREV_URL")
-                context['FTP_HOST'] = get_setting("FTP_HOST")
-                context['FTP_PORT'] = get_setting("FTP_PORT")
-                context['FTP_USER'] = get_setting("FTP_USER")
-                context['FTP_PASS'] = get_setting("FTP_PASS")
-                context['FTP_PATH'] = get_setting("FTP_PATH")
-                context['FTP_PREV_URL'] = get_setting("FTP_PREV_URL")
                 context['IMG_TYPE'] = get_setting("IMG_TYPE")
                 context['ABBRLINK_ALG'] = get_setting("ABBRLINK_ALG")
                 context['ABBRLINK_REP'] = get_setting("ABBRLINK_REP")
                 context["ALLOW_FRIEND"] = get_setting("ALLOW_FRIEND")
-                context["ONEPUSH"] = get_setting("ONEPUSH")
                 context["STATISTIC_DOMAINS"] = get_setting("STATISTIC_DOMAINS")
                 context["STATISTIC_ALLOW"] = get_setting("STATISTIC_ALLOW")
                 context["FRIEND_RECAPTCHA"] = get_setting("FRIEND_RECAPTCHA")
                 context["RECAPTCHA_TOKEN"] = get_setting("RECAPTCHA_TOKEN")
                 context["LOGIN_RECAPTCHA_SITE_TOKEN"] = get_setting("LOGIN_RECAPTCHA_SITE_TOKEN")
                 context["LOGIN_RECAPTCHA_SERVER_TOKEN"] = get_setting("LOGIN_RECAPTCHA_SERVER_TOKEN")
-                context["PROVIDER"] = get_setting("PROVIDER")
                 # Get Provider Settings
+                context["PROVIDER"] = get_setting("PROVIDER")
                 all_provider = all_providers()
                 context["all_providers"] = dict()
                 for provider in all_provider:
                     params = get_params(provider)
                     context["all_providers"][provider] = params
                 # Get OnePush Settings
+                context["ONEPUSH"] = get_setting("ONEPUSH")
                 all_pusher = onepush_providers()
                 context["all_pushers"] = dict()
                 for pusher in all_pusher:
@@ -529,6 +510,13 @@ def pages(request):
                     if "markdown" not in params["optional"]:
                         params["optional"].append("markdown")
                     context["all_pushers"][pusher] = params
+                # GET Image Host Settings
+                context["IMG_HOST"] = get_setting("IMG_HOST")
+                all_provider = all_image_providers()
+                context["all_image_hosts"] = dict()
+                for provider in all_provider:
+                    params = get_image_params(provider)
+                    context["all_image_hosts"][provider] = params
             except:
                 return redirect("/update/")
         elif 'advanced' in load_template:

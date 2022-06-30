@@ -17,10 +17,13 @@ from urllib.parse import quote
 from time import strftime, localtime
 import tarfile
 from ftplib import FTP
+import html2text as ht
 from hexoweb.libs.onepush import notify, get_notifier
 from hexoweb.libs.onepush import all_providers as onepush_providers
-import html2text as ht
 from hexoweb.libs.platforms import get_provider, all_providers, get_params
+from hexoweb.libs.image import get_image_host
+from hexoweb.libs.image import get_params as get_image_params
+from hexoweb.libs.image import all_providers as all_image_providers
 import yaml
 
 disable_warnings()
@@ -290,76 +293,6 @@ def save_cache(name, content):
         new_set.content = ""
     new_set.save()
     return new_set
-
-
-def upload_to_s3(file, key_id, access_key, endpoint_url, bucket, path, prev_url):
-    # 处理 path
-    now = date.today()
-    photo_stream = file.read()
-    path = path.replace("{year}", str(now.year)).replace("{month}", str(now.month)).replace("{day}",
-                                                                                            str(now.day)) \
-        .replace("{filename}", file.name[0:-len(file.name.split(".")[-1]) - 1]).replace("{time}", str(time())) \
-        .replace("{extName}", file.name.split(".")[-1]).replace("{md5}",
-                                                                md5(photo_stream).hexdigest())
-
-    s3 = boto3.resource(
-        service_name='s3',
-        aws_access_key_id=key_id,
-        aws_secret_access_key=access_key,
-        endpoint_url=endpoint_url,
-        verify=False,
-    )
-    bucket = s3.Bucket(bucket)
-    bucket.put_object(Key=path, Body=photo_stream, ContentType=file.content_type)
-
-    return prev_url + "/" + path
-
-
-def upload_to_custom(file, api, post_params, json_path, custom_body, custom_header, custom_url):
-    if custom_header:
-        if custom_body:
-            response = requests.post(api, data=json.loads(custom_body),
-                                     headers=json.loads(custom_header),
-                                     files={post_params: [file.name, file.read(),
-                                                          file.content_type]})
-        else:
-            response = requests.post(api, data={}, headers=json.loads(custom_header),
-                                     files={post_params: [file.name, file.read(),
-                                                          file.content_type]})
-    else:
-        if custom_body:
-            response = requests.post(api, data=json.loads(custom_body),
-                                     files={post_params: [file.name, file.read(),
-                                                          file.content_type]})
-        else:
-            response = requests.post(api, data={},
-                                     files={post_params: [file.name, file.read(),
-                                                          file.content_type]})
-    if json_path:
-        json_path = json_path.split(".")
-        response.encoding = "utf8"
-        data = response.json()
-        for path in json_path:
-            data = data[path]
-    else:
-        data = response.text
-    return str(custom_url) + data
-
-
-def upload_to_ftp(file, host, port, user, password, path, prev_url):
-    ftp = FTP()
-    ftp.set_debuglevel(0)
-    ftp.encoding = 'UTF8'
-    ftp.connect(host, int(port))
-    ftp.login(user, password)
-    now = date.today()
-    path = path.replace("{year}", str(now.year)).replace("{month}", str(now.month)).replace("{day}",
-                                                                                            str(now.day)) \
-        .replace("{filename}", file.name[0:-len(file.name.split(".")[-1]) - 1]).replace("{time}", str(time())) \
-        .replace("{extName}", file.name.split(".")[-1])
-    bufsize = 1024
-    ftp.storbinary('STOR ' + path, file, bufsize)
-    return prev_url + path
 
 
 def get_latest_version():
@@ -633,7 +566,7 @@ def verify_provider(provider):
                                 config_theme = "themes/" + theme + "_config.yml"
                                 break
         except:
-           pass
+            pass
         # 校验 Package.json 及 Hexo
         if pack:
             try:

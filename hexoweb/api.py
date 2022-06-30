@@ -151,55 +151,12 @@ def set_security(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
-# 设置图床配置 api/set_image_bed
+# 设置图床配置 api/set_image_host
 @login_required(login_url="/login/")
-def set_image_bed(request):
+def set_image_host(request):
     try:
-        imageType = request.POST.get("imageType")
-        if imageType == "custom":
-            api = request.POST.get("api")
-            post_params = request.POST.get("post")
-            json_path = request.POST.get("jsonpath")
-            custom_body = request.POST.get("body")
-            custom_header = request.POST.get("header")
-            custom_url = request.POST.get("custom")
-            save_setting("IMG_API", api)
-            save_setting("IMG_POST", post_params)
-            save_setting("IMG_JSON_PATH", json_path)
-            save_setting("IMG_CUSTOM_BODY", custom_body)
-            save_setting("IMG_CUSTOM_HEADER", custom_header)
-            save_setting("IMG_CUSTOM_URL", custom_url)
-            save_setting("IMG_TYPE", "custom")
-        if imageType == "s3":
-            key_id = request.POST.get("key-id")
-            access_key = request.POST.get("access-key")
-            bucket = request.POST.get("bucket")
-            endpoint = request.POST.get("endpoint")
-            path = request.POST.get("path")
-            url = request.POST.get("url")
-            save_setting("S3_KEY_ID", key_id)
-            save_setting("S3_ACCESS_KEY", access_key)
-            save_setting("S3_BUCKET", bucket)
-            save_setting("S3_ENDPOINT", endpoint)
-            save_setting("S3_PATH", path)
-            save_setting("S3_PREV_URL", url)
-            save_setting("IMG_TYPE", "s3")
-        if imageType == "ftp":
-            host = request.POST.get("FTP_HOST")
-            port = request.POST.get("FTP_PORT")
-            user = request.POST.get("FTP_USER")
-            password = request.POST.get("FTP_PASS")
-            path = request.POST.get("FTP_PATH")
-            prev_url = request.POST.get("FTP_PREV_URL")
-            save_setting("FTP_HOST", host)
-            save_setting("FTP_PORT", port)
-            save_setting("FTP_USER", user)
-            save_setting("FTP_PASS", password)
-            save_setting("FTP_PATH", path)
-            save_setting("FTP_PREV_URL", prev_url)
-            save_setting("IMG_TYPE", "ftp")
-        if imageType == "":
-            save_setting("IMG_TYPE", "")
+        image_host = request.POST.get("image_host")
+        save_setting("IMG_HOST", image_host)
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
         context = {"msg": repr(e), "status": False}
@@ -561,49 +518,18 @@ def upload_img(request):
     if request.method == "POST":
         file = request.FILES.getlist('file[]')[0]
         try:
-            try:
-                img_type = get_setting("IMG_TYPE")
-            except:
-                save_setting("IMG_TYPE", "cust")
-                img_type = "cust"
-            if img_type == "s3":
-                context["url"] = upload_to_s3(file,
-                                              get_setting("S3_KEY_ID"),
-                                              SettingModel.objects.get(
-                                                  name="S3_ACCESS_KEY").content,
-                                              get_setting("S3_ENDPOINT"),
-                                              get_setting("S3_BUCKET"),
-                                              get_setting("S3_PATH"),
-                                              get_setting("S3_PREV_URL"))
-                context["msg"] = "上传成功！"
+            image_host = json.loads(get_setting("IMG_HOST"))
+            if image_host["type"] != "关闭":
+                context["url"] = get_image_host(image_host["type"], **image_host["params"]).upload(file)
                 context["status"] = True
-            if img_type == "custom":
-                api = get_setting("IMG_API")
-                post_params = get_setting("IMG_POST")
-                json_path = get_setting("IMG_JSON_PATH")
-                custom_body = get_setting("IMG_CUSTOM_BODY")
-                custom_header = get_setting("IMG_CUSTOM_HEADER")
-                custom_url = get_setting("IMG_CUSTOM_URL")
-                context["url"] = upload_to_custom(file, api, post_params, json_path, custom_body, custom_header, custom_url)
-                context["msg"] = "上传成功！"
-                context["status"] = True
-            if img_type == "ftp":
-                context["url"] = upload_to_ftp(file,
-                                               get_setting("FTP_HOST"),
-                                               get_setting("FTP_PORT"),
-                                               get_setting("FTP_USER"),
-                                               get_setting("FTP_PASS"),
-                                               get_setting("FTP_PATH"),
-                                               get_setting("FTP_PREV_URL"))
-                context["msg"] = "上传成功！"
-                context["status"] = True
-            image = ImageModel()
-            image.name = file.name
-            image.url = context["url"]
-            image.size = file.size
-            image.type = file.content_type
-            image.date = time()
-            image.save()
+                context["msg"] = "上传成功"
+                image = ImageModel()
+                image.name = file.name
+                image.url = context["url"]
+                image.size = file.size
+                image.type = file.content_type
+                image.date = time()
+                image.save()
         except Exception as error:
             context = {"msg": repr(error), "url": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})

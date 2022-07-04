@@ -534,6 +534,19 @@
             return url;
         }
 
+        function EscapeString(str) {
+            var temp = "";
+            if (str.length === 0) return "";
+            temp = str.replace(/&/g, "&amp;");
+            temp = temp.replace(/</g, "&lt;");
+            temp = temp.replace(/>/g, "&gt;");
+            temp = temp.replace(/\s/g, "&nbsp;");
+            temp = temp.replace(/\'/g, "&#39;");
+            temp = temp.replace(/\"/g, "&quot;");
+            return temp
+        }
+
+
         function KZ_Loading(config) {
             if (this instanceof KZ_Loading) {
                 const domTemplate = '<div class="modal kz-loading" data-kzid="@@KZ_Loadin_ID@@" backdrop="static" keyboard="false"><div style="width: 200px;height:20px; z-index: 20000; position: absolute; text-align: center; left: 50%; top: 50%;margin-left:-100px;margin-top:-10px"><div class="progress progress-striped active" style="margin-bottom: 0;"><div class="progress-bar" style="width: 100%;"></div></div><h5>@@KZ_Loading_Text@@</h5></div></div>';
@@ -1046,7 +1059,7 @@
                             `</label>
                                         <input type="text" name="` + key + `" class="form-control"
                                                placeholder="` + params[key]["placeholder"] + `"
-                                               value="` + now_provider["params"][key] + `">
+                                               value="` + EscapeString(now_provider["params"][key]) + `">
                                     </div>
                                 </div>`
                         t += 1;
@@ -1056,7 +1069,7 @@
                                     <label class="form-control-label">` + params[key]["description"] + `</label>
                                     <input type="text" name="` + key + `" class="form-control"
                                            placeholder="` + params[key]["placeholder"] + `"
-                                           value="` + now_provider["params"][key] + `">
+                                           value="` + EscapeString(now_provider["params"][key]) + `">
                                 </div>
                             </div>
                         </div>`
@@ -1098,6 +1111,7 @@
             }
             $("#hexo-settings-container").html(html);
         }
+
         let provider_container = "";
         for (let key in all_providers) {
             if (now_provider["provider"] === key) {
@@ -1138,7 +1152,7 @@
                                         </label>
                                         <input type="text" name="` + required[i] + `" class="form-control"
                                                placeholder="` + required[i] + `"
-                                               value="` + tmp + `">
+                                               value="` + EscapeString(tmp) + `">
                                     </div>
                                 </div>`
                         t += 1;
@@ -1148,7 +1162,7 @@
                                     <label class="form-control-label">` + required[i] + `(必填)</label>
                                     <input type="text" name="` + required[i] + `" class="form-control"
                                            placeholder="` + required[i] + `"
-                                           value="` + tmp + `">
+                                           value="` + EscapeString(tmp) + `">
                                 </div>
                             </div>
                         </div>`
@@ -1165,7 +1179,7 @@
                                         <label class="form-control-label">` + optional[i] + `</label>
                                         <input type="text" name="` + optional[i] + `" class="form-control"
                                                placeholder="` + optional[i] + `"
-                                               value="` + tmp + `">
+                                               value="` + EscapeString(tmp) + `">
                                     </div>
                                 </div>`
                         t += 1;
@@ -1175,7 +1189,7 @@
                                     <label class="form-control-label">` + optional[i] + `</label>
                                     <input type="text" name="` + optional[i] + `" class="form-control"
                                            placeholder="` + optional[i] + `"
-                                           value="` + tmp + `">
+                                           value="` + EscapeString(tmp) + `">
                                 </div>
                             </div>
                         </div>`
@@ -1269,7 +1283,7 @@
             let params = all_image_hosts[provider];
             let t = 0;
             let html = '';
-            if (provider === "关闭"){
+            if (provider === "关闭") {
                 $("#image-host-container").html(html);
                 return;
             }
@@ -1284,7 +1298,8 @@
                             `</label>
                                         <input type="text" name="` + key + `" class="form-control"
                                                placeholder="` + params[key]["placeholder"] + `"
-                                               value="` + now_image_host["params"][key] + `">
+                                               value="` + EscapeString
+                            (now_image_host["params"][key]) + `">
                                     </div>
                                 </div>`
                         t += 1;
@@ -1294,7 +1309,8 @@
                                     <label class="form-control-label">` + params[key]["description"] + `</label>
                                     <input type="text" name="` + key + `" class="form-control"
                                            placeholder="` + params[key]["placeholder"] + `"
-                                           value="` + now_image_host["params"][key] + `">
+                                           value="` + EscapeString(now_image_host["params"][key])
+                            + `">
                                 </div>
                             </div>
                         </div>`
@@ -1336,6 +1352,7 @@
             }
             $("#image-host-container").html(html);
         }
+
         let image_type_container = "<option>关闭</option>";
         for (let key in all_image_hosts) {
             if (now_image_host["type"] === key) {

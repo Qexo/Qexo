@@ -62,16 +62,24 @@ def update_view(request):
     context["counter"] = 0
     for setting in ALL_SETTINGS:
         if setting[0] not in already:
-            if setting[0] == "PROVIDER":  # update from 1.x
-                context["settings"].append(dict(name=setting[0], value=json.dumps({"provider": "github",
-                                                                                   "params": {"token": get_setting("GH_TOKEN"),
-                                                                                              "branch": get_setting("GH_REPO_BRANCH"),
-                                                                                              "repo": get_setting("GH_REPO"),
-                                                                                              "path": get_setting("GH_PATH")}}),
+            if setting[0] == "PROVIDER":  # migrate from 1.x
+                _provider = {"provider": "github",
+                             "params": {"token": get_setting("GH_TOKEN"),
+                                        "branch": get_setting("GH_REPO_BRANCH"),
+                                        "repo": get_setting("GH_REPO"),
+                                        "path": get_setting("GH_PATH")}}
+                context["settings"].append(dict(name=setting[0], value=json.dumps(_provider),
                                                 placeholder=setting[3]))
+                if verify_provider(_provider)["status"] == 1:
+                    save_setting("PROVIDER", _provider)
+                else:
+                    context["msg"] = "自动生成PROVIDER错误，请检查配置并提交"
+
             else:
-                context["settings"].append(dict(name=setting[0], value=setting[1],
-                                                placeholder=setting[3]))
+                if setting[2]:
+                    save_setting(setting[0], setting[1])
+                context["settings"].append(dict(name=setting[0], value=setting[1], placeholder=setting[3]))
+
             context["counter"] += 1
     if not context["counter"]:
         save_setting("UPDATE_FROM", QEXO_VERSION)
@@ -307,8 +315,7 @@ def pages(request):
             context["file_path"] = file_path
             context["emoji"] = get_setting("VDITOR_EMOJI")
             try:
-                if SettingModel.objects.get(
-                        name="IMG_TYPE").content:
+                if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
             except Exception as error:
                 context["error"] = repr(error)
@@ -326,8 +333,7 @@ def pages(request):
             context['fullname'] = file_path
             context["emoji"] = get_setting("VDITOR_EMOJI")
             try:
-                if SettingModel.objects.get(
-                        name="IMG_TYPE").content:
+                if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
             except Exception as error:
                 context["error"] = repr(error)
@@ -344,8 +350,7 @@ def pages(request):
             except Exception as error:
                 context["error"] = repr(error)
             try:
-                if SettingModel.objects.get(
-                        name="IMG_TYPE").content:
+                if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
             except Exception as error:
                 context["error"] = repr(error)
@@ -363,8 +368,7 @@ def pages(request):
             except Exception as error:
                 context["error"] = repr(error)
             try:
-                if SettingModel.objects.get(
-                        name="IMG_TYPE").content:
+                if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
             except Exception as error:
                 context["error"] = repr(error)

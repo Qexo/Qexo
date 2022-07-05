@@ -194,20 +194,22 @@
                             html += `<div class="row">
                                 <div class="col-lg-6">
                                     <div class="form-group">
-                                        <label class="form-control-label">` + params[key] + `</label>
+                                        <label class="form-control-label">` +
+                                params[key]["description"] +
+                                `</label>
                                         <input type="text" name="` + key + `" class="form-control"
-                                               placeholder="` + key + `"
-                                               value="` + now_provider["params"][key] + `">
+                                               placeholder="` + params[key]["placeholder"] + `"
+                                               value="` + EscapeString(now_provider["params"][key]) + `">
                                     </div>
                                 </div>`
                             t += 1;
                         } else {
                             html += `<div class="col-lg-6">
                                 <div class="form-group">
-                                    <label class="form-control-label">` + params[key] + `</label>
+                                    <label class="form-control-label">` + params[key]["description"] + `</label>
                                     <input type="text" name="` + key + `" class="form-control"
-                                           placeholder="` + key + `"
-                                           value="` + now_provider["params"][key] + `">
+                                           placeholder="` + params[key]["placeholder"] + `"
+                                           value="` + EscapeString(now_provider["params"][key]) + `">
                                 </div>
                             </div>
                         </div>`
@@ -223,9 +225,9 @@
                             html += `<div class="row">
                                 <div class="col-lg-6">
                                     <div class="form-group">
-                                        <label class="form-control-label">` + params[key] + `</label>
+                                        <label class="form-control-label">` + params[key]["description"] + `</label>
                                         <input type="text" name="` + key + `" class="form-control"
-                                               placeholder="` + key + `"
+                                               placeholder="` + params[key]["placeholder"] + `"
                                                value="">
                                     </div>
                                 </div>`
@@ -233,9 +235,9 @@
                         } else {
                             html += `<div class="col-lg-6">
                                 <div class="form-group">
-                                    <label class="form-control-label">` + params[key] + `</label>
+                                    <label class="form-control-label">` + params[key]["description"] + `</label>
                                     <input type="text" name="` + key + `" class="form-control"
-                                           placeholder="` + key + `"
+                                           placeholder="` + params[key]["placeholder"] + `"
                                            value="">
                                 </div>
                             </div>
@@ -258,6 +260,9 @@
                 } else {
                     provider_container += `<option>` + key + `</option>`;
                 }
+            }
+            if (!now_provider["provider"]) {
+                change_provider("github");
             }
             $("#provider-container").html(provider_container);
         {% endif %}

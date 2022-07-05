@@ -133,9 +133,11 @@
 
     <script>
         var _status = true, front_matter = {{ json_front_matter|safe }}, categories, rags;
-        if (front_matter["tags"]) tags = front_matter["tags"];
+        if (typeof(front_matter["tags"])==="object") tags = front_matter["tags"];
+        else if (typeof(front_matter["tags"])==="string") tags = [front_matter["tags"]];
         else tags = [];
-        if (front_matter["categories"]) categories = front_matter["categories"];
+        if (typeof(front_matter["categories"])==="object") categories = front_matter["categories"];
+        else if (typeof(front_matter["categories"])==="string") categories = [front_matter["categories"]];
         else categories = [];
 
         $("#updated").val(getTimeFormat());

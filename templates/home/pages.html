@@ -259,18 +259,26 @@
         }
 
         function delete_file() {
-            var loading = new KZ_Loading('正在删除中...');
+            let loading = new KZ_Loading('正在删除中...');
             loading.show();
+            let file = $("#delfile").text();
             $.ajax({
                 url: '/api/delete/',
                 method: 'post',
-                data: {"file": $("#delfile").text()},
+                data: {"file": file},
                 dataType: 'JSON',
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
                         notyf.success('删除成功！');
-                        setTimeout(location.reload(), 1000);
+                        for (let i = 0; i < posts.length; i++) {
+                            if (posts[i]["fullname"] === file) {
+                               posts.splice(i, 1);
+                               $("#post-number").html(posts.length);
+                               break;
+                            }
+                        }
+                        change_page(_page);
                     } else {
                         notyf.error(res.msg);
                     }

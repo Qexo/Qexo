@@ -9,16 +9,16 @@ from math import ceil
 
 
 def page_404(request, exception):
-    return render(request, 'home/page-404.html', {"cdn_prev": "https://unpkg.com/", "cdnjs": "https://cdnjs.cloudflare.com/ajax/libs/"})
+    return render(request, 'home/page-404.html', {"cdn_prev": "https://unpkg.com/", "cdnjs": "https://cdn.staticfile.org/"})
 
 
 def page_403(request, exception):
-    return render(request, 'home/page-403.html', {"cdn_prev": "https://unpkg.com/", "cdnjs": "https://cdnjs.cloudflare.com/ajax/libs/"})
+    return render(request, 'home/page-403.html', {"cdn_prev": "https://unpkg.com/", "cdnjs": "https://cdn.staticfile.org/"})
 
 
 def page_500(request):
     return render(request, 'home/page-500.html',
-                  {"error": "程序遇到了错误！", "cdn_prev": "https://unpkg.com/", "cdnjs": "https://cdnjs.cloudflare.com/ajax/libs/"})
+                  {"error": "程序遇到了错误！", "cdn_prev": "https://unpkg.com/", "cdnjs": "https://cdn.staticfile.org/"})
 
 
 def login_view(request):
@@ -81,6 +81,7 @@ def update_view(request):
                 context["settings"].append(dict(name=setting[0], value=setting[1], placeholder=setting[3]))
 
             context["counter"] += 1
+    delete_all_caches()  # delete all caches
     if not context["counter"]:
         save_setting("UPDATE_FROM", QEXO_VERSION)
         return redirect("/")

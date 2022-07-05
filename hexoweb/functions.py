@@ -61,22 +61,18 @@ def div(value, div):  # 保留两位小数的除法
 
 
 def get_cdn():
-    try:
-        cdn_prev = get_setting("CDN_PREV")
-
-    except:
+    cdn_prev = get_setting("CDN_PREV")
+    if not cdn_prev:
         save_setting("CDN_PREV", "https://unpkg.com/")
         cdn_prev = "https://unpkg.com/"
     return cdn_prev
 
 
 def get_cdnjs():
-    try:
-        cdnjs = get_setting("CDNJS")
-
-    except:
-        save_setting("CDNJS", "https://cdnjs.cloudflare.com/ajax/libs/")
-        cdnjs = "https://cdnjs.cloudflare.com/ajax/libs/"
+    cdnjs = get_setting("CDNJS")
+    if not cdnjs:
+        save_setting("CDNJS", "https://cdn.staticfile.org/")
+        cdnjs = "https://cdn.staticfile.org/"
     return cdnjs
 
 

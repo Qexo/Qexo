@@ -178,7 +178,11 @@
 
         {% if step == "3" %}
             const all_providers = {{ all_providers | safe }};
-            var now_provider = {{ PROVIDER | safe }};
+            {% if PROVIDER %}
+                var now_provider = {{ PROVIDER | safe }};
+            {% else %}
+                var now_provider = {};
+            {% endif %}
 
             function change_provider(provider) {
                 let params = all_providers[provider];

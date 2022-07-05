@@ -187,7 +187,9 @@
                     url: '/api/save_page/',
                     method: 'post',
                     data: {
-                        "file": "{{ file_path }}", "content": vditor.getValue(), "front_matter":
+                        "file": "source/" + $("input[name='filename']").val() + "/index.md",
+                        "content": vditor.getValue(),
+                        "front_matter":
                             JSON.stringify(get_front_matter())
                     },
                     dataType: 'JSON',

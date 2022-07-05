@@ -310,7 +310,9 @@ def pages(request):
             return index(request)
         elif "edit_page" in load_template:
             file_path = request.GET.get("file")
-            context["file_content"] = repr(Provider.get_content(file_path)).replace("<", "\\<").replace(">", "\\>").replace("!", "\\!")
+            context["front_matter"], context["file_content"] = get_post_details(
+                (Provider.get_content(file_path)))
+            context["json_front_matter"] = json.dumps(context["front_matter"])
             context['filename'] = file_path.split("/")[-2] + "/" + file_path.split("/")[-1]
             context["file_path"] = file_path
             context["emoji"] = get_setting("VDITOR_EMOJI")
@@ -340,13 +342,9 @@ def pages(request):
         elif "new_page" in load_template:
             context["emoji"] = get_setting("VDITOR_EMOJI")
             try:
-                now = time()
-                alg = get_setting("ABBRLINK_ALG")
-                rep = get_setting("ABBRLINK_REP")
-                abbrlink = get_crc_by_time(str(now), alg, rep)
-                context["file_content"] = repr(Provider.get_content("scaffolds/page.md")).replace("<", "\\<").replace(">", "\\>").replace(
-                    "{{ date }}", strftime("%Y-%m-%d %H:%M:%S", localtime(now))).replace(
-                    "{{ abbrlink }}", abbrlink).replace("!", "\\!")
+                context["front_matter"], context["file_content"] = get_post_details(
+                    (Provider.get_content("scaffolds/page.md")))
+                context["json_front_matter"] = json.dumps(context["front_matter"])
             except Exception as error:
                 context["error"] = repr(error)
             try:
@@ -360,7 +358,6 @@ def pages(request):
                 context["front_matter"], context["file_content"] = get_post_details(
                     (Provider.get_content("scaffolds/post.md")))
                 context["json_front_matter"] = json.dumps(context["front_matter"])
-
             except Exception as error:
                 context["error"] = repr(error)
             try:

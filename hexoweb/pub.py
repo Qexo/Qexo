@@ -69,24 +69,6 @@ def save_draft(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
-# 新建内容 pub/new
-@csrf_exempt
-def new(request):
-    if not check_if_api_auth(request):
-        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
-                                                                         "status": False})})
-    context = dict(msg="Error!", status=False)
-    if request.method == "POST":
-        file_path = request.POST.get('file')
-        content = request.POST.get('content')
-        try:
-            Provider.save(file_path, content)
-            context = {"msg": "OK!", "status": True}
-        except Exception as error:
-            context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
-
-
 # 删除内容 pub/delete
 @csrf_exempt
 def delete(request):

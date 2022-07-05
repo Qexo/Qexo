@@ -371,6 +371,23 @@ def save_post(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 保存页面 api/save_page
+@login_required(login_url="/login/")
+def save_page(request):
+    context = dict(msg="Error!", status=False)
+    if request.method == "POST":
+        file_path = request.POST.get('file')
+        content = request.POST.get('content')
+        front_matter = request.POST.get('front_matter')
+        try:
+            front_matter = "---\n{}---\n".format(yaml.dump(json.loads(front_matter), allow_unicode=True))
+            Provider.save(file_path, front_matter + content)
+            context = {"msg": "OK!", "status": True}
+        except Exception as error:
+            context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
 # 保存草稿 api/save_draft
 @login_required(login_url="/login/")
 def save_draft(request):
@@ -383,21 +400,6 @@ def save_draft(request):
             # 创建/更新草稿
             front_matter = "---\n{}---\n".format(yaml.dump(json.loads(front_matter), allow_unicode=True))
             Provider.save("source/_drafts/" + file_name, front_matter + content)
-            context = {"msg": "OK!", "status": True}
-        except Exception as error:
-            context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
-
-
-# 新建内容 api/new
-@login_required(login_url="/login/")
-def new(request):
-    context = dict(msg="Error!", status=False)
-    if request.method == "POST":
-        file_path = request.POST.get('file')
-        content = request.POST.get('content')
-        try:
-            Provider.save(file_path, content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}

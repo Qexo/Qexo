@@ -135,10 +135,13 @@
 
     <script>
         var _status = true, front_matter = {{ json_front_matter|safe }}, categories, rags;
-        if (typeof (front_matter["tags"]) === "object") tags = front_matter["tags"];
+        if (typeof (front_matter["tags"]) === "object" && front_matter["tags"] !==
+            null) tags = front_matter["tags"];
         else if (typeof (front_matter["tags"]) === "string") tags = [front_matter["tags"]];
         else tags = [];
-        if (typeof (front_matter["categories"]) === "object") categories = front_matter["categories"];
+        if (typeof (front_matter["categories"]) === "object" && front_matter["categories"] !==
+            null) categories =
+            front_matter["categories"];
         else if (typeof (front_matter["categories"]) === "string") categories = [front_matter["categories"]];
         else categories = [];
 

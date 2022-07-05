@@ -32,95 +32,98 @@
 
     <!-- Page content -->
     <div class="container-fluid mt--6">
-        <div class="row col">
-            <div class="card col-md-8 px-0 ml-md-4">
-                <div id="vditor"></div>
-            </div>
-            <div class="card col-md-3 ml-md-5">
-                <h3 class="mt-3">文章参数</h3>
-                <hr class="my-2"/>
-                <div class="form-group">
-                    <label class="form-control-label"><i class="fas fa-heading"></i> 标题</label>
-                    <input type="text" name="title"
-                           class="form-control"
-                           placeholder="显示的文章题目"
-                           id="title"
-                           value="{{ front_matter.title }}">
+        <div class="row">
+            <div class="col">
+                <div class="card col-md-8 px-0 ml-md-4">
+                    <div id="vditor"></div>
                 </div>
-                {% if front_matter.abbrlink %}
+                <div class="card col-md-3 ml-md-5">
+                    <h3 class="mt-3">文章参数</h3>
+                    <hr class="my-2"/>
                     <div class="form-group">
-                        <label class="form-control-label"><i class="fas fa-id-card"></i>
-                            缩写</label>
-                        <input type="text" name="abbrlink"
+                        <label class="form-control-label"><i class="fas fa-heading"></i> 标题</label>
+                        <input type="text" name="title"
                                class="form-control"
-                               id="abbrlink"
-                               placeholder="文章 Abbrlink"
-                               value="{{ front_matter.abbrlink }}">
+                               placeholder="显示的文章题目"
+                               id="title"
+                               value="{{ front_matter.title }}">
                     </div>
-                {% endif %}
-                <div class="form-group">
-                    <label class="form-control-label"><i class="fas fa-globe-americas"></i>
-                        发布于</label>
-                    <input type="text" name="date"
-                           class="form-control"
-                           id="date"
-                           placeholder="发布时间"
-                           value="{{ front_matter.date }}">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-control-label"><i class="fas fa-calendar-alt"></i>
-                        更新于</label>
-                    <input type="text" name="updated"
-                           class="form-control"
-                           id="updated"
-                           placeholder="更新时间"
-                           value="{{ front_matter.updated }}">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-control-label"><i class="fas fa-tag"></i> 标签</label>
-                    <div class="input-group">
-                        <input type="text" name="tag"
-                               class="form-control"
-                               placeholder="添加标签"
-                               id="tag">
-                        <div class="input-group-append">
-                            <button class="btn" type="button"
-                                    style="border: 1px solid #dee2e6;border-radius: .25rem;"
-                                    onclick="add_tag($('#tag').val());$('#tag').val('')">+
-                            </button>
+                    {% if front_matter.abbrlink %}
+                        <div class="form-group">
+                            <label class="form-control-label"><i class="fas fa-id-card"></i>
+                                缩写</label>
+                            <input type="text" name="abbrlink"
+                                   class="form-control"
+                                   id="abbrlink"
+                                   placeholder="文章 Abbrlink"
+                                   value="{{ front_matter.abbrlink }}">
                         </div>
-                    </div>
-                    <div id="tag-container"></div>
-                </div>
-                <div class="form-group">
-                    <label class="form-control-label"><i class="fas fa-folder-open"></i> 分类</label>
-                    <div class="input-group">
-                        <input type="text" name="category"
+                    {% endif %}
+                    <div class="form-group">
+                        <label class="form-control-label"><i class="fas fa-globe-americas"></i>
+                            发布于</label>
+                        <input type="text" name="date"
                                class="form-control"
-                               placeholder="添加分类"
-                               id="category">
-                        <div class="input-group-append">
-                            <button class="btn" type="button"
-                                    style="border: 1px solid #dee2e6;border-radius: .25rem;"
-                                    onclick="add_category($('#category').val());$('#category').val('')">
-                                +
-                            </button>
-                        </div>
+                               id="date"
+                               placeholder="发布时间"
+                               value="{{ front_matter.date }}">
                     </div>
-                    <div id="category-container"></div>
-                </div>
-                <div class="form-group">
-                    <label class="form-control-label"><i class="fas fa-pencil-alt"></i> 自定义</label>
-                    <textarea name="custom"
-                              id="custom"
-                              class="form-control"
-                              placeholder="自定义Front-Matter"></textarea>
+
+                    <div class="form-group">
+                        <label class="form-control-label"><i class="fas fa-calendar-alt"></i>
+                            更新于</label>
+                        <input type="text" name="updated"
+                               class="form-control"
+                               id="updated"
+                               placeholder="更新时间"
+                               value="{{ front_matter.updated }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-control-label"><i class="fas fa-tag"></i> 标签</label>
+                        <div class="input-group">
+                            <input type="text" name="tag"
+                                   class="form-control"
+                                   placeholder="添加标签"
+                                   id="tag">
+                            <div class="input-group-append">
+                                <button class="btn" type="button"
+                                        style="border: 1px solid #dee2e6;border-radius: .25rem;"
+                                        onclick="add_tag($('#tag').val());$('#tag').val('')">+
+                                </button>
+                            </div>
+                        </div>
+                        <div id="tag-container"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-control-label"><i class="fas fa-folder-open"></i>
+                            分类</label>
+                        <div class="input-group">
+                            <input type="text" name="category"
+                                   class="form-control"
+                                   placeholder="添加分类"
+                                   id="category">
+                            <div class="input-group-append">
+                                <button class="btn" type="button"
+                                        style="border: 1px solid #dee2e6;border-radius: .25rem;"
+                                        onclick="add_category($('#category').val());$('#category').val('')">
+                                    +
+                                </button>
+                            </div>
+                        </div>
+                        <div id="category-container"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-control-label"><i class="fas fa-pencil-alt"></i>
+                            自定义</label>
+                        <textarea name="custom"
+                                  id="custom"
+                                  class="form-control"
+                                  placeholder="自定义Front-Matter"></textarea>
+                    </div>
                 </div>
             </div>
         </div>
-
         {% include "includes/footer.html" %}
 
     </div>
@@ -135,11 +138,11 @@
 
     <script>
         var _status = true, front_matter = {{ json_front_matter|safe }}, categories, rags;
-        if (typeof(front_matter["tags"])==="object") tags = front_matter["tags"];
-        else if (typeof(front_matter["tags"])==="string") tags = [front_matter["tags"]];
+        if (typeof (front_matter["tags"]) === "object") tags = front_matter["tags"];
+        else if (typeof (front_matter["tags"]) === "string") tags = [front_matter["tags"]];
         else tags = [];
-        if (typeof(front_matter["categories"])==="object") categories = front_matter["categories"];
-        else if (typeof(front_matter["categories"])==="string") categories = [front_matter["categories"]];
+        if (typeof (front_matter["categories"]) === "object") categories = front_matter["categories"];
+        else if (typeof (front_matter["categories"]) === "string") categories = [front_matter["categories"]];
         else categories = [];
 
         $("#updated").val(getTimeFormat());
@@ -323,7 +326,7 @@
                 },
                 "cdn": "{{ cdn_prev }}vditor@3.8.15",
                 "mode": "ir",
-                "height": window.innerHeight / 2,
+                "height": window.innerHeight * 0.75,
                 {% if file_content %}
                     "value": {{ file_content|safe }},
                 {% endif %}

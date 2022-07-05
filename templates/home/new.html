@@ -32,10 +32,91 @@
 
     <!-- Page content -->
     <div class="container-fluid mt--6">
-        <div class="row">
-            <div class="col">
-                <div class="card">
-                    <div id="vditor"></div>
+        <div class="row col">
+            <div class="card col-md-8 px-0 ml-md-4">
+                <div id="vditor"></div>
+            </div>
+            <div class="card col-md-3 ml-md-5">
+                <h3 class="mt-3">文章参数</h3>
+                <hr class="my-2"/>
+                <div class="form-group">
+                    <label class="form-control-label"><i class="fas fa-heading"></i> 标题</label>
+                    <input type="text" name="title"
+                           class="form-control"
+                           placeholder="显示的文章题目"
+                           id="title"
+                           value="{{ front_matter.title }}">
+                </div>
+                {% if front_matter.abbrlink %}
+                    <div class="form-group">
+                        <label class="form-control-label"><i class="fas fa-id-card"></i>
+                            缩写</label>
+                        <input type="text" name="abbrlink"
+                               class="form-control"
+                               id="abbrlink"
+                               placeholder="文章 Abbrlink"
+                               value="{{ front_matter.abbrlink }}">
+                    </div>
+                {% endif %}
+                <div class="form-group">
+                    <label class="form-control-label"><i class="fas fa-globe-americas"></i>
+                        发布于</label>
+                    <input type="text" name="date"
+                           class="form-control"
+                           id="date"
+                           placeholder="发布时间"
+                           value="{{ front_matter.date }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label"><i class="fas fa-calendar-alt"></i>
+                        更新于</label>
+                    <input type="text" name="updated"
+                           class="form-control"
+                           id="updated"
+                           placeholder="更新时间"
+                           value="{{ front_matter.updated }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label"><i class="fas fa-tag"></i> 标签</label>
+                    <div class="input-group">
+                        <input type="text" name="tag"
+                               class="form-control"
+                               placeholder="添加标签"
+                               id="tag">
+                        <div class="input-group-append">
+                            <button class="btn" type="button"
+                                    style="border: 1px solid #dee2e6;border-radius: .25rem;"
+                                    onclick="add_tag($('#tag').val());$('#tag').val('')">+
+                            </button>
+                        </div>
+                    </div>
+                    <div id="tag-container"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label"><i class="fas fa-folder-open"></i> 分类</label>
+                    <div class="input-group">
+                        <input type="text" name="category"
+                               class="form-control"
+                               placeholder="添加分类"
+                               id="category">
+                        <div class="input-group-append">
+                            <button class="btn" type="button"
+                                    style="border: 1px solid #dee2e6;border-radius: .25rem;"
+                                    onclick="add_category($('#category').val());$('#category').val('')">
+                                +
+                            </button>
+                        </div>
+                    </div>
+                    <div id="category-container"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label"><i class="fas fa-pencil-alt"></i> 自定义</label>
+                    <textarea name="custom"
+                              id="custom"
+                              class="form-control"
+                              placeholder="标题"></textarea>
                 </div>
             </div>
         </div>
@@ -53,7 +134,29 @@
 
 
     <script>
-        var _status = true;
+        var _status = true, front_matter = {{ json_front_matter|safe }}, categories, rags;
+        if (front_matter["tags"]) tags = front_matter["tags"];
+        else tags = [];
+        if (front_matter["categories"]) categories = front_matter["categories"];
+        else categories = [];
+
+        $("#updated").val(getTimeFormat());
+
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        function getTimeFormat() {
+            let date = new Date();
+            let month = date.getMonth() + 1 < 10 ? "0" + (date.getMonth() + 1) : date.getMonth()
+                + 1;
+            let currentDate = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
+            let hh = date.getHours() < 10 ? "0" + date.getHours() : date.getHours();
+            let mm = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
+            let ss = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
+            return date.getFullYear() + "-" + month + "-" + currentDate + " " + hh + ":" + mm + ":" + ss;
+            //返回格式：yyyy-MM-dd hh:mm:ss
+        }
 
         $.ajaxSetup({
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
@@ -131,7 +234,7 @@
                 if (!_status) {
                     return false;
                 }
-                let loading = new KZ_Loading('正在保存中...');
+                let loading = new KZ_Loading('正在发布中...');
                 _status = false;
                 loading.show();
                 $.ajax({
@@ -139,13 +242,14 @@
                     method: 'post',
                     data: {
                         "file": $("input[name='filename']").val() + ".md",
-                        "content": vditor.getValue()
+                        "content": vditor.getValue(),
+                        "front_matter": JSON.stringify(get_front_matter())
                     },
                     dataType: 'JSON',
                     success: function (res) {
                         loading.destroy();
                         if (res.status) {
-                            notyf.success('保存成功！等待转跳...');
+                            notyf.success('发布成功！等待转跳...');
                             setTimeout(window.location.href = "edit.html?file=" + $
                             ("input[name='filename']").val() + ".md", 1000);
                         } else {
@@ -177,7 +281,8 @@
                     method: 'post',
                     data: {
                         "file": $("input[name='filename']").val() + ".md",
-                        "content": vditor.getValue()
+                        "content": vditor.getValue(),
+                        "front_matter": JSON.stringify(get_front_matter())
                     },
                     dataType: 'JSON',
                     success: function (res) {
@@ -337,11 +442,11 @@
                 "fullscreen": {
                     "index": 1050,
                 },
-                "height": document.documentElement.clientHeight - 200,
+                "height": document.documentElement.clientHeight + 60,
                 "cache": {
                     "enable": false
                 },
-                "mode": "sv",
+                "mode": "ir",
                 "debugger": false,
                 "preview": {
                     "mode": "both",
@@ -388,6 +493,90 @@
                     }
                 },
             });
+        }
+
+
+        function show_tags() {
+            let html = "";
+            for (let i = 0; i < tags.length; i++) {
+                html += `<span class="px-1 py-0.5 text-xs select-none
+                            d-inline-block  rounded-pill mr-1 mb-0.5"
+                            style="color: rgb(255, 255, 255); background-color: rgb(52, 152, 219);"
+                            onclick="del_tag(this.innerText);">` + tags[i]
+                    + `</span>`;
+            }
+            $("#tag-container").html(html);
+        }
+
+        function add_tag(name) {
+            if (name in tags) {
+                notyf.error("标签已存在! ");
+            } else {
+                tags.push(name);
+                show_tags();
+            }
+        }
+
+        function del_tag(name) {
+            for (let i = 0; i < tags.length; i++) {
+                if (String(tags[i]) === String(name)) {
+                    tags.splice(i, 1);
+                }
+            }
+            $("#tag").val(String(name));
+            show_tags();
+        }
+
+        function show_categories() {
+            let html = "";
+            for (let i = 0; i < categories.length; i++) {
+                html += `<span class="px-1 py-0.5 text-xs select-none
+                            d-inline-block  rounded-pill mr-1 mb-0.5"
+                            style="color: rgb(255, 255, 255); background-color: rgb(52, 152, 219);
+                            " onclick="del_category(this.innerText);">` + categories[i] + `</span>`;
+            }
+            $("#category-container").html(html);
+        }
+
+        function add_category(name) {
+            if (name in categories) {
+                notyf.error("分类已存在! ");
+            } else {
+                categories.push(name);
+                show_categories();
+            }
+        }
+
+        function del_category(name) {
+            for (let i = 0; i < categories.length; i++) {
+                if (String(categories[i]) === String(name)) {
+                    categories.splice(i, 1);
+                }
+            }
+            $("#category").val(String(name));
+            show_categories();
+        }
+
+        show_tags();
+        show_categories();
+
+        delete front_matter["title"];
+        delete front_matter["date"];
+        delete front_matter["abbrlink"];
+        delete front_matter["tags"];
+        delete front_matter["updated"];
+        delete front_matter["categories"];
+        $("#custom").val(JSON.stringify(front_matter));
+
+        function get_front_matter() {
+            let custom = JSON.parse($("#custom").val());
+            custom["title"] = $("#title").val();
+            custom["date"] = $("#date").val();
+            if ($("#abbrlink").length > 0) front_matter["abbrlink"] = $("#abbrlink").val();
+            custom["tags"] = tags;
+            custom["categories"] = categories;
+            custom["updated"] = $("#updated").val();
+            return custom;
         }
     </script>
 {% endblock javascripts %}

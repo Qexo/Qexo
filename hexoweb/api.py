@@ -355,6 +355,7 @@ def save_post(request):
     if request.method == "POST":
         file_name = request.POST.get('file')
         content = request.POST.get('content')
+        front_matter = request.POST.get('front_matter')
         try:
             # 删除草稿
             try:
@@ -362,7 +363,8 @@ def save_post(request):
             except:
                 pass
             # 创建/更新文章
-            Provider.save("source/_posts/" + file_name, content)
+            front_matter = "---\n{}---\n".format(yaml.dump(json.loads(front_matter), allow_unicode=True))
+            Provider.save("source/_posts/" + file_name, front_matter + content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -376,9 +378,11 @@ def save_draft(request):
     if request.method == "POST":
         file_name = request.POST.get('file')
         content = request.POST.get('content')
+        front_matter = request.POST.get('front_matter')
         try:
             # 创建/更新草稿
-            Provider.save("source/_drafts/" + file_name, content)
+            front_matter = "---\n{}---\n".format(yaml.dump(json.loads(front_matter), allow_unicode=True))
+            Provider.save("source/_drafts/" + file_name, front_matter + content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}

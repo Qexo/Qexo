@@ -317,8 +317,8 @@ def pages(request):
             try:
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
-            except Exception as error:
-                context["error"] = repr(error)
+            except:
+                pass
         elif "edit_config" in load_template:
             file_path = request.GET.get("file")
             context["file_content"] = repr(Provider.get_content(file_path)).replace("<", "\\<").replace(">", "\\>").replace("!", "\\!")
@@ -326,17 +326,17 @@ def pages(request):
             context['filename'] = file_path.split("/")[-1]
         elif "edit" in load_template:
             file_path = request.GET.get("file")
-            context["file_content"] = repr(get_post(file_path)).replace("<",
-                                                                        "\\<").replace(
-                ">", "\\>").replace("!", "\\!")
+            context["front_matter"], context["file_content"] = get_post_details(
+                (get_post(file_path)))
+            context["json_front_matter"] = json.dumps(context["front_matter"])
             context['filename'] = file_path.split("/")[-1]
             context['fullname'] = file_path
             context["emoji"] = get_setting("VDITOR_EMOJI")
             try:
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
-            except Exception as error:
-                context["error"] = repr(error)
+            except:
+                pass
         elif "new_page" in load_template:
             context["emoji"] = get_setting("VDITOR_EMOJI")
             try:
@@ -352,26 +352,22 @@ def pages(request):
             try:
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
-            except Exception as error:
-                context["error"] = repr(error)
+            except:
+                pass
         elif "new" in load_template:
             context["emoji"] = get_setting("VDITOR_EMOJI")
             try:
-                now = time()
-                alg = get_setting("ABBRLINK_ALG")
-                rep = get_setting("ABBRLINK_REP")
-                abbrlink = get_crc_by_time(str(now), alg, rep)
-                context["file_content"] = repr(
-                    Provider.get_content("scaffolds/post.md").replace("{{ date }}", strftime("%Y-%m-%d %H:%M:%S", localtime(now))).replace(
-                        "{{ abbrlink }}", abbrlink)).replace("<", "\\<").replace(">", "\\>").replace("!", "\\!")
+                context["front_matter"], context["file_content"] = get_post_details(
+                    (Provider.get_content("scaffolds/post.md")))
+                context["json_front_matter"] = json.dumps(context["front_matter"])
 
             except Exception as error:
                 context["error"] = repr(error)
             try:
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
-            except Exception as error:
-                context["error"] = repr(error)
+            except:
+                pass
         elif "posts" in load_template:
             search = request.GET.get("s")
             if search:

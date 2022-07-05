@@ -6,8 +6,7 @@ from core.QexoSettings import QEXO_VERSION
 from .models import Cache, SettingModel, FriendModel, NotificationModel, CustomModel, StatisticUV, StatisticPV
 import github
 import json
-import boto3
-from datetime import timezone, timedelta, date
+from datetime import timezone, timedelta, date, datetime
 from time import time
 from hashlib import md5
 from urllib3 import disable_warnings
@@ -16,7 +15,6 @@ from zlib import crc32 as zlib_crc32
 from urllib.parse import quote
 from time import strftime, localtime
 import tarfile
-from ftplib import FTP
 import html2text as ht
 from hexoweb.libs.onepush import notify, get_notifier
 from hexoweb.libs.onepush import all_providers as onepush_providers
@@ -25,6 +23,7 @@ from hexoweb.libs.image import get_image_host
 from hexoweb.libs.image import get_params as get_image_params
 from hexoweb.libs.image import all_providers as all_image_providers
 import yaml
+import re
 
 disable_warnings()
 
@@ -596,3 +595,17 @@ def verify_provider(provider):
         }
     except:
         return {"status": -1}
+
+
+def get_post_details(article):
+    article = article.replace("{{ date }}", strftime("%Y-%m-%d %H:%M:%S", localtime(time()))).replace(
+        "{{ abbrlink }}", get_crc_by_time(str(time()), get_setting("ABBRLINK_ALG"), get_setting("ABBRLINK_REP"))).replace("{{", "").replace("}}", "")
+    front_matter = yaml.safe_load(re.search(r"---([\s\S]*)---", article, flags=0).group()[3:-4]) if article[
+                                                                                                                       :3] == "---" else json.loads(
+        "{{{}}}".format(re.search(r";;;([\s\S]*);;;", article, flags=0).group()[3:-4]))
+    for key in front_matter.keys():
+        if type(front_matter.get(key)) == datetime:
+            front_matter[key] = front_matter[key].strftime("%Y-%m-%d %H:%M:%S")
+    passage = repr(re.search(r"[;-][;-][;-]([\s\S]*)", article[3:], flags=0).group()[3:]).replace("<", "\\<").replace(">", "\\>").replace(
+        "!", "\\!")
+    return front_matter, passage

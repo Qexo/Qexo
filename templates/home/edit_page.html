@@ -31,50 +31,48 @@
     <!-- Page content -->
     <div class="container-fluid mt--6">
         <div class="row">
-            <div class="col">
-                <div class="card col-md-8 px-0 ml-md-4">
-                    <div id="vditor"></div>
+            <div class="card col-md-8 px-0 ml-md-4">
+                <div id="vditor"></div>
+            </div>
+            <div class="card col-md-3 ml-md-5">
+                <h3 class="mt-3">文章参数</h3>
+                <hr class="my-2"/>
+                <div class="form-group">
+                    <label class="form-control-label"><i class="fas fa-heading"></i> 标题</label>
+                    <input type="text" name="title"
+                           class="form-control"
+                           placeholder="显示的文章题目"
+                           id="title"
+                           value="{{ front_matter.title }}">
                 </div>
-                <div class="card col-md-3 ml-md-5">
-                    <h3 class="mt-3">文章参数</h3>
-                    <hr class="my-2"/>
-                    <div class="form-group">
-                        <label class="form-control-label"><i class="fas fa-heading"></i> 标题</label>
-                        <input type="text" name="title"
-                               class="form-control"
-                               placeholder="显示的文章题目"
-                               id="title"
-                               value="{{ front_matter.title }}">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-control-label"><i class="fas fa-globe-americas"></i>
-                            发布于</label>
-                        <input type="text" name="date"
-                               class="form-control"
-                               id="date"
-                               placeholder="发布时间"
-                               value="{{ front_matter.date }}">
-                    </div>
+                <div class="form-group">
+                    <label class="form-control-label"><i class="fas fa-globe-americas"></i>
+                        发布于</label>
+                    <input type="text" name="date"
+                           class="form-control"
+                           id="date"
+                           placeholder="发布时间"
+                           value="{{ front_matter.date }}">
+                </div>
 
-                    <div class="form-group">
-                        <label class="form-control-label"><i class="fas fa-calendar-alt"></i>
-                            更新于</label>
-                        <input type="text" name="updated"
-                               class="form-control"
-                               id="updated"
-                               placeholder="更新时间"
-                               value="{{ front_matter.updated }}">
-                    </div>
+                <div class="form-group">
+                    <label class="form-control-label"><i class="fas fa-calendar-alt"></i>
+                        更新于</label>
+                    <input type="text" name="updated"
+                           class="form-control"
+                           id="updated"
+                           placeholder="更新时间"
+                           value="{{ front_matter.updated }}">
+                </div>
 
-                    <div class="form-group">
-                        <label class="form-control-label"><i class="fas fa-pencil-alt"></i>
-                            自定义</label>
-                        <textarea name="custom"
-                                  id="custom"
-                                  class="form-control"
-                                  placeholder="自定义Front-Matter"
-                                  style="height:300px"></textarea>
-                    </div>
+                <div class="form-group">
+                    <label class="form-control-label"><i class="fas fa-pencil-alt"></i>
+                        自定义</label>
+                    <textarea name="custom"
+                              id="custom"
+                              class="form-control"
+                              placeholder="自定义Front-Matter"
+                              style="height:300px"></textarea>
                 </div>
             </div>
         </div>

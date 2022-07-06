@@ -76,11 +76,7 @@ def get_cdnjs():
 
 
 def get_post(post):
-    try:
-        return Provider.get_post(post)
-    except:
-        update_provider()
-        return Provider.get_post(post)
+    return Provider.get_post(post)
 
 
 # 获取用户自定义的样式配置

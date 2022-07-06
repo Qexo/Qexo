@@ -145,7 +145,8 @@
             for (let i = 0; i < page_posts.length; i++) {
                 list +="<tr><th scope=\"row\">" + page_posts[i]["name"] + "</th><td>" +
                     (page_posts[i]["size"] / 1000).toFixed(2) + " KB</td><td><a href=\"/edit_page" +
-                    ".html?file=" + page_posts[i]["path"] + "\"><i class=\"fa fa-edit " +
+                    ".html?file=" + encodeURIComponent(page_posts[i]["path"]) + "\"><i class=\"fa" +
+                    " fa-edit " +
                     "mr-2\"></i></a><a href=\"javascript:query_delete('source/" +
                     page_posts[i]["name"] + "')\"><i class=\"fa fa-trash-alt " +
                     "mr-2\"></i></a></td></tr>";

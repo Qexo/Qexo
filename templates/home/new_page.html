@@ -198,8 +198,8 @@
                         loading.destroy();
                         if (res.status) {
                             notyf.success('保存成功！');
-                            setTimeout(window.location.href = "edit_page.html?file=source/" + $
-                            ("input[name='filename']").val() + "/index.md", 1000);
+                            setTimeout(window.location.href = "edit_page.html?file=source/" +
+                                encodeURIComponent($("input[name='filename']").val() + "/index.md"), 1000);
                         } else {
                             notyf.error(res.msg);
                         }

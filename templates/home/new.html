@@ -256,8 +256,8 @@
                         loading.destroy();
                         if (res.status) {
                             notyf.success('发布成功！等待转跳...');
-                            setTimeout(window.location.href = "edit.html?file=" + $
-                            ("input[name='filename']").val() + ".md", 1000);
+                            setTimeout(window.location.href = "edit.html?file=" +
+                                encodeURIComponent($("input[name='filename']").val() + ".md"), 1000);
                         } else {
                             notyf.error(res.msg);
                         }
@@ -295,8 +295,7 @@
                         loading.destroy();
                         if (res.status) {
                             notyf.success('草稿保存成功！等待转跳...');
-                            setTimeout(window.location.href = "edit.html?file=" + $
-                            ("input[name='filename']").val() + ".md", 1000);
+                            setTimeout(window.location.href = "edit.html?file=" + encodeURIComponent($("input[name='filename']").val() + ".md"), 1000);
                         } else {
                             notyf.error(res.msg);
                         }

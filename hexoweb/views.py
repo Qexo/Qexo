@@ -275,6 +275,8 @@ def index(request):
         context["posts"] = posts[0:5]
     else:
         context["posts"] = posts
+    for item in range(len(context["posts"])):
+        context["posts"][item]["fullname"] = quote(context["posts"][item]["fullname"])
     if len(images) >= 5:
         context["images"] = images[::-1][0:5]
     else:

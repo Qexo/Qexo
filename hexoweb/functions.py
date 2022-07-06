@@ -6,6 +6,7 @@ from core.QexoSettings import QEXO_VERSION
 from .models import Cache, SettingModel, FriendModel, NotificationModel, CustomModel, StatisticUV, StatisticPV
 import github
 import json
+from urllib.parse import quote
 from datetime import timezone, timedelta, date, datetime
 from time import time
 from hashlib import md5

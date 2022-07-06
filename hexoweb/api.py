@@ -47,7 +47,7 @@ def set_hexo(request):
         verify = verify_provider(json.loads(provider))
         msg = ""
         if verify["status"] == -1:
-            return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "远程连接错误!", "status": False})})
+            return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "远程连接错误!请检查Token", "status": False})})
         if verify["hexo"]:
             msg += "检测到Hexo版本: " + verify["hexo"]
         else:

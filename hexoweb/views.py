@@ -162,37 +162,38 @@ def init_view(request):
                 else:
                     msg = ""
                     if verify["status"] == -1:
-                        msg = "远程连接错误!"
-                    if verify["hexo"]:
-                        msg += "检测到Hexo版本: " + verify["hexo"]
+                        msg = "远程连接错误!请检查Token"
                     else:
-                        msg += "未检测到Hexo"
-                    if verify["indexhtml"]:
-                        msg += "\n检测到index.html, 这可能不是正确的仓库"
-                    if verify["config_hexo"]:
-                        msg += "\n检测到Hexo配置文件"
-                    else:
-                        msg += "\n未检测到Hexo配置"
-                    if verify["theme"]:
-                        msg += "\n检测到主题: " + verify["theme"]
-                    else:
-                        msg += "\n未检测到主题"
-                    if verify["config_theme"]:
-                        msg += "\n检测到主题配置" + verify["config_theme"]
-                    else:
-                        msg += "\n未检测到主题配置"
-                    if verify["theme_dir"]:
-                        msg += "\n检测到主题目录"
-                    else:
-                        msg += "\n未检测到主题目录"
-                    if verify["package"]:
-                        msg += "\n检测到package.json"
-                    else:
-                        msg += "\n未检测到package.json"
-                    if verify["source"]:
-                        msg += "\n检测到source目录 "
-                    else:
-                        msg += "\n未检测到source目录"
+                        if verify["hexo"]:
+                            msg += "检测到Hexo版本: " + verify["hexo"]
+                        else:
+                            msg += "未检测到Hexo"
+                        if verify["indexhtml"]:
+                            msg += "\n检测到index.html, 这可能不是正确的仓库"
+                        if verify["config_hexo"]:
+                            msg += "\n检测到Hexo配置文件"
+                        else:
+                            msg += "\n未检测到Hexo配置"
+                        if verify["theme"]:
+                            msg += "\n检测到主题: " + verify["theme"]
+                        else:
+                            msg += "\n未检测到主题"
+                        if verify["config_theme"]:
+                            msg += "\n检测到主题配置" + verify["config_theme"]
+                        else:
+                            msg += "\n未检测到主题配置"
+                        if verify["theme_dir"]:
+                            msg += "\n检测到主题目录"
+                        else:
+                            msg += "\n未检测到主题目录"
+                        if verify["package"]:
+                            msg += "\n检测到package.json"
+                        else:
+                            msg += "\n未检测到package.json"
+                        if verify["source"]:
+                            msg += "\n检测到source目录 "
+                        else:
+                            msg += "\n未检测到source目录"
                     msg = msg.replace("\n", "<br>")
                     context["PROVIDER"] = provider
                     # Get Provider Settings

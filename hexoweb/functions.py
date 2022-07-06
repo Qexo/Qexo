@@ -593,12 +593,16 @@ def verify_provider(provider):
 
 
 def get_post_details(article):
-    article = article.replace("{{ date }}", strftime("%Y-%m-%d %H:%M:%S", localtime(time()))).replace(
-        "{{ abbrlink }}", get_crc_by_time(str(time()), get_setting("ABBRLINK_ALG"), get_setting("ABBRLINK_REP")))
     front_matter = yaml.safe_load(
-        re.search(r"---([\s\S]*?)---", article, flags=0).group()[3:-4].replace("{", "").replace("}", "")) if article[
-                                                                                                             :3] == "---" else json.loads(
-        "{{{}}}".format(re.search(r";;;([\s\S]*?);;;", article, flags=0).group()[3:-4]))
+        re.search(r"---([\s\S]*?)---", article, flags=0).group()[3:-4].replace("{{ date }}",
+                                                                               strftime("%Y-%m-%d %H:%M:%S", localtime(time()))).replace(
+            "{{ abbrlink }}", get_crc_by_time(str(time()), get_setting("ABBRLINK_ALG"), get_setting("ABBRLINK_REP"))).replace("{",
+                                                                                                                              "").replace(
+            "}", "")) if article[:3] == "---" else json.loads(
+        "{{{}}}".format(re.search(r";;;([\s\S]*?);;;", article, flags=0).group()[3:-4].replace("{{ date }}",
+                                                                                               strftime("%Y-%m-%d %H:%M:%S",
+                                                                                                        localtime(time()))).replace(
+            "{{ abbrlink }}", get_crc_by_time(str(time()), get_setting("ABBRLINK_ALG"), get_setting("ABBRLINK_REP")))))
     for key in front_matter.keys():
         if type(front_matter.get(key)) == datetime:
             front_matter[key] = front_matter[key].strftime("%Y-%m-%d %H:%M:%S")

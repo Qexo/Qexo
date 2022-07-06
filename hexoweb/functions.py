@@ -36,17 +36,15 @@ def get_setting(name):
         return ""
 
 
-Provider = ''
-
-
 def update_provider():
     global Provider
-    provider = json.loads(get_setting("PROVIDER"))
-    Provider = get_provider(provider["provider"], **provider["params"])
+    _provider = json.loads(get_setting("PROVIDER"))
+    Provider = get_provider(_provider["provider"], **_provider["params"])
+    return Provider
 
 
 try:
-    update_provider()
+    Provider = update_provider()
 except:
     pass
 
@@ -78,7 +76,11 @@ def get_cdnjs():
 
 
 def get_post(post):
-    return Provider.get_post(post)
+    try:
+        return Provider.get_post(post)
+    except:
+        update_provider()
+        return Provider.get_post(post)
 
 
 # 获取用户自定义的样式配置
@@ -599,7 +601,7 @@ def get_post_details(article):
         "{{ abbrlink }}", get_crc_by_time(str(time()), get_setting("ABBRLINK_ALG"), get_setting("ABBRLINK_REP")))
     front_matter = yaml.safe_load(
         re.search(r"---([\s\S]*?)---", article, flags=0).group()[3:-4].replace("{", "").replace("}", "")) if article[
-                                                                                                            :3] == "---" else json.loads(
+                                                                                                             :3] == "---" else json.loads(
         "{{{}}}".format(re.search(r";;;([\s\S]*?);;;", article, flags=0).group()[3:-4]))
     for key in front_matter.keys():
         if type(front_matter.get(key)) == datetime:

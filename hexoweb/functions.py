@@ -82,26 +82,22 @@ def get_post(post):
 # 获取用户自定义的样式配置
 def get_custom_config():
     context = {"cdn_prev": get_cdn(), "cdnjs": get_cdnjs()}
-    try:
-        context["QEXO_NAME"] = get_setting("QEXO_NAME")
-    except:
+    context["QEXO_NAME"] = get_setting("QEXO_NAME")
+    if not context["QEXO_NAME"]:
         save_setting('QEXO_NAME', 'Hexo管理面板')
         context["QEXO_NAME"] = get_setting("QEXO_NAME")
-    try:
-        context["QEXO_SPLIT"] = get_setting("QEXO_SPLIT")
-    except:
+    context["QEXO_SPLIT"] = get_setting("QEXO_SPLIT")
+    if not context["QEXO_SPLIT"]:
         save_setting('QEXO_SPLIT', ' - ')
         context["QEXO_SPLIT"] = get_setting("QEXO_SPLIT")
-    try:
-        context["QEXO_LOGO"] = get_setting("QEXO_LOGO")
-    except:
+    context["QEXO_LOGO"] = get_setting("QEXO_LOGO")
+    if not context["QEXO_LOGO"]:
         save_setting('QEXO_LOGO',
                      'https://unpkg.com/qexo-static@1.4.0/assets' +
                      '/img/brand/qexo.png')
         context["QEXO_LOGO"] = get_setting("QEXO_LOGO")
-    try:
-        context["QEXO_ICON"] = get_setting("QEXO_ICON")
-    except:
+    context["QEXO_ICON"] = get_setting("QEXO_ICON")
+    if not context["QEXO_ICON"]:
         save_setting('QEXO_ICON',
                      'https://unpkg.com/qexo-static@1.4.0/assets' +
                      '/img/brand/favicon.ico')
@@ -292,19 +288,23 @@ def save_cache(name, content):
 def get_latest_version():
     context = dict()
     try:
-        user = github.Github(get_setting('GH_TOKEN'))
-        latest = user.get_repo("am-abudu/Qexo").get_latest_release()
-        if latest.tag_name and (latest.tag_name != QEXO_VERSION):
-            context["hasNew"] = True
+        provider = json.loads(get_setting("PROVIDER"))
+        if provider["provider"] == "github":
+            user = github.Github(provider["params"]["token"])
+            latest = user.get_repo("am-abudu/Qexo").get_latest_release()
+            if latest.tag_name and (latest.tag_name != QEXO_VERSION):
+                context["hasNew"] = True
+            else:
+                context["hasNew"] = False
+            context["newer"] = latest.tag_name
+            context["newer_link"] = latest.html_url
+            context["newer_time"] = latest.created_at.astimezone(
+                timezone(timedelta(hours=16))).strftime(
+                "%Y-%m-%d %H:%M:%S")
+            context["newer_text"] = markdown(latest.body).replace("<p>", "<p class=\"text-sm mb-0\">")
+            context["status"] = True
         else:
-            context["hasNew"] = False
-        context["newer"] = latest.tag_name
-        context["newer_link"] = latest.html_url
-        context["newer_time"] = latest.created_at.astimezone(
-            timezone(timedelta(hours=16))).strftime(
-            "%Y-%m-%d %H:%M:%S")
-        context["newer_text"] = markdown(latest.body).replace("<p>", "<p class=\"text-sm mb-0\">")
-        context["status"] = True
+            context["status"] = False
     except:
         context["status"] = False
     return context

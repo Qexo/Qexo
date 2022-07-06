@@ -92,9 +92,8 @@ def init_view(request):
     msg = None
     context = dict()
     context.update(get_custom_config())
-    try:
-        step = get_setting("INIT")
-    except:
+    step = get_setting("INIT")
+    if not step:
         save_setting("INIT", "1")
         step = "1"
     if request.method == "POST":

@@ -8,4 +8,4 @@ core/__pycache__
 hexoweb/__pycache__
 hexoweb/migrations
 staticfiles_build
-
+configs.py

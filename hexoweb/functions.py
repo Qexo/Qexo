@@ -25,6 +25,7 @@ from hexoweb.libs.image import get_params as get_image_params
 from hexoweb.libs.image import all_providers as all_image_providers
 import yaml
 import re
+import shutil
 
 disable_warnings()
 
@@ -443,7 +444,7 @@ def VercelUpdate(appId, token, sourcePath=""):
     return {"status": True, "msg": response.json()}
 
 
-def OnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
+def VercelOnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
     vercel_config = get_project_detail()
     tmpPath = '/tmp'
     # 从github下载对应tar.gz，并解压
@@ -462,6 +463,52 @@ def OnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
     if outPath == '':
         return {"status": False, "msg": 'error: no outPath'}
     return VercelUpdate(vercel_config["id"], vercel_config["token"], outPath)
+
+
+def copy_all_files(src_dir, dst_dir):
+    if not os.path.exists(dst_dir):
+        os.makedirs(dst_dir)
+    if os.path.exists(src_dir):
+        for file in os.listdir(src_dir):
+            file_path = os.path.join(src_dir, file)
+            dst_path = os.path.join(dst_dir, file)
+            if os.path.isfile(os.path.join(src_dir, file)):
+                shutil.copyfile(file_path, dst_path)
+            else:
+                shutil.copytree(file_path, dst_path)
+
+
+def LocalOnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
+    Path = os.path.abspath("")
+    tmpPath = os.path.abspath("./_tmp")
+    if not os.path.exists(tmpPath):
+        os.mkdir(tmpPath)
+    _tarfile = tmpPath + '/github.tar.gz'
+    try:
+        url = 'https://github.com/' + auth + '/' + project + '/tarball/' + quote(branch) + '/'
+        with open(_tarfile, "wb") as file:
+            file.write(requests.get(url).content)
+    except:
+        url = 'https://hub.fastgit.xyz/' + auth + '/' + project + '/tarball/' + quote(branch) + '/'
+        with open(_tarfile, "wb") as file:
+            file.write(requests.get(url).content)
+    t = tarfile.open(_tarfile)
+    t.extractall(path=tmpPath)
+    t.close()
+    os.remove(_tarfile)
+    outPath = os.path.abspath(tmpPath + getIndexFile(tmpPath))
+    filelist = os.listdir(Path)
+    for filename in filelist:  # delete all files except tmp
+        if not filename in ["_tmp", "configs.py", "db"]:
+            if os.path.isfile(filename):
+                os.remove(filename)
+            elif os.path.isdir(filename):
+                shutil.rmtree(filename)
+            else:
+                pass
+    copy_all_files(outPath, Path)
+    shutil.rmtree(tmpPath)
+    return {"status": True, "msg": "更新成功!"}
 
 
 def CreateNotification(label, content, now):

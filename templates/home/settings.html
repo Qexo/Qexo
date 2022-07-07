@@ -47,12 +47,10 @@
                                 <input type="button" class="btn btn-warning" value="清除缓存"
                                        onclick="query_purge()">
                             </div>
-                            {% if showUpdate %}
-                                <div class="pl-lg-4">
-                                    <input type="button" class="btn btn-danger" value="一键更新"
-                                           onclick="query_update()">
-                                </div>
-                            {% endif %}
+                            <div class="pl-lg-4">
+                                <input type="button" class="btn btn-danger" value="一键更新"
+                                       onclick="query_update()">
+                            </div>
                         </div>
                         <form id="apikey-settings" onsubmit="javascript: return false;">
                             <hr class="my-4"/>
@@ -1026,7 +1024,7 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        notyf.success("更新成功！请等待自动部署");
+                        notyf.success(res.msg);
                     } else {
                         notyf.error(res.msg);
                     }

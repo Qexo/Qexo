@@ -474,8 +474,6 @@ def pages(request):
                 if token_len >= 5:
                     context['GH_TOKEN'] = context['GH_TOKEN'][:3] + "*" * (token_len - 5) + \
                                           context['GH_TOKEN'][-1]
-                if check_if_vercel():
-                    context["showUpdate"] = True
                 context['IMG_TYPE'] = get_setting("IMG_TYPE")
                 context['ABBRLINK_ALG'] = get_setting("ABBRLINK_ALG")
                 context['ABBRLINK_REP'] = get_setting("ABBRLINK_REP")

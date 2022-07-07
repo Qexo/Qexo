@@ -322,10 +322,15 @@ def auto_fix(request):
 def do_update(request):
     branch = request.POST.get("branch")
     try:
-        res = OnekeyUpdate(branch=branch)
+        if check_if_vercel():
+            res = VercelOnekeyUpdate(branch=branch)
+        else:
+            res = LocalOnekeyUpdate(branch=branch)
+            save_setting("UPDATE_FROM", QEXO_VERSION)
+            return render(request, 'layouts/json.html', {"data": json.dumps(res)})
         if res["status"]:
             save_setting("UPDATE_FROM", QEXO_VERSION)
-            context = {"msg": "OK!", "status": True}
+            context = {"msg": "更新成功，请等待自动部署!", "status": True}
         else:
             context = {"msg": res["msg"], "status": False}
     except Exception as error:
@@ -649,3 +654,5 @@ def clear_notification(request):
     except Exception as error:
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+

@@ -460,6 +460,7 @@ def pages(request):
                                   "description": i.description,
                                   "time": i.time,
                                   "status": i.status})
+            posts.sort(key=lambda x: x["time"])
             context["posts"] = json.dumps(posts)
             context["post_number"] = len(posts)
             context["page_number"] = ceil(context["post_number"] / 15)

@@ -220,7 +220,7 @@
             if (_page > 1) {
                 change_page(_page - 1);
             } else {
-                $.notify("已是第一页", {type: "warning", delay: 1000});
+                notyf.error("已是第一页");
             }
         }
 
@@ -228,7 +228,7 @@
             if (_page <{{ page_number }}) {
                 change_page(_page + 1);
             } else {
-                $.notify("已是最后一页", {type: "warning", delay: 1000});
+                notyf.error("已是最后一页");
             }
         }
 
@@ -315,7 +315,7 @@
         }
 
         function del_friend(time) {
-            var loading = new KZ_Loading('正在删除中...');
+            let loading = new KZ_Loading('正在删除中...');
             loading.show();
             $.ajax({
                 url: '/api/del_friend/',
@@ -325,11 +325,11 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        $.notify('删除成功！', {type: "success", delay: 1000});
+                        notyf.success('删除成功！');
                         if (posts.length > 1) {
                             for (let i = 0; i < posts.length; i++) {
-                                if (posts[i]['time'] == time) {
-                                    posts.splice(i, i);
+                                if (posts[i]['time'] === time) {
+                                    posts.splice(i, 1);
                                     change_page(_page);
                                     break;
                                 }
@@ -340,12 +340,12 @@
                         }
                         $("#count").html(posts.length);
                     } else {
-                        $.notify(res.msg, {type: "warning", delay: 1000});
+                        notyf.error(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    $.notify("网络错误！", {type: "warning", delay: 1000});
+                    notyf.error("网络错误！");
                 }
             })
         }
@@ -413,7 +413,7 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        $.notify(res.msg, {type: "success", delay: 1000});
+                        notyf.success(res.msg);
                         posts[index]["name"] = name;
                         posts[index]["url"] = url;
                         posts[index]["image"] = image;
@@ -422,12 +422,12 @@
                         posts.sort(compare);
                         change_page(_page);
                     } else {
-                        $.notify(res.msg, {type: "warning"});
+                        notyf.error(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    $.notify("网络错误！", {type: "warning"});
+                    notyf.error("网络错误！");
                 }
             })
         }
@@ -477,7 +477,7 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        $.notify(res.msg, {type: "success", delay: 1000});
+                        notyf.success(res.msg);
                         posts.push({
                             "name": name,
                             "url": url,
@@ -490,12 +490,12 @@
                         change_page(_page);
                         $("#count").html(posts.length);
                     } else {
-                        $.notify(res.msg, {type: "warning"});
+                        notyf.error(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    $.notify("网络错误！", {type: "warning"});
+                    notyf.error("网络错误！");
                 }
             })
         }
@@ -523,15 +523,15 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        $.notify(res.msg, {type: "success", delay: 1000});
+                        notyf.success(res.msg);
                         setTimeout(location.reload(), 1000);
                     } else {
-                        $.notify(res.msg, {type: "warning", delay: 1000});
+                        notyf.error(res.msg);
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    $.notify("网络错误！", {type: "warning", delay: 1000});
+                    notyf.error("网络错误！");
                 }
             })
         }

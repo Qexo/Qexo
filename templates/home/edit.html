@@ -21,7 +21,7 @@
                     </div>
                     <div class="col-lg-6 col-5 text-right">
                         <a href="javascript:SaveDraft()" class="btn btn-sm btn-neutral">保存草稿</a>
-                        <a href="javascript:SaveChanges()" class="btn btn-sm btn-neutral">发布</a>
+                        <a href="javascript:Publish()" class="btn btn-sm btn-neutral">发布</a>
                     </div>
                 </div>
             </div>
@@ -31,9 +31,92 @@
     <!-- Page content -->
     <div class="container-fluid mt--6">
         <div class="row">
-            <div class="col">
-                <div class="card">
-                    <div id="vditor"></div>
+            <div class="card col-md-8 px-0 ml-md-4">
+                <div id="vditor"></div>
+            </div>
+            <div class="card col-md-3 ml-md-5">
+                <h3 class="mt-3">文章参数</h3>
+                <hr class="my-2"/>
+                <div class="form-group">
+                    <label class="form-control-label"><i class="fas fa-heading"></i> 标题</label>
+                    <input type="text" name="title"
+                           class="form-control"
+                           placeholder="显示的文章题目"
+                           id="title"
+                           value="{{ front_matter.title }}">
+                </div>
+                {% if front_matter.abbrlink %}
+                    <div class="form-group">
+                        <label class="form-control-label"><i class="fas fa-id-card"></i>
+                            缩写</label>
+                        <input type="text" name="abbrlink"
+                               class="form-control"
+                               id="abbrlink"
+                               placeholder="文章 Abbrlink"
+                               value="{{ front_matter.abbrlink }}">
+                    </div>
+                {% endif %}
+                <div class="form-group">
+                    <label class="form-control-label"><i class="fas fa-globe-americas"></i>
+                        发布于</label>
+                    <input type="text" name="date"
+                           class="form-control"
+                           id="date"
+                           placeholder="发布时间"
+                           value="{{ front_matter.date }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label"><i class="fas fa-calendar-alt"></i>
+                        更新于</label>
+                    <input type="text" name="updated"
+                           class="form-control"
+                           id="updated"
+                           placeholder="更新时间"
+                           value="{{ front_matter.updated }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label"><i class="fas fa-tag"></i> 标签</label>
+                    <div class="input-group">
+                        <input type="text" name="tag"
+                               class="form-control"
+                               placeholder="添加标签"
+                               id="tag">
+                        <div class="input-group-append">
+                            <button class="btn" type="button"
+                                    style="border: 1px solid #dee2e6;border-radius: .25rem;"
+                                    onclick="add_tag($('#tag').val());$('#tag').val('')">+
+                            </button>
+                        </div>
+                    </div>
+                    <div id="tag-container"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label"><i class="fas fa-folder-open"></i>
+                        分类</label>
+                    <div class="input-group">
+                        <input type="text" name="category"
+                               class="form-control"
+                               placeholder="添加分类"
+                               id="category">
+                        <div class="input-group-append">
+                            <button class="btn" type="button"
+                                    style="border: 1px solid #dee2e6;border-radius: .25rem;"
+                                    onclick="add_category($('#category').val());$('#category').val('')">
+                                +
+                            </button>
+                        </div>
+                    </div>
+                    <div id="category-container"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label"><i class="fas fa-pencil-alt"></i>
+                        自定义</label>
+                    <textarea name="custom"
+                              id="custom"
+                              class="form-control"
+                              placeholder="自定义Front-Matter"></textarea>
                 </div>
             </div>
         </div>
@@ -46,16 +129,39 @@
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
-    <link href="{{ cdn_prev }}vditor@3.8.8/dist/index.css" rel="stylesheet"/>
-    <script src="{{ cdn_prev }}vditor@3.8.8/dist/index.min.js"></script>
+    <link href="{{ cdn_prev }}vditor@3.8.15/dist/index.css" rel="stylesheet"/>
+    <script src="{{ cdn_prev }}vditor@3.8.15/dist/index.min.js"></script>
 
 
     <script>
-        var _status = true;
+        var _status = true, front_matter = {{ json_front_matter|safe }}, categories, rags;
+        if (typeof (front_matter["tags"]) === "object" && front_matter["tags"] !==
+            null) tags = front_matter["tags"];
+        else if (typeof (front_matter["tags"]) === "string") tags = [front_matter["tags"]];
+        else tags = [];
+        if (typeof (front_matter["categories"]) === "object" && front_matter["categories"] !==
+            null) categories =
+            front_matter["categories"];
+        else if (typeof (front_matter["categories"]) === "string") categories = [front_matter["categories"]];
+        else categories = [];
+
+        $("#updated").val(getTimeFormat());
 
         $.ajaxSetup({
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
         });
+
+        function getTimeFormat() {
+            let date = new Date();
+            let month = date.getMonth() + 1 < 10 ? "0" + (date.getMonth() + 1) : date.getMonth()
+                + 1;
+            let currentDate = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
+            let hh = date.getHours() < 10 ? "0" + date.getHours() : date.getHours();
+            let mm = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
+            let ss = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
+            return date.getFullYear() + "-" + month + "-" + currentDate + " " + hh + ":" + mm + ":" + ss;
+            //返回格式：yyyy-MM-dd hh:mm:ss
+        }
 
         function KZ_Loading(config) {
             if (this instanceof KZ_Loading) {
@@ -122,7 +228,7 @@
             }
         }
 
-        function SaveChanges() {
+        function Publish() {
             if (!_status) {
                 return false;
             }
@@ -132,21 +238,24 @@
             $.ajax({
                 url: '/api/save_post/',
                 method: 'post',
-                data: {"file": "{{ fullname }}", "content": vditor.getValue()},
+                data: {
+                    "file": "{{ fullname }}", "content": vditor.getValue(), "front_matter":
+                        JSON.stringify(get_front_matter())
+                },
                 dataType: 'JSON',
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        $.notify('保存成功！', {type: "success", delay: 1000});
+                        notyf.success('发布成功！');
                         _status = true;
                     } else {
-                        $.notify(res.msg, {type: "warning", delay: 1000});
+                        notyf.error(res.msg);
                         _status = true;
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    $.notify("网络错误！", {type: "warning", delay: 1000});
+                    notyf.error("网络错误！");
                     _status = true;
                 }
             })
@@ -162,21 +271,24 @@
             $.ajax({
                 url: '/api/save_draft/',
                 method: 'post',
-                data: {"file": "{{ fullname }}", "content": vditor.getValue()},
+                data: {
+                    "file": "{{ fullname }}", "content": vditor.getValue(), "front_matter":
+                        JSON.stringify(get_front_matter())
+                },
                 dataType: 'JSON',
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        $.notify('草稿保存成功！', {type: "success", delay: 1000});
+                        notyf.success('草稿保存成功！');
                         _status = true;
                     } else {
-                        $.notify(res.msg, {type: "warning", delay: 1000});
+                        notyf.error(res.msg);
                         _status = true;
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    $.notify("网络错误！", {type: "warning", delay: 1000});
+                    notyf.error("网络错误！");
                     _status = true;
                 }
             })
@@ -226,9 +338,9 @@
                 counter: {
                     enable: true
                 },
-                "cdn": "{{ cdn_prev }}vditor@3.8.8",
+                "cdn": "{{ cdn_prev }}vditor@3.8.15",
                 "mode": "ir",
-                "height": window.innerHeight / 2,
+                "height": window.innerHeight * 0.75,
                 "value": {{ file_content|safe }},
                 "fullscreen": {
                     "index": 1050,
@@ -239,7 +351,7 @@
                 },
                 "preview": {
                     "theme": {
-                        "path": "{{ cdn_prev }}vditor@3.8.8/dist/css/content-theme"
+                        "path": "{{ cdn_prev }}vditor@3.8.15/dist/css/content-theme"
                     }
                 },
                 toolbar: [
@@ -288,14 +400,14 @@
                             }
                             //将图片路径写入文本
                             document.execCommand("insertHTML", false, succFileText);
-                            $.notify(responseData.msg, {type: "success", delay: 1000});
+                            notyf.success(responseData.msg);
                         } else {
-                            $.notify(responseData.msg, {type: "warning", delay: 1000});
+                            notyf.error(responseData.msg);
                         }
 
                     },
                     error() {
-                        $.notify("上传失败！", {type: "warning", delay: 1000});
+                        notyf.error("上传失败！");
                     }
                 },
             })
@@ -315,21 +427,21 @@
                 // _lutePath: "lib/vditor-3.7.3/src/js/lute/lute.min.js",
                 // 这个是自定义导航栏
                 toolbar,
-                "cdn": "{{ cdn_prev }}vditor@3.8.8",
+                "cdn": "{{ cdn_prev }}vditor@3.8.15",
                 "fullscreen": {
                     "index": 1050,
                 },
-                "height": document.documentElement.clientHeight - 200,
+                "height": document.documentElement.clientHeight + 60,
                 "cache": {
                     "enable": false
                 },
                 "value": {{ file_content|safe }},
-                "mode": "sv",
+                "mode": "ir",
                 "debugger": false,
                 "preview": {
                     "mode": "both",
                     "theme": {
-                        "path": "{{ cdn_prev }}vditor@3.8.8/dist/css/content-theme"
+                        "path": "{{ cdn_prev }}vditor@3.8.15/dist/css/content-theme"
                     }
                 },
                 hint: {
@@ -351,24 +463,107 @@
                         if (responseData.status) {
                             let imageUrl = responseData.url;
                             let succFileText = "";
-                            if (vditor && vditor.vditor.currentMode === "ir") {
+                            if (vditor && vditor.vditor.currentMode === "wysiwyg") {
                                 succFileText += `\n <img alt=${imageUrl} src="${imageUrl}">`;
                             } else {
                                 succFileText += `\n![${imageUrl}](${imageUrl})`;
                             }
                             //将图片路径写入文本
                             document.execCommand("insertHTML", false, succFileText);
-                            $.notify(responseData.msg, {type: "success", delay: 1000});
+                            notyf.success(responseData.msg);
                         } else {
-                            $.notify(responseData.msg, {type: "warning", delay: 1000});
+                            notyf.error(responseData.msg);
                         }
 
                     },
                     error() {
-                        $.notify("上传失败！", {type: "warning", delay: 1000});
+                        notyf.error("上传失败！");
                     }
                 },
             });
+        }
+
+        function show_tags() {
+            let html = "";
+            for (let i = 0; i < tags.length; i++) {
+                html += `<span class="px-1 py-0.5 text-xs select-none
+                            d-inline-block  rounded-pill mr-1 mb-0.5"
+                            style="color: rgb(255, 255, 255); background-color: rgb(52, 152, 219);"
+                            onclick="del_tag(this.innerText);">` + tags[i]
+                    + `</span>`;
+            }
+            $("#tag-container").html(html);
+        }
+
+        function add_tag(name) {
+            if (name in tags) {
+                notyf.error("标签已存在! ");
+            } else {
+                tags.push(name);
+                show_tags();
+            }
+        }
+
+        function del_tag(name) {
+            for (let i = 0; i < tags.length; i++) {
+                if (String(tags[i]) === String(name)) {
+                    tags.splice(i, 1);
+                }
+            }
+            $("#tag").val(String(name));
+            show_tags();
+        }
+
+        function show_categories() {
+            let html = "";
+            for (let i = 0; i < categories.length; i++) {
+                html += `<span class="px-1 py-0.5 text-xs select-none
+                            d-inline-block  rounded-pill mr-1 mb-0.5"
+                            style="color: rgb(255, 255, 255); background-color: rgb(52, 152, 219);
+                            " onclick="del_category(this.innerText);">` + categories[i] + `</span>`;
+            }
+            $("#category-container").html(html);
+        }
+
+        function add_category(name) {
+            if (name in categories) {
+                notyf.error("分类已存在! ");
+            } else {
+                categories.push(name);
+                show_categories();
+            }
+        }
+
+        function del_category(name) {
+            for (let i = 0; i < categories.length; i++) {
+                if (String(categories[i]) === String(name)) {
+                    categories.splice(i, 1);
+                }
+            }
+            $("#category").val(String(name));
+            show_categories();
+        }
+
+        show_tags();
+        show_categories();
+
+        delete front_matter["title"];
+        delete front_matter["date"];
+        delete front_matter["abbrlink"];
+        delete front_matter["tags"];
+        delete front_matter["updated"];
+        delete front_matter["categories"];
+        $("#custom").val(JSON.stringify(front_matter));
+
+        function get_front_matter() {
+            let custom = JSON.parse($("#custom").val());
+            custom["title"] = $("#title").val();
+            custom["date"] = $("#date").val();
+            if ($("#abbrlink").length > 0) front_matter["abbrlink"] = $("#abbrlink").val();
+            custom["tags"] = tags;
+            custom["categories"] = categories;
+            custom["updated"] = $("#updated").val();
+            return custom;
         }
     </script>
 {% endblock javascripts %}

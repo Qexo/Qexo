@@ -9,7 +9,7 @@
             <div class="header-body">
                 <div class="row align-items-center py-4">
                     <div class="col-lg-6 col-7">
-                        <h6 class="h2 text-white d-inline-block mb-0">正在编辑: {{ filename }}</h6>
+                        <h6 class="h2 text-white d-inline-block mb-0">正在编辑: {{ filepath }}</h6>
                         <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
                             <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                                 <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i></a>
@@ -49,8 +49,8 @@
 {% block javascripts %}
 
 
-    <script src="{{ cdn_prev }}ace-builds@1.4.13/src/ace.js"></script>
-    <script src="{{ cdn_prev }}ace-builds@1.4.13/src/ext-language_tools.js"></script>
+    <script src="{{ cdnjs }}ace/1.4.13/ace.js"></script>
+    <script src="{{ cdnjs }}ace/1.4.13/ext-language_tools.js"></script>
     <script>
         var _status=true;
 
@@ -157,15 +157,15 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        $.notify('保存成功！', {type: "success", delay: 1000});
+                        notyf.success('保存成功！');
                     } else {
-                        $.notify(res.msg, {type: "warning", delay: 1000});
+                        notyf.error(res.msg);
                     }
                     _status=true;
                 },
                 error: function (res) {
                     loading.destroy();
-                    $.notify("网络错误！", {type: "warning", delay: 1000});
+                    notyf.error("网络错误！");
                     _status=true;
                 }
             })

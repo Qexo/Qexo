@@ -14,6 +14,9 @@
             {% elif 'friends' in segment %}
                 <form class="navbar-search navbar-search-light form-inline mr-sm-3"
                       id="navbar-search-main" action="/friends.html" method="get">
+            {% elif 'custom' in segment %}
+                <form class="navbar-search navbar-search-light form-inline mr-sm-3"
+                      id="navbar-search-main" action="/custom.html" method="get">
             {% else %}
                 <form class="navbar-search navbar-search-light form-inline mr-sm-3"
                       id="navbar-search-main" action="/posts.html" method="get">
@@ -32,6 +35,8 @@
                         <input class="form-control" placeholder="搜索配置..." type="text" name="s">
                     {% elif 'friends' in segment %}
                         <input class="form-control" placeholder="搜索友链..." type="text" name="s">
+                    {% elif 'custom' in segment %}
+                        <input class="form-control" placeholder="搜索字段..." type="text" name="s">
                     {% else %}
                         <input class="form-control" placeholder="搜索文章..." type="text" name="s">
                     {% endif %}
@@ -60,66 +65,6 @@
                        data-target="#navbar-search-main">
                         <i class="fas fa-search"></i>
                     </a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link" href="#" role="button" data-toggle="dropdown"
-                       aria-haspopup="true" aria-expanded="false">
-                        <i class="fas fa-arrow-up">
-                            {% if 'index' not in segment %}
-                                <div id="update-point"
-                                     style=""></div>
-                            {% else %}
-                                {% if hasNew %}
-                                    <div id="update-point"
-                                         style="position: absolute;top: 0px;right: 12px;width:
-                                         6px;height: 6px;background: red;border-radius: 50%;"></div>
-                                {% endif %}
-                            {% endif %}
-                        </i>
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-xl  dropdown-menu-right  py-0 overflow-hidden">
-                        <!-- List group -->
-                        <div class="list-group list-group-flush">
-                            <ul href="#!" class="list-group-item list-group-item-action">
-                                <div class="row align-items-center">
-                                    <div class="col-auto">
-                                        <!-- Avatar -->
-                                        <i class="fas fa-upload"></i>
-                                    </div>
-                                    <div class="col ml--2">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <h4 class="mb-0 text-sm">更新</h4>
-                                            </div>
-                                            {% if 'index' in segment %}
-                                                <div class="text-right text-muted">
-                                                    <small>{{ newer_time }}</small>
-                                                </div>
-                                            {% else %}
-                                                <div class="text-right text-muted" id="update-time">
-                                                    <small></small>
-                                                </div>
-                                            {% endif %}
-                                        </div>
-                                        {% if 'index' in segment %}
-                                            {% if hasNew %}
-                                                <p class="text-sm mb-0">有新版本: <a
-                                                        href="{{ newer_link }}"
-                                                        target="_blank">
-                                                    {{ newer }}</a><br>
-                                                </p>
-                                                {{ newer_text|safe }}
-                                            {% else %}
-                                                <p class="text-sm mb-0">当前是最新版本哟~</p>
-                                            {% endif %}
-                                        {% else %}
-                                            <p class="text-sm mb-0" id="update-body">正在检测更新中...</p>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </ul>
-                        </div>
-                    </div>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link" href="#" role="button" data-toggle="dropdown"
@@ -174,7 +119,7 @@
                             <i class="ni ni-single-02"></i>
                             <span>设置</span>
                         </a>
-                        <a target="_blank" href="https://github.com/am-abudu/Qexo/wiki"
+                        <a target="_blank" href="https://github.com/Qexo/Qexo/wiki"
                            class="dropdown-item">
                             <i class="ni ni-support-16"></i>
                             <span>支持</span>

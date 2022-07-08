@@ -1,11 +1,11 @@
 from .functions import *
 from django.views.decorators.csrf import csrf_exempt
 import random
-import requests
 from .models import ImageModel
 from django.shortcuts import render
 from time import strftime, localtime
 from time import time
+from django.http.response import HttpResponseForbidden
 
 
 # 保存内容 pub/save
@@ -14,17 +14,12 @@ def save(request):
     if not check_if_api_auth(request):
         return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
                                                                          "status": False})})
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         file_path = request.POST.get('file')
         content = request.POST.get('content')
         try:
-            repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
-            branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
-            repo.update_file(repo_path + file_path, "Update by Qexo", content,
-                             repo.get_contents(repo_path + file_path, ref=branch).sha,
-                             branch=branch)
+            Provider.save(file_path, content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -37,31 +32,18 @@ def save_post(request):
     if not check_if_api_auth(request):
         return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
                                                                          "status": False})})
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         file_name = request.POST.get('file')
         content = request.POST.get('content')
         try:
-            repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
-            branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
             # 删除草稿
             try:
-                repo.delete_file(repo_path + "source/_drafts/" + file_name, "Delete by Qexo",
-                                 repo.get_contents(repo_path + "source/_drafts/" + file_name,
-                                                   ref=branch).sha,
-                                 branch=branch)
+                Provider.delete("source/_drafts/" + file_name)
             except:
                 pass
             # 创建/更新文章
-            try:
-                repo.update_file(repo_path + "source/_posts/" + file_name, "Update by Qexo",
-                                 content,
-                                 repo.get_contents(repo_path + "source/_posts/" + file_name,
-                                                   ref=branch).sha, branch=branch)
-            except:
-                repo.create_file(repo_path + "source/_posts/" + file_name, "Update by Qexo",
-                                 content, branch=branch)
+            Provider.save("source/_posts/" + file_name, content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -74,44 +56,13 @@ def save_draft(request):
     if not check_if_api_auth(request):
         return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
                                                                          "status": False})})
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         file_name = request.POST.get('file')
         content = request.POST.get('content')
         try:
-            repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
-            branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
             # 创建/更新草稿
-            try:
-                repo.update_file(repo_path + "source/_drafts/" + file_name, "Update by Qexo",
-                                 content,
-                                 repo.get_contents(repo_path + "source/_drafts/" + file_name,
-                                                   ref=branch).sha, branch=branch)
-            except:
-                repo.create_file(repo_path + "source/_drafts/" + file_name, "Update by Qexo",
-                                 content, branch=branch)
-            context = {"msg": "OK!", "status": True}
-        except Exception as error:
-            context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
-
-
-# 新建内容 pub/new
-@csrf_exempt
-def new(request):
-    if not check_if_api_auth(request):
-        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
-                                                                         "status": False})})
-    repo = get_repo()
-    context = dict(msg="Error!", status=False)
-    if request.method == "POST":
-        file_path = request.POST.get('file')
-        content = request.POST.get('content')
-        try:
-            repo.create_file(path=SettingModel.objects.get(name="GH_REPO_PATH").content + file_path,
-                             message="Create by Qexo", content=content,
-                             branch=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
+            Provider.save("source/_drafts/" + file_name, content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -124,20 +75,11 @@ def delete(request):
     if not check_if_api_auth(request):
         return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
                                                                          "status": False})})
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
-        branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
-        repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
         file_path = request.POST.get('file')
         try:
-            file = repo.get_contents(file_path, ref=branch)
-            if not isinstance(file, list):
-                repo.delete_file(repo_path + file_path, "Delete by Qexo", file.sha, branch=branch)
-
-            else:
-                for i in file:
-                    repo.delete_file(repo_path + i.path, "Delete by Qexo", i.sha, branch=branch)
+            Provider.delete(file_path)
             context = {"msg": "OK!", "status": True}
             # Delete Caches
             if ("_posts" in file_path) or ("_drafts" in file_path):
@@ -155,25 +97,17 @@ def delete_post(request):
     if not check_if_api_auth(request):
         return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
                                                                          "status": False})})
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
-        branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
-        repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
         filename = request.POST.get('file')
         try:
             try:
-                repo.delete_file(repo_path + "source/_posts/" + filename, "Delete by Qexo",
-                                 repo.get_contents(
-                                     repo_path + "source/_posts/" + filename, ref=branch).sha,
-                                 branch=branch)
+
+                Provider.delete("source/_posts/" + filename)
             except:
                 pass
             try:
-                repo.delete_file(repo_path + "source/_drafts/" + filename, "Delete by Qexo",
-                                 repo.get_contents(
-                                     repo_path + "source/_drafts/" + filename, ref=branch).sha,
-                                 branch=branch)
+                Provider.delete("source/_drafts/" + filename)
             except:
                 pass
             delete_posts_caches()
@@ -206,100 +140,12 @@ def create_webhook_config(request):
                     "url": request.POST.get("uri") + "?token=" + SettingModel.objects.get(
                         name="WEBHOOK_APIKEY").content
                 }
-            repo = get_repo()
-            for hook in repo.get_hooks():  # 删除所有HOOK
-                hook.delete()
-            repo.create_hook(active=True, config=config, events=["push"], name="web")
+            Provider.delete_hooks()
+            Provider.create_hook(config)
             context = {"msg": "设置成功！", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
-
-
-# 上传图片 pub/upload
-@csrf_exempt
-def upload_img(request):
-    if not check_if_api_auth(request):
-        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
-                                                                         "status": False})})
-    context = dict(msg="上传失败！", url=False)
-    if request.method == "POST":
-        file = request.FILES.getlist('file[]')[0]
-        try:
-            try:
-                img_type = SettingModel.objects.get(name="IMG_TYPE").content
-            except:
-                save_setting("IMG_TYPE", "cust")
-                img_type = "cust"
-            if img_type == "s3":
-                context["url"] = upload_to_s3(file,
-                                              SettingModel.objects.get(name="S3_KEY_ID").content,
-                                              SettingModel.objects.get(
-                                                  name="S3_ACCESS_KEY").content,
-                                              SettingModel.objects.get(name="S3_ENDPOINT").content,
-                                              SettingModel.objects.get(name="S3_BUCKET").content,
-                                              SettingModel.objects.get(name="S3_PATH").content,
-                                              SettingModel.objects.get(name="S3_PREV_URL").content)
-                context["msg"] = "上传成功！"
-                context["status"] = True
-            else:
-                api = SettingModel.objects.get(name="IMG_API").content
-                post_params = SettingModel.objects.get(name="IMG_POST").content
-                json_path = SettingModel.objects.get(name="IMG_JSON_PATH").content
-                custom_body = SettingModel.objects.get(name="IMG_CUSTOM_BODY").content
-                custom_header = SettingModel.objects.get(name="IMG_CUSTOM_HEADER").content
-                custom_url = SettingModel.objects.get(name="IMG_CUSTOM_URL").content
-                if custom_header:
-                    if custom_body:
-                        response = requests.post(api, data=json.loads(custom_body),
-                                                 headers=json.loads(custom_header),
-                                                 files={post_params: [file.name, file.read(),
-                                                                      file.content_type]})
-                    else:
-                        response = requests.post(api, data={}, headers=json.loads(custom_header),
-                                                 files={post_params: [file.name, file.read(),
-                                                                      file.content_type]})
-                else:
-                    if custom_body:
-                        response = requests.post(api, data=json.loads(custom_body),
-                                                 files={post_params: [file.name, file.read(),
-                                                                      file.content_type]})
-                    else:
-                        response = requests.post(api, data={},
-                                                 files={post_params: [file.name, file.read(),
-                                                                      file.content_type]})
-                if json_path:
-                    json_path = json_path.split(".")
-                    response.encoding = "utf8"
-                    data = response.json()
-                    for path in json_path:
-                        data = data[path]
-                    context["url"] = str(custom_url) + data
-                    context["msg"] = "上传成功！"
-                    context["status"] = True
-                else:
-                    context["url"] = str(custom_url) + response.text
-                    context["msg"] = "上传成功！"
-                    context["status"] = True
-            image = ImageModel()
-            image.name = file.name
-            image.url = context["url"]
-            image.size = file.size
-            image.type = file.content_type
-            image.date = time()
-            image.save()
-        except Exception as error:
-            context = {"msg": repr(error), "url": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
-
-
-# 获取更新 pub/get_update
-@csrf_exempt
-def get_update(request):
-    if not check_if_api_auth(request):
-        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
-                                                                         "status": False})})
-    return render(request, 'layouts/json.html', {"data": json.dumps(get_latest_version())})
 
 
 # 获取所有文章 pub/get_posts
@@ -402,6 +248,7 @@ def friends(request):
                 data.append({"name": i.name, "url": i.url, "image": i.imageUrl,
                              "description": i.description,
                              "time": i.time})
+        data.sort(key=lambda x: x["time"])
         context = {"data": data, "status": True}
     except Exception as e:
         context = {"msg": repr(e), "status": False}
@@ -468,9 +315,27 @@ def del_friend(request):
 @csrf_exempt
 def ask_friend(request):
     try:
-        if SettingModel.objects.get(name="ALLOW_FRIEND").content != "是":
-            return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
-                                                                             "status": False})})
+        if get_setting("ALLOW_FRIEND") != "是":
+            return HttpResponseForbidden()
+        # 人机验证
+        verify = request.POST.get("verify")
+        token = get_setting("RECAPTCHA_TOKEN")
+        typ = get_setting("FRIEND_RECAPTCHA")
+        if typ == "v3":
+            if verify:
+                captcha = requests.get("https://recaptcha.net/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
+                if captcha["score"] <= 0.5:
+                    return {"msg": "人机验证失败！", "status": False}
+            else:
+                return {"msg": "人机验证失败！", "status": False}
+        if typ == "v2":
+            if verify:
+                captcha = requests.get("https://recaptcha.net/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
+                if not captcha["success"]:
+                    return {"msg": "人机验证失败！", "status": False}
+            else:
+                return {"msg": "人机验证失败！", "status": False}
+        # 通过验证
         friend = FriendModel()
         friend.name = request.POST.get("name")
         friend.url = request.POST.get("url")
@@ -479,18 +344,109 @@ def ask_friend(request):
         friend.time = str(float(time()))
         friend.status = False
         friend.save()
-        CreateNotification("友链请求: " + friend.name, friend.url, time())
+        CreateNotification("友链申请 " + friend.name,
+                           "站点名: {}\n链接: {}\n图片: {}\n简介: {}\n".format(friend.name, friend.url, friend.imageUrl, friend.description), time())
         context = {"msg": "申请成功！", "time": friend.time, "status": True}
     except Exception as error:
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
-# 获取博主最后上线时间 pub/last
+# 获取自定义字段 pub/get_custom 无需鉴权
 @csrf_exempt
-def last_login(request):
+def get_custom(request):
     try:
-        context = {"msg": SettingModel.objects.get(name="LAST_LOGIN").content, "status": True}
+        context = {
+            "data": CustomModel.objects.get(name=request.GET.get("key") if request.GET.get("key") else request.POST.get("key")).content,
+            "status": True
+        }
     except Exception as error:
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 获取全部消息 pub/get_notifications
+def get_notifications(request):
+    if not check_if_api_auth(request):
+        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！", "status": False})})
+    try:
+        context = {"data": GetNotifications(), "status": True}
+    except Exception as error:
+        context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 获取博客基本信息 pub/status
+def status(request):
+    try:
+        cache = Cache.objects.filter(name="posts")
+        if cache.count():
+            posts = json.loads(cache.first().content)
+        else:
+            posts = update_posts_cache()
+        posts_count = len(posts)
+        last = get_setting("LAST_LOGIN")
+        context = {"data": {"posts": str(posts_count), "last": last}, "status": True}
+    except Exception as error:
+        context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 统计API pub/statistic
+def statistic(request):
+    try:
+        url = str(request.META.get('HTTP_REFERER'))
+        allow_domains = get_setting("STATISTIC_DOMAINS").split(",")
+        t, allow = get_domain(url), False
+        for allow_domain in allow_domains:
+            if allow_domain in t:
+                allow = True
+                break
+        if not (allow and (t and get_setting("STATISTIC_ALLOW") == "是")):
+            print("Not allowed domain: " + url)
+            return HttpResponseForbidden()
+        if url[:7] == "http://":
+            url = url[7:]
+        elif url[:8] == "https://":
+            url = url[8:]
+        domain = url.split("/")[0]
+        pv = StatisticPV.objects.filter(url=url)
+        if pv.count() == 1:
+            pv = StatisticPV.objects.get(url=url)
+            pv.number += 1
+            pv.save()
+        else:
+            for i in pv:
+                i.delete()
+            pv = StatisticPV()
+            pv.url = url
+            pv.number = 1
+            pv.save()
+        site_pv = StatisticPV.objects.filter(url=domain)
+        if site_pv.count() == 1:
+            site_pv = site_pv.first()
+            site_pv.number += 1
+            site_pv.save()
+        else:
+            for i in site_pv:
+                i.delete()
+            site_pv = StatisticPV()
+            site_pv.url = domain
+            site_pv.number = 1
+            site_pv.save()
+        ip = request.META['HTTP_X_FORWARDED_FOR'] if 'HTTP_X_FORWARDED_FOR' in request.META.keys() else request.META['REMOTE_ADDR']
+        uv = StatisticUV.objects.filter(ip=ip)
+        if uv.count() >= 1:
+            data = json.dumps(
+                {"site_pv": site_pv.number, "page_pv": pv.number, "site_uv": StatisticUV.objects.all().count(), "status": True})
+            return render(request, 'layouts/json.html', {"data": data})
+        uv = StatisticUV()
+        uv.ip = ip
+        uv.save()
+        print("Register uv: " + ip)
+        data = json.dumps(
+            {"site_pv": site_pv.number, "page_pv": pv.number, "site_uv": StatisticUV.objects.all().count(), "status": True})
+        return render(request, 'layouts/json.html', {"data": data})
+    except Exception as e:
+        print(repr(e))
+        return render(request, 'layouts/json.html', {"data": json.dumps({"status": False, "error": repr(e)})})

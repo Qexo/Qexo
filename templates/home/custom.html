@@ -1,0 +1,401 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} {% if search %}搜索字段:{{ search }}{% else %}自定义字段{% endif %}  {% endblock title %}
+
+{% block content %}
+
+    <div class="header bg-primary pb-6">
+        <div class="container-fluid">
+            <div class="header-body">
+                <div class="row align-items-center py-4">
+                    <div class="col-lg-6 col-7">
+                        <h6 class="h2 text-white d-inline-block mb-0">自定义字段</h6>
+                        <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
+                            <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+                                <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i></a>
+                                </li>
+                                <li class="breadcrumb-item active">自定</li>
+                            </ol>
+                        </nav>
+                    </div>
+                    <div class="col-lg-6 col-5 text-right">
+                        <a href="javascript:query_new()" class="btn btn-sm btn-neutral">新建</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Page content -->
+    <div class="container-fluid mt--6">
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header border-0">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h3 class="mb-0">{% if search %}搜索字段: {{ search }} (<a id="count">{{ settings_number }}</a>项)
+                                    {% else %}全部字段 (<a id="count">{{ settings_number }}</a>项)
+                                    {% endif %}
+                                </h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <!-- Projects table -->
+                        <table class="table align-items-center table-flush">
+                            <thead class="thead-light">
+                            <tr>
+                                <th scope="col">字段名</th>
+                                <th scope="col">内容</th>
+                                <th scope="col">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody id="settings-list">
+                            </tbody>
+                        </table>
+                        <div class="card-footer py-4">
+                            <ul class="pagination justify-content-end mb-0">
+                                <li class="page-item" id="prev-page">
+                                    <a class="page-link"
+                                       href="javascript:prev_page()">
+                                        <i class="fas fa-angle-left"></i>
+                                        <span class="sr-only">上一页</span>
+                                    </a>
+                                </li>
+                                {% for i in page_number|get_range %}
+                                    <li class="page-item" id="page-{{ i }}">
+                                        <a class="page-link"
+                                           href="javascript:change_page({{ i }})">{{ i }}</a>
+                                    </li>
+                                {% endfor %}
+
+                                <li class="page-item" id="next-page">
+                                    <a class="page-link"
+                                       href="javascript:next_page()">
+                                        <i class="fas fa-angle-right"></i>
+                                        <span class="sr-only">下一页</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="query" tabindex="-1" aria-labelledby="queryLabel"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="queryLabel"></h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" id="query-modal-body">
+                    </div>
+                    <div class="modal-footer" id="query-modal-footer">
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% include "includes/footer.html" %}
+
+    </div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE -->
+{% block javascripts %}
+
+    <script>
+        var posts = {{ settings|safe }};
+        var _page = 1;
+
+
+        var compare = function (x, y) {
+            if (x["name"] < y["name"]) {
+                return -1;
+            } else if (x["name"] > y["name"]) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+
+        function scrollToTop() {
+            let timer = null;
+            cancelAnimationFrame(timer);
+            timer = requestAnimationFrame(function fn() {
+                let oTop = document.body.scrollTop || document.documentElement.scrollTop;
+                if (oTop > 0) {
+                    document.body.scrollTop = document.documentElement.scrollTop = oTop - 30;
+                    timer = requestAnimationFrame(fn);
+                } else {
+                    cancelAnimationFrame(timer);
+                }
+            });
+        }
+
+        function change_page(page) {
+            scrollToTop();
+            let page_posts;
+            if (posts.length > page * 15 + 1) {
+                page_posts = posts.slice(15 * (page - 1), page * 15);
+            } else {
+                page_posts = posts.slice(15 * (page - 1));
+            }
+            let list = "";
+            for (let i = 0; i < page_posts.length; i++) {
+                let content_show = page_posts[i]["content"];
+                if(page_posts[i]["content"].length>53){
+                    content_show = page_posts[i]["content"].slice(0,50) + "...";
+                }
+                list += "<tr><th scope=\"row\">" + page_posts[i]["name"] + "</th><td>" +
+                     content_show + "</td>";
+                list += "<td><a href=\"javascript:query_edit('" + page_posts[i]["name"] + "', " +
+                    "'" + page_posts[i]["content"].replaceAll("\"", "&quot;") + "')\">" +
+                    "<i class=\"fa fa-edit mr-2\"></i></a>" + "<a href=\"javascript:query_delete('" +
+                    page_posts[i]["name"] + "')\"><i class=\"fa fa-trash-alt " +
+                    "mr-2\"></i></a></td></tr>";
+            }
+            $("#page-" + _page).removeClass("active");
+            $("#page-" + page).addClass("active");
+            $("#settings-list").html(list);
+            _page = page;
+            if (page <= 1) {
+                $("#prev-page").addClass("disabled");
+            } else {
+                $("#prev-page").removeClass("disabled");
+            }
+            if (page >={{ page_number }}) {
+                $("#next-page").addClass("disabled");
+            } else {
+                $("#next-page").removeClass("disabled");
+            }
+        }
+
+        function prev_page() {
+            if (_page > 1) {
+                change_page(_page - 1);
+            } else {
+                notyf.error("已是第一页");
+            }
+        }
+
+        function next_page() {
+            if (_page <{{ page_number }}) {
+                change_page(_page + 1);
+            } else {
+                notyf.error("已是最后一页");
+            }
+        }
+
+        change_page(1);
+
+        function KZ_Loading(config) {
+            if (this instanceof KZ_Loading) {
+                const domTemplate = '<div class="modal kz-loading" data-kzid="@@KZ_Loadin_ID@@" backdrop="static" keyboard="false"><div style="width: 200px;height:20px; z-index: 20000; position: absolute; text-align: center; left: 50%; top: 50%;margin-left:-100px;margin-top:-10px"><div class="progress progress-striped active" style="margin-bottom: 0;"><div class="progress-bar" style="width: 100%;"></div></div><h5>@@KZ_Loading_Text@@</h5></div></div>';
+                this.config = {
+                    content: 'loading...',
+                    time: 0,
+                };
+                if (config != null) {
+                    if (typeof config === 'string') {
+                        this.config = Object.assign(this.config, {
+                            content: config
+                        });
+                    } else if (typeof config === 'object') {
+                        this.config = Object.assign(this.config, config);
+                    }
+                }
+                this.id = new Date().getTime().toString();
+                this.state = 'hide';
+
+                /*显示 */
+                this.show = function () {
+                    $('.kz-loading[data-kzid=' + this.id + ']').modal({
+                        backdrop: 'static',
+                        keyboard: false
+                    });
+                    this.state = 'show';
+                    if (this.config.time > 0) {
+                        var that = this;
+                        setTimeout(function () {
+                            that.hide();
+                        }, this.config.time);
+                    }
+                };
+                /*隐藏 */
+                this.hide = function (callback) {
+                    $('.kz-loading[data-kzid=' + this.id + ']').modal('hide');
+                    this.state = 'hide';
+                    if (callback) {
+                        callback();
+                    }
+                };
+                /*销毁dom */
+                this.destroy = function () {
+                    var that = this;
+                    this.hide(function () {
+                        var node = $('.kz-loading[data-kzid=' + that.id + ']');
+                        node.next().remove();
+                        node.remove();
+                        that.show = function () {
+                            throw new Error('对象已销毁！');
+                        };
+                        that.hide = function () {
+                        };
+                        that.destroy = function () {
+                        };
+                    });
+                }
+
+                var domHtml = domTemplate.replace('@@KZ_Loadin_ID@@', this.id).replace('@@KZ_Loading_Text@@', this.config.content);
+                $('body').append(domHtml);
+            } else {
+                return new KZ_Loading(config);
+            }
+        }
+
+        function query_edit(name, content) {
+            let html = "<div class=\"col\"><label " +
+                "class=\"form-control-label\">" + name + "</label><input type=\"text\" " +
+                "name=\"content\" id=\"edit-content\" " +
+                "class=\"form-control\" value=\"" + content.toString().replaceAll("\"", "&quot;") +"\"></div>";
+            $("#query-modal-body").html(html);
+            $("#queryLabel").html("编辑");
+            let footer = "<button type=\"button\" class=\"btn btn-secondary\" " +
+                "data-dismiss=\"modal\">取消</button><button type=\"button\" class=\"btn " +
+                "btn-primary\" data-dismiss=\"modal\" onclick=\"change_value('" + name +
+                "')\">确定</button>"
+            $("#query-modal-footer").html(footer);
+            $("#query").modal("show");
+        }
+
+        function query_delete(name) {
+            let html = "确认要删除 " + name + " 字段吗？该操作不可回退";
+            $("#query-modal-body").html(html);
+            $("#queryLabel").html("提示");
+            let footer = "<button type=\"button\" class=\"btn btn-secondary\" " +
+                "data-dismiss=\"modal\">取消</button><button type=\"button\" class=\"btn " +
+                "btn-primary\" data-dismiss=\"modal\" onclick=\"delete_value('" + name +
+                "')\">确定</button>"
+            $("#query-modal-footer").html(footer);
+            $("#query").modal("show");
+        }
+
+        function query_new() {
+            let html = "<div class=\"col\"><label " +
+                "class=\"form-control-label\">字段名</label><input type=\"text\" " +
+                "name=\"name\" id=\"edit-name\" " +
+                "class=\"form-control\"></div>" + "<div class=\"col\"><label " +
+                "class=\"form-control-label\">内容</label><input type=\"text\" " +
+                "name=\"content\" id=\"edit-content\" " +
+                "class=\"form-control\"></div>";
+            $("#query-modal-body").html(html);
+            $("#queryLabel").html("新建字段");
+            let footer = "<button type=\"button\" class=\"btn btn-secondary\" " +
+                "data-dismiss=\"modal\">取消</button><button type=\"button\" class=\"btn " +
+                "btn-primary\" data-dismiss=\"modal\" onclick=\"new_value()\">确定</button>"
+            $("#query-modal-footer").html(footer);
+            $("#query").modal("show");
+        }
+
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        function change_value(name) {
+            let loading = new KZ_Loading('正在保存中...');
+            loading.show();
+            let content = $("#edit-content").val();
+            $.ajax({
+                url: '/api/set_custom/',
+                method: 'post',
+                data: {"name": name, "content": content},
+                dataType: "json",
+                success: function (res) {
+                    loading.destroy();
+                    if (res.status) {
+                        notyf.success(res.msg);
+                        for (let i = 0; i < posts.length; i++) {
+                            if (posts[i]["name"] == name) {
+                                posts[i]["content"] = content;
+                                change_page(_page);
+                                break;
+                            }
+                        }
+                    } else {
+                        notyf.error(res.msg);
+                    }
+                },
+                error: function (res) {
+                    loading.destroy();
+                    notyf.error("网络错误！");
+                }
+            })
+        }
+
+        function delete_value(name) {
+            let loading = new KZ_Loading('正在删除中...');
+            loading.show();
+            $.ajax({
+                url: '/api/del_custom/',
+                method: 'post',
+                data: {"name": name},
+                dataType: "json",
+                success: function (res) {
+                    loading.destroy();
+                    if (res.status) {
+                        notyf.success(res.msg);
+                        for (let i = 0; i < posts.length; i++) {
+                            if (posts[i]["name"] === name) {
+                                posts.splice(i, 1);
+                                change_page(_page);
+                                break;
+                            }
+                        }
+                        $("#count").html(posts.length);
+                    } else {
+                        notyf.error(res.msg);
+                    }
+                },
+                error: function (res) {
+                    loading.destroy();
+                    notyf.error("网络错误！");
+                }
+            })
+        }
+
+        function new_value() {
+            let name = $("#edit-name").val();
+            let content = $("#edit-content").val();
+            let loading = new KZ_Loading('正在保存中...');
+            loading.show();
+            $.ajax({
+                url: '/api/new_custom/',
+                method: 'post',
+                data: {"name": name, "content": content},
+                dataType: "json",
+                success: function (res) {
+                    loading.destroy();
+                    if (res.status) {
+                        notyf.success(res.msg);
+                        posts.push({"name": name, "content": content});
+                        posts.sort(compare);
+                        change_page(_page);
+                        $("#count").html(posts.length);
+                    } else {
+                        notyf.error(res.msg);
+                    }
+                },
+                error: function (res) {
+                    loading.destroy();
+                    notyf.error("网络错误！");
+                }
+            })
+        }
+
+    </script>
+{% endblock javascripts %}

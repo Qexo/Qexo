@@ -7,7 +7,7 @@ from .models import ImageModel
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
-from core.settings import QEXO_VERSION
+from core.QexoSettings import QEXO_VERSION
 from datetime import timezone, timedelta
 from time import time
 
@@ -17,6 +17,17 @@ def auth(request):
     try:
         username = request.POST.get("username")
         password = request.POST.get("password")
+        verify = request.POST.get("verify")
+        token = get_setting("LOGIN_RECAPTCHA_SERVER_TOKEN")
+        site_token = get_setting("LOGIN_RECAPTCHA_SITE_TOKEN")
+        if token and site_token:
+            if verify:
+                captcha = requests.get("https://recaptcha.net/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
+                if captcha["score"] <= 0.5:
+                    return {"msg": "人机验证失败！", "status": False}
+            else:
+                return {"msg": "人机验证失败！", "status": False}
+        # print(captcha)
         user = authenticate(username=username, password=password)
         if user is not None:
             login(request, user)
@@ -28,29 +39,81 @@ def auth(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
-# 设置 Github 配置 api/set_github
+# 设置 Hexo Provider 配置 api/set_hexo
 @login_required(login_url="/login/")
-def set_github(request):
+def set_hexo(request):
     try:
-        repo = request.POST.get("repo")
-        branch = request.POST.get("branch")
-        token = request.POST.get("token")
-        if not token:
-            try:
-                token = SettingModel.objects.get(name="GH_TOKEN").content
-            except:
-                pass
-        path = request.POST.get("path")
+        provider = request.POST.get('provider')
+        verify = verify_provider(json.loads(provider))
+        msg = ""
+        if verify["status"] == -1:
+            return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "远程连接错误!请检查Token", "status": False})})
+        if verify["hexo"]:
+            msg += "检测到Hexo版本: " + verify["hexo"]
+        else:
+            msg += "未检测到Hexo"
+        if verify["indexhtml"]:
+            msg += "\n检测到index.html, 这可能不是正确的仓库"
+        if verify["config_hexo"]:
+            msg += "\n检测到Hexo配置文件"
+        else:
+            msg += "\n未检测到Hexo配置"
+        if verify["theme"]:
+            msg += "\n检测到主题: " + verify["theme"]
+        else:
+            msg += "\n未检测到主题"
+        if verify["config_theme"]:
+            msg += "\n检测到主题配置" + verify["config_theme"]
+        else:
+            msg += "\n未检测到主题配置"
+        if verify["theme_dir"]:
+            msg += "\n检测到主题目录"
+        else:
+            msg += "\n未检测到主题目录"
+        if verify["package"]:
+            msg += "\n检测到package.json"
+        else:
+            msg += "\n未检测到package.json"
+        if verify["source"]:
+            msg += "\n检测到source目录 "
+        else:
+            msg += "\n未检测到source目录"
+        msg = msg.replace("\n", "<br>")
+        if verify["status"]:
+            save_setting("PROVIDER", provider)
+            update_provider()
+            delete_all_caches()
+            context = {"msg": msg + "\n保存配置成功!", "status": True}
+        else:
+            context = {"msg": msg + "\n配置校验失败", "status": False}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 设置 OnePush api/set_onepush
+@login_required(login_url="/login/")
+def set_onepush(request):
+    try:
+        onepush = request.POST.get("onepush")
+        save_setting("ONEPUSH", onepush)
+        context = {"msg": "保存成功!", "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 测试 OnePush api/test_onepush
+@login_required(login_url="/login/")
+def test_onepush(request):
+    try:
+        onepush = json.loads(request.POST.get("onepush"))
+        ntfy = notify(onepush["notifier"], **onepush["params"], title="Qexo消息测试", content="如果你收到了这则消息, 那么代表您的消息配置成功了")
         try:
-            _repo = github.Github(token).get_repo(repo).get_contents(path + "source/_posts",
-                                                                     ref=branch)
-            save_setting("GH_REPO_PATH", path)
-            save_setting("GH_REPO_BRANCH", branch)
-            save_setting("GH_REPO", repo)
-            save_setting("GH_TOKEN", token)
-            context = {"msg": "保存成功!", "status": True}
+            data = ntfy.text
         except:
-            context = {"msg": "校验失败!", "status": False}
+            data = "OK"
+        context = {"msg": data, "status": True}
     except Exception as e:
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
@@ -68,34 +131,32 @@ def set_api(request):
                 save_setting("WEBHOOK_APIKEY", ''.join(
                     random.choice("qwertyuiopasdfghjklzxcvbnm1234567890") for x in range(12)))
         save_setting("ALLOW_FRIEND", request.POST.get("allow_friend"))
+        save_setting("FRIEND_RECAPTCHA", request.POST.get("friend-recaptcha"))
+        save_setting("RECAPTCHA_TOKEN", request.POST.get("recaptcha-token"))
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
-# 设置图床配置 api/set_image_bed
+# 安全设置 api/et_security
 @login_required(login_url="/login/")
-def set_image_bed(request):
+def set_security(request):
     try:
-        api = request.POST.get("api")
-        post_params = request.POST.get("post")
-        json_path = request.POST.get("jsonpath")
-        custom_body = request.POST.get("body")
-        custom_header = request.POST.get("header")
-        custom_url = request.POST.get("custom")
-        status = request.POST.get("cust-status")
-        save_setting("IMG_API", api)
-        save_setting("IMG_POST", post_params)
-        save_setting("IMG_JSON_PATH", json_path)
-        save_setting("IMG_CUSTOM_BODY", custom_body)
-        save_setting("IMG_CUSTOM_HEADER", custom_header)
-        save_setting("IMG_CUSTOM_URL", custom_url)
-        if status == "on":
-            save_setting("IMG_TYPE", "custom")
-        else:
-            if SettingModel.objects.get(name="IMG_TYPE").content == "custom":
-                save_setting("IMG_TYPE", "")
+        save_setting("LOGIN_RECAPTCHA_SERVER_TOKEN", request.POST.get("server-token"))
+        save_setting("LOGIN_RECAPTCHA_SITE_TOKEN", request.POST.get("site-token"))
+        context = {"msg": "保存成功!", "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 设置图床配置 api/set_image_host
+@login_required(login_url="/login/")
+def set_image_host(request):
+    try:
+        image_host = request.POST.get("image_host")
+        save_setting("IMG_HOST", image_host)
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
         context = {"msg": repr(e), "status": False}
@@ -110,34 +171,6 @@ def set_abbrlink(request):
         rep = request.POST.get("rep")
         save_setting("ABBRLINK_ALG", alg)
         save_setting("ABBRLINK_REP", rep)
-        context = {"msg": "保存成功!", "status": True}
-    except Exception as e:
-        context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
-
-
-# 设置s3配置 api/set_s3
-@login_required(login_url="/login/")
-def set_s3(request):
-    try:
-        key_id = request.POST.get("key-id")
-        access_key = request.POST.get("access-key")
-        bucket = request.POST.get("bucket")
-        endpoint = request.POST.get("endpoint")
-        path = request.POST.get("path")
-        url = request.POST.get("url")
-        status = request.POST.get("s3-status")
-        save_setting("S3_KEY_ID", key_id)
-        save_setting("S3_ACCESS_KEY", access_key)
-        save_setting("S3_BUCKET", bucket)
-        save_setting("S3_ENDPOINT", endpoint)
-        save_setting("S3_PATH", path)
-        save_setting("S3_PREV_URL", url)
-        if status == "on":
-            save_setting("IMG_TYPE", "s3")
-        else:
-            if SettingModel.objects.get(name="IMG_TYPE").content == "s3":
-                save_setting("IMG_TYPE", "")
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
         context = {"msg": repr(e), "status": False}
@@ -187,6 +220,53 @@ def set_user(request):
             context = {"msg": "保存成功！请重新登录", "status": True}
         else:
             context = {"msg": "原密码错误!", "status": False}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 设置统计配置 api/set_statistic
+@login_required(login_url="/login/")
+def set_statistic(request):
+    try:
+        domains = request.POST.get("statistic_domains")
+        allow = request.POST.get("allow_statistic")
+        save_setting("STATISTIC_ALLOW", allow)
+        save_setting("STATISTIC_DOMAINS", domains)
+        context = {"msg": "保存成功!", "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 设置 CustomModel 的字段 api/set_custom
+@login_required(login_url="/login/")
+def set_custom(request):
+    try:
+        save_custom(request.POST.get("name"), request.POST.get("content"))
+        context = {"msg": "保存成功!", "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 设置 CustomModel 的字段 api/del_custom
+@login_required(login_url="/login/")
+def del_custom(request):
+    try:
+        CustomModel.objects.filter(name=request.POST.get("name")).delete()
+        context = {"msg": "删除成功!", "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 新建 CustomModel 的字段 api/new_custom
+@login_required(login_url="/login/")
+def new_custom(request):
+    try:
+        save_custom(request.POST.get("name"), request.POST.get("content"))
+        context = {"msg": "保存成功!", "status": True}
     except Exception as e:
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
@@ -242,10 +322,15 @@ def auto_fix(request):
 def do_update(request):
     branch = request.POST.get("branch")
     try:
-        res = OnekeyUpdate(branch=branch)
+        if check_if_vercel():
+            res = VercelOnekeyUpdate(branch=branch)
+        else:
+            res = LocalOnekeyUpdate(branch=branch)
+            save_setting("UPDATE_FROM", QEXO_VERSION)
+            return render(request, 'layouts/json.html', {"data": json.dumps(res)})
         if res["status"]:
             save_setting("UPDATE_FROM", QEXO_VERSION)
-            context = {"msg": "OK!", "status": True}
+            context = {"msg": "更新成功，请等待自动部署!", "status": True}
         else:
             context = {"msg": res["msg"], "status": False}
     except Exception as error:
@@ -256,17 +341,12 @@ def do_update(request):
 # 保存内容 api/save
 @login_required(login_url="/login/")
 def save(request):
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         file_path = request.POST.get('file')
         content = request.POST.get('content')
         try:
-            repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
-            branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
-            repo.update_file(repo_path + file_path, "Update by Qexo", content,
-                             repo.get_contents(repo_path + file_path, ref=branch).sha,
-                             branch=branch)
+            Provider.save(file_path, content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -276,31 +356,37 @@ def save(request):
 # 保存文章 api/save_post
 @login_required(login_url="/login/")
 def save_post(request):
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         file_name = request.POST.get('file')
         content = request.POST.get('content')
+        front_matter = request.POST.get('front_matter')
         try:
-            repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
-            branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
             # 删除草稿
             try:
-                repo.delete_file(repo_path + "source/_drafts/" + file_name, "Delete by Qexo",
-                                 repo.get_contents(repo_path + "source/_drafts/" + file_name,
-                                                   ref=branch).sha,
-                                 branch=branch)
+                Provider.delete("source/_drafts/" + file_name)
             except:
                 pass
             # 创建/更新文章
-            try:
-                repo.update_file(repo_path + "source/_posts/" + file_name, "Update by Qexo",
-                                 content,
-                                 repo.get_contents(repo_path + "source/_posts/" + file_name,
-                                                   ref=branch).sha, branch=branch)
-            except:
-                repo.create_file(repo_path + "source/_posts/" + file_name, "Update by Qexo",
-                                 content, branch=branch)
+            front_matter = "---\n{}---\n".format(yaml.dump(json.loads(front_matter), allow_unicode=True))
+            Provider.save("source/_posts/" + file_name, front_matter + content)
+            context = {"msg": "OK!", "status": True}
+        except Exception as error:
+            context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 保存页面 api/save_page
+@login_required(login_url="/login/")
+def save_page(request):
+    context = dict(msg="Error!", status=False)
+    if request.method == "POST":
+        file_path = request.POST.get('file')
+        content = request.POST.get('content')
+        front_matter = request.POST.get('front_matter')
+        try:
+            front_matter = "---\n{}---\n".format(yaml.dump(json.loads(front_matter), allow_unicode=True))
+            Provider.save(file_path, front_matter + content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -310,41 +396,15 @@ def save_post(request):
 # 保存草稿 api/save_draft
 @login_required(login_url="/login/")
 def save_draft(request):
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         file_name = request.POST.get('file')
         content = request.POST.get('content')
+        front_matter = request.POST.get('front_matter')
         try:
-            repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
-            branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
             # 创建/更新草稿
-            try:
-                repo.update_file(repo_path + "source/_drafts/" + file_name, "Update by Qexo",
-                                 content,
-                                 repo.get_contents(repo_path + "source/_drafts/" + file_name,
-                                                   ref=branch).sha, branch=branch)
-            except:
-                repo.create_file(repo_path + "source/_drafts/" + file_name, "Update by Qexo",
-                                 content, branch=branch)
-            context = {"msg": "OK!", "status": True}
-        except Exception as error:
-            context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
-
-
-# 新建内容 api/new
-@login_required(login_url="/login/")
-def new(request):
-    repo = get_repo()
-    context = dict(msg="Error!", status=False)
-    if request.method == "POST":
-        file_path = request.POST.get('file')
-        content = request.POST.get('content')
-        try:
-            repo.create_file(path=SettingModel.objects.get(name="GH_REPO_PATH").content + file_path,
-                             message="Create by Qexo", content=content,
-                             branch=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
+            front_matter = "---\n{}---\n".format(yaml.dump(json.loads(front_matter), allow_unicode=True))
+            Provider.save("source/_drafts/" + file_name, front_matter + content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -354,20 +414,11 @@ def new(request):
 # 删除内容 api/delete
 @login_required(login_url="/login/")
 def delete(request):
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
-        branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
-        repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
         file_path = request.POST.get('file')
         try:
-            file = repo.get_contents(file_path, ref=branch)
-            if not isinstance(file, list):
-                repo.delete_file(repo_path + file_path, "Delete by Qexo", file.sha, branch=branch)
-
-            else:
-                for i in file:
-                    repo.delete_file(repo_path + i.path, "Delete by Qexo", i.sha, branch=branch)
+            Provider.delete(file_path)
             context = {"msg": "OK!", "status": True}
             # Delete Caches
             if ("_posts" in file_path) or ("_drafts" in file_path):
@@ -382,25 +433,16 @@ def delete(request):
 # 删除文章 api/delete_post
 @login_required(login_url="/login/")
 def delete_post(request):
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
-        branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
-        repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
         filename = request.POST.get('file')
         try:
             try:
-                repo.delete_file(repo_path + "source/_posts/" + filename, "Delete by Qexo",
-                                 repo.get_contents(
-                                     repo_path + "source/_posts/" + filename, ref=branch).sha,
-                                 branch=branch)
+                Provider.delete("source/_posts/" + filename)
             except:
                 pass
             try:
-                repo.delete_file(repo_path + "source/_drafts/" + filename, "Delete by Qexo",
-                                 repo.get_contents(
-                                     repo_path + "source/_drafts/" + filename, ref=branch).sha,
-                                 branch=branch)
+                Provider.delete("source/_drafts/" + filename)
             except:
                 pass
             delete_posts_caches()
@@ -456,10 +498,8 @@ def create_webhook_config(request):
                     "url": request.POST.get("uri") + "?token=" + SettingModel.objects.get(
                         name="WEBHOOK_APIKEY").content
                 }
-            repo = get_repo()
-            for hook in repo.get_hooks():  # 删除所有HOOK
-                hook.delete()
-            repo.create_hook(active=True, config=config, events=["push"], name="web")
+            Provider.delete_hooks()
+            Provider.create_hook(config)
             context = {"msg": "设置成功！", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -471,7 +511,7 @@ def create_webhook_config(request):
 def webhook(request):
     context = dict(msg="Error!", status=False)
     try:
-        if request.GET.get("token") == SettingModel.objects.get(name="WEBHOOK_APIKEY").content:
+        if request.GET.get("token") == get_setting("WEBHOOK_APIKEY"):
             delete_all_caches()
             context = {"msg": "操作成功！", "status": True}
         else:
@@ -489,77 +529,21 @@ def upload_img(request):
     if request.method == "POST":
         file = request.FILES.getlist('file[]')[0]
         try:
-            try:
-                img_type = SettingModel.objects.get(name="IMG_TYPE").content
-            except:
-                save_setting("IMG_TYPE", "cust")
-                img_type = "cust"
-            if img_type == "s3":
-                context["url"] = upload_to_s3(file,
-                                              SettingModel.objects.get(name="S3_KEY_ID").content,
-                                              SettingModel.objects.get(
-                                                  name="S3_ACCESS_KEY").content,
-                                              SettingModel.objects.get(name="S3_ENDPOINT").content,
-                                              SettingModel.objects.get(name="S3_BUCKET").content,
-                                              SettingModel.objects.get(name="S3_PATH").content,
-                                              SettingModel.objects.get(name="S3_PREV_URL").content)
-                context["msg"] = "上传成功！"
+            image_host = json.loads(get_setting("IMG_HOST"))
+            if image_host["type"] != "关闭":
+                context["url"] = get_image_host(image_host["type"], **image_host["params"]).upload(file)
                 context["status"] = True
-            else:
-                api = SettingModel.objects.get(name="IMG_API").content
-                post_params = SettingModel.objects.get(name="IMG_POST").content
-                json_path = SettingModel.objects.get(name="IMG_JSON_PATH").content
-                custom_body = SettingModel.objects.get(name="IMG_CUSTOM_BODY").content
-                custom_header = SettingModel.objects.get(name="IMG_CUSTOM_HEADER").content
-                custom_url = SettingModel.objects.get(name="IMG_CUSTOM_URL").content
-                if custom_header:
-                    if custom_body:
-                        response = requests.post(api, data=json.loads(custom_body),
-                                                 headers=json.loads(custom_header),
-                                                 files={post_params: [file.name, file.read(),
-                                                                      file.content_type]})
-                    else:
-                        response = requests.post(api, data={}, headers=json.loads(custom_header),
-                                                 files={post_params: [file.name, file.read(),
-                                                                      file.content_type]})
-                else:
-                    if custom_body:
-                        response = requests.post(api, data=json.loads(custom_body),
-                                                 files={post_params: [file.name, file.read(),
-                                                                      file.content_type]})
-                    else:
-                        response = requests.post(api, data={},
-                                                 files={post_params: [file.name, file.read(),
-                                                                      file.content_type]})
-                if json_path:
-                    json_path = json_path.split(".")
-                    response.encoding = "utf8"
-                    data = response.json()
-                    for path in json_path:
-                        data = data[path]
-                    context["url"] = str(custom_url) + data
-                    context["msg"] = "上传成功！"
-                    context["status"] = True
-                else:
-                    context["url"] = str(custom_url) + response.text
-                    context["msg"] = "上传成功！"
-                    context["status"] = True
-            image = ImageModel()
-            image.name = file.name
-            image.url = context["url"]
-            image.size = file.size
-            image.type = file.content_type
-            image.date = time()
-            image.save()
+                context["msg"] = "上传成功"
+                image = ImageModel()
+                image.name = file.name
+                image.url = context["url"]
+                image.size = file.size
+                image.type = file.content_type
+                image.date = time()
+                image.save()
         except Exception as error:
             context = {"msg": repr(error), "url": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
-
-
-# 获取更新 api/get_update
-@login_required(login_url="/login/")
-def get_update(request):
-    return render(request, 'layouts/json.html', {"data": json.dumps(get_latest_version())})
 
 
 # 添加友链 api/add_friend
@@ -604,7 +588,7 @@ def clean_friend(request):
         counter = 0
         all_friends = FriendModel.objects.all()
         for friend in all_friends:
-            if friend.status == "隐藏":
+            if not friend.status:
                 friend.delete()
                 counter += 1
         context = {"msg": "成功清理了{}条友链".format(counter) if counter else "无隐藏的友链", "status": True}
@@ -629,6 +613,19 @@ def del_friend(request):
 @login_required(login_url="/login/")
 def get_notifications(request):
     try:
+        # 检查更新
+        latest = get_latest_version()
+        cache = Cache.objects.filter(name="update")
+        if cache.count():
+            if (cache.first().content != latest["newer_time"]) and latest["hasNew"]:
+                CreateNotification("程序更新", "检测到更新: " + latest["newer"] + "<br>" + latest[
+                    "newer_text"] + "<p class=\"text-sm mb-0\">可前往 <object><a href=\"/settings.html\">设置</a></object> 在线更新</p>", time())
+                save_cache("update", latest["newer_time"])
+        else:
+            if latest["hasNew"]:
+                CreateNotification("程序更新", "检测到更新: " + latest["newer"] + "<br>" + latest[
+                    "newer_text"] + "<p class=\"text-sm mb-0\">可前往 <object><a href=\"/settings.html\">设置</a></object> 在线更新</p>", time())
+                save_cache("update", latest["newer_time"])
         context = {"data": GetNotifications(), "status": True}
     except Exception as error:
         context = {"msg": repr(error), "status": False}
@@ -645,5 +642,17 @@ def del_notification(request):
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
+
+# 清理全部消息 api/clear_notifications
+@login_required(login_url="/login/")
+def clear_notification(request):
+    try:
+        all_notify = NotificationModel.objects.all()
+        for N in all_notify:
+            N.delete()
+        context = {"msg": "删除成功！", "status": True}
+    except Exception as error:
+        context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 

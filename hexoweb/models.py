@@ -38,3 +38,20 @@ class NotificationModel(models.Model):
     time = models.CharField(max_length=0x7FFFFFFF)
     label = models.CharField(max_length=0x7FFFFFFF, blank=True)
     content = models.CharField(max_length=0x7FFFFFFF, blank=True)
+
+
+class CustomModel(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=0x7FFFFFFF)
+    content = models.CharField(max_length=0x7FFFFFFF, blank=True)
+
+
+class StatisticUV(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    ip = models.GenericIPAddressField()
+
+
+class StatisticPV(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    url = models.URLField()
+    number = models.IntegerField(default=0)

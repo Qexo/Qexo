@@ -3,7 +3,13 @@
 {% block title %} 登录 {% endblock title %}
 
 <!-- Specific CSS goes HERE -->
-{% block stylesheets %}{% endblock stylesheets %}
+{% block stylesheets %}
+    <style>
+        .grecaptcha-badge {
+            display: none
+        }
+    </style>
+{% endblock stylesheets %}
 
 {% block content %}
 
@@ -49,13 +55,15 @@
             </div>
         </div>
     </div>
+    {% if site_token %}
+        <script src="https://recaptcha.net/recaptcha/api.js?render={{ site_token }}"></script>
+    {% endif %}
 
 {% endblock content %}
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
 
-    <script src="{{ cdn_prev }}qexo-static@1.0.6/assets/vendor/bootstrap-notify/bootstrap-notify.min.js"></script>
     <script>
         function KZ_Loading(config) {
             if (this instanceof KZ_Loading) {
@@ -131,35 +139,49 @@
 
         function submit() {
             if (!($("input[name='username']").val())) {
-                $.notify("用户名不能为空! ", {type: "warning", delay: 1000});
+                notyf.error("用户名不能为空! ")
                 return false;
             }
             if (!($("input[name='password']").val())) {
-                $.notify("密码不能为空! ", {type: "warning", delay: 1000});
+                notyf.error("密码不能为空! ");
                 return false;
             }
             $("#submit-button").html("<button class=\"btn btn-white my-4\">······</button>");
-            $.ajax({
-                url: '/api/auth/',
-                method: 'post',
-                data: $('#login-form').serialize(),
-                dataType: "json",
-                success: function (res) {
-                    if (res.status) {
-                        $.notify(res.msg, {type: "success", delay: 1000});
-                        setTimeout(window.location = get_direct_link(), 1000);
-                    } else {
-                        $.notify(res.msg, {type: "warning"});
-                        $("#submit-button").html("<button onclick=\"submit()\" class=\"btn " +
-                        "btn-primary my-4\">登录</button>");
-                    }
-                },
-                error: function (res) {
-                    $.notify("网络错误！", {type: "warning"});
+            {% if site_token %}
+                grecaptcha.ready(function () {
+                grecaptcha.execute('{{ site_token }}', {action: 'submit'}).then(function (token) {
+            {% endif %}
+        $.ajax({
+            url: '/api/auth/',
+            method: 'post',
+            data: {
+                "username": $("input[name='username']").val(),
+                "password": $("input[name='password']").val(),
+                {% if site_token %}
+                    "verify": token,
+                {% endif %}
+            },
+            dataType: "json",
+            success: function (res) {
+                if (res.status) {
+                    notyf.success(res.msg);
+                    setTimeout(window.location = get_direct_link(), 1000);
+                } else {
+                    notyf.error(res.msg);
                     $("#submit-button").html("<button onclick=\"submit()\" class=\"btn " +
                         "btn-primary my-4\">登录</button>");
                 }
-            })
+            },
+            error: function (res) {
+                notyf.error("网络错误！");
+                $("#submit-button").html("<button onclick=\"submit()\" class=\"btn " +
+                    "btn-primary my-4\">登录</button>");
+            }
+        })
+        {% if site_token %}
+            });
+            });
+        {% endif %}
         }
 
         document.onkeydown = function (e) {

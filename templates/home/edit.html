@@ -463,7 +463,7 @@
                         if (responseData.status) {
                             let imageUrl = responseData.url;
                             let succFileText = "";
-                            if (vditor && vditor.vditor.currentMode === "ir") {
+                            if (vditor && vditor.vditor.currentMode === "wysiwyg") {
                                 succFileText += `\n <img alt=${imageUrl} src="${imageUrl}">`;
                             } else {
                                 succFileText += `\n![${imageUrl}](${imageUrl})`;

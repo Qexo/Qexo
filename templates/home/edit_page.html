@@ -294,7 +294,7 @@
                 upload: {
                     accept: "image/*",
                     url: "/api/upload/",
-                    max: 5 * 1024 * 1024,
+                    max: 100 * 1024 * 1024,
                     filename(name) {
                         return name
                             .replace(/[^(a-zA-Z0-9\u4e00-\u9fa5\.)]/g, "")
@@ -363,7 +363,7 @@
                 upload: {
                     accept: "image/*",
                     url: "/api/upload/",
-                    max: 5 * 1024 * 1024,
+                    max: 100 * 1024 * 1024,
                     filename(name) {
                         return name
                             .replace(/[^(a-zA-Z0-9\u4e00-\u9fa5\.)]/g, "")
@@ -375,7 +375,7 @@
                         if (responseData.status) {
                             let imageUrl = responseData.url;
                             let succFileText = "";
-                            if (vditor && vditor.vditor.currentMode === "ir") {
+                            if (vditor && vditor.vditor.currentMode === "wysiwyg") {
                                 succFileText += `\n <img alt=${imageUrl} src="${imageUrl}">`;
                             } else {
                                 succFileText += `\n![${imageUrl}](${imageUrl})`;

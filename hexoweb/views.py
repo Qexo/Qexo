@@ -314,7 +314,7 @@ def pages(request):
         elif "edit_page" in load_template:
             file_path = request.GET.get("file")
             context["front_matter"], context["file_content"] = get_post_details(
-                (Provider.get_content(file_path)))
+                (Provider().get_content(file_path)))
             context["json_front_matter"] = json.dumps(context["front_matter"])
             context['filename'] = file_path.split("/")[-2] + "/" + file_path.split("/")[-1]
             context["file_path"] = file_path
@@ -326,7 +326,7 @@ def pages(request):
                 pass
         elif "edit_config" in load_template:
             file_path = request.GET.get("file")
-            context["file_content"] = repr(Provider.get_content(file_path)).replace("<", "\\<").replace(">", "\\>").replace("!", "\\!")
+            context["file_content"] = repr(Provider().get_content(file_path)).replace("<", "\\<").replace(">", "\\>").replace("!", "\\!")
             context["filepath"] = file_path
             context['filename'] = file_path.split("/")[-1]
         elif "edit" in load_template:
@@ -346,7 +346,7 @@ def pages(request):
             context["emoji"] = get_setting("VDITOR_EMOJI")
             try:
                 context["front_matter"], context["file_content"] = get_post_details(
-                    (Provider.get_content("scaffolds/page.md")))
+                    (Provider().get_content("scaffolds/page.md")))
                 context["json_front_matter"] = json.dumps(context["front_matter"])
             except Exception as error:
                 context["error"] = repr(error)
@@ -359,7 +359,7 @@ def pages(request):
             context["emoji"] = get_setting("VDITOR_EMOJI")
             try:
                 context["front_matter"], context["file_content"] = get_post_details(
-                    (Provider.get_content("scaffolds/post.md")))
+                    (Provider().get_content("scaffolds/post.md")))
                 context["json_front_matter"] = json.dumps(context["front_matter"])
             except Exception as error:
                 context["error"] = repr(error)

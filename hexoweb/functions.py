@@ -38,16 +38,23 @@ def get_setting(name):
 
 
 def update_provider():
-    global Provider
+    global _Provider
     _provider = json.loads(get_setting("PROVIDER"))
-    Provider = get_provider(_provider["provider"], **_provider["params"])
-    return Provider
+    _Provider = get_provider(_provider["provider"], **_provider["params"])
+    return _Provider
 
 
 try:
-    Provider = update_provider()
+    _Provider = update_provider()
 except:
     pass
+
+
+def Provider():
+    try:
+        return _Provider
+    except:
+        return update_provider()
 
 
 @register.filter  # 在模板中使用range()
@@ -77,7 +84,7 @@ def get_cdnjs():
 
 
 def get_post(post):
-    return Provider.get_post(post)
+    return Provider().get_post(post)
 
 
 # 获取用户自定义的样式配置
@@ -136,7 +143,7 @@ def update_posts_cache(s=None):
             return posts
     else:
         old_cache = False
-    posts = Provider.get_posts()
+    posts = Provider().get_posts()
     if s:
         if not old_cache.count():
             update_caches("posts", posts)
@@ -168,7 +175,7 @@ def update_pages_cache(s=None):
             cache_name = "pages." + str(s)
             update_caches(cache_name, posts)
             return posts
-    results = Provider.get_pages()
+    results = Provider().get_pages()
     update_caches("pages", results)
     if not s:
         return results
@@ -196,7 +203,7 @@ def update_configs_cache(s=None):
             cache_name = "configs." + str(s)
             update_caches(cache_name, posts)
             return posts
-    results = Provider.get_configs()
+    results = Provider().get_configs()
     update_caches("configs", results)
     if not s:
         return results

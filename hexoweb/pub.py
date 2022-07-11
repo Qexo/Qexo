@@ -366,6 +366,7 @@ def get_custom(request):
 
 
 # 获取全部消息 pub/get_notifications
+@csrf_exempt
 def get_notifications(request):
     if not check_if_api_auth(request):
         return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！", "status": False})})
@@ -377,6 +378,7 @@ def get_notifications(request):
 
 
 # 获取博客基本信息 pub/status
+@csrf_exempt
 def status(request):
     try:
         cache = Cache.objects.filter(name="posts")
@@ -393,6 +395,7 @@ def status(request):
 
 
 # 统计API pub/statistic
+@csrf_exempt
 def statistic(request):
     try:
         url = str(request.META.get('HTTP_REFERER'))
@@ -450,3 +453,23 @@ def statistic(request):
     except Exception as e:
         print(repr(e))
         return render(request, 'layouts/json.html', {"data": json.dumps({"status": False, "error": repr(e)})})
+
+
+# Waline Webhook通知 pub/waline
+@csrf_exempt
+def waline(request):
+    if not check_if_api_auth(request):
+        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！", "status": False})})
+    try:
+        data = json.loads(request.body.decode())
+        if data.get("type") == "new_comment":
+            comment = data["data"]["comment"]
+            msg = "评论者: {}\n邮箱: {}\n".format(comment["nick"], comment["mail"])
+            if comment.get("link"):
+                msg += "网址: {}\n".format(comment["link"])
+            msg += "内容: {}\nIP: {}\n时间: {}\n地址: {}\n状态: {}\nUA: {}".format(comment["comment"], comment["ip"], comment["insertedAt"],
+                                                                           comment["url"], comment["status"], comment["ua"])
+            CreateNotification("Waline评论通知", msg, time())
+    except Exception as error:
+        context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})

@@ -53,7 +53,7 @@ class Github(Provider):
             drafts = self.repo.get_contents(self.path + 'source/_drafts' + _path,
                                             ref=self.branch)
             for i in range(len(drafts)):
-                if drafts[i].type == "file":
+                if drafts[i].type == "file" and drafts[i].name[-2:] == "md":
                     _drafts.append({"name": drafts[i].path.split(
                         "source/_drafts/")[1][0:-3], "fullname": drafts[i].path.split(
                         "source/_drafts/")[1],
@@ -71,7 +71,7 @@ class Github(Provider):
         try:
             posts = self.repo.get_contents(self.path + 'source/_posts' + _path, ref=self.branch)
             for i in range(len(posts)):
-                if posts[i].type == "file":
+                if posts[i].type == "file" and posts[i].name[-2:] == "md":
                     if posts[i].path.split(
                             "source/_posts/")[1] not in names:
                         _posts.append(

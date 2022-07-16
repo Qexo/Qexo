@@ -85,7 +85,10 @@
                 'justify-content-between align-items-center"><div><h4 class="mb-0 ' +
                 'text-sm">消息</h4></div></div><p class="text-sm ' +
                 'mb-0">你当前没有消息哟~</p></div></div></ul></div>');
-            $("#msg-point").css({"background": "inherit"});
+            $("#msg-point").css({
+                "position": "relative", "bottom": "25px", "left": "20px", "width": "6px",
+                "height": "6px", "background": "inherit", "border-radius": "50%"
+            });
         } else {
             let html = '<div class="px-3 py-3"><h6 class="text-sm text-muted m-0">你有 ' +
                 '<strong class="text-primary">' + notifications.length + '</strong> 则消息' +

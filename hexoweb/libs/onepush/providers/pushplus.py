@@ -26,13 +26,13 @@ class PushPlus(Provider):
                       token: str = None,
                       title: str = None,
                       topic: str = None,
-                      markdown: bool = False,
+                      markdown: str = "false",
                       **kwargs):
         self.data = {
             'token': token,
             'title': title,
             'content': content,
-            'template': 'markdown' if markdown else 'html',
+            'template': 'markdown' if markdown == "true" else 'html',
             'topic': topic
         }
         return self.data

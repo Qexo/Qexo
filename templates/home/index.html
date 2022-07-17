@@ -168,7 +168,7 @@
                             {% for post in posts %}
                                 <tr>
                                     <th scope="row">
-                                        {{ post.fullname }}
+                                        {{ post.name }}
                                     </th>
                                     <td>
                                         {{ post.size | div:1000 }} KB
@@ -239,8 +239,4 @@
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
-
-    <script src="{{ cdn_prev }}qexo-static@1.4.0/assets/vendor/chart.js/dist/Chart.min.js"></script>
-    <script src="{{ cdn_prev }}qexo-static@1.4.0/assets/vendor/chart.js/dist/Chart.extension.js"></script>
-
 {% endblock javascripts %}

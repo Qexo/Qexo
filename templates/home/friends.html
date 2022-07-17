@@ -315,7 +315,7 @@
         }
 
         function del_friend(time) {
-            var loading = new KZ_Loading('正在删除中...');
+            let loading = new KZ_Loading('正在删除中...');
             loading.show();
             $.ajax({
                 url: '/api/del_friend/',

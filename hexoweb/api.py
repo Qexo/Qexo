@@ -17,6 +17,17 @@ def auth(request):
     try:
         username = request.POST.get("username")
         password = request.POST.get("password")
+        verify = request.POST.get("verify")
+        token = get_setting("LOGIN_RECAPTCHA_SERVER_TOKEN")
+        site_token = get_setting("LOGIN_RECAPTCHA_SITE_TOKEN")
+        if token and site_token:
+            if verify:
+                captcha = requests.get("https://recaptcha.net/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
+                if captcha["score"] <= 0.5:
+                    return {"msg": "人机验证失败！", "status": False}
+            else:
+                return {"msg": "人机验证失败！", "status": False}
+        # print(captcha)
         user = authenticate(username=username, password=password)
         if user is not None:
             login(request, user)
@@ -28,29 +39,53 @@ def auth(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
-# 设置 Github 配置 api/set_github
+# 设置 Hexo Provider 配置 api/set_hexo
 @login_required(login_url="/login/")
-def set_github(request):
+def set_hexo(request):
     try:
-        repo = request.POST.get("repo")
-        branch = request.POST.get("branch")
-        token = request.POST.get("token")
-        if not token:
-            try:
-                token = SettingModel.objects.get(name="GH_TOKEN").content
-            except:
-                pass
-        path = request.POST.get("path")
-        try:
-            _repo = github.Github(token).get_repo(repo).get_contents(path + "source/_posts",
-                                                                     ref=branch)
-            save_setting("GH_REPO_PATH", path)
-            save_setting("GH_REPO_BRANCH", branch)
-            save_setting("GH_REPO", repo)
-            save_setting("GH_TOKEN", token)
-            context = {"msg": "保存成功!", "status": True}
-        except:
-            context = {"msg": "校验失败!", "status": False}
+        provider = request.POST.get('provider')
+        verify = verify_provider(json.loads(provider))
+        msg = ""
+        if verify["status"] == -1:
+            return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "远程连接错误!请检查Token", "status": False})})
+        if verify["hexo"]:
+            msg += "检测到Hexo版本: " + verify["hexo"]
+        else:
+            msg += "未检测到Hexo"
+        if verify["indexhtml"]:
+            msg += "\n检测到index.html, 这可能不是正确的仓库"
+        if verify["config_hexo"]:
+            msg += "\n检测到Hexo配置文件"
+        else:
+            msg += "\n未检测到Hexo配置"
+        if verify["theme"]:
+            msg += "\n检测到主题: " + verify["theme"]
+        else:
+            msg += "\n未检测到主题"
+        if verify["config_theme"]:
+            msg += "\n检测到主题配置" + verify["config_theme"]
+        else:
+            msg += "\n未检测到主题配置"
+        if verify["theme_dir"]:
+            msg += "\n检测到主题目录"
+        else:
+            msg += "\n未检测到主题目录"
+        if verify["package"]:
+            msg += "\n检测到package.json"
+        else:
+            msg += "\n未检测到package.json"
+        if verify["source"]:
+            msg += "\n检测到source目录 "
+        else:
+            msg += "\n未检测到source目录"
+        msg = msg.replace("\n", "<br>")
+        if verify["status"]:
+            save_setting("PROVIDER", provider)
+            update_provider()
+            delete_all_caches()
+            context = {"msg": msg + "\n保存配置成功!", "status": True}
+        else:
+            context = {"msg": msg + "\n配置校验失败", "status": False}
     except Exception as e:
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
@@ -96,61 +131,32 @@ def set_api(request):
                 save_setting("WEBHOOK_APIKEY", ''.join(
                     random.choice("qwertyuiopasdfghjklzxcvbnm1234567890") for x in range(12)))
         save_setting("ALLOW_FRIEND", request.POST.get("allow_friend"))
+        save_setting("FRIEND_RECAPTCHA", request.POST.get("friend-recaptcha"))
+        save_setting("RECAPTCHA_TOKEN", request.POST.get("recaptcha-token"))
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
-# 设置图床配置 api/set_image_bed
+# 安全设置 api/et_security
 @login_required(login_url="/login/")
-def set_image_bed(request):
+def set_security(request):
     try:
-        imageType = request.POST.get("imageType")
-        if imageType == "custom":
-            api = request.POST.get("api")
-            post_params = request.POST.get("post")
-            json_path = request.POST.get("jsonpath")
-            custom_body = request.POST.get("body")
-            custom_header = request.POST.get("header")
-            custom_url = request.POST.get("custom")
-            save_setting("IMG_API", api)
-            save_setting("IMG_POST", post_params)
-            save_setting("IMG_JSON_PATH", json_path)
-            save_setting("IMG_CUSTOM_BODY", custom_body)
-            save_setting("IMG_CUSTOM_HEADER", custom_header)
-            save_setting("IMG_CUSTOM_URL", custom_url)
-            save_setting("IMG_TYPE", "custom")
-        if imageType == "s3":
-            key_id = request.POST.get("key-id")
-            access_key = request.POST.get("access-key")
-            bucket = request.POST.get("bucket")
-            endpoint = request.POST.get("endpoint")
-            path = request.POST.get("path")
-            url = request.POST.get("url")
-            save_setting("S3_KEY_ID", key_id)
-            save_setting("S3_ACCESS_KEY", access_key)
-            save_setting("S3_BUCKET", bucket)
-            save_setting("S3_ENDPOINT", endpoint)
-            save_setting("S3_PATH", path)
-            save_setting("S3_PREV_URL", url)
-            save_setting("IMG_TYPE", "s3")
-        if imageType == "ftp":
-            host = request.POST.get("FTP_HOST")
-            port = request.POST.get("FTP_PORT")
-            user = request.POST.get("FTP_USER")
-            password = request.POST.get("FTP_PASS")
-            path = request.POST.get("FTP_PATH")
-            prev_url = request.POST.get("FTP_PREV_URL")
-            save_setting("FTP_HOST", host)
-            save_setting("FTP_PORT", port)
-            save_setting("FTP_USER", user)
-            save_setting("FTP_PASS", password)
-            save_setting("FTP_PATH", path)
-            save_setting("FTP_PREV_URL", prev_url)
-            save_setting("IMG_TYPE", "ftp")
-        if imageType == "":
-            save_setting("IMG_TYPE", "")
+        save_setting("LOGIN_RECAPTCHA_SERVER_TOKEN", request.POST.get("server-token"))
+        save_setting("LOGIN_RECAPTCHA_SITE_TOKEN", request.POST.get("site-token"))
+        context = {"msg": "保存成功!", "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 设置图床配置 api/set_image_host
+@login_required(login_url="/login/")
+def set_image_host(request):
+    try:
+        image_host = request.POST.get("image_host")
+        save_setting("IMG_HOST", image_host)
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
         context = {"msg": repr(e), "status": False}
@@ -316,10 +322,15 @@ def auto_fix(request):
 def do_update(request):
     branch = request.POST.get("branch")
     try:
-        res = OnekeyUpdate(branch=branch)
+        if check_if_vercel():
+            res = VercelOnekeyUpdate(branch=branch)
+        else:
+            res = LocalOnekeyUpdate(branch=branch)
+            save_setting("UPDATE_FROM", QEXO_VERSION)
+            return render(request, 'layouts/json.html', {"data": json.dumps(res)})
         if res["status"]:
             save_setting("UPDATE_FROM", QEXO_VERSION)
-            context = {"msg": "OK!", "status": True}
+            context = {"msg": "更新成功，请等待自动部署!", "status": True}
         else:
             context = {"msg": res["msg"], "status": False}
     except Exception as error:
@@ -330,17 +341,12 @@ def do_update(request):
 # 保存内容 api/save
 @login_required(login_url="/login/")
 def save(request):
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         file_path = request.POST.get('file')
         content = request.POST.get('content')
         try:
-            repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
-            branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
-            repo.update_file(repo_path + file_path, "Update by Qexo", content,
-                             repo.get_contents(repo_path + file_path, ref=branch).sha,
-                             branch=branch)
+            Provider().save(file_path, content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -350,31 +356,37 @@ def save(request):
 # 保存文章 api/save_post
 @login_required(login_url="/login/")
 def save_post(request):
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         file_name = request.POST.get('file')
         content = request.POST.get('content')
+        front_matter = request.POST.get('front_matter')
         try:
-            repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
-            branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
             # 删除草稿
             try:
-                repo.delete_file(repo_path + "source/_drafts/" + file_name, "Delete by Qexo",
-                                 repo.get_contents(repo_path + "source/_drafts/" + file_name,
-                                                   ref=branch).sha,
-                                 branch=branch)
+                Provider().delete("source/_drafts/" + file_name)
             except:
                 pass
             # 创建/更新文章
-            try:
-                repo.update_file(repo_path + "source/_posts/" + file_name, "Update by Qexo",
-                                 content,
-                                 repo.get_contents(repo_path + "source/_posts/" + file_name,
-                                                   ref=branch).sha, branch=branch)
-            except:
-                repo.create_file(repo_path + "source/_posts/" + file_name, "Update by Qexo",
-                                 content, branch=branch)
+            front_matter = "---\n{}---\n".format(yaml.dump(json.loads(front_matter), allow_unicode=True))
+            Provider().save("source/_posts/" + file_name, front_matter + content)
+            context = {"msg": "OK!", "status": True}
+        except Exception as error:
+            context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 保存页面 api/save_page
+@login_required(login_url="/login/")
+def save_page(request):
+    context = dict(msg="Error!", status=False)
+    if request.method == "POST":
+        file_path = request.POST.get('file')
+        content = request.POST.get('content')
+        front_matter = request.POST.get('front_matter')
+        try:
+            front_matter = "---\n{}---\n".format(yaml.dump(json.loads(front_matter), allow_unicode=True))
+            Provider().save(file_path, front_matter + content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -384,41 +396,15 @@ def save_post(request):
 # 保存草稿 api/save_draft
 @login_required(login_url="/login/")
 def save_draft(request):
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         file_name = request.POST.get('file')
         content = request.POST.get('content')
+        front_matter = request.POST.get('front_matter')
         try:
-            repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
-            branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
             # 创建/更新草稿
-            try:
-                repo.update_file(repo_path + "source/_drafts/" + file_name, "Update by Qexo",
-                                 content,
-                                 repo.get_contents(repo_path + "source/_drafts/" + file_name,
-                                                   ref=branch).sha, branch=branch)
-            except:
-                repo.create_file(repo_path + "source/_drafts/" + file_name, "Update by Qexo",
-                                 content, branch=branch)
-            context = {"msg": "OK!", "status": True}
-        except Exception as error:
-            context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
-
-
-# 新建内容 api/new
-@login_required(login_url="/login/")
-def new(request):
-    repo = get_repo()
-    context = dict(msg="Error!", status=False)
-    if request.method == "POST":
-        file_path = request.POST.get('file')
-        content = request.POST.get('content')
-        try:
-            repo.create_file(path=SettingModel.objects.get(name="GH_REPO_PATH").content + file_path,
-                             message="Create by Qexo", content=content,
-                             branch=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
+            front_matter = "---\n{}---\n".format(yaml.dump(json.loads(front_matter), allow_unicode=True))
+            Provider().save("source/_drafts/" + file_name, front_matter + content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -428,20 +414,11 @@ def new(request):
 # 删除内容 api/delete
 @login_required(login_url="/login/")
 def delete(request):
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
-        branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
-        repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
         file_path = request.POST.get('file')
         try:
-            file = repo.get_contents(file_path, ref=branch)
-            if not isinstance(file, list):
-                repo.delete_file(repo_path + file_path, "Delete by Qexo", file.sha, branch=branch)
-
-            else:
-                for i in file:
-                    repo.delete_file(repo_path + i.path, "Delete by Qexo", i.sha, branch=branch)
+            Provider().delete(file_path)
             context = {"msg": "OK!", "status": True}
             # Delete Caches
             if ("_posts" in file_path) or ("_drafts" in file_path):
@@ -456,25 +433,16 @@ def delete(request):
 # 删除文章 api/delete_post
 @login_required(login_url="/login/")
 def delete_post(request):
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
-        branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
-        repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
         filename = request.POST.get('file')
         try:
             try:
-                repo.delete_file(repo_path + "source/_posts/" + filename, "Delete by Qexo",
-                                 repo.get_contents(
-                                     repo_path + "source/_posts/" + filename, ref=branch).sha,
-                                 branch=branch)
+                Provider().delete("source/_posts/" + filename)
             except:
                 pass
             try:
-                repo.delete_file(repo_path + "source/_drafts/" + filename, "Delete by Qexo",
-                                 repo.get_contents(
-                                     repo_path + "source/_drafts/" + filename, ref=branch).sha,
-                                 branch=branch)
+                Provider().delete("source/_drafts/" + filename)
             except:
                 pass
             delete_posts_caches()
@@ -530,10 +498,8 @@ def create_webhook_config(request):
                     "url": request.POST.get("uri") + "?token=" + SettingModel.objects.get(
                         name="WEBHOOK_APIKEY").content
                 }
-            repo = get_repo()
-            for hook in repo.get_hooks():  # 删除所有HOOK
-                hook.delete()
-            repo.create_hook(active=True, config=config, events=["push"], name="web")
+            Provider().delete_hooks()
+            Provider().create_hook(config)
             context = {"msg": "设置成功！", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -545,7 +511,7 @@ def create_webhook_config(request):
 def webhook(request):
     context = dict(msg="Error!", status=False)
     try:
-        if request.GET.get("token") == SettingModel.objects.get(name="WEBHOOK_APIKEY").content:
+        if request.GET.get("token") == get_setting("WEBHOOK_APIKEY"):
             delete_all_caches()
             context = {"msg": "操作成功！", "status": True}
         else:
@@ -563,49 +529,18 @@ def upload_img(request):
     if request.method == "POST":
         file = request.FILES.getlist('file[]')[0]
         try:
-            try:
-                img_type = SettingModel.objects.get(name="IMG_TYPE").content
-            except:
-                save_setting("IMG_TYPE", "cust")
-                img_type = "cust"
-            if img_type == "s3":
-                context["url"] = upload_to_s3(file,
-                                              SettingModel.objects.get(name="S3_KEY_ID").content,
-                                              SettingModel.objects.get(
-                                                  name="S3_ACCESS_KEY").content,
-                                              SettingModel.objects.get(name="S3_ENDPOINT").content,
-                                              SettingModel.objects.get(name="S3_BUCKET").content,
-                                              SettingModel.objects.get(name="S3_PATH").content,
-                                              SettingModel.objects.get(name="S3_PREV_URL").content)
-                context["msg"] = "上传成功！"
+            image_host = json.loads(get_setting("IMG_HOST"))
+            if image_host["type"] != "关闭":
+                context["url"] = get_image_host(image_host["type"], **image_host["params"]).upload(file)
                 context["status"] = True
-            if img_type == "custom":
-                api = SettingModel.objects.get(name="IMG_API").content
-                post_params = SettingModel.objects.get(name="IMG_POST").content
-                json_path = SettingModel.objects.get(name="IMG_JSON_PATH").content
-                custom_body = SettingModel.objects.get(name="IMG_CUSTOM_BODY").content
-                custom_header = SettingModel.objects.get(name="IMG_CUSTOM_HEADER").content
-                custom_url = SettingModel.objects.get(name="IMG_CUSTOM_URL").content
-                context["url"] = upload_to_custom(file, api, post_params, json_path, custom_body, custom_header, custom_url)
-                context["msg"] = "上传成功！"
-                context["status"] = True
-            if img_type == "ftp":
-                context["url"] = upload_to_ftp(file,
-                                               SettingModel.objects.get(name="FTP_HOST").content,
-                                               SettingModel.objects.get(name="FTP_PORT").content,
-                                               SettingModel.objects.get(name="FTP_USER").content,
-                                               SettingModel.objects.get(name="FTP_PASS").content,
-                                               SettingModel.objects.get(name="FTP_PATH").content,
-                                               SettingModel.objects.get(name="FTP_PREV_URL").content)
-                context["msg"] = "上传成功！"
-                context["status"] = True
-            image = ImageModel()
-            image.name = file.name
-            image.url = context["url"]
-            image.size = file.size
-            image.type = file.content_type
-            image.date = time()
-            image.save()
+                context["msg"] = "上传成功"
+                image = ImageModel()
+                image.name = file.name
+                image.url = context["url"]
+                image.size = file.size
+                image.type = file.content_type
+                image.date = time()
+                image.save()
         except Exception as error:
             context = {"msg": repr(error), "url": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
@@ -719,3 +654,5 @@ def clear_notification(request):
     except Exception as error:
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+

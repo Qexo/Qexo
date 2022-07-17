@@ -14,17 +14,12 @@ def save(request):
     if not check_if_api_auth(request):
         return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
                                                                          "status": False})})
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         file_path = request.POST.get('file')
         content = request.POST.get('content')
         try:
-            repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
-            branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
-            repo.update_file(repo_path + file_path, "Update by QexoPubAPI", content,
-                             repo.get_contents(repo_path + file_path, ref=branch).sha,
-                             branch=branch)
+            Provider().save(file_path, content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -37,31 +32,18 @@ def save_post(request):
     if not check_if_api_auth(request):
         return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
                                                                          "status": False})})
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         file_name = request.POST.get('file')
         content = request.POST.get('content')
         try:
-            repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
-            branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
             # 删除草稿
             try:
-                repo.delete_file(repo_path + "source/_drafts/" + file_name, "Delete by QexoPubAPI",
-                                 repo.get_contents(repo_path + "source/_drafts/" + file_name,
-                                                   ref=branch).sha,
-                                 branch=branch)
+                Provider().delete("source/_drafts/" + file_name)
             except:
                 pass
             # 创建/更新文章
-            try:
-                repo.update_file(repo_path + "source/_posts/" + file_name, "Update by QexoPubAPI",
-                                 content,
-                                 repo.get_contents(repo_path + "source/_posts/" + file_name,
-                                                   ref=branch).sha, branch=branch)
-            except:
-                repo.create_file(repo_path + "source/_posts/" + file_name, "Update by QexoPubAPI",
-                                 content, branch=branch)
+            Provider().save("source/_posts/" + file_name, content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -74,44 +56,13 @@ def save_draft(request):
     if not check_if_api_auth(request):
         return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
                                                                          "status": False})})
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         file_name = request.POST.get('file')
         content = request.POST.get('content')
         try:
-            repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
-            branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
             # 创建/更新草稿
-            try:
-                repo.update_file(repo_path + "source/_drafts/" + file_name, "Update by QexoPubAPI",
-                                 content,
-                                 repo.get_contents(repo_path + "source/_drafts/" + file_name,
-                                                   ref=branch).sha, branch=branch)
-            except:
-                repo.create_file(repo_path + "source/_drafts/" + file_name, "Update by QexoPubAPI",
-                                 content, branch=branch)
-            context = {"msg": "OK!", "status": True}
-        except Exception as error:
-            context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
-
-
-# 新建内容 pub/new
-@csrf_exempt
-def new(request):
-    if not check_if_api_auth(request):
-        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
-                                                                         "status": False})})
-    repo = get_repo()
-    context = dict(msg="Error!", status=False)
-    if request.method == "POST":
-        file_path = request.POST.get('file')
-        content = request.POST.get('content')
-        try:
-            repo.create_file(path=SettingModel.objects.get(name="GH_REPO_PATH").content + file_path,
-                             message="Create by QexoPubAPI", content=content,
-                             branch=SettingModel.objects.get(name="GH_REPO_BRANCH").content)
+            Provider().save("source/_drafts/" + file_name, content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -124,20 +75,11 @@ def delete(request):
     if not check_if_api_auth(request):
         return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
                                                                          "status": False})})
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
-        branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
-        repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
         file_path = request.POST.get('file')
         try:
-            file = repo.get_contents(file_path, ref=branch)
-            if not isinstance(file, list):
-                repo.delete_file(repo_path + file_path, "Delete by QexoPubAPI", file.sha, branch=branch)
-
-            else:
-                for i in file:
-                    repo.delete_file(repo_path + i.path, "Delete by QexoPubAPI", i.sha, branch=branch)
+            Provider().delete(file_path)
             context = {"msg": "OK!", "status": True}
             # Delete Caches
             if ("_posts" in file_path) or ("_drafts" in file_path):
@@ -155,25 +97,17 @@ def delete_post(request):
     if not check_if_api_auth(request):
         return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
                                                                          "status": False})})
-    repo = get_repo()
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
-        branch = SettingModel.objects.get(name="GH_REPO_BRANCH").content
-        repo_path = SettingModel.objects.get(name="GH_REPO_PATH").content
         filename = request.POST.get('file')
         try:
             try:
-                repo.delete_file(repo_path + "source/_posts/" + filename, "Delete by QexoPubAPI",
-                                 repo.get_contents(
-                                     repo_path + "source/_posts/" + filename, ref=branch).sha,
-                                 branch=branch)
+
+                Provider().delete("source/_posts/" + filename)
             except:
                 pass
             try:
-                repo.delete_file(repo_path + "source/_drafts/" + filename, "Delete by QexoPubAPI",
-                                 repo.get_contents(
-                                     repo_path + "source/_drafts/" + filename, ref=branch).sha,
-                                 branch=branch)
+                Provider().delete("source/_drafts/" + filename)
             except:
                 pass
             delete_posts_caches()
@@ -206,10 +140,8 @@ def create_webhook_config(request):
                     "url": request.POST.get("uri") + "?token=" + SettingModel.objects.get(
                         name="WEBHOOK_APIKEY").content
                 }
-            repo = get_repo()
-            for hook in repo.get_hooks():  # 删除所有HOOK
-                hook.delete()
-            repo.create_hook(active=True, config=config, events=["push"], name="web")
+            Provider().delete_hooks()
+            Provider().create_hook(config)
             context = {"msg": "设置成功！", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -316,6 +248,7 @@ def friends(request):
                 data.append({"name": i.name, "url": i.url, "image": i.imageUrl,
                              "description": i.description,
                              "time": i.time})
+        data.sort(key=lambda x: x["time"])
         context = {"data": data, "status": True}
     except Exception as e:
         context = {"msg": repr(e), "status": False}
@@ -382,9 +315,27 @@ def del_friend(request):
 @csrf_exempt
 def ask_friend(request):
     try:
-        if SettingModel.objects.get(name="ALLOW_FRIEND").content != "是":
-            return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
-                                                                             "status": False})})
+        if get_setting("ALLOW_FRIEND") != "是":
+            return HttpResponseForbidden()
+        # 人机验证
+        verify = request.POST.get("verify")
+        token = get_setting("RECAPTCHA_TOKEN")
+        typ = get_setting("FRIEND_RECAPTCHA")
+        if typ == "v3":
+            if verify:
+                captcha = requests.get("https://recaptcha.net/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
+                if captcha["score"] <= 0.5:
+                    return {"msg": "人机验证失败！", "status": False}
+            else:
+                return {"msg": "人机验证失败！", "status": False}
+        if typ == "v2":
+            if verify:
+                captcha = requests.get("https://recaptcha.net/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
+                if not captcha["success"]:
+                    return {"msg": "人机验证失败！", "status": False}
+            else:
+                return {"msg": "人机验证失败！", "status": False}
+        # 通过验证
         friend = FriendModel()
         friend.name = request.POST.get("name")
         friend.url = request.POST.get("url")
@@ -415,6 +366,7 @@ def get_custom(request):
 
 
 # 获取全部消息 pub/get_notifications
+@csrf_exempt
 def get_notifications(request):
     if not check_if_api_auth(request):
         return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！", "status": False})})
@@ -426,6 +378,7 @@ def get_notifications(request):
 
 
 # 获取博客基本信息 pub/status
+@csrf_exempt
 def status(request):
     try:
         cache = Cache.objects.filter(name="posts")
@@ -434,7 +387,7 @@ def status(request):
         else:
             posts = update_posts_cache()
         posts_count = len(posts)
-        last = SettingModel.objects.get(name="LAST_LOGIN").content
+        last = get_setting("LAST_LOGIN")
         context = {"data": {"posts": str(posts_count), "last": last}, "status": True}
     except Exception as error:
         context = {"msg": repr(error), "status": False}
@@ -442,16 +395,17 @@ def status(request):
 
 
 # 统计API pub/statistic
+@csrf_exempt
 def statistic(request):
     try:
         url = str(request.META.get('HTTP_REFERER'))
-        allow_domains = SettingModel.objects.get(name="STATISTIC_DOMAINS").content.split(",")
+        allow_domains = get_setting("STATISTIC_DOMAINS").split(",")
         t, allow = get_domain(url), False
         for allow_domain in allow_domains:
             if allow_domain in t:
                 allow = True
                 break
-        if not (allow and (t and SettingModel.objects.get(name="STATISTIC_ALLOW").content == "是")):
+        if not (allow and (t and get_setting("STATISTIC_ALLOW") == "是")):
             print("Not allowed domain: " + url)
             return HttpResponseForbidden()
         if url[:7] == "http://":
@@ -499,3 +453,23 @@ def statistic(request):
     except Exception as e:
         print(repr(e))
         return render(request, 'layouts/json.html', {"data": json.dumps({"status": False, "error": repr(e)})})
+
+
+# Waline Webhook通知 pub/waline
+@csrf_exempt
+def waline(request):
+    if not check_if_api_auth(request):
+        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！", "status": False})})
+    try:
+        data = json.loads(request.body.decode())
+        if data.get("type") == "new_comment":
+            comment = data["data"]["comment"]
+            msg = "评论者: {}\n邮箱: {}\n".format(comment["nick"], comment["mail"])
+            if comment.get("link"):
+                msg += "网址: {}\n".format(comment["link"])
+            msg += "内容: {}\nIP: {}\n时间: {}\n地址: {}\n状态: {}\nUA: {}".format(comment["comment"], comment["ip"], comment["insertedAt"],
+                                                                           comment["url"], comment["status"], comment["ua"])
+            CreateNotification("Waline评论通知", msg, time())
+    except Exception as error:
+        context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})

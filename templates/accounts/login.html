@@ -3,7 +3,13 @@
 {% block title %} 登录 {% endblock title %}
 
 <!-- Specific CSS goes HERE -->
-{% block stylesheets %}{% endblock stylesheets %}
+{% block stylesheets %}
+    <style>
+        .grecaptcha-badge {
+            display: none
+        }
+    </style>
+{% endblock stylesheets %}
 
 {% block content %}
 
@@ -49,6 +55,9 @@
             </div>
         </div>
     </div>
+    {% if site_token %}
+        <script src="https://recaptcha.net/recaptcha/api.js?render={{ site_token }}"></script>
+    {% endif %}
 
 {% endblock content %}
 
@@ -56,70 +65,7 @@
 {% block javascripts %}
 
     <script>
-        function KZ_Loading(config) {
-            if (this instanceof KZ_Loading) {
-                const domTemplate = '<div class="modal kz-loading" data-kzid="@@KZ_Loadin_ID@@" backdrop="static" keyboard="false"><div style="width: 200px;height:20px; z-index: 20000; position: absolute; text-align: center; left: 50%; top: 50%;margin-left:-100px;margin-top:-10px"><div class="progress progress-striped active" style="margin-bottom: 0;"><div class="progress-bar" style="width: 100%;"></div></div><h5>@@KZ_Loading_Text@@</h5></div></div>';
-                this.config = {
-                    content: 'loading...',
-                    time: 0,
-                };
-                if (config != null) {
-                    if (typeof config === 'string') {
-                        this.config = Object.assign(this.config, {
-                            content: config
-                        });
-                    } else if (typeof config === 'object') {
-                        this.config = Object.assign(this.config, config);
-                    }
-                }
-                this.id = new Date().getTime().toString();
-                this.state = 'hide';
 
-                /*显示 */
-                this.show = function () {
-                    $('.kz-loading[data-kzid=' + this.id + ']').modal({
-                        backdrop: 'static',
-                        keyboard: false
-                    });
-                    this.state = 'show';
-                    if (this.config.time > 0) {
-                        var that = this;
-                        setTimeout(function () {
-                            that.hide();
-                        }, this.config.time);
-                    }
-                };
-                /*隐藏 */
-                this.hide = function (callback) {
-                    $('.kz-loading[data-kzid=' + this.id + ']').modal('hide');
-                    this.state = 'hide';
-                    if (callback) {
-                        callback();
-                    }
-                };
-                /*销毁dom */
-                this.destroy = function () {
-                    var that = this;
-                    this.hide(function () {
-                        var node = $('.kz-loading[data-kzid=' + that.id + ']');
-                        node.next().remove();
-                        node.remove();
-                        that.show = function () {
-                            throw new Error('对象已销毁！');
-                        };
-                        that.hide = function () {
-                        };
-                        that.destroy = function () {
-                        };
-                    });
-                }
-
-                var domHtml = domTemplate.replace('@@KZ_Loadin_ID@@', this.id).replace('@@KZ_Loading_Text@@', this.config.content);
-                $('body').append(domHtml);
-            } else {
-                return new KZ_Loading(config);
-            }
-        }
 
         function get_direct_link() {
             let reg = new RegExp("(^|&)next=([^&]*)(&|$)");
@@ -138,27 +84,41 @@
                 return false;
             }
             $("#submit-button").html("<button class=\"btn btn-white my-4\">······</button>");
-            $.ajax({
-                url: '/api/auth/',
-                method: 'post',
-                data: $('#login-form').serialize(),
-                dataType: "json",
-                success: function (res) {
-                    if (res.status) {
-                        notyf.success(res.msg);
-                        setTimeout(window.location = get_direct_link(), 1000);
-                    } else {
-                        notyf.error(res.msg);
-                        $("#submit-button").html("<button onclick=\"submit()\" class=\"btn " +
-                        "btn-primary my-4\">登录</button>");
-                    }
-                },
-                error: function (res) {
-                    notyf.error("网络错误！");
+            {% if site_token %}
+                grecaptcha.ready(function () {
+                grecaptcha.execute('{{ site_token }}', {action: 'submit'}).then(function (token) {
+            {% endif %}
+        $.ajax({
+            url: '/api/auth/',
+            method: 'post',
+            data: {
+                "username": $("input[name='username']").val(),
+                "password": $("input[name='password']").val(),
+                {% if site_token %}
+                    "verify": token,
+                {% endif %}
+            },
+            dataType: "json",
+            success: function (res) {
+                if (res.status) {
+                    notyf.success(res.msg);
+                    setTimeout(window.location = get_direct_link(), 1000);
+                } else {
+                    notyf.error(res.msg);
                     $("#submit-button").html("<button onclick=\"submit()\" class=\"btn " +
                         "btn-primary my-4\">登录</button>");
                 }
-            })
+            },
+            error: function (res) {
+                notyf.error("网络错误！");
+                $("#submit-button").html("<button onclick=\"submit()\" class=\"btn " +
+                    "btn-primary my-4\">登录</button>");
+            }
+        })
+        {% if site_token %}
+            });
+            });
+        {% endif %}
         }
 
         document.onkeydown = function (e) {

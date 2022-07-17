@@ -18,7 +18,11 @@ SECRET_KEY = 'django-insecure-mrf1flh+i8*!ao73h6)ne#%gowhtype!ld#+(j^r*!^11al2vz
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = json.loads(os.environ["DOMAINS"])
+try:
+    import configs
+    ALLOWED_HOSTS = configs.DOMAINS
+except:
+    ALLOWED_HOSTS = json.loads(os.environ["DOMAINS"])
 
 # Application definition
 
@@ -72,24 +76,28 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'djongo',
-        'ENFORCE_SCHEMA': False,
-        'LOGGING': {
-            'version': 1,
-        },
-        'NAME': 'django',
-        'CLIENT': {
-            'host': os.environ["MONGODB_HOST"],
-            'port': int(os.environ["MONGODB_PORT"]),
-            'username': os.environ["MONGODB_USER"],
-            'password': os.environ["MONGODB_PASS"],
-            'authSource': os.environ["MONGODB_DB"],
-            'authMechanism': 'SCRAM-SHA-1'
+try:
+    import configs
+    DATABASES = configs.DATABASES
+except:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'djongo',
+            'ENFORCE_SCHEMA': False,
+            'LOGGING': {
+                'version': 1,
+            },
+            'NAME': 'django',
+            'CLIENT': {
+                'host': os.environ["MONGODB_HOST"],
+                'port': int(os.environ["MONGODB_PORT"]),
+                'username': os.environ["MONGODB_USER"],
+                'password': os.environ["MONGODB_PASS"],
+                'authSource': os.environ["MONGODB_DB"],
+                'authMechanism': 'SCRAM-SHA-1'
+            }
         }
     }
-}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators

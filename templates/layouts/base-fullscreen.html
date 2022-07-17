@@ -26,19 +26,30 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700">
     <!-- Icons -->
     <link rel="stylesheet"
-          href="{{ cdn_prev }}qexo-static@1.4.0/assets/vendor/nucleo/css/nucleo.css"
+          href="{{ cdnjs }}argon-dashboard-react/1.2.0/assets/plugins/nucleo/css/nucleo.css"
           type="text/css">
     <link rel="stylesheet"
-          href="{{ cdn_prev }}qexo-static@1.4.0/assets/vendor/@fortawesome/fontawesome-free/css/all.min.css"
+          href="{{ cdnjs }}font-awesome/5.15.4/css/all.min.css"
           type="text/css">
     <!-- Argon CSS -->
-    <link rel="stylesheet" href="{{ cdn_prev }}qexo-static@1.4.0/assets/css/argon.css?v=1.2.0"
+    <link rel="stylesheet" href="{{ cdnjs }}argon-dashboard-django/1.0.2/css/argon.min.css"
           type="text/css">
     <link rel="stylesheet"
-          href="{{ cdn_prev }}qexo-static@1.4.0/assets/css/notyf.min.css"
+          href="{{ cdnjs }}notyf/3.2.0/notyf.min.css"
           type="text/css">
     <!-- Specific CSS goes HERE -->
-    {% block stylesheets %}{% endblock stylesheets %}
+    {% block stylesheets %}
+        <style>
+            .notyf__toast {
+                max-width: 24em !important;
+            }
+
+            .notyf__ripple {
+                height: 60em !important;
+                width: 60em !important;
+            }
+        </style>
+    {% endblock stylesheets %}
 
 </head>
 
@@ -66,7 +77,7 @@
 <!-- Specific JS goes HERE -->
 {% block javascripts %}{% endblock javascripts %}
 
-<script src="{{ cdn_prev }}qexo-static@1.4.0/assets/js/argon.js?v=1.2.0"></script>
+<script src="{{ cdnjs }}argon-dashboard-django/1.0.2/js/argon.min.js"></script>
 
 </body>
 

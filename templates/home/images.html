@@ -256,7 +256,7 @@
         }
 
         function delete_file() {
-            var loading = new KZ_Loading('正在删除中...');
+            let loading = new KZ_Loading('正在删除中...');
             loading.show();
             $.ajax({
                 url: '/api/delete_img/',

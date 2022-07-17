@@ -31,9 +31,48 @@
     <!-- Page content -->
     <div class="container-fluid mt--6">
         <div class="row">
-            <div class="col">
-                <div class="card">
-                    <div id="vditor"></div>
+            <div class="card col-md-8 px-0 ml-md-4">
+                <div id="vditor"></div>
+            </div>
+            <div class="card col-md-3 ml-md-4">
+                <h3 class="mt-3">文章参数</h3>
+                <hr class="my-2"/>
+                <div class="form-group">
+                    <label class="form-control-label"><i class="fas fa-heading"></i> 标题</label>
+                    <input type="text" name="title"
+                           class="form-control"
+                           placeholder="显示的文章题目"
+                           id="title"
+                           value="{{ front_matter.title }}">
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label"><i class="fas fa-globe-americas"></i>
+                        发布于</label>
+                    <input type="text" name="date"
+                           class="form-control"
+                           id="date"
+                           placeholder="发布时间"
+                           value="{{ front_matter.date }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label"><i class="fas fa-calendar-alt"></i>
+                        更新于</label>
+                    <input type="text" name="updated"
+                           class="form-control"
+                           id="updated"
+                           placeholder="更新时间"
+                           value="{{ front_matter.updated }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label"><i class="fas fa-pencil-alt"></i>
+                        自定义</label>
+                    <textarea name="custom"
+                              id="custom"
+                              class="form-control"
+                              placeholder="自定义Front-Matter"
+                              style="height:300px"></textarea>
                 </div>
             </div>
         </div>
@@ -46,81 +85,30 @@
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
-    <link href="{{ cdn_prev }}vditor@3.8.13/dist/index.css" rel="stylesheet"/>
-    <script src="{{ cdn_prev }}vditor@3.8.13/dist/index.min.js"></script>
+    <link href="{{ cdn_prev }}vditor@3.8.15/dist/index.css" rel="stylesheet"/>
+    <script src="{{ cdn_prev }}vditor@3.8.15/dist/index.min.js"></script>
 
 
     <script>
-        var _status = true;
-
+        var _status = true, front_matter = {{ json_front_matter|safe }};
+        $("#updated").val(getTimeFormat());
         $.ajaxSetup({
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
         });
 
-        function KZ_Loading(config) {
-            if (this instanceof KZ_Loading) {
-                const domTemplate = '<div class="modal kz-loading" data-kzid="@@KZ_Loadin_ID@@" backdrop="static" keyboard="false"><div style="width: 200px;height:20px; z-index: 20000; position: absolute; text-align: center; left: 50%; top: 50%;margin-left:-100px;margin-top:-10px"><div class="progress progress-striped active" style="margin-bottom: 0;"><div class="progress-bar" style="width: 100%;"></div></div><h5>@@KZ_Loading_Text@@</h5></div></div>';
-                this.config = {
-                    content: 'loading...',
-                    time: 0,
-                };
-                if (config != null) {
-                    if (typeof config === 'string') {
-                        this.config = Object.assign(this.config, {
-                            content: config
-                        });
-                    } else if (typeof config === 'object') {
-                        this.config = Object.assign(this.config, config);
-                    }
-                }
-                this.id = new Date().getTime().toString();
-                this.state = 'hide';
-
-                /*显示 */
-                this.show = function () {
-                    $('.kz-loading[data-kzid=' + this.id + ']').modal({
-                        backdrop: 'static',
-                        keyboard: false
-                    });
-                    this.state = 'show';
-                    if (this.config.time > 0) {
-                        var that = this;
-                        setTimeout(function () {
-                            that.hide();
-                        }, this.config.time);
-                    }
-                };
-                /*隐藏 */
-                this.hide = function (callback) {
-                    $('.kz-loading[data-kzid=' + this.id + ']').modal('hide');
-                    this.state = 'hide';
-                    if (callback) {
-                        callback();
-                    }
-                };
-                /*销毁dom */
-                this.destroy = function () {
-                    var that = this;
-                    this.hide(function () {
-                        var node = $('.kz-loading[data-kzid=' + that.id + ']');
-                        node.next().remove();
-                        node.remove();
-                        that.show = function () {
-                            throw new Error('对象已销毁！');
-                        };
-                        that.hide = function () {
-                        };
-                        that.destroy = function () {
-                        };
-                    });
-                }
-
-                var domHtml = domTemplate.replace('@@KZ_Loadin_ID@@', this.id).replace('@@KZ_Loading_Text@@', this.config.content);
-                $('body').append(domHtml);
-            } else {
-                return new KZ_Loading(config);
-            }
+        function getTimeFormat() {
+            let date = new Date();
+            let month = date.getMonth() + 1 < 10 ? "0" + (date.getMonth() + 1) : date.getMonth()
+                + 1;
+            let currentDate = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
+            let hh = date.getHours() < 10 ? "0" + date.getHours() : date.getHours();
+            let mm = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
+            let ss = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
+            return date.getFullYear() + "-" + month + "-" + currentDate + " " + hh + ":" + mm + ":" + ss;
+            //返回格式：yyyy-MM-dd hh:mm:ss
         }
+
+
 
         function SaveChanges() {
             if (!_status) {
@@ -130,9 +118,12 @@
             _status = false;
             loading.show();
             $.ajax({
-                url: '/api/save/',
+                url: '/api/save_page/',
                 method: 'post',
-                data: {"file": "{{ file_path }}", "content": vditor.getValue()},
+                data: {
+                    "file": "{{ file_path }}", "content": vditor.getValue(), "front_matter":
+                        JSON.stringify(get_front_matter())
+                },
                 dataType: 'JSON',
                 success: function (res) {
                     loading.destroy();
@@ -194,19 +185,19 @@
                 toolbarConfig: {
                     pin: true
                 },
-                "cdn": "{{ cdn_prev }}vditor@3.8.13",
+                "cdn": "{{ cdn_prev }}vditor@3.8.15",
                 "mode": "ir",
                 counter: {
                     enable: true
                 },
-                "height": window.innerHeight / 2,
+                "height": window.innerHeight * 0.75,
                 "value": {{ file_content|safe }},
                 "fullscreen": {
                     "index": 1050,
                 },
                 "preview": {
                     "theme": {
-                        "path": "{{ cdn_prev }}vditor@3.8.13/dist/css/content-theme"
+                        "path": "{{ cdn_prev }}vditor@3.8.15/dist/css/content-theme"
                     }
                 },
                 "debugger": false,
@@ -240,7 +231,7 @@
                 upload: {
                     accept: "image/*",
                     url: "/api/upload/",
-                    max: 5 * 1024 * 1024,
+                    max: 100 * 1024 * 1024,
                     filename(name) {
                         return name
                             .replace(/[^(a-zA-Z0-9\u4e00-\u9fa5\.)]/g, "")
@@ -286,21 +277,21 @@
                 // _lutePath: "lib/vditor-3.7.3/src/js/lute/lute.min.js",
                 // 这个是自定义导航栏
                 toolbar,
-                "cdn": "{{ cdn_prev }}vditor@3.8.13",
+                "cdn": "{{ cdn_prev }}vditor@3.8.15",
                 "fullscreen": {
                     "index": 1050,
                 },
-                "height": document.documentElement.clientHeight - 200,
+                "height": document.documentElement.clientHeight + 60,
                 "cache": {
                     "enable": false
                 },
                 "value": {{ file_content|safe }},
-                "mode": "sv",
+                "mode": "ir",
                 "debugger": false,
                 "preview": {
                     "mode": "both",
                     "theme": {
-                        "path": "{{ cdn_prev }}vditor@3.8.13/dist/css/content-theme"
+                        "path": "{{ cdn_prev }}vditor@3.8.15/dist/css/content-theme"
                     }
                 }, hint: {
                     emoji: {{ emoji|safe }}
@@ -309,7 +300,7 @@
                 upload: {
                     accept: "image/*",
                     url: "/api/upload/",
-                    max: 5 * 1024 * 1024,
+                    max: 100 * 1024 * 1024,
                     filename(name) {
                         return name
                             .replace(/[^(a-zA-Z0-9\u4e00-\u9fa5\.)]/g, "")
@@ -321,7 +312,7 @@
                         if (responseData.status) {
                             let imageUrl = responseData.url;
                             let succFileText = "";
-                            if (vditor && vditor.vditor.currentMode === "ir") {
+                            if (vditor && vditor.vditor.currentMode === "wysiwyg") {
                                 succFileText += `\n <img alt=${imageUrl} src="${imageUrl}">`;
                             } else {
                                 succFileText += `\n![${imageUrl}](${imageUrl})`;
@@ -339,6 +330,27 @@
                     }
                 },
             });
+        }
+
+        delete front_matter["title"];
+        delete front_matter["date"];
+        delete front_matter["updated"];
+        $("#custom").val(JSON.stringify(front_matter));
+
+        function get_front_matter() {
+            let custom = JSON.parse($("#custom").val());
+            custom["title"] = $("#title").val();
+            custom["date"] = $("#date").val();
+            custom["updated"] = $("#updated").val();
+            return custom;
+        }
+
+        window.onbeforeunload = function (e) {
+            e = e || window.event;
+            if (e) {
+                e.returnValue = '确定要离开吗?';
+            }
+            return '确定要离开吗?';
         }
     </script>
 {% endblock javascripts %}

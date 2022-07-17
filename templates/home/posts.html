@@ -37,7 +37,7 @@
                             <div class="col">
                                 <h3 class="mb-0">{% if search %}搜索文章: {{ search }}{% else %}
                                     全部文章{% endif %}
-                                    ({{ post_number }}篇)</h3>
+                                    (<span id="post-number">{{ post_number }}</span>篇)</h3>
                             </div>
                         </div>
                     </div>
@@ -151,25 +151,23 @@
                 } else {
                     list += "草稿";
                 }
-                list += "</td><td><a href=\"/edit.html?file=" + page_posts[i]["fullname"] + "\">" +
+                list += "</td><td><a href=\"/edit.html?file=" + encodeURIComponent(page_posts[i]["fullname"]) + "\">" +
                     "<i class=\"fa fa-edit mr-2\"></i></a>" + "<a href=\"javascript:query_delete('" +
                     page_posts[i]["fullname"] + "')\"><i class=\"fa fa-trash-alt " +
                     "mr-2\"></i></a></td></tr>";
             }
-            $("#page-"+_page).removeClass("active");
-            $("#page-"+page).addClass("active");
+            $("#page-" + _page).removeClass("active");
+            $("#page-" + page).addClass("active");
             $("#posts-list").html(list);
             _page = page;
-            if(page<=1){
+            if (page <= 1) {
                 $("#prev-page").addClass("disabled");
-            }
-            else{
+            } else {
                 $("#prev-page").removeClass("disabled");
             }
-            if(page>={{ page_number }}){
+            if (page >={{ page_number }}) {
                 $("#next-page").addClass("disabled");
-            }
-            else{
+            } else {
                 $("#next-page").removeClass("disabled");
             }
         }
@@ -267,18 +265,26 @@
         }
 
         function delete_file() {
-            var loading = new KZ_Loading('正在删除中...');
+            let loading = new KZ_Loading('正在删除中...');
+            let file = $("#delfile").text();
             loading.show();
             $.ajax({
                 url: '/api/delete_post/',
                 method: 'post',
-                data: {"file": $("#delfile").text()},
+                data: {"file": file},
                 dataType: 'JSON',
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
                         notyf.success('删除成功！');
-                        setTimeout(location.reload(), 1000);
+                        for (let i = 0; i < posts.length; i++) {
+                            if (posts[i]["fullname"] === file) {
+                               posts.splice(i, 1);
+                               $("#post-number").html(posts.length);
+                               break;
+                            }
+                        }
+                        change_page(_page);
                     } else {
                         notyf.error(res.msg);
                     }

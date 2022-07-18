@@ -513,13 +513,13 @@
 
         // 监听分类、标签回车键
         $('#tag').bind('keypress', function (event) {
-            if (event.keyCode === "13") {
+            if (event.keyCode === 13) {
                 event.preventDefault();
                 add_tag($('#tag').val());$('#tag').val('')
             }
         });
         $('#category').bind('keypress', function (event) {
-            if (event.keyCode === "13") {
+            if (event.keyCode === 13) {
                 event.preventDefault();
                 add_category($('#category').val());$('#category').val('')
             }

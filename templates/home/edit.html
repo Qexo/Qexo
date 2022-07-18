@@ -502,6 +502,7 @@
             return custom;
         }
 
+        // 退出页面确认
         window.onbeforeunload = function (e) {
             e = e || window.event;
             if (e) {
@@ -509,5 +510,19 @@
             }
             return '确定要离开吗?';
         }
+
+        // 监听分类、标签回车键
+        $('#tag').bind('keypress', function (event) {
+            if (event.keyCode === "13") {
+                event.preventDefault();
+                add_tag($('#tag').val());$('#tag').val('')
+            }
+        });
+        $('#category').bind('keypress', function (event) {
+            if (event.keyCode === "13") {
+                event.preventDefault();
+                add_category($('#category').val());$('#category').val('')
+            }
+        });
     </script>
 {% endblock javascripts %}

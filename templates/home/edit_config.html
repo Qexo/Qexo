@@ -122,8 +122,8 @@
             e = e || window.event;
             if (e && file_content !== editor.getValue()) {
                 e.returnValue = '确定要离开吗?';
+                return '确定要离开吗?';
             }
-            return '确定要离开吗?';
         }
 
     </script>

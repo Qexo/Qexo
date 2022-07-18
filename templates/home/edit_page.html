@@ -351,8 +351,8 @@
             e = e || window.event;
             if (e && file_content !== vditor.getValue()) {
                 e.returnValue = '确定要离开吗?';
+                return '确定要离开吗?';
             }
-            return '确定要离开吗?';
         }
 
         // 监听分类、标签回车键
@@ -368,5 +368,7 @@
                 add_category($('#category').val());$('#category').val('')
             }
         });
+
+        file_content = vditor.getValue();
     </script>
 {% endblock javascripts %}

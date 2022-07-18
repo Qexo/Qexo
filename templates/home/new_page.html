@@ -161,7 +161,7 @@
         //挂载到全局
         if (fIsMobile()) {
             window.vditor = new Vditor('vditor', {
-                focus(md) {
+                after(d){
                     file_content = vditor.getValue();
                 },
                 toolbarConfig: {
@@ -246,9 +246,11 @@
             })
         } else {
             window.vditor = new Vditor("vditor", {
+                after(d){
+                    file_content = vditor.getValue();
+                },
                 // 获取焦点方法
                 focus(md) {
-                    file_content = vditor.getValue();
                     document.onkeydown = function () {
                         // 判断 Ctrl+S
                         if (event.ctrlKey == true && event.keyCode == 83) {

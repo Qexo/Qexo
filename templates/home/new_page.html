@@ -93,6 +93,7 @@
 
     <script>
         var _status = true, front_matter = {{ json_front_matter|safe }};
+        var file_content = {{ file_content|safe }};
         $("#updated").val(getTimeFormat());
         $.ajaxSetup({
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
@@ -135,6 +136,7 @@
                         loading.destroy();
                         if (res.status) {
                             notyf.success('保存成功！');
+                            file_content = vditor.getValue();
                             setTimeout(window.location.href = "edit_page.html?file=source/" +
                                 encodeURIComponent($("input[name='filename']").val() + "/index.md"), 1000);
                         } else {
@@ -352,6 +354,14 @@
             custom["date"] = $("#date").val();
             custom["updated"] = $("#updated").val();
             return custom;
+        }
+
+        window.onbeforeunload = function (e) {
+            e = e || window.event;
+            if (e && file_content !== vditor.getValue()) {
+                e.returnValue = '确定要离开吗?';
+            }
+            return '确定要离开吗?';
         }
 
         // 监听分类、标签回车键

@@ -146,6 +146,8 @@
         else if (typeof (front_matter["categories"]) === "string") categories = [front_matter["categories"]];
         else categories = [];
 
+        var file_content = {{ file_content|safe }};
+
         $("#updated").val(getTimeFormat());
 
         $.ajaxSetup({
@@ -193,6 +195,7 @@
                         loading.destroy();
                         if (res.status) {
                             notyf.success('发布成功！等待转跳...');
+                            file_content = vditor.getValue();
                             setTimeout(window.location.href = "edit.html?file=" +
                                 encodeURIComponent($("input[name='filename']").val() + ".md"), 1000);
                         } else {
@@ -232,6 +235,7 @@
                         loading.destroy();
                         if (res.status) {
                             notyf.success('草稿保存成功！等待转跳...');
+                            file_content = vditor.getValue();
                             setTimeout(window.location.href = "edit.html?file=" + encodeURIComponent($("input[name='filename']").val() + ".md"), 1000);
                         } else {
                             notyf.error(res.msg);
@@ -519,6 +523,14 @@
             custom["categories"] = categories;
             custom["updated"] = $("#updated").val();
             return custom;
+        }
+
+        window.onbeforeunload = function (e) {
+            e = e || window.event;
+            if (e && file_content !== vditor.getValue()) {
+                e.returnValue = '确定要离开吗?';
+            }
+            return '确定要离开吗?';
         }
 
         // 监听分类、标签回车键

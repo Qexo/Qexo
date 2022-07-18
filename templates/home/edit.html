@@ -145,6 +145,8 @@
         else if (typeof (front_matter["categories"]) === "string") categories = [front_matter["categories"]];
         else categories = [];
 
+        var file_content = {{ file_content|safe }};
+
         $("#updated").val(getTimeFormat());
 
         $.ajaxSetup({
@@ -183,6 +185,7 @@
                     loading.destroy();
                     if (res.status) {
                         notyf.success('发布成功！');
+                        file_content = vditor.getValue();
                         _status = true;
                     } else {
                         notyf.error(res.msg);
@@ -216,6 +219,7 @@
                     loading.destroy();
                     if (res.status) {
                         notyf.success('草稿保存成功！');
+                        file_content = vditor.getValue();
                         _status = true;
                     } else {
                         notyf.error(res.msg);
@@ -277,7 +281,7 @@
                 "cdn": "{{ cdn_prev }}vditor@3.8.15",
                 "mode": "ir",
                 "height": window.innerHeight * 0.75,
-                "value": {{ file_content|safe }},
+                "value": file_content,
                 "fullscreen": {
                     "index": 1050,
                 },
@@ -371,7 +375,7 @@
                 "cache": {
                     "enable": false
                 },
-                "value": {{ file_content|safe }},
+                "value": file_content,
                 "mode": "ir",
                 "debugger": false,
                 "preview": {
@@ -505,7 +509,7 @@
         // 退出页面确认
         window.onbeforeunload = function (e) {
             e = e || window.event;
-            if (e) {
+            if (e && file_content !== vditor.getValue()) {
                 e.returnValue = '确定要离开吗?';
             }
             return '确定要离开吗?';

@@ -146,7 +146,7 @@
         else if (typeof (front_matter["categories"]) === "string") categories = [front_matter["categories"]];
         else categories = [];
 
-        var file_content = {{ file_content|safe }};
+        var file_content = "";
 
         $("#updated").val(getTimeFormat());
 
@@ -169,7 +169,6 @@
         $.ajaxSetup({
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
         });
-
 
 
         function SaveChanges() {
@@ -527,6 +526,7 @@
 
         window.onbeforeunload = function (e) {
             e = e || window.event;
+            if (file_content)
             if (e && file_content !== vditor.getValue()) {
                 e.returnValue = '确定要离开吗?';
                 return '确定要离开吗?';
@@ -537,16 +537,16 @@
         $('#tag').bind('keypress', function (event) {
             if (event.keyCode === 13) {
                 event.preventDefault();
-                add_tag($('#tag').val());$('#tag').val('')
+                add_tag($('#tag').val());
+                $('#tag').val('')
             }
         });
         $('#category').bind('keypress', function (event) {
             if (event.keyCode === 13) {
                 event.preventDefault();
-                add_category($('#category').val());$('#category').val('')
+                add_category($('#category').val());
+                $('#category').val('')
             }
         });
-
-        file_content = vditor.getValue();
     </script>
 {% endblock javascripts %}

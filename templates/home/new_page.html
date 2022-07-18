@@ -93,7 +93,7 @@
 
     <script>
         var _status = true, front_matter = {{ json_front_matter|safe }};
-        var file_content = {{ file_content|safe }};
+        var file_content = "";
         $("#updated").val(getTimeFormat());
         $.ajaxSetup({
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
@@ -358,6 +358,7 @@
 
         window.onbeforeunload = function (e) {
             e = e || window.event;
+            if (file_content)
             if (e && file_content !== vditor.getValue()) {
                 e.returnValue = '确定要离开吗?';
                 return '确定要离开吗?';
@@ -378,6 +379,5 @@
             }
         });
 
-        file_content = vditor.getValue();
     </script>
 {% endblock javascripts %}

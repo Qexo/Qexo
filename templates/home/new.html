@@ -258,6 +258,9 @@
         //挂载到全局
         if (fIsMobile()) {
             window.vditor = new Vditor('vditor', {
+                focus(md) {
+                    file_content = vditor.getValue();
+                },
                 toolbarConfig: {
                     pin: true
                 },
@@ -340,9 +343,9 @@
             })
         } else {
             window.vditor = new Vditor("vditor", {
-
                 // 获取焦点方法
                 focus(md) {
+                    file_content = vditor.getValue();
                     document.onkeydown = function () {
                         // 判断 Ctrl+S
                         if (event.ctrlKey == true && event.keyCode == 83) {
@@ -526,7 +529,6 @@
 
         window.onbeforeunload = function (e) {
             e = e || window.event;
-            if (file_content)
             if (e && file_content !== vditor.getValue()) {
                 e.returnValue = '确定要离开吗?';
                 return '确定要离开吗?';

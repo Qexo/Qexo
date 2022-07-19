@@ -1,15 +1,16 @@
-from .functions import *
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.decorators import login_required
 import random
-import requests
-from .models import ImageModel
-from django.shortcuts import render
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.models import User
-from core.QexoSettings import QEXO_VERSION
-from datetime import timezone, timedelta
 from time import time
+
+import requests
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
+
+from core.QexoSettings import QEXO_VERSION
+from .functions import *
+from .models import ImageModel
 
 
 # 登录验证 API api/auth
@@ -22,7 +23,8 @@ def auth(request):
         site_token = get_setting("LOGIN_RECAPTCHA_SITE_TOKEN")
         if token and site_token:
             if verify:
-                captcha = requests.get("https://recaptcha.net/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
+                captcha = requests.get(
+                    "https://recaptcha.net/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
                 if captcha["score"] <= 0.5:
                     return {"msg": "人机验证失败！", "status": False}
             else:
@@ -47,7 +49,8 @@ def set_hexo(request):
         verify = verify_provider(json.loads(provider))
         msg = ""
         if verify["status"] == -1:
-            return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "远程连接错误!请检查Token", "status": False})})
+            return render(request, 'layouts/json.html',
+                          {"data": json.dumps({"msg": "远程连接错误!请检查Token", "status": False})})
         if verify["hexo"]:
             msg += "检测到Hexo版本: " + verify["hexo"]
         else:
@@ -345,8 +348,9 @@ def save(request):
     if request.method == "POST":
         file_path = request.POST.get('file')
         content = request.POST.get('content')
+        commitchange = f"Update Post Draft {file_path}"
         try:
-            Provider().save(file_path, content)
+            Provider().save(file_path, content, commitchange)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -364,12 +368,14 @@ def save_post(request):
         try:
             # 删除草稿
             try:
-                Provider().delete("source/_drafts/" + file_name)
+                commitchange = f"Delete Post Draft {file_name}"
+                Provider().delete("source/_drafts/" + file_name, commitchange)
             except:
                 pass
             # 创建/更新文章
+            commitchange = f"Update Post {file_name}"
             front_matter = "---\n{}---\n".format(yaml.dump(json.loads(front_matter), allow_unicode=True))
-            Provider().save("source/_posts/" + file_name, front_matter + content)
+            Provider().save("source/_posts/" + file_name, front_matter + content, commitchange)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -384,9 +390,10 @@ def save_page(request):
         file_path = request.POST.get('file')
         content = request.POST.get('content')
         front_matter = request.POST.get('front_matter')
+        commitchange = f"Update Page {file_path}"
         try:
             front_matter = "---\n{}---\n".format(yaml.dump(json.loads(front_matter), allow_unicode=True))
-            Provider().save(file_path, front_matter + content)
+            Provider().save(file_path, front_matter + content, commitchange)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -401,10 +408,11 @@ def save_draft(request):
         file_name = request.POST.get('file')
         content = request.POST.get('content')
         front_matter = request.POST.get('front_matter')
+        commitchange = f"Update Post Draft {file_name}"
         try:
             # 创建/更新草稿
             front_matter = "---\n{}---\n".format(yaml.dump(json.loads(front_matter), allow_unicode=True))
-            Provider().save("source/_drafts/" + file_name, front_matter + content)
+            Provider().save("source/_drafts/" + file_name, front_matter + content, commitchange)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -417,8 +425,9 @@ def delete(request):
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         file_path = request.POST.get('file')
+        commitchange = f"Delete {file_path}"
         try:
-            Provider().delete(file_path)
+            Provider().delete(file_path, commitchange)
             context = {"msg": "OK!", "status": True}
             # Delete Caches
             if ("_posts" in file_path) or ("_drafts" in file_path):
@@ -438,11 +447,13 @@ def delete_post(request):
         filename = request.POST.get('file')
         try:
             try:
-                Provider().delete("source/_posts/" + filename)
+                commitchange = f"Delete Post {filename}"
+                Provider().delete("source/_posts/" + filename, commitchange)
             except:
                 pass
             try:
-                Provider().delete("source/_drafts/" + filename)
+                commitchange = f"Delete Post draft {filename}"
+                Provider().delete("source/_drafts/" + filename, commitchange)
             except:
                 pass
             delete_posts_caches()
@@ -619,12 +630,14 @@ def get_notifications(request):
         if cache.count():
             if (cache.first().content != latest["newer_time"]) and latest["hasNew"]:
                 CreateNotification("程序更新", "检测到更新: " + latest["newer"] + "<br>" + latest[
-                    "newer_text"] + "<p class=\"text-sm mb-0\">可前往 <object><a href=\"/settings.html\">设置</a></object> 在线更新</p>", time())
+                    "newer_text"] + "<p class=\"text-sm mb-0\">可前往 <object><a href=\"/settings.html\">设置</a></object> 在线更新</p>",
+                                   time())
                 save_cache("update", latest["newer_time"])
         else:
             if latest["hasNew"]:
                 CreateNotification("程序更新", "检测到更新: " + latest["newer"] + "<br>" + latest[
-                    "newer_text"] + "<p class=\"text-sm mb-0\">可前往 <object><a href=\"/settings.html\">设置</a></object> 在线更新</p>", time())
+                    "newer_text"] + "<p class=\"text-sm mb-0\">可前往 <object><a href=\"/settings.html\">设置</a></object> 在线更新</p>",
+                                   time())
                 save_cache("update", latest["newer_time"])
         context = {"data": GetNotifications(), "status": True}
     except Exception as error:
@@ -654,5 +667,3 @@ def clear_notification(request):
     except Exception as error:
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
-
-

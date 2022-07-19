@@ -1,14 +1,11 @@
 import random
-from time import time
 
-import requests
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
-from core.QexoSettings import QEXO_VERSION
 from .functions import *
 from .models import ImageModel
 

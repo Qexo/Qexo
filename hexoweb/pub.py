@@ -19,7 +19,7 @@ def save(request):
         file_path = request.POST.get('file')
         content = request.POST.get('content')
         try:
-            Provider.save(file_path, content)
+            Provider().save(file_path, content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -39,11 +39,11 @@ def save_post(request):
         try:
             # 删除草稿
             try:
-                Provider.delete("source/_drafts/" + file_name)
+                Provider().delete("source/_drafts/" + file_name)
             except:
                 pass
             # 创建/更新文章
-            Provider.save("source/_posts/" + file_name, content)
+            Provider().save("source/_posts/" + file_name, content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -62,7 +62,7 @@ def save_draft(request):
         content = request.POST.get('content')
         try:
             # 创建/更新草稿
-            Provider.save("source/_drafts/" + file_name, content)
+            Provider().save("source/_drafts/" + file_name, content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -79,7 +79,7 @@ def delete(request):
     if request.method == "POST":
         file_path = request.POST.get('file')
         try:
-            Provider.delete(file_path)
+            Provider().delete(file_path)
             context = {"msg": "OK!", "status": True}
             # Delete Caches
             if ("_posts" in file_path) or ("_drafts" in file_path):
@@ -103,11 +103,11 @@ def delete_post(request):
         try:
             try:
 
-                Provider.delete("source/_posts/" + filename)
+                Provider().delete("source/_posts/" + filename)
             except:
                 pass
             try:
-                Provider.delete("source/_drafts/" + filename)
+                Provider().delete("source/_drafts/" + filename)
             except:
                 pass
             delete_posts_caches()
@@ -140,8 +140,8 @@ def create_webhook_config(request):
                     "url": request.POST.get("uri") + "?token=" + SettingModel.objects.get(
                         name="WEBHOOK_APIKEY").content
                 }
-            Provider.delete_hooks()
-            Provider.create_hook(config)
+            Provider().delete_hooks()
+            Provider().create_hook(config)
             context = {"msg": "设置成功！", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
@@ -366,6 +366,7 @@ def get_custom(request):
 
 
 # 获取全部消息 pub/get_notifications
+@csrf_exempt
 def get_notifications(request):
     if not check_if_api_auth(request):
         return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！", "status": False})})
@@ -377,6 +378,7 @@ def get_notifications(request):
 
 
 # 获取博客基本信息 pub/status
+@csrf_exempt
 def status(request):
     try:
         cache = Cache.objects.filter(name="posts")
@@ -393,6 +395,7 @@ def status(request):
 
 
 # 统计API pub/statistic
+@csrf_exempt
 def statistic(request):
     try:
         url = str(request.META.get('HTTP_REFERER'))
@@ -450,3 +453,23 @@ def statistic(request):
     except Exception as e:
         print(repr(e))
         return render(request, 'layouts/json.html', {"data": json.dumps({"status": False, "error": repr(e)})})
+
+
+# Waline Webhook通知 pub/waline
+@csrf_exempt
+def waline(request):
+    if not check_if_api_auth(request):
+        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！", "status": False})})
+    try:
+        data = json.loads(request.body.decode())
+        if data.get("type") == "new_comment":
+            comment = data["data"]["comment"]
+            msg = "评论者: {}\n邮箱: {}\n".format(comment["nick"], comment["mail"])
+            if comment.get("link"):
+                msg += "网址: {}\n".format(comment["link"])
+            msg += "内容: {}\nIP: {}\n时间: {}\n地址: {}\n状态: {}\nUA: {}".format(comment["comment"], comment["ip"], comment["insertedAt"],
+                                                                           comment["url"], comment["status"], comment["ua"])
+            CreateNotification("Waline评论通知", msg, time())
+    except Exception as error:
+        context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})

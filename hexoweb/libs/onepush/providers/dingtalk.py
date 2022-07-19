@@ -48,12 +48,12 @@ class DingTalk(Provider):
     def _prepare_data(self,
                       title: str = None,
                       content: str = None,
-                      markdown: bool = False,
+                      markdown: str = "false",
                       **kwargs):
         message = self.process_message(title, content)
         self.data = {'msgtype': 'text', 'text': {'content': message}}
 
-        if markdown:
+        if markdown == "true":
             self.data = {
                 'msgtype': 'markdown',
                 'markdown': {

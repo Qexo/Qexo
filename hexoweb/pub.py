@@ -365,7 +365,7 @@ def get_custom(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
-# 编辑自定义字段 pub/set_custom 无需鉴权
+# 编辑自定义字段 pub/set_custom
 @login_required(login_url="/login/")
 def set_custom(request):
     if not check_if_api_auth(request):

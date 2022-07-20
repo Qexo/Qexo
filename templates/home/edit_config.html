@@ -53,7 +53,7 @@
     <script src="{{ cdnjs }}ace/1.4.13/ext-language_tools.js"></script>
     <script>
         var _status=true;
-
+        var file_content = {{ file_content|safe }};
 
         editor = ace.edit("editor");
         editor.setTheme("ace/theme/tomorrow");

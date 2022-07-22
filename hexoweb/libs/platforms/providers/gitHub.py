@@ -171,21 +171,21 @@ class Github(Provider):
                         pass
         return results
 
-    def save(self, file, content):
+    def save(self, file, content, commitchange="Update by Qexo"):
         try:
-            self.repo.update_file(self.path + file, "Update by Qexo", content,
+            self.repo.update_file(self.path + file, commitchange, content,
                                   self.repo.get_contents(self.path + file, ref=self.branch).sha, branch=self.branch)
         except:
-            self.repo.create_file(self.path + file, "Update by Qexo", content, branch=self.branch)
+            self.repo.create_file(self.path + file, commitchange, content, branch=self.branch)
         return True
 
-    def delete(self, path):
+    def delete(self, path, commitchange="Delete by Qexo"):
         file = self.repo.get_contents(self.path + path, ref=self.branch)
         if not isinstance(file, list):
-            self.repo.delete_file(self.path + path, "Delete by Qexo", file.sha, branch=self.branch)
+            self.repo.delete_file(self.path + path, commitchange, file.sha, branch=self.branch)
         else:
             for i in file:
-                self.repo.delete_file(self.path + i.path, "Delete by Qexo", i.sha, branch=self.branch)
+                self.repo.delete_file(self.path + i.path, commitchange, i.sha, branch=self.branch)
         return True
 
     def delete_hooks(self):

@@ -319,6 +319,7 @@ def pages(request):
             context['filename'] = file_path.split("/")[-2] + "/" + file_path.split("/")[-1]
             context["file_path"] = file_path
             context["emoji"] = get_setting("VDITOR_EMOJI")
+            context["sidebar"] = get_setting("PAGE_SIDEBAR")
             try:
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
@@ -333,10 +334,11 @@ def pages(request):
             file_path = request.GET.get("file")
             context["front_matter"], context["file_content"] = get_post_details(
                 (get_post(file_path)))
-            context["json_front_matter"] = json.dumps(context["front_matter"])
+            context["front_matter"] = json.dumps(context["front_matter"])
             context['filename'] = file_path.split("/")[-1]
             context['fullname'] = file_path
             context["emoji"] = get_setting("VDITOR_EMOJI")
+            context["sidebar"] = get_setting("POST_SIDEBAR")
             try:
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
@@ -344,6 +346,7 @@ def pages(request):
                 pass
         elif "new_page" in load_template:
             context["emoji"] = get_setting("VDITOR_EMOJI")
+            context["sidebar"] = get_setting("PAGE_SIDEBAR")
             try:
                 context["front_matter"], context["file_content"] = get_post_details(
                     (Provider().get_content("scaffolds/page.md")))
@@ -357,10 +360,11 @@ def pages(request):
                 pass
         elif "new" in load_template:
             context["emoji"] = get_setting("VDITOR_EMOJI")
+            context["sidebar"] = get_setting("POST_SIDEBAR")
             try:
                 context["front_matter"], context["file_content"] = get_post_details(
                     (Provider().get_content("scaffolds/post.md")))
-                context["json_front_matter"] = json.dumps(context["front_matter"])
+                context["front_matter"] = json.dumps(context["front_matter"])
             except Exception as error:
                 context["error"] = repr(error)
             try:

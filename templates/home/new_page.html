@@ -33,7 +33,7 @@
     <!-- Page content -->
     <div class="container-fluid mt--6">
         <div class="row">
-            <div class="card col-md-8 px-0 ml-md-4">
+            <div class="card col-md-8 px-0 ml-md-4" id="vditor-container">
                 <div id="vditor"></div>
             </div>
             <div class="card col-md-3 ml-md-4">
@@ -295,7 +295,7 @@
                 "fullscreen": {
                     "index": 1050,
                 },
-                "height": document.documentElement.clientHeight + 60,
+                "height": $("#vditor-container").height()+25,
                 "cache": {
                     "enable": false
                 },

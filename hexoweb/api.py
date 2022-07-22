@@ -664,3 +664,18 @@ def clear_notification(request):
     except Exception as error:
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 设置文章/页面侧边栏 api/set_sidebar
+@login_required(login_url="/login/")
+def set_sidebar(request):
+    try:
+        typ = request.POST.get("type")
+        if typ == "page":
+            save_setting("PAGE_SIDEBAR", request.POST.get("content"))
+        elif typ == "post":
+            save_setting("POST_SIDEBAR", request.POST.get("content"))
+        context = {"msg": "修改成功！", "status": True}
+    except Exception as error:
+        context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})

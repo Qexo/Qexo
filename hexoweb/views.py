@@ -52,6 +52,7 @@ def update_view(request):
             save_setting(setting, request.POST.get(setting))
             if setting == "PROVIDER":
                 update_provider()
+        delete_all_caches()
     already = list()
     settings = SettingModel.objects.all()
     for query in settings:
@@ -81,7 +82,6 @@ def update_view(request):
                 context["settings"].append(dict(name=setting[0], value=setting[1], placeholder=setting[3]))
 
             context["counter"] += 1
-    delete_all_caches()  # delete all caches
     if not context["counter"]:
         save_setting("UPDATE_FROM", QEXO_VERSION)
         return redirect("/")

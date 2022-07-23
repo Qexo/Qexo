@@ -52,6 +52,7 @@
                 </div>
             </div>
         </div>
+    </div>
 
     <div class="modal fade" id="sidebarEditModal" tabindex="-1"
          aria-labelledby="sidebarModalLabel"
@@ -111,13 +112,13 @@
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
         });
 
-        function set_vditor_size(){
+        function set_vditor_size() {
             let height = $("#vditor-container").height();
-            if(height < document.documentElement.clientHeight - 25){
+            if (height < document.documentElement.clientHeight - 25) {
                 height = document.documentElement.clientHeight - 25;
             }
             $("#vditor").css({
-                "height":  height + "px", "width":
+                "height": height + "px", "width":
                     "auto"
             });
         }
@@ -596,7 +597,8 @@
             for (let i = 0; i < OrgSidebar.length; i++) {
                 if (OrgSidebar[i]["search"] === "tags") {
                     html += `<div class="form-group">
-                        <label class="form-control-label"><i class="fas fa-tag"></i> 标签</label>
+                        <label class="form-control-label"><i class="` + OrgSidebar[i]["icon"]
+                        + `"></i> ` + OrgSidebar[i]["name"] + `</label>
                         <div class="input-group">
                             <input type="text" name="qexo-tag"
                                    class="form-control"
@@ -615,8 +617,8 @@
                     ifTag = true;
                 } else if (OrgSidebar[i]["search"] === "categories") {
                     html += `<div class="form-group">
-                        <label class="form-control-label"><i class="fas fa-folder-open"></i>
-                            分类</label>
+                        <label class="form-control-label"><i class="` + OrgSidebar[i]["icon"]
+                        + `"></i> ` + OrgSidebar[i]["name"] + `</label>
                         <div class="input-group">
                             <input type="text" name="qexo-category"
                                    class="form-control"

@@ -32,25 +32,26 @@
 
     <!-- Page content -->
     <div class="container-fluid mt--6">
-    <div class="row">
-        <div class="card col-md-8 px-0 ml-md-4" id="vditor-container">
-            <div id="vditor"></div>
-        </div>
-        <div class="card col-md-3 ml-md-4">
-            <a class="text-right position-absolute col-11 mt-3" style="cursor: pointer;
+        <div class="row">
+            <div class="card col-md-8 px-0 ml-md-4" id="vditor-container">
+                <div id="vditor"></div>
+            </div>
+            <div class="card col-md-3 ml-md-4">
+                <a class="text-right position-absolute col-11 mt-3" style="cursor: pointer;
                 color: #172b4d"
-               href="javascript:editSide()"><i class="fas
+                   href="javascript:editSide()"><i class="fas
                    fa-pen"></i></a>
-            <h3 class="mt-3">文章参数</h3>
-            <hr class="my-2"/>
-            <div id="sidebar-container"></div>
-            <div class="form-group">
-                <label class="form-control-label"><i class="fas fa-cogs"></i>
-                    自定义</label>
-                <textarea name="custom"
-                          id="custom"
-                          class="form-control"
-                          placeholder="自定义Front-Matter"></textarea>
+                <h3 class="mt-3">文章参数</h3>
+                <hr class="my-2"/>
+                <div id="sidebar-container"></div>
+                <div class="form-group">
+                    <label class="form-control-label"><i class="fas fa-cogs"></i>
+                        自定义</label>
+                    <textarea name="custom"
+                              id="custom"
+                              class="form-control"
+                              placeholder="自定义Front-Matter"></textarea>
+                </div>
             </div>
         </div>
     </div>
@@ -608,7 +609,8 @@
             for (let i = 0; i < OrgSidebar.length; i++) {
                 if (OrgSidebar[i]["search"] === "tags") {
                     html += `<div class="form-group">
-                        <label class="form-control-label"><i class="fas fa-tag"></i> 标签</label>
+                        <label class="form-control-label"><i class="` + OrgSidebar[i]["icon"]
+                        + `"></i> ` + OrgSidebar[i]["name"] + `</label>
                         <div class="input-group">
                             <input type="text" name="qexo-tag"
                                    class="form-control"
@@ -627,8 +629,8 @@
                     ifTag = true;
                 } else if (OrgSidebar[i]["search"] === "categories") {
                     html += `<div class="form-group">
-                        <label class="form-control-label"><i class="fas fa-folder-open"></i>
-                            分类</label>
+                        <label class="form-control-label"><i class="` + OrgSidebar[i]["icon"]
+                        + `"></i> ` + OrgSidebar[i]["name"] + `</label>
                         <div class="input-group">
                             <input type="text" name="qexo-category"
                                    class="form-control"

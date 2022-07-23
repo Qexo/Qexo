@@ -43,4 +43,7 @@ class Ftp(Provider):
             .replace("{extName}", file.name.split(".")[-1])
         bufsize = 1024
         ftp.storbinary('STOR ' + path, file, bufsize)
-        return self.prev_url + path
+        return self.prev_url.replace("{year}", str(now.year)).replace("{month}", str(now.month)).replace("{day}",
+                                                                                                         str(now.day)) \
+            .replace("{filename}", file.name[0:-len(file.name.split(".")[-1]) - 1]).replace("{time}", str(time())) \
+            .replace("{extName}", file.name.split(".")[-1])

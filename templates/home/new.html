@@ -32,28 +32,67 @@
 
     <!-- Page content -->
     <div class="container-fluid mt--6">
-        <div class="row">
-            <div class="card col-md-8 px-0 ml-md-4" id="vditor-container">
-                <div id="vditor"></div>
-            </div>
-            <div class="card col-md-3 ml-md-4">
-                <a class="text-right position-absolute col-11 mt-3" style="cursor: pointer;
+    <div class="row">
+        <div class="card col-md-8 px-0 ml-md-4" id="vditor-container">
+            <div id="vditor"></div>
+        </div>
+        <div class="card col-md-3 ml-md-4">
+            <a class="text-right position-absolute col-11 mt-3" style="cursor: pointer;
                 color: #172b4d"
-                   href="javascript:editSide()"><i class="fas
+               href="javascript:editSide()"><i class="fas
                    fa-pen"></i></a>
-                <h3 class="mt-3">文章参数</h3>
-                <hr class="my-2"/>
-                <div id="sidebar-container"></div>
-                <div class="form-group">
-                    <label class="form-control-label"><i class="fas fa-cogs"></i>
-                        自定义</label>
-                    <textarea name="custom"
-                              id="custom"
-                              class="form-control"
-                              placeholder="自定义Front-Matter"></textarea>
+            <h3 class="mt-3">文章参数</h3>
+            <hr class="my-2"/>
+            <div id="sidebar-container"></div>
+            <div class="form-group">
+                <label class="form-control-label"><i class="fas fa-cogs"></i>
+                    自定义</label>
+                <textarea name="custom"
+                          id="custom"
+                          class="form-control"
+                          placeholder="自定义Front-Matter"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="sidebarEditModal" tabindex="-1"
+         aria-labelledby="sidebarModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="sidebarEditModalLabel">编辑侧边栏</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="side-form" onsubmit="return false;">
+                        <div class="form-row">
+                            <div class="col-2">
+                                <label class="form-control-label">搜索项</label>
+                            </div>
+                            <div class="col-4">
+                                <label class="form-control-label">描述</label>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-control-label">图标</label>
+                            </div>
+                        </div>
+                        <div id="side-form-container"></div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消
+                    </button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal"
+                            onclick="applySide()">确定
+                    </button>
                 </div>
             </div>
         </div>
+        {% include "includes/footer.html" %}
+    </div>
 
 {% endblock content %}
 
@@ -67,11 +106,20 @@
         var _status = true, front_matter = {{ front_matter|safe }}, categories, rags;
         var file_content = "";
 
-        $("#updated").val(getTimeFormat());
-
         $.ajaxSetup({
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
         });
+
+        function set_vditor_size() {
+            let height = $("#vditor-container").height();
+            if (height < document.documentElement.clientHeight - 25) {
+                height = document.documentElement.clientHeight - 25;
+            }
+            $("#vditor").css({
+                "height": height + "px", "width":
+                    "auto"
+            });
+        }
 
         function getTimeFormat() {
             let date = new Date();
@@ -313,7 +361,7 @@
                 "fullscreen": {
                     "index": 1050,
                 },
-                "height": $("#vditor-container").height()+25,
+                "height": $("#vditor-container").height(),
                 "cache": {
                     "enable": false
                 },
@@ -373,6 +421,7 @@
                 return '确定要离开吗?';
             }
         }
+
 
         var OrgSidebar = {{ sidebar|safe }};
         var Sidebar = [...OrgSidebar];
@@ -484,10 +533,11 @@
                     + `</span>`;
             }
             $("#tag-container").html(html);
+            set_vditor_size();
         }
 
         function add_tag(name) {
-            if (name in tags) {
+            if (tags.includes(name)) {
                 notyf.error("标签已存在! ");
             } else {
                 tags.push(name);
@@ -501,7 +551,7 @@
                     tags.splice(i, 1);
                 }
             }
-            $("#tag").val(String(name));
+            $("#qexo-tag").val(String(name));
             show_tags();
         }
 
@@ -514,10 +564,11 @@
                             " onclick="del_category(this.innerText);">` + categories[i] + `</span>`;
             }
             $("#category-container").html(html);
+            set_vditor_size();
         }
 
         function add_category(name) {
-            if (name in categories) {
+            if (categories.includes(name)) {
                 notyf.error("分类已存在! ");
             } else {
                 categories.push(name);
@@ -559,14 +610,15 @@
                     html += `<div class="form-group">
                         <label class="form-control-label"><i class="fas fa-tag"></i> 标签</label>
                         <div class="input-group">
-                            <input type="text" name="tag"
+                            <input type="text" name="qexo-tag"
                                    class="form-control"
                                    placeholder="添加标签"
-                                   id="tag">
+                                   id="qexo-tag">
                             <div class="input-group-append">
                                 <button class="btn" type="button"
                                         style="border: 1px solid #dee2e6;border-radius: 0 .25rem .25rem 0;"
-                                        onclick="add_tag($('#tag').val());$('#tag').val('')">+
+                                        onclick="add_tag($('#qexo-tag').val());$('#qexo-tag').val
+                                        ('')">+
                                 </button>
                             </div>
                         </div>
@@ -578,14 +630,15 @@
                         <label class="form-control-label"><i class="fas fa-folder-open"></i>
                             分类</label>
                         <div class="input-group">
-                            <input type="text" name="category"
+                            <input type="text" name="qexo-category"
                                    class="form-control"
                                    placeholder="添加分类"
-                                   id="category">
+                                   id="qexo-category">
                             <div class="input-group-append">
                                 <button class="btn" type="button"
                                         style="border: 1px solid #dee2e6;border-radius: 0 .25rem .25rem 0;"
-                                        onclick="add_category($('#category').val());$('#category').val('')">
+                                        onclick="add_category($('#qexo-category').val());$
+                                        ('#qexo-ategory').val('')">
                                     +
                                 </button>
                             </div>
@@ -615,26 +668,22 @@
             if (ifTag) show_tags();
             if (ifCategory) show_categories();
             $("#custom").val(JSON.stringify(front));
-            $("#vditor").css({
-                "height": $("#vditor-container").height() + 25 + "px", "width":
-                    "auto"
-            });
+            set_vditor_size();
             // 监听分类、标签回车键
-            $('#tag').bind('keypress', function (event) {
+            $('#qexo-tag').bind('keypress', function (event) {
                 if (event.keyCode === 13) {
                     event.preventDefault();
-                    add_tag($('#tag').val());
-                    $('#tag').val('')
+                    add_tag($('#qexo-tag').val());
+                    $('#qexo-tag').val('')
                 }
             });
-            $('#category').bind('keypress', function (event) {
+            $('#qexo-category').bind('keypress', function (event) {
                 if (event.keyCode === 13) {
                     event.preventDefault();
-                    add_category($('#category').val());
-                    $('#category').val('')
+                    add_category($('#qexo-category').val());
+                    $('#qexo-category').val('')
                 }
             });
         }
-
     </script>
 {% endblock javascripts %}

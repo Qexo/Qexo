@@ -315,7 +315,7 @@ def pages(request):
             file_path = request.GET.get("file")
             context["front_matter"], context["file_content"] = get_post_details(
                 (Provider().get_content(file_path)))
-            context["json_front_matter"] = json.dumps(context["front_matter"])
+            context["front_matter"] = json.dumps(context["front_matter"])
             context['filename'] = file_path.split("/")[-2] + "/" + file_path.split("/")[-1]
             context["file_path"] = file_path
             context["emoji"] = get_setting("VDITOR_EMOJI")
@@ -350,7 +350,7 @@ def pages(request):
             try:
                 context["front_matter"], context["file_content"] = get_post_details(
                     (Provider().get_content("scaffolds/page.md")))
-                context["json_front_matter"] = json.dumps(context["front_matter"])
+                context["front_matter"] = json.dumps(context["front_matter"])
             except Exception as error:
                 context["error"] = repr(error)
             try:

@@ -35,50 +35,61 @@
                 <div id="vditor"></div>
             </div>
             <div class="card col-md-3 ml-md-4">
-                <h3 class="mt-3">文章参数</h3>
+                <a class="text-right position-absolute col-11 mt-3" style="cursor: pointer;
+                color: #172b4d"
+                   href="javascript:editSide()"><i class="fas
+                   fa-pen"></i></a>
+                <h3 class="mt-3">页面参数</h3>
                 <hr class="my-2"/>
+                <div id="sidebar-container"></div>
                 <div class="form-group">
-                    <label class="form-control-label"><i class="fas fa-heading"></i> 标题</label>
-                    <input type="text" name="title"
-                           class="form-control"
-                           placeholder="显示的文章题目"
-                           id="title"
-                           value="{{ front_matter.title }}">
-                </div>
-                <div class="form-group">
-                    <label class="form-control-label"><i class="fas fa-globe-americas"></i>
-                        发布于</label>
-                    <input type="text" name="date"
-                           class="form-control"
-                           id="date"
-                           placeholder="发布时间"
-                           value="{{ front_matter.date }}">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-control-label"><i class="fas fa-calendar-alt"></i>
-                        更新于</label>
-                    <input type="text" name="updated"
-                           class="form-control"
-                           id="updated"
-                           placeholder="更新时间"
-                           value="{{ front_matter.updated }}">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-control-label"><i class="fas fa-pencil-alt"></i>
+                    <label class="form-control-label"><i class="fas fa-cogs"></i>
                         自定义</label>
                     <textarea name="custom"
                               id="custom"
                               class="form-control"
-                              placeholder="自定义Front-Matter"
-                              style="height:300px"></textarea>
+                              placeholder="自定义Front-Matter"></textarea>
                 </div>
             </div>
         </div>
 
-        {% include "includes/footer.html" %}
-
+    <div class="modal fade" id="sidebarEditModal" tabindex="-1"
+         aria-labelledby="sidebarModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="sidebarEditModalLabel">编辑侧边栏</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="side-form" onsubmit="return false;">
+                        <div class="form-row">
+                            <div class="col-2">
+                                <label class="form-control-label">搜索项</label>
+                            </div>
+                            <div class="col-4">
+                                <label class="form-control-label">描述</label>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-control-label">图标</label>
+                            </div>
+                        </div>
+                        <div id="side-form-container"></div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消
+                    </button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal"
+                            onclick="applySide()">确定
+                    </button>
+                </div>
+            </div>
+        </div>
+    {% include "includes/footer.html" %}
     </div>
 
 {% endblock content %}
@@ -90,13 +101,23 @@
 
 
     <script>
-        var _status = true, front_matter = {{ json_front_matter|safe }};
+        var _status = true, front_matter = {{ front_matter|safe }};
         var file_content = "";
 
-        $("#updated").val(getTimeFormat());
         $.ajaxSetup({
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
         });
+
+        function set_vditor_size() {
+            let height = $("#vditor-container").height();
+            if (height < document.documentElement.clientHeight - 25) {
+                height = document.documentElement.clientHeight - 25;
+            }
+            $("#vditor").css({
+                "height": height + "px", "width":
+                    "auto"
+            });
+        }
 
         function getTimeFormat() {
             let date = new Date();
@@ -184,8 +205,9 @@
         //挂载到全局
         if (fIsMobile()) {
             window.vditor = new Vditor('vditor', {
-                after(d){
+                after(d) {
                     file_content = vditor.getValue();
+                    showSidebar(true);
                 },
                 toolbarConfig: {
                     pin: true
@@ -268,8 +290,9 @@
             })
         } else {
             window.vditor = new Vditor("vditor", {
-                after(d){
+                after(d) {
                     file_content = vditor.getValue();
+                    showSidebar(true);
                 },
                 // 获取焦点方法
                 focus(md) {
@@ -288,7 +311,7 @@
                 "fullscreen": {
                     "index": 1050,
                 },
-                "height": $("#vditor-container").height()+25,
+                "height": $("#vditor-container").height(),
                 "cache": {
                     "enable": false
                 },
@@ -338,20 +361,6 @@
                 },
             });
         }
-
-        delete front_matter["title"];
-        delete front_matter["date"];
-        delete front_matter["updated"];
-        $("#custom").val(JSON.stringify(front_matter));
-
-        function get_front_matter() {
-            let custom = JSON.parse($("#custom").val());
-            custom["title"] = $("#title").val();
-            custom["date"] = $("#date").val();
-            custom["updated"] = $("#updated").val();
-            return custom;
-        }
-
         window.onbeforeunload = function (e) {
             e = e || window.event;
             if (e && file_content !== vditor.getValue()) {
@@ -360,20 +369,130 @@
             }
         }
 
-        // 监听分类、标签回车键
-        $('#tag').bind('keypress', function (event) {
-            if (event.keyCode === 13) {
-                event.preventDefault();
-                add_tag($('#tag').val());
-                $('#tag').val('')
+        var OrgSidebar = {{ sidebar|safe }};
+        var Sidebar = [...OrgSidebar];
+
+        function showEditSide() {
+            let html = "";
+            if (!Sidebar.length) {
+                Sidebar = [{"search": "", "name": "", "icon": ""}];
             }
-        });
-        $('#category').bind('keypress', function (event) {
-            if (event.keyCode === 13) {
-                event.preventDefault();
-                add_category($('#category').val());
-                $('#category').val('')
+            for (let i = 0; i < Sidebar.length; i++) {
+                html += `<div class="form-row">
+                                <div class="col-2">
+                                    <input type="text" class="form-control"
+                                           placeholder="冒号前的内容" value="` + Sidebar[i].search +
+                    `">
+                                </div>
+                                <div class="col-4">
+                                    <input type="text" class="form-control"
+                                           placeholder="描述标题" value="` + Sidebar[i].name + `">
+                                </div>
+                                <div class="col-6">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control"
+                                               placeholder="使用的图标"  value="` + Sidebar[i].icon + `">
+                                        <div class="input-group-append">
+                                            <button class="btn" type="button"
+                                                    style="border: 1px solid #dee2e6"
+                                                    onclick="newSideItem(` + (i + 1).toString() + `)">
+                                                +
+                                            </button>
+                                            <button class="btn" type="button"
+                                                    style="border: 1px solid #dee2e6;border-radius: 0 .25rem .25rem 0"
+                                                    onclick="delSideItem(` + i + `)">
+                                                -
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>`;
             }
-        });
+            $("#side-form-container").html(html);
+        }
+
+        function editSide() {
+            Sidebar = [...OrgSidebar];  // 拷贝数组
+            showEditSide();
+            $('#sidebarEditModal').modal('show');
+        }
+
+        function newSideItem(i) {
+            Sidebar.splice(i, 0, {"search": "", "name": "", "icon": ""});
+            showEditSide();
+        }
+
+        function delSideItem(i) {
+            Sidebar.splice(i, 1);
+            showEditSide();
+        }
+
+        function applySide() {
+            for (let i = 0; i < Sidebar.length; i++) {
+                if (Sidebar[i].search === "") {
+                    Sidebar.splice(i, 1);
+                    i--;
+                }
+            }
+            let loading = new KZ_Loading('边栏保存中...');
+            loading.show();
+            $.ajax({
+                url: '/api/set_sidebar/',
+                method: 'post',
+                data: {
+                    "type": "page", "content": JSON.stringify(Sidebar)
+                },
+                dataType: 'JSON',
+                success: function (res) {
+                    loading.destroy();
+                    if (res.status) {
+                        notyf.success('保存成功！');
+                        showSidebar();
+                    } else {
+                        notyf.error('保存失败！');
+                    }
+                },
+                error: function (res) {
+                    loading.destroy();
+                    notyf.error("网络错误！");
+                }
+            })
+        }
+
+        function get_front_matter() {
+            let custom = JSON.parse($("#custom").val());
+            for (let i = 0; i < OrgSidebar.length; i++) {
+                custom[OrgSidebar[i]["search"]] = $("#" + OrgSidebar[i]["search"]).val();
+            }
+            return custom;
+        }
+
+        function showSidebar(first = false) {
+            let html = "", content, front = front_matter;
+            if (!first) {
+                front = get_front_matter();
+                OrgSidebar = [...Sidebar];
+            }
+            for (let i = 0; i < OrgSidebar.length; i++) {
+                if (OrgSidebar[i]["search"] === "updated") {
+                    content = getTimeFormat();
+                } else if (front[OrgSidebar[i]["search"]]) {
+                    content = front[OrgSidebar[i]["search"]];
+                } else content = "";
+                html += `<div class="form-group">
+                        <label class="form-control-label"><i class="` + OrgSidebar[i]["icon"]
+                    + `"></i> ` + OrgSidebar[i]["name"] + `</label>
+                        <input type="text" name="title"
+                               class="form-control"
+                               placeholder="` + OrgSidebar[i]["name"] + `"
+                               id="` + OrgSidebar[i]["search"] + `"
+                               value="` + content + `">
+                    </div>`;
+                delete front[OrgSidebar[i]["search"]];
+            }
+            $("#sidebar-container").html(html);
+            $("#custom").val(JSON.stringify(front));
+            set_vditor_size();
+        }
     </script>
 {% endblock javascripts %}

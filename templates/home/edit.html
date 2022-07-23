@@ -421,10 +421,10 @@
                 Sidebar = [{"search": "", "name": "", "icon": ""}];
             }
             for (let i = 0; i < Sidebar.length; i++) {
-                html += `<form class="form-row" id="side-row-`+ i +`">
+                html += `<form class="form-row" id="side-row-` + i + `">
                                 <div class="col-2">
                                     <input type="text" class="form-control" name="search"
-                                           placeholder="冒号前的内容" value="` + Sidebar[i].search +`">
+                                           placeholder="冒号前的内容" value="` + Sidebar[i].search + `">
                                 </div>
                                 <div class="col-4">
                                     <input type="text" class="form-control" name="name"
@@ -655,6 +655,7 @@
                     } else if (front[OrgSidebar[i]["search"]]) {
                         content = front[OrgSidebar[i]["search"]];
                     } else content = "";
+                    content = (typeof content) === "object" ? JSON.stringify(content).replaceAll("\"", "&quot;") : content.toString().replaceAll("\"", "&quot;")
                     html += `<div class="form-group">
                         <label class="form-control-label"><i class="` + OrgSidebar[i]["icon"]
                         + `"></i> ` + OrgSidebar[i]["name"] + `</label>
@@ -662,8 +663,7 @@
                                class="form-control"
                                placeholder="` + OrgSidebar[i]["name"] + `"
                                id="` + OrgSidebar[i]["search"] + `"
-                               value='` + JSON.stringify(content) + `'>
-                    </div>`;
+                               value="` + content + `"></div>`;
                 }
                 delete front[OrgSidebar[i]["search"]];
             }

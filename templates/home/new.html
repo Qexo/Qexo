@@ -670,6 +670,7 @@
                     } else if (front[OrgSidebar[i]["search"]]) {
                         content = front[OrgSidebar[i]["search"]];
                     } else content = "";
+                    content = (typeof content) === "object" ? JSON.stringify(content).replaceAll("\"", "&quot;") : content.toString().replaceAll("\"", "&quot;")
                     html += `<div class="form-group">
                         <label class="form-control-label"><i class="` + OrgSidebar[i]["icon"]
                         + `"></i> ` + OrgSidebar[i]["name"] + `</label>
@@ -677,8 +678,7 @@
                                class="form-control"
                                placeholder="` + OrgSidebar[i]["name"] + `"
                                id="` + OrgSidebar[i]["search"] + `"
-                               value='` + JSON.stringify(content) + `'>
-                    </div>`;
+                               value="` + content + `"></div>`;
                 }
                 delete front[OrgSidebar[i]["search"]];
             }

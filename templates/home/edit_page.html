@@ -503,7 +503,7 @@
                                class="form-control"
                                placeholder="` + OrgSidebar[i]["name"] + `"
                                id="` + OrgSidebar[i]["search"] + `"
-                               value="` + content + `">
+                               value='` + JSON.stringify(content) + `'>
                     </div>`;
                 delete front[OrgSidebar[i]["search"]];
             }

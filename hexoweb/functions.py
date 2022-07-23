@@ -6,7 +6,7 @@ from core.QexoSettings import QEXO_VERSION
 from .models import Cache, SettingModel, FriendModel, NotificationModel, CustomModel, StatisticUV, StatisticPV
 import github
 import json
-from urllib.parse import quote
+from urllib.parse import quote, unquote
 from datetime import timezone, timedelta, date, datetime
 from time import time
 from hashlib import md5
@@ -28,28 +28,6 @@ import re
 import shutil
 
 disable_warnings()
-
-print(" ......................阿弥陀佛......................\n" +
-      "                       _oo0oo_                      \n" +
-      "                      o8888888o                     \n" +
-      "                      88\" . \"88                     \n" +
-      "                      (| -_- |)                     \n" +
-      "                      0\\  =  /0                     \n" +
-      "                   ___/‘---’\\___                   \n" +
-      "                  .' \\|       |/ '.                 \n" +
-      "                 / \\\\|||  :  |||// \\                \n" +
-      "                / _||||| -卍-|||||_ \\               \n" +
-      "               |   | \\\\\\  -  /// |   |              \n" +
-      "               | \\_|  ''\\---/''  |_/ |              \n" +
-      "               \\  .-\\__  '-'  ___/-. /              \n" +
-      "             ___'. .'  /--.--\\  '. .'___            \n" +
-      "         .\"\" ‘<  ‘.___\\_<|>_/___.’>’ \"\".          \n" +
-      "       | | :  ‘- \\‘.;‘\\ _ /’;.’/ - ’ : | |        \n" +
-      "         \\  \\ ‘_.   \\_ __\\ /__ _/   .-’ /  /        \n" +
-      "    =====‘-.____‘.___ \\_____/___.-’___.-’=====     \n" +
-      "                       ‘=---=’                      \n" +
-      "                                                    \n" +
-      "....................佛祖保佑 ,永无BUG...................")
 
 
 def get_setting(name):
@@ -685,3 +663,35 @@ def get_post_details(article):
     passage = repr(re.search(r"[;-][;-][;-]([\s\S]*)", article[3:], flags=0).group()[3:]).replace("<", "\\<").replace(">", "\\>").replace(
         "!", "\\!")
     return front_matter, passage
+
+
+print(" ......................阿弥陀佛......................\n" +
+      "                       _oo0oo_                      \n" +
+      "                      o8888888o                     \n" +
+      "                      88\" . \"88                     \n" +
+      "                      (| -_- |)                     \n" +
+      "                      0\\  =  /0                     \n" +
+      "                   ___/‘---’\\___                   \n" +
+      "                  .' \\|       |/ '.                 \n" +
+      "                 / \\\\|||  :  |||// \\                \n" +
+      "                / _||||| -卍-|||||_ \\               \n" +
+      "               |   | \\\\\\  -  /// |   |              \n" +
+      "               | \\_|  ''\\---/''  |_/ |              \n" +
+      "               \\  .-\\__  '-'  ___/-. /              \n" +
+      "             ___'. .'  /--.--\\  '. .'___            \n" +
+      "         .\"\" ‘<  ‘.___\\_<|>_/___.’>’ \"\".          \n" +
+      "       | | :  ‘- \\‘.;‘\\ _ /’;.’/ - ’ : | |        \n" +
+      "         \\  \\ ‘_.   \\_ __\\ /__ _/   .-’ /  /        \n" +
+      "    =====‘-.____‘.___ \\_____/___.-’___.-’=====     \n" +
+      "                       ‘=---=’                      \n" +
+      "                                                    \n" +
+      "....................佛祖保佑 ,永无BUG...................")
+
+print("           _               _ \n" +
+      "     /\\   | |             | |\n" +
+      "    /  \\  | |__  _   _  __| |_   _ \n" +
+      "   / /\\ \\ | |_ \\| | | |/ _| | | | |\n" +
+      "  / ____ \\| |_) | |_| | (_| | |_| |\n" +
+      " /_/    \\_\\_.__/ \\__,_|\\__,_|\\__,_|")
+
+print("当前环境: " + ("Vercel" if check_if_vercel() else "本地"))

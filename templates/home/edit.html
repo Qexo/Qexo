@@ -66,7 +66,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="side-form" onsubmit="return false;">
+                    <div id="side-form" onsubmit="return false;">
                         <div class="form-row">
                             <div class="col-2">
                                 <label class="form-control-label">搜索项</label>
@@ -79,7 +79,7 @@
                             </div>
                         </div>
                         <div id="side-form-container"></div>
-                    </form>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">取消
@@ -421,19 +421,18 @@
                 Sidebar = [{"search": "", "name": "", "icon": ""}];
             }
             for (let i = 0; i < Sidebar.length; i++) {
-                html += `<div class="form-row">
+                html += `<form class="form-row" id="side-row-`+ i +`">
                                 <div class="col-2">
-                                    <input type="text" class="form-control"
-                                           placeholder="冒号前的内容" value="` + Sidebar[i].search +
-                    `">
+                                    <input type="text" class="form-control" name="search"
+                                           placeholder="冒号前的内容" value="` + Sidebar[i].search +`">
                                 </div>
                                 <div class="col-4">
-                                    <input type="text" class="form-control"
+                                    <input type="text" class="form-control" name="name"
                                            placeholder="描述标题" value="` + Sidebar[i].name + `">
                                 </div>
                                 <div class="col-6">
                                     <div class="input-group">
-                                        <input type="text" class="form-control"
+                                        <input type="text" class="form-control" name="icon"
                                                placeholder="使用的图标"  value="` + Sidebar[i].icon + `">
                                         <div class="input-group-append">
                                             <button class="btn" type="button"
@@ -449,7 +448,7 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>`;
+                            </form>`;
             }
             $("#side-form-container").html(html);
         }
@@ -461,16 +460,30 @@
         }
 
         function newSideItem(i) {
+            saveSideItems();
             Sidebar.splice(i, 0, {"search": "", "name": "", "icon": ""});
             showEditSide();
         }
 
+        function saveSideItems() {
+            let tmp;
+            for (let i = 0; i < Sidebar.length; i++) {
+                tmp = $("#side-row-" + i).serializeArray();
+                for (let j = 0; j < tmp.length; j++) {
+                    Sidebar[i][tmp[j].name] = tmp[j].value;
+                }
+            }
+            return Sidebar;
+        }
+
         function delSideItem(i) {
+            saveSideItems();
             Sidebar.splice(i, 1);
             showEditSide();
         }
 
         function applySide() {
+            saveSideItems();
             for (let i = 0; i < Sidebar.length; i++) {
                 if (Sidebar[i].search === "") {
                     Sidebar.splice(i, 1);

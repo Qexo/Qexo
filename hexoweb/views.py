@@ -31,7 +31,7 @@ def login_view(request):
         if not request.GET.get("next"):
             return redirect("/")
         else:
-            return redirect(request.GET.get("next"))
+            return redirect(unquote(request.GET.get("next")))
     context = get_custom_config()
     site_token = get_setting("LOGIN_RECAPTCHA_SITE_TOKEN")
     server_token = get_setting("LOGIN_RECAPTCHA_SERVER_TOKEN")

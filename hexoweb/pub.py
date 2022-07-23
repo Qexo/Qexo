@@ -366,7 +366,7 @@ def get_custom(request):
 
 
 # 编辑自定义字段 pub/set_custom
-@login_required(login_url="/login/")
+@csrf_exempt
 def set_custom(request):
     if not check_if_api_auth(request):
         return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
@@ -380,7 +380,7 @@ def set_custom(request):
 
 
 # 删除自定义的字段 pub/del_custom
-@login_required(login_url="/login/")
+@csrf_exempt
 def del_custom(request):
     if not check_if_api_auth(request):
         return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
@@ -394,7 +394,7 @@ def del_custom(request):
 
 
 # 新建自定义的字段 pub/new_custom
-@login_required(login_url="/login/")
+@csrf_exempt
 def new_custom(request):
     if not check_if_api_auth(request):
         return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",

@@ -365,6 +365,48 @@ def get_custom(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 编辑自定义字段 pub/set_custom
+@csrf_exempt
+def set_custom(request):
+    if not check_if_api_auth(request):
+        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
+                                                                         "status": False})})
+    try:
+        save_custom(request.POST.get("name"), request.POST.get("content"))
+        context = {"msg": "保存成功!", "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 删除自定义的字段 pub/del_custom
+@csrf_exempt
+def del_custom(request):
+    if not check_if_api_auth(request):
+        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
+                                                                         "status": False})})
+    try:
+        CustomModel.objects.filter(name=request.POST.get("name")).delete()
+        context = {"msg": "删除成功!", "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 新建自定义的字段 pub/new_custom
+@csrf_exempt
+def new_custom(request):
+    if not check_if_api_auth(request):
+        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
+                                                                         "status": False})})
+    try:
+        save_custom(request.POST.get("name"), request.POST.get("content"))
+        context = {"msg": "保存成功!", "status": True}
+    except Exception as e:
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
 # 获取全部消息 pub/get_notifications
 @csrf_exempt
 def get_notifications(request):

@@ -79,6 +79,9 @@ urlpatterns = [
     path('pub/status/', pub.status, name='pub_status'),
     path('pub/statistic/', pub.statistic, name='pub_statistic'),
     path('pub/waline/', pub.waline, name='pub_waline'),
+    path('pub/set_custom/', pub.set_custom, name='pub_set_custom'),
+    path('pub/del_custom/', pub.del_custom, name='pub_del_custom'),
+    path('pub/new_custom/', pub.new_custom, name='pub_new_custom'),
 
     re_path(r'^(?!api)^(?!pub).*$\.*', pages, name='pages'),
 ]

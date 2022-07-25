@@ -1,15 +1,15 @@
 from hexoweb.views import *
 from django.urls import path, re_path
 # from django.contrib import admin
-from django.views.static import serve
-from django.conf import settings
+# from django.views.static import serve
+# from django.conf import settings
 import hexoweb.pub as pub
 from django.views.generic import TemplateView
 
 urlpatterns = [
     # path('admin/', admin.site.urls),
-    re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT},
-            name='static'),
+    # re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT},
+    #         name='static'),
 
     path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain')),
 

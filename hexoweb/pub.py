@@ -1,11 +1,13 @@
-from .functions import *
-from django.views.decorators.csrf import csrf_exempt
 import random
-from .models import ImageModel
-from django.shortcuts import render
 from time import strftime, localtime
 from time import time
+
 from django.http.response import HttpResponseForbidden
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
+
+from .functions import *
+from .models import ImageModel
 
 
 # 保存内容 pub/save
@@ -323,14 +325,16 @@ def ask_friend(request):
         typ = get_setting("FRIEND_RECAPTCHA")
         if typ == "v3":
             if verify:
-                captcha = requests.get("https://recaptcha.net/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
+                captcha = requests.get(
+                    "https://recaptcha.net/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
                 if captcha["score"] <= 0.5:
                     return {"msg": "人机验证失败！", "status": False}
             else:
                 return {"msg": "人机验证失败！", "status": False}
         if typ == "v2":
             if verify:
-                captcha = requests.get("https://recaptcha.net/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
+                captcha = requests.get(
+                    "https://recaptcha.net/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
                 if not captcha["success"]:
                     return {"msg": "人机验证失败！", "status": False}
             else:
@@ -345,7 +349,8 @@ def ask_friend(request):
         friend.status = False
         friend.save()
         CreateNotification("友链申请 " + friend.name,
-                           "站点名: {}\n链接: {}\n图片: {}\n简介: {}\n".format(friend.name, friend.url, friend.imageUrl, friend.description), time())
+                           "站点名: {}\n链接: {}\n图片: {}\n简介: {}\n".format(friend.name, friend.url, friend.imageUrl,
+                                                                      friend.description), time())
         context = {"msg": "申请成功！", "time": friend.time, "status": True}
     except Exception as error:
         context = {"msg": repr(error), "status": False}
@@ -357,7 +362,8 @@ def ask_friend(request):
 def get_custom(request):
     try:
         context = {
-            "data": CustomModel.objects.get(name=request.GET.get("key") if request.GET.get("key") else request.POST.get("key")).content,
+            "data": CustomModel.objects.get(
+                name=request.GET.get("key") if request.GET.get("key") else request.POST.get("key")).content,
             "status": True
         }
     except Exception as error:
@@ -479,18 +485,21 @@ def statistic(request):
             site_pv.url = domain
             site_pv.number = 1
             site_pv.save()
-        ip = request.META['HTTP_X_FORWARDED_FOR'] if 'HTTP_X_FORWARDED_FOR' in request.META.keys() else request.META['REMOTE_ADDR']
+        ip = request.META['HTTP_X_FORWARDED_FOR'] if 'HTTP_X_FORWARDED_FOR' in request.META.keys() else request.META[
+            'REMOTE_ADDR']
         uv = StatisticUV.objects.filter(ip=ip)
         if uv.count() >= 1:
             data = json.dumps(
-                {"site_pv": site_pv.number, "page_pv": pv.number, "site_uv": StatisticUV.objects.all().count(), "status": True})
+                {"site_pv": site_pv.number, "page_pv": pv.number, "site_uv": StatisticUV.objects.all().count(),
+                 "status": True})
             return render(request, 'layouts/json.html', {"data": data})
         uv = StatisticUV()
         uv.ip = ip
         uv.save()
         print("Register uv: " + ip)
         data = json.dumps(
-            {"site_pv": site_pv.number, "page_pv": pv.number, "site_uv": StatisticUV.objects.all().count(), "status": True})
+            {"site_pv": site_pv.number, "page_pv": pv.number, "site_uv": StatisticUV.objects.all().count(),
+             "status": True})
         return render(request, 'layouts/json.html', {"data": data})
     except Exception as e:
         print(repr(e))
@@ -509,9 +518,29 @@ def waline(request):
             msg = "评论者: {}\n邮箱: {}\n".format(comment["nick"], comment["mail"])
             if comment.get("link"):
                 msg += "网址: {}\n".format(comment["link"])
-            msg += "内容: {}\nIP: {}\n时间: {}\n地址: {}\n状态: {}\nUA: {}".format(comment["comment"], comment["ip"], comment["insertedAt"],
-                                                                           comment["url"], comment["status"], comment["ua"])
+            msg += "内容: {}\nIP: {}\n时间: {}\n地址: {}\n状态: {}\nUA: {}".format(comment["comment"], comment["ip"],
+                                                                           comment["insertedAt"],
+                                                                           comment["url"], comment["status"],
+                                                                           comment["ua"])
             CreateNotification("Waline评论通知", msg, time())
     except Exception as error:
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 自定义通知api pub/notifications
+@csrf_exempt
+def notifications(request):
+    if not check_if_api_auth(request):
+        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！", "status": False})})
+
+    try:
+        data = json.loads(request.body.decode())
+        content = data.get('content')
+        title = data.get('title')
+        CreateNotification(title, content, time())
+        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "添加成功！", "status": True})})
+    except Exception as error:
+        print(error)
+        context = {"msg": repr(error), "status": False}
+        return render(request, 'layouts/json.html', {"data": json.dumps(context)})

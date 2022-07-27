@@ -728,6 +728,9 @@ def import_settings(ss):
 
 
 def import_images(ss):
+    _all = ImageModel.objects.all()
+    for i in _all:
+        i.delete()
     for s in ss:
         image = ImageModel()
         image.name = s["name"]
@@ -740,6 +743,9 @@ def import_images(ss):
 
 
 def import_friends(ss):
+    _all = FriendModel.objects.all()
+    for i in _all:
+        i.delete()
     for s in ss:
         friend = FriendModel()
         friend.name = s["name"]
@@ -753,6 +759,9 @@ def import_friends(ss):
 
 
 def import_notifications(ss):
+    _all = NotificationModel.objects.all()
+    for i in _all:
+        i.delete()
     for s in ss:
         notification = NotificationModel()
         notification.time = s["time"]
@@ -763,6 +772,9 @@ def import_notifications(ss):
 
 
 def import_customs(ss):
+    _all = CustomModel.objects.all()
+    for i in _all:
+        i.delete()
     for s in ss:
         custom = CustomModel()
         custom.name = s["name"]
@@ -772,6 +784,9 @@ def import_customs(ss):
 
 
 def import_uv(ss):
+    _all = StatisticUV.objects.all()
+    for i in _all:
+        i.delete()
     for s in ss:
         uv = StatisticUV()
         uv.ip = s["ip"]
@@ -780,6 +795,9 @@ def import_uv(ss):
 
 
 def import_pv(ss):
+    _all = StatisticPV.objects.all()
+    for i in _all:
+        i.delete()
     for s in ss:
         pv = StatisticPV()
         pv.url = s["url"]

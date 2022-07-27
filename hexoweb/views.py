@@ -248,39 +248,50 @@ def logout_view(request):
 
 @login_required(login_url='/login/')
 def migrate_view(request):
-    context = get_custom_config()
+    context = {}
     try:
         if request.method == "POST":
-            if request.POST.get("type") == "export":
-                exports = dict()
-                exports["settings"] = export_settings()
-                exports["images"] = export_images()
-                exports["friends"] = export_friends()
-                exports["notifications"] = export_notifications()
-                exports["custom"] = export_customs()
-                exports["uv"] = export_uv()
-                exports["pv"] = export_pv()
-                html_template = loader.get_template('layouts/json.html')
-                response = HttpResponse(html_template.render({"data": json.dumps(exports)}, request))
-                response['Content-Type'] = 'application/octet-stream'
-                response['Content-Disposition'] = 'attachment;filename="qexo-export.json"'
-                return response
-            elif request.POST.get("type") == "import":
-                file = request.FILES.get("import-file", None)
-                if file:
-                    data = json.loads(file.read())
-                    import_settings(data["settings"])
-                    import_images(data["images"])
-                    import_friends(data["friends"])
-                    import_notifications(data["notifications"])
-                    import_customs(data["custom"])
-                    import_uv(data["uv"])
-                    import_pv(data["pv"])
-                    delete_all_caches()
-                    update_provider()
-                    return redirect("/")
-                else:
-                    context["error"] = "请选择文件"
+            try:
+                if request.POST.get("type") == "export":
+                    exports = dict()
+                    exports["settings"] = export_settings()
+                    exports["images"] = export_images()
+                    exports["friends"] = export_friends()
+                    exports["notifications"] = export_notifications()
+                    exports["custom"] = export_customs()
+                    exports["uv"] = export_uv()
+                    exports["pv"] = export_pv()
+                    html_template = loader.get_template('layouts/json.html')
+                    response = HttpResponse(html_template.render({"data": json.dumps(exports)}, request))
+                    response['Content-Type'] = 'application/octet-stream'
+                    response['Content-Disposition'] = 'attachment;filename="qexo-export.json"'
+                    return response
+                elif request.POST.get("type") == "import_settings":
+                    import_settings(json.loads(request.POST.get("data")))
+                    context["msg"] = "配置迁移完成！"
+                elif request.POST.get("type") == "import_images":
+                    import_images(json.loads(request.POST.get("data")))
+                    context["msg"] = "图片迁移完成！"
+                elif request.POST.get("type") == "import_friends":
+                    import_friends(json.loads(request.POST.get("data")))
+                    context["msg"] = "友链迁移完成！"
+                elif request.POST.get("type") == "import_notifications":
+                    import_notifications(json.loads(request.POST.get("data")))
+                    context["msg"] = "通知迁移完成！"
+                elif request.POST.get("type") == "import_custom":
+                    import_custom(json.loads(request.POST.get("data")))
+                    context["msg"] = "自定义字段迁移完成！"
+                elif request.POST.get("type") == "import_uv":
+                    import_uv(json.loads(request.POST.get("data")))
+                    context["msg"] = "UV统计迁移完成！"
+                elif request.POST.get("type") == "import_pv":
+                    import_pv(json.loads(request.POST.get("data")))
+                    context["msg"] = "PV统计迁移完成！"
+            except Exception as error:
+                context["msg"] = request.POST.get("type") + "错误: " + repr(error)
+            return render(request, "layouts/json.html", {"data": json.dumps(context)})
+        else:
+            context = get_custom_config()
     except Exception as e:
         context["error"] = repr(e)
     return render(request, "accounts/migrate.html", context)

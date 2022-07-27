@@ -771,7 +771,7 @@ def import_notifications(ss):
     return True
 
 
-def import_customs(ss):
+def import_custom(ss):
     _all = CustomModel.objects.all()
     for i in _all:
         i.delete()

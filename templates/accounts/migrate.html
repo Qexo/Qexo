@@ -64,7 +64,6 @@
                                    name="import-file">
                             <label class="custom-file-label" for="customFile"></label>
                         </div>
-                        <button type="submit" id="submit-import-file" style="display:none">提交</button>
                     </form>
                 </div>
                 <div class="modal-footer" id="query-modal-footer">
@@ -87,6 +86,22 @@
                 </div>
                 <div class="modal-footer" id="query-modal2-footer">
                     <button class="btn btn-primary" onclick="final_import_qexo()">仍然继续</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="query3" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="queryLabel3">结果</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body text-center" id="query-modal3-body">
+                </div>
+                <div class="modal-footer" id="query-modal3-footer">
                 </div>
             </div>
         </div>
@@ -129,7 +144,46 @@
         }
 
         function final_import_qexo() {
-            $("#submit-import-file").click();
+            $("#query-modal3-body").html('');
+            $("#query2").modal("hide");
+            $("#query3").modal("show");
+            const reader = new FileReader();
+            reader.onload = function fileReadCompleted() {
+                let data = JSON.parse(reader.result);
+                $.when(import_type("import_settings", data["settings"]),
+                    import_type("import_images", data["images"]),
+                    import_type("import_friends", data["friends"]),
+                    import_type("import_notifications", data["notifications"]),
+                    import_type("import_custom", data["custom"]),
+                    import_type("import_uv", data["uv"]),
+                    import_type("import_pv", data["pv"]),).then(
+                    function () {
+                        let html = $("#query-modal3-body").html();
+                        html += "全部迁移完成!";
+                        $("#query-modal3-footer").html(`<button class="btn btn-primary" data-dismiss="modal">完成</button>`);
+                        $("#query-modal3-body").html(html);
+                    })
+
+            };
+            reader.readAsText($('#customFile')[0].files[0]);
+        }
+
+        function import_type(_type, data) {
+            return $.ajax({
+                url: '/migrate/',
+                method: 'post',
+                dataType: "json",
+                data: {
+                    type: _type,
+                    data: JSON.stringify(data),
+                    "csrfmiddlewaretoken": "{{ csrf_token }}"
+                },
+                complete: function (res) {
+                    let html = $("#query-modal3-body").html();
+                    html += res.responseJSON.msg + "<br>";
+                    $("#query-modal3-body").html(html);
+                }
+            })
         }
 
     </script>

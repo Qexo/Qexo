@@ -41,6 +41,16 @@
                         </div>
                     </div>
                 </div>
+                <div class="row mt-3">
+                    <div class="col-6">
+                        <a href="/" class="text-light"><small>主页</small></a>
+                    </div>
+                    <div class="col-6 text-right">
+                        <a target="_blank"
+                           href="https://github.com/Qexo/Qexo/wiki"
+                           class="text-light"><small>帮助</small></a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -183,11 +193,11 @@
                         let html = $("#query-modal3-body").html();
                         html += res.responseJSON.msg + "<br>";
                         $("#query-modal3-body").html(html);
-                    }
-                    else {
+                    } else {
                         let html = $("#query-modal3-body").html();
-                        html += _type+" 错误...跳过<br>";
+                        html += _type + " 错误...跳过<br>";
                         $("#query-modal3-body").html(html);
+                        $("#query-modal3-footer").html(`<button class="btn btn-primary" data-dismiss="modal">完成</button>`);
                     }
                 }
             })

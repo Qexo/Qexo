@@ -179,9 +179,16 @@
                     "csrfmiddlewaretoken": "{{ csrf_token }}"
                 },
                 complete: function (res) {
-                    let html = $("#query-modal3-body").html();
-                    html += res.responseJSON.msg + "<br>";
-                    $("#query-modal3-body").html(html);
+                    if (res.status === 200) {
+                        let html = $("#query-modal3-body").html();
+                        html += res.responseJSON.msg + "<br>";
+                        $("#query-modal3-body").html(html);
+                    }
+                    else {
+                        let html = $("#query-modal3-body").html();
+                        html += _type+" 错误...跳过<br>";
+                        $("#query-modal3-body").html(html);
+                    }
                 }
             })
         }

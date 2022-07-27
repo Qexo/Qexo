@@ -17,6 +17,7 @@ urlpatterns = [
     path("logout/", logout_view, name="logout"),
     path("init/", init_view, name="init"),
     path("update/", update_view, name="update"),
+    path('migrate/', migrate_view, name="migrate"),
     path('', index, name='home'),
 
     path('api/auth/', auth, name='auth'),

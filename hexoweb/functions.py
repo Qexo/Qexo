@@ -3,7 +3,7 @@ from core.QexoSettings import ALL_SETTINGS
 import requests
 from django.template.defaulttags import register
 from core.QexoSettings import QEXO_VERSION
-from .models import Cache, SettingModel, FriendModel, NotificationModel, CustomModel, StatisticUV, StatisticPV
+from .models import Cache, SettingModel, FriendModel, NotificationModel, CustomModel, StatisticUV, StatisticPV, ImageModel
 import github
 import json
 from urllib.parse import quote, unquote
@@ -663,6 +663,129 @@ def get_post_details(article):
     passage = repr(re.search(r"[;-][;-][;-]([\s\S]*)", article[3:], flags=0).group()[3:]).replace("<", "\\<").replace(">", "\\>").replace(
         "!", "\\!")
     return front_matter, passage
+
+
+def export_settings():
+    all_settings = SettingModel.objects.all()
+    settings = list()
+    for setting in all_settings:
+        settings.append({"name": setting.name, "content": setting.content})
+    return settings
+
+
+def export_images():
+    all_settings = ImageModel.objects.all()
+    settings = list()
+    for setting in all_settings:
+        settings.append({"name": setting.name, "url": setting.url, "size": setting.size, "date": setting.date, "type": setting.type})
+    return settings
+
+
+def export_friends():
+    all_ = FriendModel.objects.all()
+    ss = list()
+    for s in all_:
+        ss.append({"name": s.name, "url": s.url, "imageUrl": s.imageUrl, "time": s.time, "description": s.description, "status": s.status})
+    return ss
+
+
+def export_notifications():
+    all_ = NotificationModel.objects.all()
+    ss = list()
+    for s in all_:
+        ss.append({"time": s.time, "label": s.label, "content": s.content})
+    return ss
+
+
+def export_customs():
+    all_ = CustomModel.objects.all()
+    ss = list()
+    for s in all_:
+        ss.append({"name": s.name, "content": s.content})
+    return ss
+
+
+def export_uv():
+    all_ = StatisticUV.objects.all()
+    ss = list()
+    for s in all_:
+        ss.append({"ip": s.ip})
+    return ss
+
+
+def export_pv():
+    all_ = StatisticPV.objects.all()
+    ss = list()
+    for s in all_:
+        ss.append({"url": s.url, "number": s.number})
+    return ss
+
+
+def import_settings(ss):
+    for s in ss:
+        save_setting(s["name"], s["content"])
+    return True
+
+
+def import_images(ss):
+    for s in ss:
+        image = ImageModel()
+        image.name = s["name"]
+        image.url = s["url"]
+        image.size = s["size"]
+        image.date = s["date"]
+        image.type = s["type"]
+        image.save()
+    return True
+
+
+def import_friends(ss):
+    for s in ss:
+        friend = FriendModel()
+        friend.name = s["name"]
+        friend.url = s["url"]
+        friend.imageUrl = s["imageUrl"]
+        friend.time = s["time"]
+        friend.description = s["description"]
+        friend.status = s["status"]
+        friend.save()
+    return True
+
+
+def import_notifications(ss):
+    for s in ss:
+        notification = NotificationModel()
+        notification.time = s["time"]
+        notification.label = s["label"]
+        notification.content = s["content"]
+        notification.save()
+    return True
+
+
+def import_customs(ss):
+    for s in ss:
+        custom = CustomModel()
+        custom.name = s["name"]
+        custom.content = s["content"]
+        custom.save()
+    return True
+
+
+def import_uv(ss):
+    for s in ss:
+        uv = StatisticUV()
+        uv.ip = s["ip"]
+        uv.save()
+    return True
+
+
+def import_pv(ss):
+    for s in ss:
+        pv = StatisticPV()
+        pv.url = s["url"]
+        pv.number = s["number"]
+        pv.save()
+    return True
 
 
 # print(" ......................阿弥陀佛......................\n" +

@@ -7,7 +7,6 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
 from .functions import *
-from .models import ImageModel
 
 
 # 登录验证 API api/auth

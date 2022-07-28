@@ -24,8 +24,10 @@ def page_500(request):
 def login_view(request):
     try:
         if int(get_setting("INIT")) <= 5:
+            print("未完成初始化配置, 转跳到初始化页面")
             return redirect("/init/")
     except:
+        print("未检测到初始化配置, 转跳到初始化页面")
         return redirect("/init/")
     if request.user.is_authenticated:
         if not request.GET.get("next"):
@@ -44,8 +46,10 @@ def login_view(request):
 def update_view(request):
     try:
         if int(get_setting("INIT")) <= 5:
+            print("未完成初始化配置, 转跳到初始化页面")
             return redirect("/init/")
     except:
+        print("未检测到初始化配置, 转跳到初始化页面")
         return redirect("/init/")
     if request.method == 'POST':
         for setting in request.POST.keys():
@@ -137,6 +141,7 @@ def init_view(request):
                     save_setting("INIT", "3")
                     step = "3"
             except Exception as e:
+                print("初始化用户名密码错误:" + repr(e))
                 msg = repr(e)
                 context["username"] = username
                 context["password"] = password
@@ -211,7 +216,7 @@ def init_view(request):
                     save_setting("INIT", step)
             except Exception as e:
                 msg = repr(e)
-                print(msg)
+                print("初始化Provider错误:" + repr(e))
                 context["PROVIDER"] = json.dumps(get_setting("PROVIDER") if not provider else provider)
                 # Get Provider Settings
                 all_provider = all_providers()
@@ -229,6 +234,7 @@ def init_view(request):
                 save_setting("INIT", "6")
                 step = "6"
             except:
+                print("初始化Vercel配置错误:" + repr(e))
                 context["project_id"] = project_id
                 context["vercel_token"] = vercel_token
                 msg = "校验错误"
@@ -236,6 +242,7 @@ def init_view(request):
             user = User.objects.all()[0]
             context["username"] = user.username
     elif int(step) >= 6:
+        print("已完成初始化, 转跳至首页")
         return redirect("/")
     else:
         if int(step) == 3:
@@ -253,57 +260,62 @@ def init_view(request):
 
 def logout_view(request):
     logout(request)
+    print("注销成功")
     return redirect('/login/?next=/')
 
 
 @login_required(login_url='/login/')
 def migrate_view(request):
-    context = {}
     try:
-        if request.method == "POST":
-            try:
-                if request.POST.get("type") == "export":
-                    exports = dict()
-                    exports["settings"] = export_settings()
-                    exports["images"] = export_images()
-                    exports["friends"] = export_friends()
-                    exports["notifications"] = export_notifications()
-                    exports["custom"] = export_customs()
-                    exports["uv"] = export_uv()
-                    exports["pv"] = export_pv()
-                    html_template = loader.get_template('layouts/json.html')
-                    response = HttpResponse(html_template.render({"data": json.dumps(exports)}, request))
-                    response['Content-Type'] = 'application/octet-stream'
-                    response['Content-Disposition'] = 'attachment;filename="qexo-export.json"'
-                    return response
-                elif request.POST.get("type") == "import_settings":
-                    import_settings(json.loads(request.POST.get("data")))
-                    context["msg"] = "配置迁移完成！"
-                elif request.POST.get("type") == "import_images":
-                    import_images(json.loads(request.POST.get("data")))
-                    context["msg"] = "图片迁移完成！"
-                elif request.POST.get("type") == "import_friends":
-                    import_friends(json.loads(request.POST.get("data")))
-                    context["msg"] = "友链迁移完成！"
-                elif request.POST.get("type") == "import_notifications":
-                    import_notifications(json.loads(request.POST.get("data")))
-                    context["msg"] = "通知迁移完成！"
-                elif request.POST.get("type") == "import_custom":
-                    import_custom(json.loads(request.POST.get("data")))
-                    context["msg"] = "自定义字段迁移完成！"
-                elif request.POST.get("type") == "import_uv":
-                    import_uv(json.loads(request.POST.get("data")))
-                    context["msg"] = "UV统计迁移完成！"
-                elif request.POST.get("type") == "import_pv":
-                    import_pv(json.loads(request.POST.get("data")))
-                    context["msg"] = "PV统计迁移完成！"
-            except Exception as error:
-                context["msg"] = request.POST.get("type") + "错误: " + repr(error)
-            return render(request, "layouts/json.html", {"data": json.dumps(context)})
-        else:
-            context = get_custom_config()
-    except Exception as e:
-        context["error"] = repr(e)
+        if int(get_setting("INIT")) <= 5:
+            return redirect("/init/")
+    except:
+        print("未检测到初始化配置, 转跳到初始化页面")
+        return redirect("/init/")
+    context = {}
+    if request.method == "POST":
+        try:
+            if request.POST.get("type") == "export":
+                exports = dict()
+                exports["settings"] = export_settings()
+                exports["images"] = export_images()
+                exports["friends"] = export_friends()
+                exports["notifications"] = export_notifications()
+                exports["custom"] = export_customs()
+                exports["uv"] = export_uv()
+                exports["pv"] = export_pv()
+                html_template = loader.get_template('layouts/json.html')
+                response = HttpResponse(html_template.render({"data": json.dumps(exports)}, request))
+                response['Content-Type'] = 'application/octet-stream'
+                response['Content-Disposition'] = 'attachment;filename="qexo-export.json"'
+                return response
+            elif request.POST.get("type") == "import_settings":
+                import_settings(json.loads(request.POST.get("data")))
+                context["msg"] = "配置迁移完成！"
+            elif request.POST.get("type") == "import_images":
+                import_images(json.loads(request.POST.get("data")))
+                context["msg"] = "图片迁移完成！"
+            elif request.POST.get("type") == "import_friends":
+                import_friends(json.loads(request.POST.get("data")))
+                context["msg"] = "友链迁移完成！"
+            elif request.POST.get("type") == "import_notifications":
+                import_notifications(json.loads(request.POST.get("data")))
+                context["msg"] = "通知迁移完成！"
+            elif request.POST.get("type") == "import_custom":
+                import_custom(json.loads(request.POST.get("data")))
+                context["msg"] = "自定义字段迁移完成！"
+            elif request.POST.get("type") == "import_uv":
+                import_uv(json.loads(request.POST.get("data")))
+                context["msg"] = "UV统计迁移完成！"
+            elif request.POST.get("type") == "import_pv":
+                import_pv(json.loads(request.POST.get("data")))
+                context["msg"] = "PV统计迁移完成！"
+        except Exception as error:
+            print(request.POST.get("type") + "错误: " + repr(error))
+            context["msg"] = request.POST.get("type") + "错误: " + repr(error)
+        return render(request, "layouts/json.html", {"data": json.dumps(context)})
+    else:
+        context = get_custom_config()
     return render(request, "accounts/migrate.html", context)
 
 
@@ -312,13 +324,17 @@ def migrate_view(request):
 def index(request):
     try:
         if int(get_setting("INIT")) <= 5:
+            print("初始化未完成, 转跳到初始化页面")
             return redirect("/init/")
     except:
+        print("未检测到初始化配置, 转跳到初始化页面")
         return redirect("/init/")
     try:
         if get_setting("UPDATE_FROM") != QEXO_VERSION:
+            print("检测到更新配置, 转跳至配置更新页面")
             return redirect("/update/")
     except:
+        print("检测配置更新失败, 转跳至更新页面")
         return redirect("/update/")
     context = {'segment': 'index'}
     context.update(get_custom_config())
@@ -356,16 +372,18 @@ def pages(request):
     context = dict()
     try:
         if int(get_setting("INIT")) <= 5:
+            print("初始化未完成, 转跳到初始化页面")
             return redirect("/init/")
     except:
-        pass
+        print("未检测到初始化配置, 转跳到初始化页面")
+        return redirect("/init/")
     try:
         if get_setting("UPDATE_FROM") != QEXO_VERSION:
+            print("检测到更新配置, 转跳至配置更新页面")
             return redirect("/update/")
     except:
+        print("检测配置更新失败, 转跳至更新页面")
         return redirect("/update/")
-    # All resource paths end in .html.
-    # Pick out the html file name from the url. And load that template.
     try:
         context.update(get_custom_config())
         load_template = request.path.split('/')[-1]
@@ -385,7 +403,7 @@ def pages(request):
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
             except:
-                pass
+                print("未检测到图床配置, 图床功能关闭")
         elif "edit_config" in load_template:
             file_path = request.GET.get("file")
             context["file_content"] = repr(Provider().get_content(file_path)).replace("<", "\\<").replace(">", "\\>").replace("!", "\\!")
@@ -404,7 +422,7 @@ def pages(request):
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
             except:
-                pass
+                print("未检测到图床配置, 图床功能关闭")
         elif "new_page" in load_template:
             context["emoji"] = get_setting("VDITOR_EMOJI")
             context["sidebar"] = get_setting("PAGE_SIDEBAR")
@@ -413,12 +431,13 @@ def pages(request):
                     (Provider().get_content("scaffolds/page.md")))
                 context["front_matter"] = json.dumps(context["front_matter"])
             except Exception as error:
+                print("获取页面模板失败, 错误信息: " + repr(error))
                 context["error"] = repr(error)
             try:
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
             except:
-                pass
+                print("未检测到图床配置, 图床功能关闭")
         elif "new" in load_template:
             context["emoji"] = get_setting("VDITOR_EMOJI")
             context["sidebar"] = get_setting("POST_SIDEBAR")
@@ -427,12 +446,13 @@ def pages(request):
                     (Provider().get_content("scaffolds/post.md")))
                 context["front_matter"] = json.dumps(context["front_matter"])
             except Exception as error:
+                print("获取文章模板失败, 错误信息: " + repr(error))
                 context["error"] = repr(error)
             try:
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
             except:
-                pass
+                print("未检测到图床配置, 图床功能关闭")
         elif "posts" in load_template:
             search = request.GET.get("s")
             if search:
@@ -582,6 +602,7 @@ def pages(request):
                     params = get_image_params(provider)
                     context["all_image_hosts"][provider] = params
             except:
+                print("配置获取错误, 转跳至配置更新页面")
                 return redirect("/update/")
         elif 'advanced' in load_template:
             try:
@@ -593,6 +614,7 @@ def pages(request):
                 context["settings_number"] = len(context["settings"])
                 context["page_number"] = ceil(context["settings_number"] / 15)
             except Exception as e:
+                print("高级设置获取错误: " + repr(e))
                 context["error"] = repr(e)
         elif 'custom' in load_template:
             try:
@@ -608,16 +630,19 @@ def pages(request):
                 context["settings_number"] = len(context["settings"])
                 context["page_number"] = ceil(context["settings_number"] / 15)
             except Exception as e:
+                print("自定义字段获取错误: " + repr(e))
                 context["error"] = repr(e)
         save_setting("LAST_LOGIN", str(int(time())))
         html_template = loader.get_template('home/' + load_template)
         return HttpResponse(html_template.render(context, request))
 
-    except template.TemplateDoesNotExist:
+    except template.TemplateDoesNotExist as e:
+        print("页面不存在: " + repr(e))
         html_template = loader.get_template('home/page-404.html')
         return HttpResponse(html_template.render(context, request))
 
     except Exception as error:
+        print("服务端错误: " + repr(error))
         html_template = loader.get_template('home/page-500.html')
         context["error"] = error
         return HttpResponse(html_template.render(context, request))

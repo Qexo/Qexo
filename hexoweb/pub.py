@@ -235,6 +235,7 @@ def auto_fix(request):
         msg = "尝试自动修复了 {} 个字段，请在稍后检查和修改配置".format(counter)
         context = {"msg": msg, "status": True}
     except Exception as e:
+        print(repr(e))
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -253,6 +254,7 @@ def friends(request):
         data.sort(key=lambda x: x["time"])
         context = {"data": data, "status": True}
     except Exception as e:
+        print(repr(e))
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -353,6 +355,7 @@ def ask_friend(request):
                                                                       friend.description), time())
         context = {"msg": "申请成功！", "time": friend.time, "status": True}
     except Exception as error:
+        print(repr(error))
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -367,6 +370,7 @@ def get_custom(request):
             "status": True
         }
     except Exception as error:
+        print(repr(error))
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -381,6 +385,7 @@ def set_custom(request):
         save_custom(request.POST.get("name"), request.POST.get("content"))
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
+        print(repr(e))
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -395,6 +400,7 @@ def del_custom(request):
         CustomModel.objects.filter(name=request.POST.get("name")).delete()
         context = {"msg": "删除成功!", "status": True}
     except Exception as e:
+        print(repr(e))
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -409,6 +415,7 @@ def new_custom(request):
         save_custom(request.POST.get("name"), request.POST.get("content"))
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
+        print(repr(e))
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -421,6 +428,7 @@ def get_notifications(request):
     try:
         context = {"data": GetNotifications(), "status": True}
     except Exception as error:
+        print(repr(error))
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -438,6 +446,7 @@ def status(request):
         last = get_setting("LAST_LOGIN")
         context = {"data": {"posts": str(posts_count), "last": last}, "status": True}
     except Exception as error:
+        print(repr(error))
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -524,6 +533,7 @@ def waline(request):
                                                                            comment["ua"])
             CreateNotification("Waline评论通知", msg, time())
     except Exception as error:
+        print(repr(error))
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -541,6 +551,6 @@ def notifications(request):
         CreateNotification(title, content, time())
         return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "添加成功！", "status": True})})
     except Exception as error:
-        print(error)
+        print(repr(error))
         context = {"msg": repr(error), "status": False}
         return render(request, 'layouts/json.html', {"data": json.dumps(context)})

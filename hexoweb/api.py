@@ -33,6 +33,7 @@ def auth(request):
         else:
             context = {"msg": "登录信息错误", "status": False}
     except Exception as e:
+        print(repr(e))
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -86,6 +87,7 @@ def set_hexo(request):
         else:
             context = {"msg": msg + "\n配置校验失败", "status": False}
     except Exception as e:
+        print(repr(e))
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -98,6 +100,7 @@ def set_onepush(request):
         save_setting("ONEPUSH", onepush)
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
+        print(repr(e))
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -114,6 +117,7 @@ def test_onepush(request):
             data = "OK"
         context = {"msg": data, "status": True}
     except Exception as e:
+        print(repr(e))
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -134,6 +138,7 @@ def set_api(request):
         save_setting("RECAPTCHA_TOKEN", request.POST.get("recaptcha-token"))
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
+        print(repr(e))
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -146,6 +151,7 @@ def set_security(request):
         save_setting("LOGIN_RECAPTCHA_SITE_TOKEN", request.POST.get("site-token"))
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
+        print(repr(e))
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -158,6 +164,7 @@ def set_image_host(request):
         save_setting("IMG_HOST", image_host)
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
+        print(repr(e))
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -172,6 +179,7 @@ def set_abbrlink(request):
         save_setting("ABBRLINK_REP", rep)
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
+        print(repr(e))
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -190,6 +198,7 @@ def set_cust(request):
         save_setting("QEXO_ICON", icon)
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
+        print(repr(e))
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -220,6 +229,7 @@ def set_user(request):
         else:
             context = {"msg": "原密码错误!", "status": False}
     except Exception as e:
+        print(repr(e))
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -234,6 +244,7 @@ def set_statistic(request):
         save_setting("STATISTIC_DOMAINS", domains)
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
+        print(repr(e))
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -245,6 +256,7 @@ def set_custom(request):
         save_custom(request.POST.get("name"), request.POST.get("content"))
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
+        print(repr(e))
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -256,6 +268,7 @@ def del_custom(request):
         CustomModel.objects.filter(name=request.POST.get("name")).delete()
         context = {"msg": "删除成功!", "status": True}
     except Exception as e:
+        print(repr(e))
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -267,6 +280,7 @@ def new_custom(request):
         save_custom(request.POST.get("name"), request.POST.get("content"))
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
+        print(repr(e))
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -278,6 +292,7 @@ def set_value(request):
         save_setting(request.POST.get("name"), request.POST.get("content"))
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
+        print(repr(e))
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -289,6 +304,7 @@ def del_value(request):
         SettingModel.objects.filter(name=request.POST.get("name")).delete()
         context = {"msg": "删除成功!", "status": True}
     except Exception as e:
+        print(repr(e))
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -300,6 +316,7 @@ def new_value(request):
         save_setting(request.POST.get("name"), request.POST.get("content"))
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
+        print(repr(e))
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -312,6 +329,7 @@ def auto_fix(request):
         msg = "尝试自动修复了 {} 个字段，请在稍后检查和修改配置".format(counter)
         context = {"msg": msg, "status": True}
     except Exception as e:
+        print(repr(e))
         context = {"msg": repr(e), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -333,6 +351,7 @@ def do_update(request):
         else:
             context = {"msg": res["msg"], "status": False}
     except Exception as error:
+        print(repr(error))
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -349,7 +368,8 @@ def save(request):
             Provider().save(file_path, content, commitchange)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
-            context = {"msg": repr(error), "status": False}
+            print(repr(error))
+        context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
@@ -374,7 +394,8 @@ def save_post(request):
             Provider().save("source/_posts/" + file_name, front_matter + content, commitchange)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
-            context = {"msg": repr(error), "status": False}
+            print(repr(error))
+        context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
@@ -392,7 +413,8 @@ def save_page(request):
             Provider().save(file_path, front_matter + content, commitchange)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
-            context = {"msg": repr(error), "status": False}
+            print(repr(error))
+        context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
@@ -411,7 +433,8 @@ def save_draft(request):
             Provider().save("source/_drafts/" + file_name, front_matter + content, commitchange)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
-            context = {"msg": repr(error), "status": False}
+            print(repr(error))
+        context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
@@ -470,7 +493,8 @@ def delete_img(request):
             image.delete()
             context = {"msg": "删除成功！", "status": True}
         except Exception as error:
-            context = {"msg": repr(error), "status": False}
+            print(repr(error))
+        context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
@@ -481,6 +505,7 @@ def purge(request):
         delete_all_caches()
         context = {"msg": "清除成功！", "status": True}
     except Exception as error:
+        print(repr(error))
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -509,7 +534,8 @@ def create_webhook_config(request):
             Provider().create_hook(config)
             context = {"msg": "设置成功！", "status": True}
         except Exception as error:
-            context = {"msg": repr(error), "status": False}
+            print(repr(error))
+        context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
@@ -524,6 +550,7 @@ def webhook(request):
         else:
             context = {"msg": "校验错误", "status": False}
     except Exception as error:
+        print(repr(error))
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -567,6 +594,7 @@ def add_friend(request):
         friend.save()
         context = {"msg": "添加成功！", "time": friend.time, "status": True}
     except Exception as error:
+        print(repr(error))
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -584,6 +612,7 @@ def edit_friend(request):
         friend.save()
         context = {"msg": "修改成功！", "status": True}
     except Exception as error:
+        print(repr(error))
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -600,6 +629,7 @@ def clean_friend(request):
                 counter += 1
         context = {"msg": "成功清理了{}条友链".format(counter) if counter else "无隐藏的友链", "status": True}
     except Exception as error:
+        print(repr(error))
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -612,6 +642,7 @@ def del_friend(request):
         friend.delete()
         context = {"msg": "删除成功！", "status": True}
     except Exception as error:
+        print(repr(error))
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -637,6 +668,7 @@ def get_notifications(request):
                 save_cache("update", latest["newer_time"])
         context = {"data": GetNotifications(), "status": True}
     except Exception as error:
+        print(repr(error))
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -648,6 +680,7 @@ def del_notification(request):
         DelNotification(request.POST.get("time"))
         context = {"msg": "删除成功！", "status": True}
     except Exception as error:
+        print(repr(error))
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -661,6 +694,7 @@ def clear_notification(request):
             N.delete()
         context = {"msg": "删除成功！", "status": True}
     except Exception as error:
+        print(repr(error))
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -676,5 +710,6 @@ def set_sidebar(request):
             save_setting("POST_SIDEBAR", request.POST.get("content"))
         context = {"msg": "修改成功！", "status": True}
     except Exception as error:
+        print(repr(error))
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})

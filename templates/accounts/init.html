@@ -55,7 +55,7 @@
                             <a class="btn btn-primary my-4 text-white" href="/">登录控制台</a>
                         </ul>
                     {% endif %}
-                    <form method="POST">
+                    <form method="POST" id="main-form">
                         {% if step == "1" %}
                             <div class="text-center">
                                 <button type="submit" class="btn btn-primary my-4">开始</button>
@@ -121,6 +121,10 @@
                                 <div id="hexo-settings-container"></div>
                             </div>
                             <div class="text-center" id="submit-button">
+                                {% if PROVIDER %}
+                                    <input type="button" class="btn btn-secondary my-4"
+                                           value="强制提交" onclick="query_force()">
+                                {% endif %}
                                 <button type="submit" class="btn btn-primary my-4">下一步</button>
                             </div>
                         {% endif %}
@@ -145,6 +149,25 @@
                 </div>
             </div>
             </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="queryModal" tabindex="-1" aria-labelledby="queryModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="queryModalLabel">提示</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <a id="question"></a>
+                </div>
+                <div class="modal-footer" id="query-footer">
+                </div>
             </div>
         </div>
     </div>
@@ -180,6 +203,21 @@
             const all_providers = {{ all_providers | safe }};
             {% if PROVIDER %}
                 var now_provider = {{ PROVIDER | safe }};
+                function query_force() {
+                    $("#question").html("确定要强制提交吗？");
+                    $("#query-footer").html(
+                        `<button type="button" class="btn btn-secondary" data-dismiss="modal"
+                                onclick="force_submit()">确定
+                        </button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">取消
+                        </button>`
+                    );
+                    $("#queryModal").modal("show");
+                }
+                function force_submit() {
+                    $("#main-form").append("<input type='hidden' name='_force' value='1'>");
+                    $("#main-form").submit();
+                }
             {% else %}
                 var now_provider = {};
             {% endif %}

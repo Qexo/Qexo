@@ -369,7 +369,7 @@ def save(request):
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             print(repr(error))
-        context = {"msg": repr(error), "status": False}
+            context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
@@ -395,7 +395,7 @@ def save_post(request):
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             print(repr(error))
-        context = {"msg": repr(error), "status": False}
+            context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
@@ -414,7 +414,7 @@ def save_page(request):
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             print(repr(error))
-        context = {"msg": repr(error), "status": False}
+            context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
@@ -434,7 +434,7 @@ def save_draft(request):
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             print(repr(error))
-        context = {"msg": repr(error), "status": False}
+            context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
@@ -454,6 +454,7 @@ def delete(request):
             else:
                 delete_all_caches()
         except Exception as error:
+            print(repr(error))
             context = {"msg": repr(error)}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -478,6 +479,7 @@ def delete_post(request):
             delete_posts_caches()
             context = {"msg": "删除成功！", "status": True}
         except Exception as error:
+            print(repr(error))
             context = {"msg": repr(error)}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -494,7 +496,7 @@ def delete_img(request):
             context = {"msg": "删除成功！", "status": True}
         except Exception as error:
             print(repr(error))
-        context = {"msg": repr(error), "status": False}
+            context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
@@ -535,7 +537,7 @@ def create_webhook_config(request):
             context = {"msg": "设置成功！", "status": True}
         except Exception as error:
             print(repr(error))
-        context = {"msg": repr(error), "status": False}
+            context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
@@ -576,6 +578,7 @@ def upload_img(request):
                 image.date = time()
                 image.save()
         except Exception as error:
+            print(repr(error))
             context = {"msg": repr(error), "url": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 

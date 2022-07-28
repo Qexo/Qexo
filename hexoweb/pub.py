@@ -48,6 +48,7 @@ def save_post(request):
             Provider().save("source/_posts/" + file_name, content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
+            print(repr(error))
             context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -67,6 +68,7 @@ def save_draft(request):
             Provider().save("source/_drafts/" + file_name, content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
+            print(repr(error))
             context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -146,6 +148,7 @@ def create_webhook_config(request):
             Provider().create_hook(config)
             context = {"msg": "设置成功！", "status": True}
         except Exception as error:
+            print(repr(error))
             context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -276,6 +279,7 @@ def add_friend(request):
         friend.save()
         context = {"msg": "添加成功！", "time": friend.time, "status": True}
     except Exception as error:
+        print(repr(error))
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -296,6 +300,7 @@ def edit_friend(request):
         friend.save()
         context = {"msg": "修改成功！", "status": True}
     except Exception as error:
+        print(repr(error))
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
@@ -311,6 +316,7 @@ def del_friend(request):
         friend.delete()
         context = {"msg": "删除成功！", "status": True}
     except Exception as error:
+        print(repr(error))
         context = {"msg": repr(error), "status": False}
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 

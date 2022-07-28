@@ -343,10 +343,10 @@ def do_update(request):
             res = VercelOnekeyUpdate(branch=branch)
         else:
             res = LocalOnekeyUpdate(branch=branch)
-            save_setting("UPDATE_FROM", QEXO_VERSION)
+            save_setting("UPDATE_FROM", "true")
             return render(request, 'layouts/json.html', {"data": json.dumps(res)})
         if res["status"]:
-            save_setting("UPDATE_FROM", QEXO_VERSION)
+            save_setting("UPDATE_FROM", "true")
             context = {"msg": "更新成功，请等待自动部署!", "status": True}
         else:
             context = {"msg": res["msg"], "status": False}

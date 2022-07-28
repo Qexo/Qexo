@@ -87,7 +87,7 @@ def update_view(request):
 
             context["counter"] += 1
     if not context["counter"]:
-        save_setting("UPDATE_FROM", QEXO_VERSION)
+        save_setting("UPDATE_FROM", "false")
         return redirect("/")
     return render(request, "accounts/update.html", context)
 
@@ -330,7 +330,7 @@ def index(request):
         print("未检测到初始化配置, 转跳到初始化页面")
         return redirect("/init/")
     try:
-        if get_setting("UPDATE_FROM") != QEXO_VERSION:
+        if get_setting("UPDATE_FROM") != "false":
             print("检测到更新配置, 转跳至配置更新页面")
             return redirect("/update/")
     except:
@@ -378,7 +378,7 @@ def pages(request):
         print("未检测到初始化配置, 转跳到初始化页面")
         return redirect("/init/")
     try:
-        if get_setting("UPDATE_FROM") != QEXO_VERSION:
+        if get_setting("UPDATE_FROM") != "false":
             print("检测到更新配置, 转跳至配置更新页面")
             return redirect("/update/")
     except:

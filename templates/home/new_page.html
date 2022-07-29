@@ -489,7 +489,16 @@
         function get_front_matter() {
             let custom = JSON.parse($("#custom").val());
             for (let i = 0; i < OrgSidebar.length; i++) {
-                custom[OrgSidebar[i]["search"]] = $("#" + OrgSidebar[i]["search"]).val();
+                let tmp = $("#" + OrgSidebar[i]["search"]).val();
+                if (tmp === "true") {
+                    custom[OrgSidebar[i]["search"]] = true;
+                } else if (tmp === "false") {
+                    custom[OrgSidebar[i]["search"]] = false;
+                } else if (tmp === "null") {
+                    custom[OrgSidebar[i]["search"]] = null;
+                } else {
+                    custom[OrgSidebar[i]["search"]] = tmp;
+                }
             }
             return custom;
         }

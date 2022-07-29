@@ -53,45 +53,45 @@
             </div>
         </div>
 
-    <div class="modal fade" id="sidebarEditModal" tabindex="-1"
-         aria-labelledby="sidebarModalLabel"
-         aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="sidebarEditModalLabel">编辑侧边栏</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div id="side-form" onsubmit="return false;">
-                        <div class="form-row">
-                            <div class="col-2">
-                                <label class="form-control-label">搜索项</label>
-                            </div>
-                            <div class="col-4">
-                                <label class="form-control-label">描述</label>
-                            </div>
-                            <div class="col-6">
-                                <label class="form-control-label">图标</label>
-                            </div>
-                        </div>
-                        <div id="side-form-container"></div>
+        <div class="modal fade" id="sidebarEditModal" tabindex="-1"
+             aria-labelledby="sidebarModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="sidebarEditModalLabel">编辑侧边栏</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消
-                    </button>
-                    <button type="button" class="btn btn-primary" data-dismiss="modal"
-                            onclick="applySide()">确定
-                    </button>
+                    <div class="modal-body">
+                        <div id="side-form" onsubmit="return false;">
+                            <div class="form-row">
+                                <div class="col-2">
+                                    <label class="form-control-label">搜索项</label>
+                                </div>
+                                <div class="col-4">
+                                    <label class="form-control-label">描述</label>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-control-label">图标</label>
+                                </div>
+                            </div>
+                            <div id="side-form-container"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消
+                        </button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal"
+                                onclick="applySide()">确定
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    {% include "includes/footer.html" %}
+        {% include "includes/footer.html" %}
 
     </div>
 
@@ -478,7 +478,16 @@
         function get_front_matter() {
             let custom = JSON.parse($("#custom").val());
             for (let i = 0; i < OrgSidebar.length; i++) {
-                custom[OrgSidebar[i]["search"]] = $("#" + OrgSidebar[i]["search"]).val();
+                let tmp = $("#" + OrgSidebar[i]["search"]).val();
+                if (tmp === "true") {
+                    custom[OrgSidebar[i]["search"]] = true;
+                } else if (tmp === "false") {
+                    custom[OrgSidebar[i]["search"]] = false;
+                } else if (tmp === "null") {
+                    custom[OrgSidebar[i]["search"]] = null;
+                } else {
+                    custom[OrgSidebar[i]["search"]] = tmp;
+                }
             }
             return custom;
         }

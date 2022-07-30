@@ -91,8 +91,7 @@ def get_post(post):
 
 # 获取用户自定义的样式配置
 def get_custom_config():
-    context = {"cdn_prev": get_cdn(), "cdnjs": get_cdnjs()}
-    context["QEXO_NAME"] = get_setting("QEXO_NAME")
+    context = {"cdn_prev": get_cdn(), "cdnjs": get_cdnjs(), "QEXO_NAME": get_setting("QEXO_NAME")}
     if not context["QEXO_NAME"]:
         save_setting('QEXO_NAME', 'Hexo管理面板')
         context["QEXO_NAME"] = get_setting("QEXO_NAME")
@@ -315,7 +314,8 @@ def check_if_api_auth(request):
         return True
     if request.GET.get("token") == get_setting("WEBHOOK_APIKEY"):
         return True
-    print(request.path + ": API鉴权失败")
+    print(request.path + ": API鉴权失败 访问IP " + (request.META['HTTP_X_FORWARDED_FOR'] if 'HTTP_X_FORWARDED_FOR' in request.META.keys() else
+          request.META['REMOTE_ADDR']))
     return False
 
 
@@ -848,6 +848,6 @@ print("           _               _ \n" +
       "    /  \\  | |__  _   _  __| |_   _ \n" +
       "   / /\\ \\ | |_ \\| | | |/ _| | | | |\n" +
       "  / ____ \\| |_) | |_| | (_| | |_| |\n" +
-      " /_/    \\_\\_.__/ \\__,_|\\__,_|\\__,_|")
+      " /_/    \\_\\____/ \\____|\\____|\\____|")
 
 print("当前环境: " + ("Vercel" if check_if_vercel() else "本地"))

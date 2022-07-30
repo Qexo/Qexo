@@ -108,27 +108,27 @@ class Github(Provider):
 
     def get_configs(self):
         results = list()
-        # 检索 .github/workflows 仅最多一层目录
-        try:
-            sources = self.repo.get_contents(self.path + ".github/workflows", ref=self.branch)
-            for source in sources:
-                if source.type == "file":
-                    try:
-                        if source.name[-3:] == "yml":
-                            results.append(
-                                {"name": source.name, "path": source.path, "size": source.size})
-                    except:
-                        pass
-                if source.type == "dir":
-                    for post in self.repo.get_contents(source.path, ref=self.branch):
-                        try:
-                            if post.name[-3:] == "yml":
-                                results.append(
-                                    {"name": post.name, "path": post.path, "size": post.size})
-                        except:
-                            pass
-        except:
-            pass
+        # # 检索 .github/workflows 仅最多一层目录
+        # try:
+        #     sources = self.repo.get_contents(self.path + ".github/workflows", ref=self.branch)
+        #     for source in sources:
+        #         if source.type == "file":
+        #             try:
+        #                 if source.name[-3:] == "yml":
+        #                     results.append(
+        #                         {"name": source.name, "path": source.path, "size": source.size})
+        #             except:
+        #                 pass
+        #         if source.type == "dir":
+        #             for post in self.repo.get_contents(source.path, ref=self.branch):
+        #                 try:
+        #                     if post.name[-3:] == "yml":
+        #                         results.append(
+        #                             {"name": post.name, "path": post.path, "size": post.size})
+        #                 except:
+        #                     pass
+        # except:
+        #     pass
         # 检索根目录
         posts = self.repo.get_contents(self.path, ref=self.branch)
         for post in posts:

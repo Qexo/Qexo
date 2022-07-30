@@ -469,7 +469,7 @@ def statistic(request):
                 allow = True
                 break
         if not (allow and (t and get_setting("STATISTIC_ALLOW") == "是")):
-            print("Not allowed domain: " + url)
+            print("域名未验证: " + url)
             return HttpResponseForbidden()
         if url[:7] == "http://":
             url = url[7:]
@@ -500,6 +500,7 @@ def statistic(request):
             site_pv.url = domain
             site_pv.number = 1
             site_pv.save()
+        print("登记页面PV: {} => {}".format(url, pv.number))
         ip = request.META['HTTP_X_FORWARDED_FOR'] if 'HTTP_X_FORWARDED_FOR' in request.META.keys() else request.META[
             'REMOTE_ADDR']
         uv = StatisticUV.objects.filter(ip=ip)
@@ -511,7 +512,7 @@ def statistic(request):
         uv = StatisticUV()
         uv.ip = ip
         uv.save()
-        print("Register uv: " + ip)
+        print("登记用户UV: " + ip)
         data = json.dumps(
             {"site_pv": site_pv.number, "page_pv": pv.number, "site_uv": StatisticUV.objects.all().count(),
              "status": True})

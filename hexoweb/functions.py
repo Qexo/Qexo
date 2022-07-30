@@ -47,6 +47,7 @@ def update_provider():
 try:
     _Provider = update_provider()
 except:
+    print("Provider初始化失败, 跳过")
     pass
 
 
@@ -54,6 +55,7 @@ def Provider():
     try:
         return _Provider
     except:
+        print("Provider获取错误, 重新初始化")
         return update_provider()
 
 
@@ -125,6 +127,7 @@ def update_caches(name, content, _type="json"):
     else:
         posts_cache.content = content
     posts_cache.save()
+    print("重建{}缓存成功".format(name))
 
 
 def update_posts_cache(s=None):
@@ -222,6 +225,7 @@ def delete_all_caches():
     for cache in caches:
         if cache.name != "update":
             cache.delete()
+    print("清除全部缓存成功")
 
 
 def delete_posts_caches():
@@ -229,6 +233,7 @@ def delete_posts_caches():
     for cache in caches:
         if cache.name[:5] == "posts":
             cache.delete()
+    print("清除文章缓存成功")
 
 
 def delete_pages_caches():
@@ -240,6 +245,7 @@ def delete_pages_caches():
             name = ""
         if name == "pages":
             cache.delete()
+    print("清除页面缓存成功")
 
 
 def save_setting(name, content):
@@ -256,6 +262,7 @@ def save_setting(name, content):
     else:
         new_set.content = ""
     new_set.save()
+    print("保存设置{} => {}".format(name, content))
     return new_set
 
 
@@ -273,23 +280,7 @@ def save_custom(name, content):
     else:
         new_set.content = ""
     new_set.save()
-    return new_set
-
-
-def save_cache(name, content):
-    obj = Cache.objects.filter(name=name)
-    if obj.count() == 1:
-        obj.delete()
-    if obj.count() > 1:
-        for i in obj:
-            i.delete()
-    new_set = Cache()
-    new_set.name = str(name)
-    if content is not None:
-        new_set.content = str(content)
-    else:
-        new_set.content = ""
-    new_set.save()
+    print("保存自定义字段{} => {}".format(name, content))
     return new_set
 
 
@@ -313,7 +304,8 @@ def get_latest_version():
             context["status"] = True
         else:
             context["status"] = False
-    except:
+    except Exception as e:
+        print("获取更新错误: " + repr(e))
         context["status"] = False
     return context
 
@@ -323,6 +315,7 @@ def check_if_api_auth(request):
         return True
     if request.GET.get("token") == get_setting("WEBHOOK_APIKEY"):
         return True
+    print(request.path + ": API鉴权失败")
     return False
 
 
@@ -364,17 +357,24 @@ def get_crc_by_time(_strtime, alg, rep):
 def fix_all(all_settings=ALL_SETTINGS):
     counter = 0
     already = list()
+    deleted = list()
+    additions = list()
     settings = SettingModel.objects.all()
     for query in settings:
         if query.name not in already:
             already.append(query.name)
         else:
+            deleted.append(query.name)
             query.delete()
             counter += 1
     for setting in all_settings:
         if (setting[0] not in already) or (setting[2]):
+            additions.append(setting[0])
             save_setting(setting[0], setting[1])
             counter += 1
+    print("已修复{}个设置".format(counter))
+    print("删除字段" + str(deleted))
+    print("修正字段" + str(additions))
     return counter
 
 
@@ -435,7 +435,8 @@ def getIndexFile(base, path=""):
 
 def VercelUpdate(appId, token, sourcePath=""):
     if checkBuilding(appId, token):
-        return {"status": False, "msg": "Another building is in progress."}
+        print("更新失败: 当前有部署正在进行")
+        return {"status": False, "msg": "更新失败, 当前有部署正在进行"}
     url = "https://api.vercel.com/v13/deployments"
     header = dict()
     data = dict()
@@ -448,10 +449,12 @@ def VercelUpdate(appId, token, sourcePath=""):
         sourcePath = os.path.abspath("")
     data["files"] = getEachFiles(sourcePath)
     response = requests.post(url, data=json.dumps(data), headers=header)
+    print("更新完成: " + response.text)
     return {"status": True, "msg": response.json()}
 
 
 def VercelOnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
+    print("开始更新, 使用Vercel方案")
     vercel_config = get_project_detail()
     tmpPath = '/tmp'
     # 从github下载对应tar.gz，并解压
@@ -460,15 +463,18 @@ def VercelOnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
     _tarfile = tmpPath + '/github.tar.gz'
     with open(_tarfile, "wb") as file:
         file.write(requests.get(url).content)
+    print("下载更新完成, 开始解压")
     # print("ext files")
     t = tarfile.open(_tarfile)
     t.extractall(path=tmpPath)
     t.close()
     os.remove(_tarfile)
+    print("解压完成, 寻找Index目录")
     outPath = os.path.abspath(tmpPath + getIndexFile(tmpPath))
     # print("outPath: " + outPath)
     if outPath == '':
-        return {"status": False, "msg": 'error: no outPath'}
+        return {"status": False, "msg": '更新失败: 未找到Index目录'}
+    print("找到Index目录: " + outPath)
     return VercelUpdate(vercel_config["id"], vercel_config["token"], outPath)
 
 
@@ -486,6 +492,7 @@ def copy_all_files(src_dir, dst_dir):
 
 
 def LocalOnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
+    print("开始更新, 使用本地方案, 准备临时目录")
     Path = os.path.abspath("")
     tmpPath = os.path.abspath("./_tmp")
     if not os.path.exists(tmpPath):
@@ -496,15 +503,19 @@ def LocalOnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
         with open(_tarfile, "wb") as file:
             file.write(requests.get(url).content)
     except:
+        print("下载更新失败, 尝试使用镜像服务器")
         url = 'https://hub.fastgit.xyz/' + auth + '/' + project + '/tarball/' + quote(branch) + '/'
         with open(_tarfile, "wb") as file:
             file.write(requests.get(url).content)
+    print("下载更新完成, 正在解压缩...")
     t = tarfile.open(_tarfile)
     t.extractall(path=tmpPath)
     t.close()
     os.remove(_tarfile)
     outPath = os.path.abspath(tmpPath + getIndexFile(tmpPath))
+    print("找到Index目录: " + outPath)
     filelist = os.listdir(Path)
+    print("开始删除旧文件...")
     for filename in filelist:  # delete all files except tmp
         if not filename in ["_tmp", "configs.py", "db"]:
             if os.path.isfile(filename):
@@ -513,8 +524,11 @@ def LocalOnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
                 shutil.rmtree(filename)
             else:
                 pass
+    print("删除完成, 正在拷贝文件...")
     copy_all_files(outPath, Path)
+    print("删除临时目录")
     shutil.rmtree(tmpPath)
+    print("更新完成")
     return {"status": True, "msg": "更新成功!"}
 
 
@@ -564,6 +578,7 @@ def notify_me(title, content):
     try:
         return ntfy.text
     except:
+        print("通知类型无输出信息, 使用OK缺省")
         return "OK"
 
 

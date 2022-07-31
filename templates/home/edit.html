@@ -42,14 +42,31 @@
                 <h3 class="mt-3">文章参数</h3>
                 <hr class="my-2"/>
                 <div id="sidebar-container"></div>
-                <div class="form-group">
-                    <label class="form-control-label"><i class="fas fa-cogs"></i>
-                        自定义</label>
-                    <textarea name="custom"
-                              id="custom"
-                              class="form-control"
-                              placeholder="自定义Front-Matter"></textarea>
+            </div>
+        </div>
+        <style>
+            @media (min-width: 768px) {
+                #bottom-bar {
+                    flex: 0 0 93.666667%;
+                    max-width: 93.666667%;
+                }
+            }
+        </style>
+        <div class="row">
+            <div class="card ml-md-4 col-md-11" id="bottom-bar">
+                <div class="col-12">
+                    <input type="button" class="btn btn-sm float-right mt-3"
+                           value="添加"
+                           style="border: 1px solid #dee2e6;border-radius: .25rem;"
+                           onclick="addBottomItem()">
+                    <h2 class="mt-3"><i class="fas fa-cogs"></i> 其他参数</h2>
+                    <hr class="my-2"/>
+                    <div id="bottom-container">
+
+                    </div>
+                    <br>
                 </div>
+
             </div>
         </div>
 
@@ -120,6 +137,19 @@
                 "height": height + "px", "width":
                     "auto"
             });
+        }
+
+        function EscapeString(str) {
+            var temp = "";
+            str = str.toString();
+            if (str.length === 0) return "";
+            temp = str.replace(/&/g, "&amp;");
+            temp = temp.replace(/</g, "&lt;");
+            temp = temp.replace(/>/g, "&gt;");
+            temp = temp.replace(/\s/g, "&nbsp;");
+            temp = temp.replace(/\'/g, "&#39;");
+            temp = temp.replace(/\"/g, "&quot;");
+            return temp
         }
 
         function getTimeFormat() {
@@ -589,7 +619,8 @@
 
 
         function get_front_matter() {
-            let custom = JSON.parse($("#custom").val());
+            let custom = {...save_bottom()};
+            delete custom[""];
             for (let i = 0; i < OrgSidebar.length; i++) {
                 if (OrgSidebar[i]["search"] === "tags") {
                     custom["tags"] = tags;
@@ -597,16 +628,13 @@
                     custom["categories"] = categories;
                 } else {
                     let tmp = $("#" + OrgSidebar[i]["search"]).val();
-                    if (tmp === "true"){
+                    if (tmp === "true") {
                         custom[OrgSidebar[i]["search"]] = true;
-                    }
-                    else if (tmp === "false"){
+                    } else if (tmp === "false") {
                         custom[OrgSidebar[i]["search"]] = false;
-                    }
-                    else if (tmp === "null"){
+                    } else if (tmp === "null") {
                         custom[OrgSidebar[i]["search"]] = null;
-                    }
-                    else {
+                    } else {
                         custom[OrgSidebar[i]["search"]] = tmp;
                     }
                 }
@@ -618,6 +646,7 @@
             let html = "", content, front = front_matter, ifTag = false, ifCategory = false;
             if (!first) {
                 front = get_front_matter();
+                save_bottom();
                 OrgSidebar = [...Sidebar];
             }
             for (let i = 0; i < OrgSidebar.length; i++) {
@@ -665,7 +694,7 @@
                 } else {
                     if (OrgSidebar[i]["search"] === "updated") {
                         content = getTimeFormat();
-                    } else if (front[OrgSidebar[i]["search"]]) {
+                    } else if (front[OrgSidebar[i]["search"]] !== undefined) {
                         content = front[OrgSidebar[i]["search"]];
                     } else content = "";
                     content = (typeof content) === "object" ? JSON.stringify(content).replaceAll("\"", "&quot;") : content.toString().replaceAll("\"", "&quot;")
@@ -683,7 +712,8 @@
             $("#sidebar-container").html(html);
             if (ifTag) show_tags();
             if (ifCategory) show_categories();
-            $("#custom").val(JSON.stringify(front));
+            front_matter = front;
+            show_bottom();
             set_vditor_size();
             // 监听分类、标签回车键
             $('#qexo-tag').bind('keypress', function (event) {
@@ -702,6 +732,74 @@
             });
         }
 
+        function save_bottom() {
+            let tmp;
+            let keys = Object.keys(front_matter);
+            front_matter = {};
+            for (let i = 0; i < keys.length; i++) {
+                tmp = $("#bottom-row-" + i).serializeArray();
+                try {
+                    front_matter[tmp[0].value] = JSON.parse(tmp[1].value);
+                } catch (e) {
+                    front_matter[tmp[0].value] = tmp[1].value;
+                }
+            }
+            return front_matter;
+        }
 
+        function delBottomItem(i) {
+            let keys = Object.keys(front_matter);
+            delete front_matter[keys[i]];
+            save_bottom();
+            show_bottom();
+        }
+
+        function addBottomItem() {
+            save_bottom();
+            if (front_matter[""] !== "") front_matter[""] = "";
+            show_bottom();
+        }
+
+        function show_bottom() {
+            let html = "";
+            let keys = Object.keys(front_matter);
+            if (keys.length === 0) {
+                $("#bottom-container").html("暂无其他参数");
+                return;
+            }
+            html = `<div class="form-row">
+                        <div class="col-2">
+                            <label class="form-control-label">标头</label>
+                        </div>
+                        <div class="col-4">
+                            <label class="form-control-label">内容</label>
+                        </div>
+                    </div>`
+            for (let i = 0; i < keys.length; i++) {
+                html += `<form class="form-row" id="bottom-row-` + i + `">
+                                <div class="col-2">
+                                    <input type="text" class="form-control" name="search"
+                                           placeholder="冒号前的内容" value="` + EscapeString(keys[i]) +
+                    `">
+                                </div>
+                                <div class="col-10">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" name="icon"
+                                               placeholder="若有多级, 请使用JSON格式"  value="` +
+                    EscapeString(typeof (front_matter[keys[i]]) === "object" ? JSON.stringify
+                    (front_matter[keys[i]]) : front_matter[keys[i]]) + `">
+                                        <div class="input-group-append">
+                                            <button class="btn" type="button"
+                                                    style="border: 1px solid #dee2e6;border-radius: 0 .25rem .25rem 0"
+                                                    onclick="delBottomItem(` + i + `)">
+                                                -
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>`;
+            }
+            $("#bottom-container").html(html);
+        }
     </script>
 {% endblock javascripts %}

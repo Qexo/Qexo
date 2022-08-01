@@ -179,8 +179,9 @@
 
     <script>
         {% if msg %}
-            notyf.error("{{ msg|safe }}");
+            notyf.error(`{{ msg|safe }}`);
         {% endif %}
+
         function skip() {
             let temp = document.createElement("form");
             temp.action = "";

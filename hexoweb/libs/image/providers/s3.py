@@ -35,10 +35,9 @@ class S3(Provider):
         now = date.today()
         photo_stream = file.read()
         file_md5 = md5(photo_stream).hexdigest()
-        path = self.path.replace("{year}", str(now.year)).replace("{month}", str(now.month)).replace("{day}",
-                                                                                                     str(now.day)) \
-            .replace("{filename}", file.name[0:-len(file.name.split(".")[-1]) - 1]).replace("{time}", str(time())) \
-            .replace("{extName}", file.name.split(".")[-1]).replace("{md5}", file_md5)
+        path = self.path.replace("{year}", str(now.year)).replace("{month}", str(now.month)).replace("{day}", str(now.day)).replace(
+            "{filename}", file.name[0:-len(file.name.split(".")[-1]) - 1]).replace("{extName}", file.name.split(".")[-1]).replace("{md5}",
+                                                                                                                                  file_md5)
 
         s3 = boto3.resource(
             service_name='s3',
@@ -50,7 +49,6 @@ class S3(Provider):
         bucket = s3.Bucket(self.bucket)
         bucket.put_object(Key=path, Body=photo_stream, ContentType=file.content_type)
 
-        return self.prev_url.replace("{year}", str(now.year)).replace("{month}", str(now.month)).replace("{day}",
-                                                                                                     str(now.day)) \
-            .replace("{filename}", file.name[0:-len(file.name.split(".")[-1]) - 1]).replace("{time}", str(time())) \
-            .replace("{extName}", file.name.split(".")[-1]).replace("{md5}", file_md5)
+        return self.prev_url.replace("{year}", str(now.year)).replace("{month}", str(now.month)).replace("{day}", str(now.day)).replace(
+            "{filename}", file.name[0:-len(file.name.split(".")[-1]) - 1]).replace("{extName}", file.name.split(".")[-1]).replace(
+            "{md5}", file_md5)

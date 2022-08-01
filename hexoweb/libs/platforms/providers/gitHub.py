@@ -19,14 +19,19 @@ class Github(Provider):
 
     def get_post(self, post):
         try:
-            return self.repo.get_contents(self.path + "source/_drafts/" + post,
-                                          self.branch).decoded_content.decode("utf8")
+            content = self.repo.get_contents(self.path + "source/_drafts/" + post,
+                                             self.branch).decoded_content.decode("utf8")
+            print("从草稿中获取文章{}成功".format(post))
         except:
-            return self.repo.get_contents(self.path + "source/_posts/" + post,
-                                          self.branch).decoded_content.decode("utf8")
+            content = self.repo.get_contents(self.path + "source/_posts/" + post,
+                                             self.branch).decoded_content.decode("utf8")
+            print("获取文章{}成功".format(post))
+        return content
 
     def get_content(self, file):
-        return self.repo.get_contents(self.path + file, self.branch).decoded_content.decode("utf8")
+        print("获取文件{}".format(file))
+        content = self.repo.get_contents(self.path + file, self.branch).decoded_content.decode("utf8")
+        return content
 
     def get_path(self, path):
         results = list()
@@ -43,6 +48,7 @@ class Github(Provider):
                     "name": file.name,
                     "type": file.type
                 })
+        print("获取路径{}成功".format(path))
         return {"path": path, "data": results}
 
     def get_posts(self, _path=""):
@@ -90,6 +96,7 @@ class Github(Provider):
         except:
             pass
         posts = _posts + _drafts
+        print("读取文章列表成功")
         return posts
 
     def get_pages(self):
@@ -104,6 +111,7 @@ class Github(Provider):
                         if i.name == "index.md" or i.name == "index.html":
                             results.append({"name": post.name, "path": i.path, "size": i.size})
                             break
+        print("读取页面列表成功")
         return results
 
     def get_configs(self):
@@ -169,6 +177,7 @@ class Github(Provider):
                                 {"name": post.name, "path": post.path, "size": post.size})
                     except:
                         pass
+        print("读取博客配置列表成功")
         return results
 
     def save(self, file, content, commitchange="Update by Qexo"):
@@ -177,6 +186,7 @@ class Github(Provider):
                                   self.repo.get_contents(self.path + file, ref=self.branch).sha, branch=self.branch)
         except:
             self.repo.create_file(self.path + file, commitchange, content, branch=self.branch)
+        print("保存文件{}成功".format(file))
         return True
 
     def delete(self, path, commitchange="Delete by Qexo"):
@@ -186,13 +196,16 @@ class Github(Provider):
         else:
             for i in file:
                 self.repo.delete_file(self.path + i.path, commitchange, i.sha, branch=self.branch)
+        print("删除文件{}成功".format(path))
         return True
 
     def delete_hooks(self):
         for hook in self.repo.get_hooks():  # 删除所有HOOK
             hook.delete()
+        print("删除所有WebHook成功")
         return True
 
     def create_hook(self, config):
         self.repo.create_hook(active=True, config=config, events=["push"], name="web")
+        print("创建WebHook成功{}".format(config))
         return True

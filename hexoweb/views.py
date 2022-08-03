@@ -570,6 +570,8 @@ def pages(request):
                 context["RECAPTCHA_TOKEN"] = get_setting("RECAPTCHA_TOKEN")
                 context["LOGIN_RECAPTCHA_SITE_TOKEN"] = get_setting("LOGIN_RECAPTCHA_SITE_TOKEN")
                 context["LOGIN_RECAPTCHA_SERVER_TOKEN"] = get_setting("LOGIN_RECAPTCHA_SERVER_TOKEN")
+                context["EXCERPT_POST"] = get_setting("EXCERPT_POST")
+                context["EXCERPT_LENGTH"] = get_setting("EXCERPT_LENGTH")
                 # Get Provider Settings
                 context["PROVIDER"] = get_setting("PROVIDER")
                 all_provider = all_providers()

@@ -763,9 +763,9 @@
         }
 
         function delBottomItem(i) {
+            save_bottom();
             let keys = Object.keys(front_matter);
             delete front_matter[keys[i]];
-            save_bottom();
             show_bottom();
         }
 

@@ -380,7 +380,8 @@ def save_post(request):
     if request.method == "POST":
         file_name = request.POST.get('file')
         content = request.POST.get('content')
-        front_matter = request.POST.get('front_matter')
+        front_matter = json.loads(request.POST.get('front_matter'))
+        excerpt = ""
         try:
             # 删除草稿
             try:
@@ -390,9 +391,15 @@ def save_post(request):
                 pass
             # 创建/更新文章
             commitchange = f"Update Post {file_name}"
-            front_matter = "---\n{}---\n".format(yaml.dump(json.loads(front_matter), allow_unicode=True))
+            if get_setting("EXCERPT_POST") == "是":
+                excerpt = excerpt_post(content, get_setting("EXCERPT_LENGTH"))
+                print(f"截取文章{file_name}摘要: " + excerpt)
+                front_matter["excerpt"] = excerpt
+            front_matter = "---\n{}---".format(yaml.dump(front_matter, allow_unicode=True))
             Provider().save("source/_posts/" + file_name, front_matter + content, commitchange)
             context = {"msg": "OK!", "status": True}
+            if excerpt:
+                context["excerpt"] = excerpt
         except Exception as error:
             print(repr(error))
             context = {"msg": repr(error), "status": False}
@@ -406,12 +413,19 @@ def save_page(request):
     if request.method == "POST":
         file_path = request.POST.get('file')
         content = request.POST.get('content')
-        front_matter = request.POST.get('front_matter')
+        front_matter = json.loads(request.POST.get('front_matter'))
+        excerpt = ""
         commitchange = f"Update Page {file_path}"
         try:
-            front_matter = "---\n{}---\n".format(yaml.dump(json.loads(front_matter), allow_unicode=True))
+            if get_setting("EXCERPT_POST") == "是":
+                excerpt = excerpt_post(content, get_setting("EXCERPT_LENGTH"))
+                print(f"截取页面{file_path}摘要: " + excerpt)
+                front_matter["excerpt"] = excerpt
+            front_matter = "---\n{}---".format(yaml.dump(front_matter, allow_unicode=True))
             Provider().save(file_path, front_matter + content, commitchange)
             context = {"msg": "OK!", "status": True}
+            if excerpt:
+                context["excerpt"] = excerpt
         except Exception as error:
             print(repr(error))
             context = {"msg": repr(error), "status": False}
@@ -425,13 +439,20 @@ def save_draft(request):
     if request.method == "POST":
         file_name = request.POST.get('file')
         content = request.POST.get('content')
-        front_matter = request.POST.get('front_matter')
+        front_matter = json.loads(request.POST.get('front_matter'))
         commitchange = f"Update Post Draft {file_name}"
+        excerpt = ""
         try:
             # 创建/更新草稿
-            front_matter = "---\n{}---\n".format(yaml.dump(json.loads(front_matter), allow_unicode=True))
+            if get_setting("EXCERPT_POST") == "是":
+                excerpt = excerpt_post(content, get_setting("EXCERPT_LENGTH"))
+                print(f"截取文章{file_name}摘要: " + excerpt)
+                front_matter["excerpt"] = excerpt
+            front_matter = "---\n{}---\n".format(yaml.dump(front_matter, allow_unicode=True))
             Provider().save("source/_drafts/" + file_name, front_matter + content, commitchange)
             context = {"msg": "OK!", "status": True}
+            if excerpt:
+                context["excerpt"] = excerpt
         except Exception as error:
             print(repr(error))
             context = {"msg": repr(error), "status": False}
@@ -711,6 +732,21 @@ def set_sidebar(request):
             save_setting("PAGE_SIDEBAR", request.POST.get("content"))
         elif typ == "post":
             save_setting("POST_SIDEBAR", request.POST.get("content"))
+        context = {"msg": "修改成功！", "status": True}
+    except Exception as error:
+        print(repr(error))
+        context = {"msg": repr(error), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
+# 设置文章页面自动截取 api/set_excerpt
+@login_required(login_url="/login/")
+def set_excerpt(request):
+    try:
+        enable = request.POST.get("EXCERPT_POST")
+        length = request.POST.get("EXCERPT_LENGTH")
+        save_setting("EXCERPT_POST", enable)
+        save_setting("EXCERPT_LENGTH", length)
         context = {"msg": "修改成功！", "status": True}
     except Exception as error:
         print(repr(error))

@@ -53,5 +53,7 @@ ALL_SETTINGS = [  # [名称, 默认值, 是否在尝试修复时重置, 简介]
     ["LOGIN_RECAPTCHA_SITE_TOKEN", "", False, "用于登录验证的reCaptchaV3网站密钥"],
     ["LOGIN_RECAPTCHA_SERVER_TOKEN", "", False, "用于登录验证的reCaptchaV3服务端密钥"],
     ["POST_SIDEBAR", "[{\"search\":\"title\",\"name\":\"标题\",\"icon\":\"fas fa-heading\"},{\"search\":\"abbrlink\",\"name\":\"缩写\",\"icon\":\"fas fa-id-card\"},{\"search\":\"date\",\"name\":\"发布于\",\"icon\":\"fas fa-globe-americas\"},{\"search\":\"updated\",\"name\":\"更新于\",\"icon\":\"fas fa-calendar-alt\"},{\"search\":\"tags\",\"name\":\"标签\",\"icon\":\"fas fa-tags\"},{\"search\":\"categories\",\"name\":\"分类\",\"icon\":\"fas fa-folder-open\"}]", False, "文章侧边栏配置JSON"],
-    ["PAGE_SIDEBAR", "[{\"search\":\"title\",\"name\":\"标题\",\"icon\":\"fas fa-heading\"},{\"search\":\"date\",\"name\":\"发布于\",\"icon\":\"fas fa-globe-americas\"},{\"search\":\"updated\",\"name\":\"更新于\",\"icon\":\"fas fa-calendar-alt\"}]", False, "页面侧边栏配置JSON"]
+    ["PAGE_SIDEBAR", "[{\"search\":\"title\",\"name\":\"标题\",\"icon\":\"fas fa-heading\"},{\"search\":\"date\",\"name\":\"发布于\",\"icon\":\"fas fa-globe-americas\"},{\"search\":\"updated\",\"name\":\"更新于\",\"icon\":\"fas fa-calendar-alt\"}]", False, "页面侧边栏配置JSON"],
+    ["EXCERPT_POST", "否", False, "是否开启在摘录为空时自动截取文章 是/否"],
+    ["EXCERPT_LENGTH", "200", False, "自动截取文章的长度"]
 ]

@@ -184,6 +184,12 @@
                     loading.destroy();
                     if (res.status) {
                         notyf.success('发布成功！');
+                        if(res.excerpt){
+                            front_matter = get_front_matter();
+                            front_matter.excerpt = res.excerpt;
+                            OrgSidebar = [...Sidebar];
+                            showSidebar(true);
+                        }
                         file_content = vditor.getValue();
                         _status = true;
                     } else {
@@ -218,6 +224,12 @@
                     loading.destroy();
                     if (res.status) {
                         notyf.success('草稿保存成功！');
+                        if(res.excerpt){
+                            front_matter = get_front_matter();
+                            front_matter.excerpt = res.excerpt;
+                            OrgSidebar = [...Sidebar];
+                            showSidebar(true);
+                        }
                         file_content = vditor.getValue();
                         _status = true;
                     } else {
@@ -748,9 +760,9 @@
         }
 
         function delBottomItem(i) {
+            save_bottom();
             let keys = Object.keys(front_matter);
             delete front_matter[keys[i]];
-            save_bottom();
             show_bottom();
         }
 

@@ -26,6 +26,7 @@ from hexoweb.libs.image import all_providers as all_image_providers
 import yaml
 import re
 import shutil
+from bs4 import BeautifulSoup
 
 disable_warnings()
 
@@ -315,7 +316,7 @@ def check_if_api_auth(request):
     if request.GET.get("token") == get_setting("WEBHOOK_APIKEY"):
         return True
     print(request.path + ": API鉴权失败 访问IP " + (request.META['HTTP_X_FORWARDED_FOR'] if 'HTTP_X_FORWARDED_FOR' in request.META.keys() else
-          request.META['REMOTE_ADDR']))
+                                              request.META['REMOTE_ADDR']))
     return False
 
 
@@ -661,7 +662,7 @@ def verify_provider(provider):
         return {"status": -1}
 
 
-def get_post_details(article):
+def get_post_details(article, safe=True):
     front_matter = yaml.safe_load(
         re.search(r"---([\s\S]*?)---", article, flags=0).group()[3:-4].replace("{{ date }}",
                                                                                strftime("%Y-%m-%d %H:%M:%S", localtime(time()))).replace(
@@ -675,8 +676,12 @@ def get_post_details(article):
     for key in front_matter.keys():
         if type(front_matter.get(key)) == datetime:
             front_matter[key] = front_matter[key].strftime("%Y-%m-%d %H:%M:%S")
-    passage = repr(re.search(r"[;-][;-][;-]([\s\S]*)", article[3:], flags=0).group()[3:]).replace("<", "\\<").replace(">", "\\>").replace(
-        "!", "\\!")
+    if safe:
+        passage = repr(re.search(r"[;-][;-][;-]([\s\S]*)", article[3:], flags=0).group()[3:]).replace("<", "\\<").replace(">",
+                                                                                                                          "\\>").replace(
+            "!", "\\!")
+    else:
+        passage = re.search(r"[;-][;-][;-]([\s\S]*)", article[3:], flags=0).group()[3:]
     return front_matter, passage
 
 
@@ -819,6 +824,17 @@ def import_pv(ss):
         pv.number = s["number"]
         pv.save()
     return True
+
+
+def excerpt_post(content, length):
+    result = ""
+    content = markdown(content)
+    soup = BeautifulSoup(content, 'html.parser')
+    for dom in soup:
+        if dom.name and dom.name not in ["script", "style"]:
+            result += re.sub("{(.*?)}", '', dom.get_text()).replace("\n", " ")
+            result += " " if result[-1] != " " else ""
+    return result[:int(length)] + "..."
 
 
 # print(" ......................阿弥陀佛......................\n" +

@@ -669,13 +669,13 @@ def get_notifications(request):
         if cache.count():
             if (cache.first().content != latest["newer_time"]) and latest["hasNew"]:
                 CreateNotification("程序更新", "检测到更新: " + latest["newer"] + "<br>" + latest[
-                    "newer_text"] + "<p class=\"text-sm mb-0\">可前往 <object><a href=\"/settings.html\">设置</a></object> 在线更新</p>",
+                    "newer_text"] + "<p>可前往 <object><a href=\"/settings.html\">设置</a></object> 在线更新</p>",
                                    time())
                 update_caches("update", latest["newer_time"], "text")
         else:
             if latest["hasNew"]:
                 CreateNotification("程序更新", "检测到更新: " + latest["newer"] + "<br>" + latest[
-                    "newer_text"] + "<p class=\"text-sm mb-0\">可前往 <object><a href=\"/settings.html\">设置</a></object> 在线更新</p>",
+                    "newer_text"] + "<p>可前往 <object><a href=\"/settings.html\">设置</a></object> 在线更新</p>",
                                    time())
                 update_caches("update", latest["newer_time"], "text")
         context = {"data": GetNotifications(), "status": True}

@@ -300,7 +300,7 @@ def get_latest_version():
             context["newer_time"] = latest.created_at.astimezone(
                 timezone(timedelta(hours=16))).strftime(
                 "%Y-%m-%d %H:%M:%S")
-            context["newer_text"] = markdown(latest.body).replace("<p>", "<p class=\"text-sm mb-0\">")
+            context["newer_text"] = markdown(latest.body).replace("\n", "")
             context["status"] = True
         else:
             context["status"] = False
@@ -552,7 +552,7 @@ def GetNotifications():
     for notification in N:
         result.append(dict(
             label=notification.label,
-            content=notification.content.replace("\n", "<br>"),
+            content=notification.content.replace("\n", "<br>").replace("<p>", "<p class=\"text-sm mb-0\">"),
             timestamp=notification.time,
             time=strftime("%Y-%m-%d %H:%M:%S", localtime(float(notification.time)))
         ))

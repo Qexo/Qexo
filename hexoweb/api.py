@@ -480,31 +480,6 @@ def delete(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
-# 删除文章 api/delete_post
-@login_required(login_url="/login/")
-def delete_post(request):
-    context = dict(msg="Error!", status=False)
-    if request.method == "POST":
-        filename = request.POST.get('file')
-        try:
-            try:
-                commitchange = f"Delete Post {filename}"
-                Provider().delete("source/_posts/" + filename, commitchange)
-            except:
-                pass
-            try:
-                commitchange = f"Delete Post draft {filename}"
-                Provider().delete("source/_drafts/" + filename, commitchange)
-            except:
-                pass
-            delete_posts_caches()
-            context = {"msg": "删除成功！", "status": True}
-        except Exception as error:
-            print(repr(error))
-            context = {"msg": repr(error)}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
-
-
 # 删除图片记录 api/delete_img
 @login_required(login_url="/login/")
 def delete_img(request):

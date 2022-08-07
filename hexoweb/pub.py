@@ -95,32 +95,6 @@ def delete(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
-# 删除文章 pub/delete_post
-@csrf_exempt
-def delete_post(request):
-    if not check_if_api_auth(request):
-        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
-                                                                         "status": False})})
-    context = dict(msg="Error!", status=False)
-    if request.method == "POST":
-        filename = request.POST.get('file')
-        try:
-            try:
-
-                Provider().delete("source/_posts/" + filename)
-            except:
-                pass
-            try:
-                Provider().delete("source/_drafts/" + filename)
-            except:
-                pass
-            delete_posts_caches()
-            context = {"msg": "删除成功！", "status": True}
-        except Exception as error:
-            context = {"msg": repr(error)}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
-
-
 # 自动设置 Webhook 事件 pub/create_webhook
 @csrf_exempt
 def create_webhook_config(request):

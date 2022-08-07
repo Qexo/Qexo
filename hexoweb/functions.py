@@ -833,7 +833,7 @@ def excerpt_post(content, length):
         if dom.name and dom.name not in ["script", "style"]:
             result += re.sub("{(.*?)}", '', dom.get_text()).replace("\n", " ")
             result += "" if result.endswith(" ") else " "
-    return result[:int(length)] + "..." if len(result) > length else result
+    return result[:int(length)] + "..." if len(result) > int(length) else result
 
 
 # print(" ......................阿弥陀佛......................\n" +

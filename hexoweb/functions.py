@@ -300,7 +300,7 @@ def get_latest_version():
             context["newer_time"] = latest.created_at.astimezone(
                 timezone(timedelta(hours=16))).strftime(
                 "%Y-%m-%d %H:%M:%S")
-            context["newer_text"] = markdown(latest.body).replace("<p>", "<p class=\"text-sm mb-0\">")
+            context["newer_text"] = markdown(latest.body).replace("<br>", "")
             context["status"] = True
         else:
             context["status"] = False

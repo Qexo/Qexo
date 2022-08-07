@@ -81,7 +81,7 @@
             $("#notification-board").html('<div class="list-group list-group-flush"><ul ' +
                 'href="#!" class="list-group-item list-group-item-action"><div class="row ' +
                 'align-items-center"><div class="col-auto"><i class="fas ' +
-                'fa-check"></i></div><div class="col ml--2"><div class="d-flex ' +
+                'fa-check"></i></div><div class="col ml--2 text-sm mb-0"><div class="d-flex ' +
                 'justify-content-between align-items-center"><div><h4 class="mb-0 ' +
                 'text-sm">消息</h4></div></div><p class="text-sm ' +
                 'mb-0">你当前没有消息哟~</p></div></div></ul></div>');
@@ -94,7 +94,7 @@
                 html += '<a href="javascript:delNotification(\'' + notifications[i]["timestamp"]
                     + '\')" ' + 'class="list-group-item list-group-item-action"><div ' +
                     'class="row align-items-center"><div class="col-auto"><i class="fas ' +
-                    'fa-quote-left"></i></div><div class="col ml--2"><div ' +
+                    'fa-quote-left"></i></div><div class="col ml--2 text-sm mb-0"><div ' +
                     'class="d-flex justify-content-between align-items-center"><div><h4 ' +
                     'class="mb-0 text-sm">' + notifications[i]["label"] + '</h4></div><div ' +
                     'class="text-right text-muted"><small>' + notifications[i]["time"] +
@@ -124,7 +124,8 @@
                 $("#notification-board").html('<div class="list-group list-group-flush"><ul ' +
                     'href="#!" class="list-group-item list-group-item-action"><div class="row ' +
                     'align-items-center"><div class="col-auto"><i class="fas ' +
-                    'fa-exclamation-triangle"></i></div><div class="col ml--2"><div class="d-flex ' +
+                    'fa-exclamation-triangle"></i></div><div class="col ml--2 text-sm mb-0"><div ' +
+                    'class="d-flex ' +
                     'justify-content-between align-items-center"><div><h4 class="mb-0 ' +
                     'text-sm">消息</h4></div></div><p class="text-sm ' +
                     'mb-0">获取失败咯~</p></div></div></ul></div>');

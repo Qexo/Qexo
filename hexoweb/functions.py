@@ -827,14 +827,13 @@ def import_pv(ss):
 
 
 def excerpt_post(content, length):
-    result = ""
-    content = markdown(content)
+    result, content = "", markdown(content)
     soup = BeautifulSoup(content, 'html.parser')
     for dom in soup:
         if dom.name and dom.name not in ["script", "style"]:
             result += re.sub("{(.*?)}", '', dom.get_text()).replace("\n", " ")
-            result += " " if result[-1] != " " else ""
-    return result[:int(length)] + "..."
+            result += "" if result.endswith(" ") else " "
+    return result[:int(length)] + "..." if len(result) > length else result
 
 
 # print(" ......................阿弥陀佛......................\n" +

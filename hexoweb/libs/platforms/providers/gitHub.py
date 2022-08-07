@@ -122,7 +122,7 @@ class Github(Provider):
         #     for source in sources:
         #         if source.type == "file":
         #             try:
-        #                 if source.name[-3:] == "yml":
+        #                 if source.name[-4:] in [".yml", "yaml"]:
         #                     results.append(
         #                         {"name": source.name, "path": source.path, "size": source.size})
         #             except:
@@ -130,7 +130,7 @@ class Github(Provider):
         #         if source.type == "dir":
         #             for post in self.repo.get_contents(source.path, ref=self.branch):
         #                 try:
-        #                     if post.name[-3:] == "yml":
+        #                     if post.name[-4:] in ["。yml", "yaml"]:
         #                         results.append(
         #                             {"name": post.name, "path": post.path, "size": post.size})
         #                 except:
@@ -141,7 +141,7 @@ class Github(Provider):
         posts = self.repo.get_contents(self.path, ref=self.branch)
         for post in posts:
             try:
-                if post.name[-3:] == "yml":
+                if post.name[-4:] in [".yml", "yaml"]:
                     results.append({"name": post.name, "path": post.path, "size": post.size})
             except:
                 pass
@@ -152,7 +152,7 @@ class Github(Provider):
                 if theme.type == "dir":
                     for post in self.repo.get_contents(theme.path, ref=self.branch):
                         try:
-                            if post.name[-3:] == "yml":
+                            if post.name[-4:] in [".yml", "yaml"]:
                                 results.append(
                                     {"name": post.name, "path": post.path, "size": post.size})
                         except:
@@ -164,7 +164,7 @@ class Github(Provider):
         for source in sources:
             if source.type == "file":
                 try:
-                    if source.name[-3:] == "yml":
+                    if source.name[-4:] in [".yml", "yaml"]:
                         results.append(
                             {"name": source.name, "path": source.path, "size": source.size})
                 except:
@@ -172,7 +172,7 @@ class Github(Provider):
             if source.type == "dir":
                 for post in self.repo.get_contents(source.path, ref=self.branch):
                     try:
-                        if post.name[-3:] == "yml":
+                        if post.name[-4:] in [".yml", "yaml"]:
                             results.append(
                                 {"name": post.name, "path": post.path, "size": post.size})
                     except:

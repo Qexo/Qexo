@@ -2,6 +2,7 @@ from pathlib import Path
 import os
 import json
 import random
+import hexoweb.exceptions as exceptions
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,7 +23,12 @@ try:
     import configs
     ALLOWED_HOSTS = configs.DOMAINS
 except:
-    ALLOWED_HOSTS = json.loads(os.environ["DOMAINS"])
+    print("获取本地配置文件失败, 使用环境变量进行初始化")
+    for env in ["DOMAINS", "MONGODB_HOST", "MONGODB_PORT", "MONGODB_USER", "MONGODB_PASS", "MONGODB_DB"]:
+        if env not in os.environ:
+            raise exceptions.InitError(f"\"{env}\"环境变量未设置")
+    ALLOWED_HOSTS = json.loads(os.environ.get("DOMAINS", False))
+
 
 # Application definition
 
@@ -32,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
+    # 'django.contrib.staticfiles',
     'hexoweb.apps.ConsoleConfig',
     'corsheaders',
 ]
@@ -78,8 +84,10 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 try:
     import configs
+
     DATABASES = configs.DATABASES
 except:
+    print("获取本地配置文件失败, 使用环境变量进行初始化")
     DATABASES = {
         'default': {
             'ENGINE': 'djongo',
@@ -133,11 +141,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),
-]
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build', 'static')
+# STATIC_URL = '/static/'
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, "static"),
+# ]
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build', 'static')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field

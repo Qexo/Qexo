@@ -153,7 +153,7 @@
                 }
                 list += "</td><td><a href=\"/edit.html?file=" + encodeURIComponent(page_posts[i]["fullname"]) + "\">" +
                     "<i class=\"fa fa-edit mr-2\"></i></a>" + "<a href=\"javascript:query_delete('" +
-                    page_posts[i]["fullname"] + "')\"><i class=\"fa fa-trash-alt " +
+                    EscapeString(page_posts[i]["path"]) + "')\"><i class=\"fa fa-trash-alt " +
                     "mr-2\"></i></a></td></tr>";
             }
             $("#page-" + _page).removeClass("active");
@@ -269,7 +269,7 @@
             let file = $("#delfile").text();
             loading.show();
             $.ajax({
-                url: '/api/delete_post/',
+                url: '/api/delete/',
                 method: 'post',
                 data: {"file": file},
                 dataType: 'JSON',
@@ -278,10 +278,10 @@
                     if (res.status) {
                         notyf.success('删除成功！');
                         for (let i = 0; i < posts.length; i++) {
-                            if (posts[i]["fullname"] === file) {
-                               posts.splice(i, 1);
-                               $("#post-number").html(posts.length);
-                               break;
+                            if (posts[i]["path"] === file) {
+                                posts.splice(i, 1);
+                                $("#post-number").html(posts.length);
+                                break;
                             }
                         }
                         change_page(_page);

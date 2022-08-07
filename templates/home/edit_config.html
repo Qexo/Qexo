@@ -53,6 +53,7 @@
     <script src="{{ cdnjs }}ace/1.4.13/ext-language_tools.js"></script>
     <script>
         var _status=true;
+        var file_content = {{ file_content|safe }};
 
         editor = ace.edit("editor");
         editor.setTheme("ace/theme/tomorrow");
@@ -72,7 +73,7 @@
         editor.getSession().setUseWorker(false);
         editor.getSession().setUseWrapMode(true);
         editor.getSession().setUseSoftTabs(true);
-        editor.session.setValue({{ file_content|safe }});
+        editor.session.setValue(file_content);
         $.ajaxSetup({
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
         });
@@ -95,6 +96,7 @@
                     loading.destroy();
                     if (res.status) {
                         notyf.success('保存成功！');
+                        file_content = editor.getValue();
                     } else {
                         notyf.error(res.msg);
                     }
@@ -110,7 +112,7 @@
 
         document.onkeydown = function () {
             // 判断 Ctrl+S
-            if (event.ctrlKey == true && event.keyCode == 83) {
+            if (event.ctrlKey === true && event.keyCode === 83) {
                 SaveChanges();
                 event.preventDefault();
             }
@@ -118,10 +120,10 @@
 
         window.onbeforeunload = function (e) {
             e = e || window.event;
-            if (e) {
+            if (e && file_content !== editor.getValue()) {
                 e.returnValue = '确定要离开吗?';
+                return '确定要离开吗?';
             }
-            return '确定要离开吗?';
         }
 
     </script>

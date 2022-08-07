@@ -31,48 +31,79 @@
     <!-- Page content -->
     <div class="container-fluid mt--6">
         <div class="row">
-            <div class="card col-md-8 px-0 ml-md-4">
+            <div class="card col-md-8 px-0 ml-md-4" id="vditor-container">
                 <div id="vditor"></div>
             </div>
             <div class="card col-md-3 ml-md-4">
-                <h3 class="mt-3">文章参数</h3>
+                <a class="text-right position-absolute col-11 mt-3" style="cursor: pointer;
+                color: #172b4d"
+                   href="javascript:editSide()"><i class="fas
+                   fa-pen"></i></a>
+                <h3 class="mt-3">页面参数</h3>
                 <hr class="my-2"/>
-                <div class="form-group">
-                    <label class="form-control-label"><i class="fas fa-heading"></i> 标题</label>
-                    <input type="text" name="title"
-                           class="form-control"
-                           placeholder="显示的文章题目"
-                           id="title"
-                           value="{{ front_matter.title }}">
-                </div>
-                <div class="form-group">
-                    <label class="form-control-label"><i class="fas fa-globe-americas"></i>
-                        发布于</label>
-                    <input type="text" name="date"
-                           class="form-control"
-                           id="date"
-                           placeholder="发布时间"
-                           value="{{ front_matter.date }}">
+                <div id="sidebar-container"></div>
+            </div>
+        </div>
+        <style>
+            @media (min-width: 768px) {
+                #bottom-bar {
+                    flex: 0 0 93.666667%;
+                    max-width: 93.666667%;
+                }
+            }
+        </style>
+        <div class="row">
+            <div class="card ml-md-4 col-md-11" id="bottom-bar">
+                <div class="col-12">
+                    <input type="button" class="btn btn-sm float-right mt-3"
+                           value="添加"
+                           style="border: 1px solid #dee2e6;border-radius: .25rem;"
+                           onclick="addBottomItem()">
+                    <h2 class="mt-3"><i class="fas fa-cogs"></i> 其他参数</h2>
+                    <hr class="my-2"/>
+                    <div id="bottom-container">
+
+                    </div>
+                    <br>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-control-label"><i class="fas fa-calendar-alt"></i>
-                        更新于</label>
-                    <input type="text" name="updated"
-                           class="form-control"
-                           id="updated"
-                           placeholder="更新时间"
-                           value="{{ front_matter.updated }}">
-                </div>
+            </div>
+        </div>
 
-                <div class="form-group">
-                    <label class="form-control-label"><i class="fas fa-pencil-alt"></i>
-                        自定义</label>
-                    <textarea name="custom"
-                              id="custom"
-                              class="form-control"
-                              placeholder="自定义Front-Matter"
-                              style="height:300px"></textarea>
+        <div class="modal fade" id="sidebarEditModal" tabindex="-1"
+             aria-labelledby="sidebarModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="sidebarEditModalLabel">编辑侧边栏</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="side-form" onsubmit="return false;">
+                            <div class="form-row">
+                                <div class="col-2">
+                                    <label class="form-control-label">搜索项</label>
+                                </div>
+                                <div class="col-4">
+                                    <label class="form-control-label">描述</label>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-control-label">图标</label>
+                                </div>
+                            </div>
+                            <div id="side-form-container"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消
+                        </button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal"
+                                onclick="applySide()">确定
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -85,16 +116,31 @@
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
-    <link href="{{ cdn_prev }}vditor@3.8.15/dist/index.css" rel="stylesheet"/>
-    <script src="{{ cdn_prev }}vditor@3.8.15/dist/index.min.js"></script>
+    <link href="{{ cdnjs }}vditor/3.8.17/index.min.css" rel="stylesheet"/>
+    <script src="{{ cdnjs }}vditor/3.8.17/index.min.js"></script>
 
 
     <script>
-        var _status = true, front_matter = {{ json_front_matter|safe }};
-        $("#updated").val(getTimeFormat());
+        var _status = true, front_matter = {{ front_matter|safe }};
+        var file_content = "";
+
         $.ajaxSetup({
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
         });
+
+        function set_vditor_size() {
+            let height = $("#vditor-container").height();
+            if (height < document.documentElement.clientHeight - 25) {
+                height = document.documentElement.clientHeight - 25;
+            }
+            $("#vditor").css({
+                "height": height + "px", "width":
+                    "auto"
+            });
+        }
+
+
+
 
         function getTimeFormat() {
             let date = new Date();
@@ -107,7 +153,6 @@
             return date.getFullYear() + "-" + month + "-" + currentDate + " " + hh + ":" + mm + ":" + ss;
             //返回格式：yyyy-MM-dd hh:mm:ss
         }
-
 
 
         function SaveChanges() {
@@ -129,7 +174,14 @@
                     loading.destroy();
                     if (res.status) {
                         notyf.success('保存成功！');
+                        if(res.excerpt){
+                            front_matter = get_front_matter();
+                            front_matter.excerpt = res.excerpt;
+                            OrgSidebar = [...Sidebar];
+                            showSidebar(true);
+                        }
                         _status = true;
+                        file_content = vditor.getValue();
                     } else {
                         notyf.error(res.msg);
                         _status = true;
@@ -182,10 +234,14 @@
         //挂载到全局
         if (fIsMobile()) {
             window.vditor = new Vditor('vditor', {
+                after(d) {
+                    file_content = vditor.getValue();
+                    showSidebar(true);
+                },
                 toolbarConfig: {
                     pin: true
                 },
-                "cdn": "{{ cdn_prev }}vditor@3.8.15",
+                "cdn": "{{ cdn_prev }}vditor@3.8.17",
                 "mode": "ir",
                 counter: {
                     enable: true
@@ -197,7 +253,7 @@
                 },
                 "preview": {
                     "theme": {
-                        "path": "{{ cdn_prev }}vditor@3.8.15/dist/css/content-theme"
+                        "path": "{{ cdnjs }}vditor/3.8.17/css/content-theme"
                     }
                 },
                 "debugger": false,
@@ -263,12 +319,15 @@
             })
         } else {
             window.vditor = new Vditor("vditor", {
-
+                after(d) {
+                    file_content = vditor.getValue();
+                    showSidebar(true);
+                },
                 // 获取焦点方法
                 focus(md) {
                     document.onkeydown = function () {
                         // 判断 Ctrl+S
-                        if (event.ctrlKey == true && event.keyCode == 83) {
+                        if (event.ctrlKey === true && event.keyCode === 83) {
                             SaveChanges();
                             event.preventDefault();
                         }
@@ -277,11 +336,11 @@
                 // _lutePath: "lib/vditor-3.7.3/src/js/lute/lute.min.js",
                 // 这个是自定义导航栏
                 toolbar,
-                "cdn": "{{ cdn_prev }}vditor@3.8.15",
+                "cdn": "{{ cdn_prev }}vditor@3.8.17",
                 "fullscreen": {
                     "index": 1050,
                 },
-                "height": document.documentElement.clientHeight + 60,
+                "height": $("#vditor-container").height(),
                 "cache": {
                     "enable": false
                 },
@@ -291,7 +350,7 @@
                 "preview": {
                     "mode": "both",
                     "theme": {
-                        "path": "{{ cdn_prev }}vditor@3.8.15/dist/css/content-theme"
+                        "path": "{{ cdnjs }}vditor/3.8.17/css/content-theme"
                     }
                 }, hint: {
                     emoji: {{ emoji|safe }}
@@ -331,26 +390,234 @@
                 },
             });
         }
+        window.onbeforeunload = function (e) {
+            e = e || window.event;
+            if (e && file_content !== vditor.getValue()) {
+                e.returnValue = '确定要离开吗?';
+                return '确定要离开吗?';
+            }
+        }
 
-        delete front_matter["title"];
-        delete front_matter["date"];
-        delete front_matter["updated"];
-        $("#custom").val(JSON.stringify(front_matter));
+        var OrgSidebar = {{ sidebar|safe }};
+        var Sidebar = [...OrgSidebar];
+
+        function showEditSide() {
+            let html = "";
+            if (!Sidebar.length) {
+                Sidebar = [{"search": "", "name": "", "icon": ""}];
+            }
+            for (let i = 0; i < Sidebar.length; i++) {
+                html += `<form class="form-row" id="side-row-` + i + `">
+                                <div class="col-2">
+                                    <input type="text" class="form-control" name="search"
+                                           placeholder="冒号前的内容" value="` + Sidebar[i].search + `">
+                                </div>
+                                <div class="col-4">
+                                    <input type="text" class="form-control" name="name"
+                                           placeholder="描述标题" value="` + Sidebar[i].name + `">
+                                </div>
+                                <div class="col-6">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" name="icon"
+                                               placeholder="使用的图标"  value="` + Sidebar[i].icon + `">
+                                        <div class="input-group-append">
+                                            <button class="btn" type="button"
+                                                    style="border: 1px solid #dee2e6"
+                                                    onclick="newSideItem(` + (i + 1).toString() + `)">
+                                                +
+                                            </button>
+                                            <button class="btn" type="button"
+                                                    style="border: 1px solid #dee2e6;border-radius: 0 .25rem .25rem 0"
+                                                    onclick="delSideItem(` + i + `)">
+                                                -
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>`;
+            }
+            $("#side-form-container").html(html);
+        }
+
+        function editSide() {
+            Sidebar = [...OrgSidebar];  // 拷贝数组
+            showEditSide();
+            $('#sidebarEditModal').modal('show');
+        }
+
+        function newSideItem(i) {
+            saveSideItems();
+            Sidebar.splice(i, 0, {"search": "", "name": "", "icon": ""});
+            showEditSide();
+        }
+
+        function saveSideItems() {
+            let tmp;
+            for (let i = 0; i < Sidebar.length; i++) {
+                tmp = $("#side-row-" + i).serializeArray();
+                for (let j = 0; j < tmp.length; j++) {
+                    Sidebar[i][tmp[j].name] = tmp[j].value;
+                }
+            }
+            return Sidebar;
+        }
+
+        function delSideItem(i) {
+            saveSideItems();
+            Sidebar.splice(i, 1);
+            showEditSide();
+        }
+
+        function applySide() {
+            saveSideItems();
+            for (let i = 0; i < Sidebar.length; i++) {
+                if (Sidebar[i].search === "") {
+                    Sidebar.splice(i, 1);
+                    i--;
+                }
+            }
+            let loading = new KZ_Loading('边栏保存中...');
+            loading.show();
+            $.ajax({
+                url: '/api/set_sidebar/',
+                method: 'post',
+                data: {
+                    "type": "page", "content": JSON.stringify(Sidebar)
+                },
+                dataType: 'JSON',
+                success: function (res) {
+                    loading.destroy();
+                    if (res.status) {
+                        notyf.success('保存成功！');
+                        showSidebar();
+                    } else {
+                        notyf.error('保存失败！');
+                    }
+                },
+                error: function (res) {
+                    loading.destroy();
+                    notyf.error("网络错误！");
+                }
+            })
+        }
 
         function get_front_matter() {
-            let custom = JSON.parse($("#custom").val());
-            custom["title"] = $("#title").val();
-            custom["date"] = $("#date").val();
-            custom["updated"] = $("#updated").val();
+            let custom = {...save_bottom()};
+            delete custom[""];
+            for (let i = 0; i < OrgSidebar.length; i++) {
+                let tmp = $("#" + OrgSidebar[i]["search"]).val();
+                if (tmp === "true") {
+                    custom[OrgSidebar[i]["search"]] = true;
+                } else if (tmp === "false") {
+                    custom[OrgSidebar[i]["search"]] = false;
+                } else if (tmp === "null") {
+                    custom[OrgSidebar[i]["search"]] = null;
+                } else {
+                    custom[OrgSidebar[i]["search"]] = tmp;
+                }
+            }
             return custom;
         }
 
-        window.onbeforeunload = function (e) {
-            e = e || window.event;
-            if (e) {
-                e.returnValue = '确定要离开吗?';
+        function showSidebar(first = false) {
+            let html = "", content, front = front_matter;
+            if (!first) {
+                front = get_front_matter();
+                save_bottom();
+                OrgSidebar = [...Sidebar];
             }
-            return '确定要离开吗?';
+            for (let i = 0; i < OrgSidebar.length; i++) {
+                if (OrgSidebar[i]["search"] === "updated") {
+                    content = getTimeFormat();
+                } else if (front[OrgSidebar[i]["search"]] !== undefined) {
+                    content = front[OrgSidebar[i]["search"]];
+                } else content = "";
+                content = (typeof content) === "object" ? EscapeString(JSON.stringify(content)) :
+                    EscapeString(content);
+                html += `<div class="form-group">
+                        <label class="form-control-label"><i class="` + OrgSidebar[i]["icon"]
+                    + `"></i> ` + OrgSidebar[i]["name"] + `</label>
+                        <input type="text" name="title"
+                               class="form-control"
+                               placeholder="` + OrgSidebar[i]["name"] + `"
+                               id="` + OrgSidebar[i]["search"] + `"
+                               value="` + content + `"></div>`;
+                delete front[OrgSidebar[i]["search"]];
+            }
+            $("#sidebar-container").html(html);
+            front_matter = front;
+            show_bottom();
+            set_vditor_size();
+        }
+
+        function save_bottom() {
+            let tmp;
+            let keys = Object.keys(front_matter);
+            front_matter = {};
+            for (let i = 0; i < keys.length; i++) {
+                tmp = $("#bottom-row-" + i).serializeArray();
+                try {
+                    front_matter[tmp[0].value] = JSON.parse(tmp[1].value);
+                } catch (e) {
+                    front_matter[tmp[0].value] = tmp[1].value;
+                }
+            }
+            return front_matter;
+        }
+
+        function delBottomItem(i) {
+            save_bottom();
+            let keys = Object.keys(front_matter);
+            delete front_matter[keys[i]];
+            show_bottom();
+        }
+
+        function addBottomItem() {
+            save_bottom();
+            if (front_matter[""] !== "") front_matter[""] = "";
+            show_bottom();
+        }
+
+        function show_bottom() {
+            let html = "";
+            let keys = Object.keys(front_matter);
+            if (keys.length === 0) {
+                $("#bottom-container").html("暂无其他参数");
+                return;
+            }
+            html = `<div class="form-row">
+                        <div class="col-2">
+                            <label class="form-control-label">标头</label>
+                        </div>
+                        <div class="col-4">
+                            <label class="form-control-label">内容</label>
+                        </div>
+                    </div>`
+            for (let i = 0; i < keys.length; i++) {
+                html += `<form class="form-row" id="bottom-row-` + i + `">
+                                <div class="col-2">
+                                    <input type="text" class="form-control" name="search"
+                                           placeholder="冒号前的内容" value="` + EscapeString(keys[i]) +
+                    `">
+                                </div>
+                                <div class="col-10">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" name="icon"
+                                               placeholder="若有多级, 请使用JSON格式"  value="` +
+                    EscapeString(typeof(front_matter[keys[i]]) === "object" ? JSON.stringify
+                (front_matter[keys[i]]) : front_matter[keys[i]]) + `">
+                                        <div class="input-group-append">
+                                            <button class="btn" type="button"
+                                                    style="border: 1px solid #dee2e6;border-radius: 0 .25rem .25rem 0"
+                                                    onclick="delBottomItem(` + i + `)">
+                                                -
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>`;
+            }
+            $("#bottom-container").html(html);
         }
     </script>
 {% endblock javascripts %}

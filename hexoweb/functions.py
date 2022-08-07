@@ -1,12 +1,12 @@
 import os
-from core.QexoSettings import ALL_SETTINGS
+from core.QexoSettings import ALL_SETTINGS, ALL_CDN
 import requests
 from django.template.defaulttags import register
 from core.QexoSettings import QEXO_VERSION
-from .models import Cache, SettingModel, FriendModel, NotificationModel, CustomModel, StatisticUV, StatisticPV
+from .models import Cache, SettingModel, FriendModel, NotificationModel, CustomModel, StatisticUV, StatisticPV, ImageModel
 import github
 import json
-from urllib.parse import quote
+from urllib.parse import quote, unquote
 from datetime import timezone, timedelta, date, datetime
 from time import time
 from hashlib import md5
@@ -26,6 +26,7 @@ from hexoweb.libs.image import all_providers as all_image_providers
 import yaml
 import re
 import shutil
+from bs4 import BeautifulSoup
 
 disable_warnings()
 
@@ -47,6 +48,7 @@ def update_provider():
 try:
     _Provider = update_provider()
 except:
+    print("Provider初始化失败, 跳过")
     pass
 
 
@@ -54,6 +56,7 @@ def Provider():
     try:
         return _Provider
     except:
+        print("Provider获取错误, 重新初始化")
         return update_provider()
 
 
@@ -89,8 +92,7 @@ def get_post(post):
 
 # 获取用户自定义的样式配置
 def get_custom_config():
-    context = {"cdn_prev": get_cdn(), "cdnjs": get_cdnjs()}
-    context["QEXO_NAME"] = get_setting("QEXO_NAME")
+    context = {"cdn_prev": get_cdn(), "cdnjs": get_cdnjs(), "QEXO_NAME": get_setting("QEXO_NAME")}
     if not context["QEXO_NAME"]:
         save_setting('QEXO_NAME', 'Hexo管理面板')
         context["QEXO_NAME"] = get_setting("QEXO_NAME")
@@ -125,6 +127,7 @@ def update_caches(name, content, _type="json"):
     else:
         posts_cache.content = content
     posts_cache.save()
+    print("重建{}缓存成功".format(name))
 
 
 def update_posts_cache(s=None):
@@ -222,6 +225,7 @@ def delete_all_caches():
     for cache in caches:
         if cache.name != "update":
             cache.delete()
+    print("清除全部缓存成功")
 
 
 def delete_posts_caches():
@@ -229,6 +233,7 @@ def delete_posts_caches():
     for cache in caches:
         if cache.name[:5] == "posts":
             cache.delete()
+    print("清除文章缓存成功")
 
 
 def delete_pages_caches():
@@ -240,6 +245,7 @@ def delete_pages_caches():
             name = ""
         if name == "pages":
             cache.delete()
+    print("清除页面缓存成功")
 
 
 def save_setting(name, content):
@@ -256,6 +262,7 @@ def save_setting(name, content):
     else:
         new_set.content = ""
     new_set.save()
+    print("保存设置{} => {}".format(name, content))
     return new_set
 
 
@@ -273,23 +280,7 @@ def save_custom(name, content):
     else:
         new_set.content = ""
     new_set.save()
-    return new_set
-
-
-def save_cache(name, content):
-    obj = Cache.objects.filter(name=name)
-    if obj.count() == 1:
-        obj.delete()
-    if obj.count() > 1:
-        for i in obj:
-            i.delete()
-    new_set = Cache()
-    new_set.name = str(name)
-    if content is not None:
-        new_set.content = str(content)
-    else:
-        new_set.content = ""
-    new_set.save()
+    print("保存自定义字段{} => {}".format(name, content))
     return new_set
 
 
@@ -313,7 +304,8 @@ def get_latest_version():
             context["status"] = True
         else:
             context["status"] = False
-    except:
+    except Exception as e:
+        print("获取更新错误: " + repr(e))
         context["status"] = False
     return context
 
@@ -323,6 +315,8 @@ def check_if_api_auth(request):
         return True
     if request.GET.get("token") == get_setting("WEBHOOK_APIKEY"):
         return True
+    print(request.path + ": API鉴权失败 访问IP " + (request.META['HTTP_X_FORWARDED_FOR'] if 'HTTP_X_FORWARDED_FOR' in request.META.keys() else
+                                              request.META['REMOTE_ADDR']))
     return False
 
 
@@ -364,17 +358,24 @@ def get_crc_by_time(_strtime, alg, rep):
 def fix_all(all_settings=ALL_SETTINGS):
     counter = 0
     already = list()
+    deleted = list()
+    additions = list()
     settings = SettingModel.objects.all()
     for query in settings:
         if query.name not in already:
             already.append(query.name)
         else:
+            deleted.append(query.name)
             query.delete()
             counter += 1
     for setting in all_settings:
         if (setting[0] not in already) or (setting[2]):
+            additions.append(setting[0])
             save_setting(setting[0], setting[1])
             counter += 1
+    print("已修复{}个设置".format(counter))
+    print("删除字段" + str(deleted))
+    print("修正字段" + str(additions))
     return counter
 
 
@@ -435,7 +436,8 @@ def getIndexFile(base, path=""):
 
 def VercelUpdate(appId, token, sourcePath=""):
     if checkBuilding(appId, token):
-        return {"status": False, "msg": "Another building is in progress."}
+        print("更新失败: 当前有部署正在进行")
+        return {"status": False, "msg": "更新失败, 当前有部署正在进行"}
     url = "https://api.vercel.com/v13/deployments"
     header = dict()
     data = dict()
@@ -448,10 +450,12 @@ def VercelUpdate(appId, token, sourcePath=""):
         sourcePath = os.path.abspath("")
     data["files"] = getEachFiles(sourcePath)
     response = requests.post(url, data=json.dumps(data), headers=header)
+    print("更新完成: " + response.text)
     return {"status": True, "msg": response.json()}
 
 
 def VercelOnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
+    print("开始更新, 使用Vercel方案")
     vercel_config = get_project_detail()
     tmpPath = '/tmp'
     # 从github下载对应tar.gz，并解压
@@ -460,15 +464,18 @@ def VercelOnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
     _tarfile = tmpPath + '/github.tar.gz'
     with open(_tarfile, "wb") as file:
         file.write(requests.get(url).content)
+    print("下载更新完成, 开始解压")
     # print("ext files")
     t = tarfile.open(_tarfile)
     t.extractall(path=tmpPath)
     t.close()
     os.remove(_tarfile)
+    print("解压完成, 寻找Index目录")
     outPath = os.path.abspath(tmpPath + getIndexFile(tmpPath))
     # print("outPath: " + outPath)
     if outPath == '':
-        return {"status": False, "msg": 'error: no outPath'}
+        return {"status": False, "msg": '更新失败: 未找到Index目录'}
+    print("找到Index目录: " + outPath)
     return VercelUpdate(vercel_config["id"], vercel_config["token"], outPath)
 
 
@@ -486,6 +493,7 @@ def copy_all_files(src_dir, dst_dir):
 
 
 def LocalOnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
+    print("开始更新, 使用本地方案, 准备临时目录")
     Path = os.path.abspath("")
     tmpPath = os.path.abspath("./_tmp")
     if not os.path.exists(tmpPath):
@@ -496,15 +504,19 @@ def LocalOnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
         with open(_tarfile, "wb") as file:
             file.write(requests.get(url).content)
     except:
+        print("下载更新失败, 尝试使用镜像服务器")
         url = 'https://hub.fastgit.xyz/' + auth + '/' + project + '/tarball/' + quote(branch) + '/'
         with open(_tarfile, "wb") as file:
             file.write(requests.get(url).content)
+    print("下载更新完成, 正在解压缩...")
     t = tarfile.open(_tarfile)
     t.extractall(path=tmpPath)
     t.close()
     os.remove(_tarfile)
     outPath = os.path.abspath(tmpPath + getIndexFile(tmpPath))
+    print("找到Index目录: " + outPath)
     filelist = os.listdir(Path)
+    print("开始删除旧文件...")
     for filename in filelist:  # delete all files except tmp
         if not filename in ["_tmp", "configs.py", "db"]:
             if os.path.isfile(filename):
@@ -513,8 +525,11 @@ def LocalOnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
                 shutil.rmtree(filename)
             else:
                 pass
+    print("删除完成, 正在拷贝文件...")
     copy_all_files(outPath, Path)
+    print("删除临时目录")
     shutil.rmtree(tmpPath)
+    print("更新完成")
     return {"status": True, "msg": "更新成功!"}
 
 
@@ -564,6 +579,7 @@ def notify_me(title, content):
     try:
         return ntfy.text
     except:
+        print("通知类型无输出信息, 使用OK缺省")
         return "OK"
 
 
@@ -646,7 +662,7 @@ def verify_provider(provider):
         return {"status": -1}
 
 
-def get_post_details(article):
+def get_post_details(article, safe=True):
     front_matter = yaml.safe_load(
         re.search(r"---([\s\S]*?)---", article, flags=0).group()[3:-4].replace("{{ date }}",
                                                                                strftime("%Y-%m-%d %H:%M:%S", localtime(time()))).replace(
@@ -660,6 +676,193 @@ def get_post_details(article):
     for key in front_matter.keys():
         if type(front_matter.get(key)) == datetime:
             front_matter[key] = front_matter[key].strftime("%Y-%m-%d %H:%M:%S")
-    passage = repr(re.search(r"[;-][;-][;-]([\s\S]*)", article[3:], flags=0).group()[3:]).replace("<", "\\<").replace(">", "\\>").replace(
-        "!", "\\!")
+    if safe:
+        passage = repr(re.search(r"[;-][;-][;-]([\s\S]*)", article[3:], flags=0).group()[3:]).replace("<", "\\<").replace(">",
+                                                                                                                          "\\>").replace(
+            "!", "\\!")
+    else:
+        passage = re.search(r"[;-][;-][;-]([\s\S]*)", article[3:], flags=0).group()[3:]
     return front_matter, passage
+
+
+def export_settings():
+    all_settings = SettingModel.objects.all()
+    settings = list()
+    for setting in all_settings:
+        settings.append({"name": setting.name, "content": setting.content})
+    return settings
+
+
+def export_images():
+    all_settings = ImageModel.objects.all()
+    settings = list()
+    for setting in all_settings:
+        settings.append({"name": setting.name, "url": setting.url, "size": setting.size, "date": setting.date, "type": setting.type})
+    return settings
+
+
+def export_friends():
+    all_ = FriendModel.objects.all()
+    ss = list()
+    for s in all_:
+        ss.append({"name": s.name, "url": s.url, "imageUrl": s.imageUrl, "time": s.time, "description": s.description, "status": s.status})
+    return ss
+
+
+def export_notifications():
+    all_ = NotificationModel.objects.all()
+    ss = list()
+    for s in all_:
+        ss.append({"time": s.time, "label": s.label, "content": s.content})
+    return ss
+
+
+def export_customs():
+    all_ = CustomModel.objects.all()
+    ss = list()
+    for s in all_:
+        ss.append({"name": s.name, "content": s.content})
+    return ss
+
+
+def export_uv():
+    all_ = StatisticUV.objects.all()
+    ss = list()
+    for s in all_:
+        ss.append({"ip": s.ip})
+    return ss
+
+
+def export_pv():
+    all_ = StatisticPV.objects.all()
+    ss = list()
+    for s in all_:
+        ss.append({"url": s.url, "number": s.number})
+    return ss
+
+
+def import_settings(ss):
+    for s in ss:
+        save_setting(s["name"], s["content"])
+    return True
+
+
+def import_images(ss):
+    _all = ImageModel.objects.all()
+    for i in _all:
+        i.delete()
+    for s in ss:
+        image = ImageModel()
+        image.name = s["name"]
+        image.url = s["url"]
+        image.size = s["size"]
+        image.date = s["date"]
+        image.type = s["type"]
+        image.save()
+    return True
+
+
+def import_friends(ss):
+    _all = FriendModel.objects.all()
+    for i in _all:
+        i.delete()
+    for s in ss:
+        friend = FriendModel()
+        friend.name = s["name"]
+        friend.url = s["url"]
+        friend.imageUrl = s["imageUrl"]
+        friend.time = s["time"]
+        friend.description = s["description"]
+        friend.status = s["status"]
+        friend.save()
+    return True
+
+
+def import_notifications(ss):
+    _all = NotificationModel.objects.all()
+    for i in _all:
+        i.delete()
+    for s in ss:
+        notification = NotificationModel()
+        notification.time = s["time"]
+        notification.label = s["label"]
+        notification.content = s["content"]
+        notification.save()
+    return True
+
+
+def import_custom(ss):
+    _all = CustomModel.objects.all()
+    for i in _all:
+        i.delete()
+    for s in ss:
+        custom = CustomModel()
+        custom.name = s["name"]
+        custom.content = s["content"]
+        custom.save()
+    return True
+
+
+def import_uv(ss):
+    _all = StatisticUV.objects.all()
+    for i in _all:
+        i.delete()
+    for s in ss:
+        uv = StatisticUV()
+        uv.ip = s["ip"]
+        uv.save()
+    return True
+
+
+def import_pv(ss):
+    _all = StatisticPV.objects.all()
+    for i in _all:
+        i.delete()
+    for s in ss:
+        pv = StatisticPV()
+        pv.url = s["url"]
+        pv.number = s["number"]
+        pv.save()
+    return True
+
+
+def excerpt_post(content, length):
+    result, content = "", markdown(content)
+    soup = BeautifulSoup(content, 'html.parser')
+    for dom in soup:
+        if dom.name and dom.name not in ["script", "style"]:
+            result += re.sub("{(.*?)}", '', dom.get_text()).replace("\n", " ")
+            result += "" if result.endswith(" ") else " "
+    return result[:int(length)] + "..." if len(result) > int(length) else result
+
+
+# print(" ......................阿弥陀佛......................\n" +
+#       "                       _oo0oo_                      \n" +
+#       "                      o8888888o                     \n" +
+#       "                      88\" . \"88                     \n" +
+#       "                      (| -_- |)                     \n" +
+#       "                      0\\  =  /0                     \n" +
+#       "                   ___/‘---’\\___                   \n" +
+#       "                  .' \\|       |/ '.                 \n" +
+#       "                 / \\\\|||  :  |||// \\                \n" +
+#       "                / _||||| -卍-|||||_ \\               \n" +
+#       "               |   | \\\\\\  -  /// |   |              \n" +
+#       "               | \\_|  ''\\---/''  |_/ |              \n" +
+#       "               \\  .-\\__  '-'  ___/-. /              \n" +
+#       "             ___'. .'  /--.--\\  '. .'___            \n" +
+#       "         .\"\" ‘<  ‘.___\\_<|>_/___.’>’ \"\".          \n" +
+#       "       | | :  ‘- \\‘.;‘\\ _ /’;.’/ - ’ : | |        \n" +
+#       "         \\  \\ ‘_.   \\_ __\\ /__ _/   .-’ /  /        \n" +
+#       "    =====‘-.____‘.___ \\_____/___.-’___.-’=====     \n" +
+#       "                       ‘=---=’                      \n" +
+#       "                                                    \n" +
+#       "....................佛祖保佑 ,永无BUG...................")
+
+print("           _               _ \n" +
+      "     /\\   | |             | |\n" +
+      "    /  \\  | |__  _   _  __| |_   _ \n" +
+      "   / /\\ \\ | |_ \\| | | |/ _| | | | |\n" +
+      "  / ____ \\| |_) | |_| | (_| | |_| |\n" +
+      " /_/    \\_\\____/ \\____|\\____|\\____|")
+
+print("当前环境: " + ("Vercel" if check_if_vercel() else "本地"))

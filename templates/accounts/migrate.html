@@ -1,0 +1,207 @@
+{% extends 'layouts/base-fullscreen.html' %}
+
+{% block title %} 迁移 {% endblock title %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}
+    <style>
+        .notyf__toast {
+            max-width: 24em !important;
+        }
+
+        .notyf__ripple {
+            height: 60em !important;
+            width: 60em !important;
+        }
+    </style>
+{% endblock stylesheets %}
+
+{% block content %}
+
+    <!-- Page content -->
+    <div class="container mt--8 pb-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-5">
+                <div class="card bg-secondary shadow border-0">
+                    <div class="card-body">
+                        <div class="text-center text-muted mb-4">
+                            <h1>迁移配置</h1>
+                        </div>
+                        <hr/>
+                        <div class="row text-center">
+                            <div class="col">
+                                <button class="btn btn-primary my-2"
+                                        onclick='show_import()'>导入
+                                </button>
+                            </div>
+                            <div class="col">
+                                <button class="btn btn-primary my-2" onclick="export_qexo()">导出
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-6">
+                        <a href="/" class="text-light"><small>主页</small></a>
+                    </div>
+                    <div class="col-6 text-right">
+                        <a target="_blank"
+                           href="https://github.com/Qexo/Qexo/wiki"
+                           class="text-light"><small>帮助</small></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="query" tabindex="-2" aria-labelledby="queryLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="queryLabel">导入</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="query-modal-body">
+                    <form id="import-form" action="/migrate/" method='post'
+                          enctype='multipart/form-data'>
+                        {% csrf_token %}
+                        <input type="hidden" name="type" value="import">
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input" id="customFile"
+                                   name="import-file">
+                            <label class="custom-file-label" for="customFile"></label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer" id="query-modal-footer">
+                    <button class="btn btn-primary" onclick="import_qexo()">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="query2" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="queryLabel2">警告</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="query-modal2-body">
+                    导入后, 您将会丢失现有的全部信息
+                </div>
+                <div class="modal-footer" id="query-modal2-footer">
+                    <button class="btn btn-primary" onclick="final_import_qexo()">仍然继续</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="query3" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="queryLabel3">结果</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body text-center" id="query-modal3-body">
+                </div>
+                <div class="modal-footer" id="query-modal3-footer">
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE -->
+{% block javascripts %}
+
+    <script>
+        {% if msg %}
+            notyf.error("{{ msg|safe }}");
+        {% endif %}
+        function export_qexo() {
+            let temp = document.createElement("form");
+            temp.action = "";
+            temp.method = "post";
+            temp.target = "_blank";
+            temp.hidden = true;
+            let opt = document.createElement("textarea");
+            opt.name = "csrfmiddlewaretoken";
+            opt.value = "{{ csrf_token }}";
+            temp.appendChild(opt);
+            opt = document.createElement("textarea");
+            opt.name = "type";
+            opt.value = "export";
+            temp.appendChild(opt);
+            document.body.appendChild(temp);
+            temp.submit();
+        }
+
+        function show_import() {
+            $("#query").modal("show");
+        }
+
+        function import_qexo() {
+            $("#query").modal("hide");
+            $("#query2").modal("show");
+        }
+
+        function final_import_qexo() {
+            $("#query-modal3-body").html('');
+            $("#query2").modal("hide");
+            $("#query3").modal("show");
+            const reader = new FileReader();
+            reader.onload = function fileReadCompleted() {
+                let data = JSON.parse(reader.result);
+                $.when(import_type("import_settings", data["settings"]),
+                    import_type("import_images", data["images"]),
+                    import_type("import_friends", data["friends"]),
+                    import_type("import_notifications", data["notifications"]),
+                    import_type("import_custom", data["custom"]),
+                    import_type("import_uv", data["uv"]),
+                    import_type("import_pv", data["pv"]),).then(
+                    function () {
+                        let html = $("#query-modal3-body").html();
+                        html += "全部迁移完成!";
+                        $("#query-modal3-footer").html(`<button class="btn btn-primary" data-dismiss="modal">完成</button>`);
+                        $("#query-modal3-body").html(html);
+                    })
+
+            };
+            reader.readAsText($('#customFile')[0].files[0]);
+        }
+
+        function import_type(_type, data) {
+            return $.ajax({
+                url: '/migrate/',
+                method: 'post',
+                dataType: "json",
+                data: {
+                    type: _type,
+                    data: JSON.stringify(data),
+                    "csrfmiddlewaretoken": "{{ csrf_token }}"
+                },
+                complete: function (res) {
+                    if (res.status === 200) {
+                        let html = $("#query-modal3-body").html();
+                        html += res.responseJSON.msg + "<br>";
+                        $("#query-modal3-body").html(html);
+                    } else {
+                        let html = $("#query-modal3-body").html();
+                        html += _type + " 错误...跳过<br>";
+                        $("#query-modal3-body").html(html);
+                        $("#query-modal3-footer").html(`<button class="btn btn-primary" data-dismiss="modal">完成</button>`);
+                    }
+                }
+            })
+        }
+
+    </script>
+{% endblock javascripts %}

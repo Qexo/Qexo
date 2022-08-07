@@ -1,5 +1,5 @@
 import os
-from core.QexoSettings import ALL_SETTINGS
+from core.QexoSettings import ALL_SETTINGS, ALL_CDN
 import requests
 from django.template.defaulttags import register
 from core.QexoSettings import QEXO_VERSION

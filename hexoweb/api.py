@@ -184,6 +184,19 @@ def set_abbrlink(request):
     return render(request, 'layouts/json.html', {"data": json.dumps(context)})
 
 
+# 设置CDN api/set_cdn
+@login_required(login_url="/login/")
+def set_cdn(request):
+    try:
+        cdnjs = request.POST.get("cdn")
+        save_setting("CDNJS", cdnjs)
+        context = {"msg": "保存成功!", "status": True}
+    except Exception as e:
+        print(repr(e))
+        context = {"msg": repr(e), "status": False}
+    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+
+
 # 设置自定义配置 api/set_cust
 @login_required(login_url="/login/")
 def set_cust(request):

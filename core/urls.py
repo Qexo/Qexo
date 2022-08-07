@@ -58,6 +58,7 @@ urlpatterns = [
     path('api/set_onepush/', set_onepush, name='set_onepush'),
     path('api/test_onepush/', test_onepush, name='test_onepush'),
     path('api/set_sidebar/', set_sidebar, name='set_sidebar'),
+    path('api/set_cdn/', set_cdn, name='set_cdn'),
 
     path('pub/save/', pub.save, name='pub_save'),
     path('pub/save_post/', pub.save_post, name='pub_save_post'),

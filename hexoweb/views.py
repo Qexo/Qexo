@@ -603,6 +603,8 @@ def pages(request):
                 for provider in all_provider:
                     params = get_image_params(provider)
                     context["all_image_hosts"][provider] = params
+                # CDNs
+                context["ALL_CDN"] = ALL_CDN
             except:
                 print("配置获取错误, 转跳至配置更新页面")
                 return redirect("/update/")

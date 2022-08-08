@@ -593,8 +593,8 @@ def pages(request):
                         params["required"].remove("content")
                     if "title" in params["required"]:
                         params["required"].remove("title")
-                    if "markdown" not in params["optional"]:
-                        params["optional"].append("markdown")
+                    if "mdFormat" not in params["optional"]:
+                        params["optional"].append("mdFormat")
                     context["all_pushers"][pusher] = params
                 # GET Image Host Settings
                 context["IMG_HOST"] = get_setting("IMG_HOST")

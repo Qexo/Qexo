@@ -22,7 +22,7 @@ def auth(request):
                 captcha = requests.get(
                     "https://recaptcha.net/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
                 if captcha["score"] <= 0.5:
-                    return JsonResponse(safe=False, safe=False, data={"msg": "人机验证失败！", "status": False})
+                    return JsonResponse(safe=False, data={"msg": "人机验证失败！", "status": False})
             else:
                 return JsonResponse(safe=False, data={"msg": "人机验证失败！", "status": False})
         # print(captcha)

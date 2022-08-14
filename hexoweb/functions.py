@@ -3,9 +3,10 @@ from core.QexoSettings import ALL_SETTINGS, ALL_CDN
 import requests
 from django.template.defaulttags import register
 from core.QexoSettings import QEXO_VERSION
-from .models import Cache, SettingModel, FriendModel, NotificationModel, CustomModel, StatisticUV, StatisticPV, ImageModel
+from .models import Cache, SettingModel, FriendModel, NotificationModel, CustomModel, StatisticUV, StatisticPV, ImageModel, TalkModel
 import github
 import json
+import uuid
 from urllib.parse import quote, unquote
 from datetime import timezone, timedelta, date, datetime
 from time import time
@@ -618,7 +619,7 @@ def verify_provider(provider):
                 res = provider.get_content("_config.yml")
                 content = yaml.load(res, Loader=yaml.SafeLoader)
                 if content.get("theme"):
-                    theme = content.get("theme")
+                    theme = str(content.get("theme"))
                     for file in home["data"]:
                         if file["name"] == "_config.{}.yml".format(theme) and file["type"] == "file":
                             config_theme = "_config.{}.yml".format(theme)
@@ -826,14 +827,21 @@ def import_pv(ss):
     return True
 
 
-def excerpt_post(content, length):
-    result, content = "", markdown(content)
+def excerpt_post(content, length, mark=True):
+    result, content = "", (markdown(content) if mark else content)
     soup = BeautifulSoup(content, 'html.parser')
     for dom in soup:
         if dom.name and dom.name not in ["script", "style"]:
             result += re.sub("{(.*?)}", '', dom.get_text()).replace("\n", " ")
             result += "" if result.endswith(" ") else " "
     return result[:int(length)] + "..." if len(result) > int(length) else result
+
+
+def edit_talk(_id, content):
+    talk = TalkModel.objects.get(id=_id)
+    talk.content = content
+    talk.save()
+    return True
 
 
 # print(" ......................阿弥陀佛......................\n" +

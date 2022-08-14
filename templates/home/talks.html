@@ -1,6 +1,6 @@
 {% extends 'layouts/base.html' %}
 
-{% block title %} {% if search %}搜索文章: {{ search }}{% else %}全部文章{% endif %} {% endblock title %}
+{% block title %} {% if search %}搜索说说: {{ search }}{% else %}全部说说{% endif %}{% endblock title %}
 
 {% block content %}
 
@@ -9,18 +9,18 @@
             <div class="header-body">
                 <div class="row align-items-center py-4">
                     <div class="col-lg-6 col-7">
-                        <h6 class="h2 text-white d-inline-block mb-0">文章列表</h6>
+                        <h6 class="h2 text-white d-inline-block mb-0">说说列表</h6>
                         <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
                             <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                                 <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i></a>
                                 </li>
-                                <li class="breadcrumb-item active" aria-current="page">文章</li>
+                                <li class="breadcrumb-item active" aria-current="page">说说</li>
                             </ol>
                         </nav>
                     </div>
                     <div class="col-lg-6 col-5 text-right">
                         <a href="/" class="btn btn-sm btn-neutral">主页</a>
-                        <a href="/new.html" class="btn btn-sm btn-neutral">新建文章</a>
+                        <a href="/edit_talk.html" class="btn btn-sm btn-neutral">新建说说</a>
                     </div>
                 </div>
             </div>
@@ -35,9 +35,9 @@
                     <div class="card-header border-0">
                         <div class="row align-items-center">
                             <div class="col">
-                                <h3 class="mb-0">{% if search %}搜索文章: {{ search }}{% else %}
-                                    全部文章{% endif %}
-                                    (<span id="post-number">{{ post_number }}</span>篇)</h3>
+                                <h3 class="mb-0">{% if search %}搜索说说: {{ search }}{% else %}
+                                    全部说说{% endif %}
+                                    (<span id="post-number">{{ post_number }}</span>条)</h3>
                             </div>
                         </div>
                     </div>
@@ -46,9 +46,10 @@
                         <table class="table align-items-center table-flush">
                             <thead class="thead-light">
                             <tr>
-                                <th scope="col">文章名</th>
-                                <th scope="col">大小</th>
-                                <th scope="col">发布状态</th>
+                                <th scope="col">内容</th>
+                                <th scope="col">时间</th>
+                                <th scope="col">标签</th>
+                                <th scope="col">点赞</th>
                                 <th scope="col">操作</th>
                             </tr>
                             </thead>
@@ -75,7 +76,7 @@
                                     <a class="page-link"
                                        href="javascript:next_page()">
                                         <i class="fas fa-angle-right"></i>
-                                        <span class="sr-only">下一页</span>
+                                        <span class="sr-only">Next</span>
                                     </a>
                                 </li>
                             </ul>
@@ -95,7 +96,7 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        确认要删除 <a id="delfile"></a> 吗？此操作不可撤回
+                        确认要删除这条说说吗？此操作不可撤回
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">取消
@@ -116,8 +117,10 @@
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
 
+
     <script>
-        var posts = {{ all_posts|safe }};
+        var del_file = "";
+        var posts = {{ posts|safe }};
         var _page = 1;
 
         function scrollToTop() {
@@ -144,17 +147,12 @@
             }
             let list = "";
             for (let i = 0; i < page_posts.length; i++) {
-                list += "<tr><th scope=\"row\">" + page_posts[i]["name"] + "</th><td>" +
-                    (page_posts[i]["size"] / 1000).toFixed(2) + " KB</td><td>";
-                if (page_posts[i]["status"]) {
-                    list += "已发布";
-                } else {
-                    list += "草稿";
-                }
-                list += "</td><td><a href=\"/edit.html?file=" + encodeURIComponent(page_posts[i]["fullname"]) + "\">" +
-                    "<i class=\"fa fa-edit mr-2\"></i></a>" + "<a href=\"javascript:query_delete('" +
-                    EscapeString(page_posts[i]["path"]) + "')\"><i class=\"fa fa-trash-alt " +
-                    "mr-2\"></i></a></td></tr>";
+                list += "<tr><th scope=\"row\">" + page_posts[i]["content"] +
+                    "</th><td>" + page_posts[i]["time"] + "</td><td>" + page_posts[i]["tags"]
+                    + "</td><td>" + page_posts[i]["like"] + "</td><td> <a href=\"/edit_talk" +
+                    ".html?id=" + page_posts[i]["id"] + "\"><i class=\"fa fa-edit mr-2\"></i></a>" +
+                    " <a href=\"javascript:query_delete('" + page_posts[i]["id"] + "')\"><i " +
+                    "class=\"fa fa-trash-alt mr-2\"></i></a></td></tr>";
             }
             $("#page-" + _page).removeClass("active");
             $("#page-" + page).addClass("active");
@@ -189,7 +187,6 @@
         }
 
         change_page(1);
-
         $.ajaxSetup({
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
         });
@@ -259,26 +256,25 @@
             }
         }
 
-        function query_delete(name) {
-            $("#delfile").text(name);
+        function query_delete(id) {
+            del_file = id;
             $("#deleteModal").modal("show");
         }
 
         function delete_file() {
             let loading = new KZ_Loading('正在删除中...');
-            let file = $("#delfile").text();
             loading.show();
             $.ajax({
-                url: '/api/delete/',
+                url: '/api/del_talk/',
                 method: 'post',
-                data: {"file": file},
+                data: {"id": del_file},
                 dataType: 'JSON',
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
                         notyf.success('删除成功！');
                         for (let i = 0; i < posts.length; i++) {
-                            if (posts[i]["path"] === file) {
+                            if (posts[i]["id"] === del_file) {
                                 posts.splice(i, 1);
                                 $("#post-number").html(posts.length);
                                 break;

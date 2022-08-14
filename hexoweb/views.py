@@ -313,7 +313,7 @@ def migrate_view(request):
         except Exception as error:
             print(request.POST.get("type") + "错误: " + repr(error))
             context["msg"] = request.POST.get("type") + "错误: " + repr(error)
-        return render(request, "layouts/json.html", {"data": json.dumps(context)})
+        return JsonResponse(data=context)
     else:
         context = get_custom_config()
     return render(request, "accounts/migrate.html", context)
@@ -348,16 +348,10 @@ def index(request):
     for i in _images:
         images.append({"name": i.name, "size": int(i.size), "url": i.url,
                        "date": strftime("%Y-%m-%d", localtime(float(i.date)))})
-    if len(posts) >= 5:
-        context["posts"] = posts[0:5]
-    else:
-        context["posts"] = posts
+    context["posts"] = posts[0:5]
     for item in range(len(context["posts"])):
         context["posts"][item]["fullname"] = quote(context["posts"][item]["fullname"])
-    if len(images) >= 5:
-        context["images"] = images[::-1][0:5]
-    else:
-        context["images"] = images[::-1]
+    context["images"] = images[::-1][0:5]
     context = dict(context, **get_latest_version())
     context["version"] = QEXO_VERSION
     context["post_number"] = str(len(posts))
@@ -390,6 +384,20 @@ def pages(request):
         context['segment'] = load_template
         if "index" in load_template:
             return index(request)
+        elif "edit_talk" in load_template:
+            talk_id = request.GET.get("id")
+            context["content"] = repr("")
+            context["tags"] = "[]"
+            if talk_id:
+                Talk = TalkModel.objects.get(id=uuid.UUID(hex=talk_id))
+                context["content"] = repr(Talk.content)
+                context["tags"] = Talk.tags
+                context["id"] = talk_id
+            try:
+                if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
+                    context["img_bed"] = True
+            except:
+                print("未检测到图床配置, 图床功能关闭")
         elif "edit_page" in load_template:
             file_path = request.GET.get("file")
             context["front_matter"], context["file_content"] = get_post_details(
@@ -504,6 +512,29 @@ def pages(request):
                 else:
                     posts = update_configs_cache(search)
             context["posts"] = posts
+            context["post_number"] = len(posts)
+            context["page_number"] = ceil(context["post_number"] / 15)
+            context["search"] = search
+        elif "talks" in load_template:
+            search = request.GET.get("s")
+            posts = []
+            if search:
+                talks = TalkModel.objects.filter(content__contains=search)
+                for i in talks:
+                    posts.append({"content": excerpt_post(i.content, 20, mark=False),
+                                  "tags": ', '.join(json.loads(i.tags)),
+                                  "time": strftime("%Y-%m-%d %H:%M:%S", localtime(int(i.time))),
+                                  "like": len(json.loads(i.like)),
+                                  "id": i.id.hex})
+            else:
+                talks = TalkModel.objects.all()
+                for i in talks:
+                    posts.append({"content": excerpt_post(i.content, 20, mark=False),
+                                  "tags": ', '.join(json.loads(i.tags)),
+                                  "time": strftime("%Y-%m-%d %H:%M:%S", localtime(int(i.time))),
+                                  "like": len(json.loads(i.like)),
+                                  "id": i.id.hex})
+            context["posts"] = sorted(posts, key=lambda x: x["time"], reverse=True)
             context["post_number"] = len(posts)
             context["page_number"] = ceil(context["post_number"] / 15)
             context["search"] = search

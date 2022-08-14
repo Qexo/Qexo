@@ -1,6 +1,6 @@
 {% extends 'layouts/base.html' %}
 
-{% block title %} {% if search %}搜索图片:{{ search }}{% else %}全部图片{% endif %} {% endblock title %}
+{% block title %} {% if search %}搜索图片: {{ search }}{% else %}全部图片{% endif %} {% endblock title %}
 
 {% block content %}
 
@@ -31,7 +31,7 @@
                         <div class="row align-items-center">
                             <div class="col">
                                 <h3 class="mb-0">{% if search %}搜索图片: {{ search }}{% else %}全部图片{% endif %}
-                                    ({{ post_number }}张)</h3>
+                                    (<span id="post-number">{{ post_number }}</span>张)</h3>
                             </div>
                         </div>
                     </div>
@@ -267,7 +267,14 @@
                     loading.destroy();
                     if (res.status) {
                         notyf.success('删除成功！');
-                        setTimeout(location.reload(), 1000);
+                        for(let i=0;i<posts.length;i++){
+                            if(posts[i]["time"]===del_file){
+                                posts.splice(i,1);
+                                $("#post-number").html(posts.length);
+                                break;
+                            }
+                        }
+                        change_page(_page);
                     } else {
                         notyf.error(res.msg);
                     }

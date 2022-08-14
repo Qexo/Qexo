@@ -463,10 +463,9 @@ def statistic(request):
             'REMOTE_ADDR']
         uv = StatisticUV.objects.filter(ip=ip)
         if uv.count() >= 1:
-            data = json.dumps(
-                {"site_pv": site_pv.number, "page_pv": pv.number, "site_uv": StatisticUV.objects.all().count(),
-                 "status": True})
-            return JsonResponse(safe=False, data=data)
+            return JsonResponse(safe=False,
+                                data={"site_pv": site_pv.number, "page_pv": pv.number, "site_uv": StatisticUV.objects.all().count(),
+                                      "status": True})
         uv = StatisticUV()
         uv.ip = ip
         uv.save()

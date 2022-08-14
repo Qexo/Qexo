@@ -471,10 +471,8 @@ def statistic(request):
         uv.ip = ip
         uv.save()
         print("登记用户UV: " + ip)
-        data = json.dumps(
-            {"site_pv": site_pv.number, "page_pv": pv.number, "site_uv": StatisticUV.objects.all().count(),
-             "status": True})
-        return JsonResponse(safe=False, data=data)
+        return JsonResponse(safe=False, data={"site_pv": site_pv.number, "page_pv": pv.number, "site_uv": StatisticUV.objects.all().count(),
+                                              "status": True})
     except Exception as e:
         print(repr(e))
         return JsonResponse(safe=False, data={"status": False, "error": repr(e)})

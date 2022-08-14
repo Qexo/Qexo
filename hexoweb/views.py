@@ -313,7 +313,7 @@ def migrate_view(request):
         except Exception as error:
             print(request.POST.get("type") + "错误: " + repr(error))
             context["msg"] = request.POST.get("type") + "错误: " + repr(error)
-        return JsonResponse(data=context)
+        return JsonResponse(safe=False, data=context)
     else:
         context = get_custom_config()
     return render(request, "accounts/migrate.html", context)

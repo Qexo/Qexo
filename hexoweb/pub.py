@@ -556,12 +556,12 @@ def like_talk(request):
             t.remove(ip)
             talk.like = json.dumps(t)
             talk.save()
-            context = {"msg": "取消成功！", "status": True}
+            context = {"msg": "取消成功！", "action": False, "status": True}
         else:
             t.append(ip)
             talk.like = json.dumps(t)
             talk.save()
-            context = {"msg": "点赞成功！", "status": True}
+            context = {"msg": "点赞成功！", "action": True, "status": True}
     except Exception as error:
         print(repr(error))
         context = {"msg": repr(error), "status": False}

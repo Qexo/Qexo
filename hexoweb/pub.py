@@ -522,8 +522,8 @@ def notifications(request):
 @csrf_exempt
 def get_talks(request):
     try:
-        page = int(request.GET.get('page'))
-        limit = int(request.GET.get('limit'))
+        page = int(request.GET.get('page')) if request.GET.get('page') else 1
+        limit = int(request.GET.get('limit')) if request.GET.get('limit') else 5
         ip = request.META['HTTP_X_FORWARDED_FOR'] if 'HTTP_X_FORWARDED_FOR' in request.META.keys() else request.META[
             'REMOTE_ADDR']  # 使用用户IP判断点赞是否成立
         if not page:

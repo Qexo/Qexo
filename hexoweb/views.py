@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.contrib.auth import logout
 from django import template
 from django.http import HttpResponse

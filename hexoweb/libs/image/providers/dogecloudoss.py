@@ -16,34 +16,13 @@ import urllib
 from ..core import Provider
 
 
-def dogecloud_api(access_key, secret_key, api_path, data={}, json_mode=False):
-    body = ''
-    mime = ''
-    if json_mode:
-        body = json.dumps(data)
-        mime = 'application/json'
-    else:
-        body = urllib.parse.urlencode(data)
-        mime = 'application/x-www-form-urlencoded'
-    sign_str = api_path + "\n" + body
-    signed_data = hmac.new(secret_key.encode(
-        'utf-8'), sign_str.encode('utf-8'), sha1)
-    sign = signed_data.digest().hex()
-    authorization = 'TOKEN ' + access_key + ':' + sign
-    response = requests.post('https://api.dogecloud.com' + api_path, data=body, headers={
-        'Authorization': authorization,
-        'Content-Type': mime
-    })
-    return response.json()
-
-
 class DogeCloudOss(Provider):
-    name = 'DogeCloudOss'
+    name = 'DogeCloud云存储'
     params = {
         'access_key': {'description': 'DogeCloud_Accesskey', 'placeholder': 'DogeCloud用户的Accesskey'},
         'secret_key': {'description': 'DogeCloud_Secretkey', 'placeholder': 'DogeCloud用户的Secretkey'},
         'bucket': {'description': '储存桶名', 'placeholder': 'DogeCloud 储存桶 (Bucket) 名称'},
-        'endpoint_url': {'description': '边缘节点', 'placeholder': 'S3 Endpoint'},
+        'endpoint_url': {'description': '边缘节点', 'placeholder': 'DogeCloud Endpoint'},
         'path': {'description': '保存路径', 'placeholder': '文件上传后保存的路径 包含文件名'},
         'prev_url': {'description': '自定义域名', 'placeholder': '最终返回的链接为自定义域名/保存路径'}
     }
@@ -56,6 +35,24 @@ class DogeCloudOss(Provider):
         self.path = path
         self.prev_url = prev_url
 
+    def dogecloud_api(self):
+        access_key = self.access_key
+        secret_key = self.secret_key
+        api_path = "/auth/tmp_token.json"
+        data = {'channel': 'OSS_FULL', 'scopes': ['*']}
+        body = json.dumps(data)
+        mime = 'application/json'
+        sign_str = api_path + "\n" + body
+        signed_data = hmac.new(secret_key.encode(
+            'utf-8'), sign_str.encode('utf-8'), sha1)
+        sign = signed_data.digest().hex()
+        authorization = 'TOKEN ' + access_key + ':' + sign
+        response = requests.post('https://api.dogecloud.com' + api_path, data=body, headers={
+            'Authorization': authorization,
+            'Content-Type': mime
+        })
+        return response.json()
+
     def upload(self, file):
         now = date.today()
         photo_stream = file.read()
@@ -63,11 +60,9 @@ class DogeCloudOss(Provider):
         path = self.path.replace("{year}", str(now.year)).replace("{month}", str(now.month)).replace("{day}", str(now.day)).replace(
             "{filename}", file.name[0:-len(file.name.split(".")[-1]) - 1]).replace("{extName}", file.name.split(".")[-1]).replace("{md5}",
                                                                                                                                   file_md5)
-        res = dogecloud_api(self.access_key, self.secret_key, '/auth/tmp_token.json',
-                            {'channel': 'OSS_FULL', 'scopes': ['*']}, True)
+        res = self.dogecloud_api()
         if res['code'] != 200:
-            print("api failed: " + res['msg'])
-            quit()
+            raise Exception("Api failed: " + res['msg'])
         credentials = res['data']['Credentials']
 
         s3 = boto3.resource(

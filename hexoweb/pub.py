@@ -530,13 +530,15 @@ def get_talks(request):
             page = 1
         if not limit:
             limit = 10
-        all_talks = TalkModel.objects.all().order_by("time")[(page - 1) * limit:page * limit]
+        all_talks = TalkModel.objects.all()
+        count = all_talks.count()
+        all_talks = all_talks.order_by("time")[(page - 1) * limit:page * limit]
         talks = []
         for i in all_talks:
             t = json.loads(i.like)
             talks.append({"id": i.id.hex, "content": i.content, "time": i.time, "tags": json.loads(i.tags), "like": len(t),
                           "liked": True if ip in t else False})
-        context = {"msg": "获取成功！", "status": True, "data": talks}
+        context = {"msg": "获取成功！", "status": True, "count": count, "data": talks}
     except Exception as error:
         print(repr(error))
         context = {"msg": repr(error), "status": False}

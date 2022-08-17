@@ -532,7 +532,7 @@ def get_talks(request):
             limit = 10
         all_talks = TalkModel.objects.all()
         count = all_talks.count()
-        all_talks = all_talks.order_by("time")[(page - 1) * limit:page * limit]
+        all_talks = all_talks.order_by("time")[::-1][(page - 1) * limit:page * limit]
         talks = []
         for i in all_talks:
             t = json.loads(i.like)

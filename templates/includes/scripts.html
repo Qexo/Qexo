@@ -116,7 +116,7 @@
         url: "/api/get_notifications/",
         type: "get",
         success: function (res) {
-            let data = JSON.parse(res);
+            let data = res;
             if (data["status"]) {
                 notifications = data["data"];
                 showNotifications();

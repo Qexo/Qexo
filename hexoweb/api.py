@@ -407,7 +407,7 @@ def save_post(request):
                 excerpt = excerpt_post(content, get_setting("EXCERPT_LENGTH"))
                 print(f"截取文章{file_name}摘要: " + excerpt)
                 front_matter["excerpt"] = excerpt
-            front_matter = "---\n{}---".format(yaml.dump(front_matter, allow_unicode=True))
+            front_matter = "---\n{}---\n".format(yaml.dump(front_matter, allow_unicode=True))
             Provider().save("source/_posts/" + file_name, front_matter + content, commitchange)
             context = {"msg": "OK!", "status": True}
             if excerpt:

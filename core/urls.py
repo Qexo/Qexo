@@ -88,6 +88,8 @@ urlpatterns = [
     path('pub/notifications/', pub.notifications, name='pub_notifications'),
     path('pub/talks/', pub.get_talks, name='pub_talks'),
     path('pub/like_talk/', pub.like_talk, name='pub_like_talk'),
+    path('pub/save_talk/', pub.save_talk, name='pub_save_talk'),
+    path('pub/del_talk/', pub.del_talk, name='pub_del_talk'),
 
     re_path(r'^(?!api)^(?!pub).*$\.*', pages, name='pages'),
 ]

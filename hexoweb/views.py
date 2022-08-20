@@ -284,6 +284,7 @@ def migrate_view(request):
                 exports["custom"] = export_customs()
                 exports["uv"] = export_uv()
                 exports["pv"] = export_pv()
+                exports["talks"] = export_talks()
                 html_template = loader.get_template('layouts/json.html')
                 response = HttpResponse(html_template.render({"data": json.dumps(exports)}, request))
                 response['Content-Type'] = 'application/octet-stream'
@@ -310,6 +311,9 @@ def migrate_view(request):
             elif request.POST.get("type") == "import_pv":
                 import_pv(json.loads(request.POST.get("data")))
                 context["msg"] = "PV统计迁移完成！"
+            elif request.POST.get("type") == "import_talks":
+                import_talks(json.loads(request.POST.get("data")))
+                context["msg"] = "说说迁移完成！"
         except Exception as error:
             print(request.POST.get("type") + "错误: " + repr(error))
             context["msg"] = request.POST.get("type") + "错误: " + repr(error)

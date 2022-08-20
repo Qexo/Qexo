@@ -316,8 +316,9 @@ def check_if_api_auth(request):
         return True
     if request.GET.get("token") == get_setting("WEBHOOK_APIKEY"):
         return True
-    print(request.path + ": API鉴权失败 访问IP " + (request.META['HTTP_X_FORWARDED_FOR'] if 'HTTP_X_FORWARDED_FOR' in request.META.keys() else
-                                              request.META['REMOTE_ADDR']))
+    print(
+        request.path + ": API鉴权失败 访问IP " + (request.META['HTTP_X_FORWARDED_FOR'] if 'HTTP_X_FORWARDED_FOR' in request.META.keys() else
+                                                  request.META['REMOTE_ADDR']))
     return False
 
 
@@ -667,7 +668,8 @@ def get_post_details(article, safe=True):
     try:
         front_matter = yaml.safe_load(
             re.search(r"---([\s\S]*?)---", article, flags=0).group()[3:-4].replace("{{ date }}",
-                                                                                   strftime("%Y-%m-%d %H:%M:%S", localtime(time()))).replace(
+                                                                                   strftime("%Y-%m-%d %H:%M:%S",
+                                                                                            localtime(time()))).replace(
                 "{{ abbrlink }}", get_crc_by_time(str(time()), get_setting("ABBRLINK_ALG"), get_setting("ABBRLINK_REP"))).replace("{",
                                                                                                                                   "").replace(
                 "}", "")) if article[:3] == "---" else json.loads(
@@ -742,6 +744,14 @@ def export_pv():
     ss = list()
     for s in all_:
         ss.append({"url": s.url, "number": s.number})
+    return ss
+
+
+def export_talks():
+    all_ = TalkModel.objects.all()
+    ss = list()
+    for s in all_:
+        ss.append({"content": s.content, "tags": s.tags, "time": s.time, "like": s.like})
     return ss
 
 
@@ -827,6 +837,20 @@ def import_pv(ss):
         pv.url = s["url"]
         pv.number = s["number"]
         pv.save()
+    return True
+
+
+def import_talks(ss):
+    _all = TalkModel.objects.all()
+    for i in _all:
+        i.delete()
+    for s in ss:
+        talk = TalkModel()
+        talk.content = s["content"]
+        talk.tags = s["tags"]
+        talk.time = s["time"]
+        talk.like = s["like"]
+        talk.save()
     return True
 
 

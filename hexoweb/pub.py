@@ -319,7 +319,7 @@ def ask_friend(request):
         friend.save()
         CreateNotification("友链申请 " + friend.name,
                            "站点名: {}\n链接: {}\n图片: {}\n简介: {}\n".format(friend.name, friend.url, friend.imageUrl,
-                                                                      friend.description), time())
+                                                                               friend.description), time())
         context = {"msg": "申请成功！", "time": friend.time, "status": True}
     except Exception as error:
         print(repr(error))
@@ -490,9 +490,9 @@ def waline(request):
             if comment.get("link"):
                 msg += "网址: {}\n".format(comment["link"])
             msg += "内容: {}\nIP: {}\n时间: {}\n地址: {}\n状态: {}\nUA: {}".format(comment["comment"], comment["ip"],
-                                                                           comment["insertedAt"],
-                                                                           comment["url"], comment["status"],
-                                                                           comment["ua"])
+                                                                                   comment["insertedAt"],
+                                                                                   comment["url"], comment["status"],
+                                                                                   comment["ua"])
             CreateNotification("Waline评论通知", msg, time())
     except Exception as error:
         print(repr(error))
@@ -505,7 +505,6 @@ def waline(request):
 def notifications(request):
     if not check_if_api_auth(request):
         return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
-
     try:
         data = json.loads(request.body.decode())
         content = data.get('content')
@@ -566,6 +565,44 @@ def like_talk(request):
             talk.save()
             print(ip + "成功点赞: " + talk_id)
             context = {"msg": "点赞成功！", "action": True, "status": True}
+    except Exception as error:
+        print(repr(error))
+        context = {"msg": repr(error), "status": False}
+    return JsonResponse(safe=False, data=context)
+
+
+# 保存说说 pub/save_talk
+@csrf_exempt
+def save_talk(request):
+    try:
+        if not check_if_api_auth(request):
+            return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
+        context = {"msg": "发布成功!", "status": True}
+        if request.POST.get("id"):
+            talk = TalkModel.objects.get(id=uuid.UUID(hex=request.POST.get("id")))
+            talk.content = request.POST.get("content")
+            talk.tags = request.POST.get("tags")
+            talk.time = request.POST.get("time")
+            talk.save()
+            context["msg"] = "修改成功"
+        else:
+            talk = TalkModel(content=request.POST.get("content"), tags=request.POST.get("tags"), time=str(int(time())), like="[]")
+            talk.save()
+            context["id"] = talk.id.hex
+    except Exception as error:
+        print(repr(error))
+        context = {"msg": repr(error), "status": False}
+    return JsonResponse(safe=False, data=context)
+
+
+# 删除说说 pub/del_talk
+@csrf_exempt
+def del_talk(request):
+    try:
+        if not check_if_api_auth(request):
+            return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
+        TalkModel.objects.get(id=uuid.UUID(hex=request.POST.get("id"))).delete()
+        context = {"msg": "删除成功！", "status": True}
     except Exception as error:
         print(repr(error))
         context = {"msg": repr(error), "status": False}

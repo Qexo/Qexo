@@ -40,7 +40,7 @@ def save_post(request):
             # 删除草稿
             try:
                 Provider().delete("source/_drafts/" + file_name)
-            except:
+            except Exception:
                 pass
             # 创建/更新文章
             Provider().save("source/_posts/" + file_name, content)
@@ -211,9 +211,9 @@ def auto_fix(request):
 @csrf_exempt
 def friends(request):
     try:
-        friends = FriendModel.objects.all()
+        all_friends = FriendModel.objects.all()
         data = list()
-        for i in friends:
+        for i in all_friends:
             if i.status:
                 data.append({"name": i.name, "url": i.url, "image": i.imageUrl,
                              "description": i.description,
@@ -489,10 +489,8 @@ def waline(request):
             msg = "评论者: {}\n邮箱: {}\n".format(comment["nick"], comment["mail"])
             if comment.get("link"):
                 msg += "网址: {}\n".format(comment["link"])
-            msg += "内容: {}\nIP: {}\n时间: {}\n地址: {}\n状态: {}\nUA: {}".format(comment["comment"], comment["ip"],
-                                                                                   comment["insertedAt"],
-                                                                                   comment["url"], comment["status"],
-                                                                                   comment["ua"])
+            msg += "内容: {}\nIP: {}\n时间: {}\n地址: {}\n状态: {}\nUA: {}".format(comment["comment"], comment["ip"], comment["insertedAt"],
+                                                                                   comment["url"], comment["status"], comment["ua"])
             CreateNotification("Waline评论通知", msg, time())
     except Exception as error:
         print(repr(error))

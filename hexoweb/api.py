@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .functions import *
 
 
-# 登录验证 API api/auth
+# 登录验证API api/auth
 def auth(request):
     try:
         username = request.POST.get("username")
@@ -113,7 +113,7 @@ def test_onepush(request):
                       content="如果你收到了这则消息, 那么代表您的消息配置成功了")
         try:
             data = ntfy.text
-        except:
+        except Exception:
             data = "OK"
         context = {"msg": data, "status": True}
     except Exception as e:
@@ -400,7 +400,7 @@ def save_post(request):
             try:
                 commitchange = f"Delete Post Draft {file_name}"
                 Provider().delete("source/_drafts/" + file_name, commitchange)
-            except:
+            except Exception:
                 pass
             # 创建/更新文章
             commitchange = f"Update Post {file_name}"

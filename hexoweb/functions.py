@@ -35,7 +35,7 @@ disable_warnings()
 def get_setting(name):
     try:
         return SettingModel.objects.get(name=name).content
-    except:
+    except Exception:
         return ""
 
 
@@ -48,7 +48,7 @@ def update_provider():
 
 try:
     _Provider = update_provider()
-except:
+except Exception:
     print("Provider初始化失败, 跳过")
     pass
 
@@ -56,7 +56,7 @@ except:
 def Provider():
     try:
         return _Provider
-    except:
+    except Exception:
         print("Provider获取错误, 重新初始化")
         return update_provider()
 
@@ -67,8 +67,8 @@ def get_range(value):
 
 
 @register.filter
-def div(value, div):  # 保留两位小数的除法
-    return round((value / div), 2)
+def div(value, _div):  # 保留两位小数的除法
+    return round((value / _div), 2)
 
 
 def get_cdn():
@@ -242,7 +242,7 @@ def delete_pages_caches():
     for cache in caches:
         try:
             name = cache.name[:5]
-        except:
+        except Exception:
             name = ""
         if name == "pages":
             cache.delete()
@@ -317,8 +317,8 @@ def check_if_api_auth(request):
     if request.GET.get("token") == get_setting("WEBHOOK_APIKEY"):
         return True
     print(
-        request.path + ": API鉴权失败 访问IP " + (request.META['HTTP_X_FORWARDED_FOR'] if 'HTTP_X_FORWARDED_FOR' in request.META.keys() else
-                                                  request.META['REMOTE_ADDR']))
+        request.path + ": API鉴权失败 访问IP " + (
+            request.META['HTTP_X_FORWARDED_FOR'] if 'HTTP_X_FORWARDED_FOR' in request.META.keys() else request.META['REMOTE_ADDR']))
     return False
 
 
@@ -505,7 +505,7 @@ def LocalOnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
         url = 'https://github.com/' + auth + '/' + project + '/tarball/' + quote(branch) + '/'
         with open(_tarfile, "wb") as file:
             file.write(requests.get(url).content)
-    except:
+    except Exception:
         print("下载更新失败, 尝试使用镜像服务器")
         url = 'https://hub.fastgit.xyz/' + auth + '/' + project + '/tarball/' + quote(branch) + '/'
         with open(_tarfile, "wb") as file:
@@ -520,7 +520,7 @@ def LocalOnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
     filelist = os.listdir(Path)
     print("开始删除旧文件...")
     for filename in filelist:  # delete all files except tmp
-        if not filename in ["_tmp", "configs.py", "db"]:
+        if filename not in ["_tmp", "configs.py", "db"]:
             if os.path.isfile(filename):
                 os.remove(filename)
             elif os.path.isdir(filename):
@@ -543,7 +543,7 @@ def CreateNotification(label, content, now):
     N.save()
     try:
         notify_me(label, content)
-    except:
+    except Exception:
         pass
     return N
 
@@ -580,7 +580,7 @@ def notify_me(title, content):
     ntfy = notify(config["notifier"], **config["params"], title="Qexo消息: " + title, content=content)
     try:
         return ntfy.text
-    except:
+    except Exception:
         print("通知类型无输出信息, 使用OK缺省")
         return "OK"
 
@@ -631,7 +631,7 @@ def verify_provider(provider):
                             if file["name"] == "_config.yml" and file["type"] == "file":
                                 config_theme = "themes/" + theme + "_config.yml"
                                 break
-        except:
+        except Exception:
             pass
         # 校验 Package.json 及 Hexo
         if pack:
@@ -644,7 +644,7 @@ def verify_provider(provider):
                     if content.get("dependencies"):
                         if content["dependencies"].get("hexo"):
                             hexo = content["dependencies"].get("hexo")
-            except:
+            except Exception:
                 pass
         # 总结校验
         if hexo and config_hexo and (not indexhtml) and source and theme and pack and config_theme:
@@ -660,7 +660,7 @@ def verify_provider(provider):
             "theme_dir": theme_dir,
             "package": pack,
         }
-    except:
+    except Exception:
         return {"status": -1}
 
 
@@ -677,7 +677,7 @@ def get_post_details(article, safe=True):
                                                                                                    strftime("%Y-%m-%d %H:%M:%S",
                                                                                                             localtime(time()))).replace(
                 "{{ abbrlink }}", get_crc_by_time(str(time()), get_setting("ABBRLINK_ALG"), get_setting("ABBRLINK_REP")))))
-    except:
+    except Exception:
         return {}, article
     for key in front_matter.keys():
         if type(front_matter.get(key)) in [datetime, date]:

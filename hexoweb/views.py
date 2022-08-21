@@ -26,7 +26,7 @@ def login_view(request):
         if int(get_setting("INIT")) <= 5:
             print("未完成初始化配置, 转跳到初始化页面")
             return redirect("/init/")
-    except:
+    except Exception:
         print("未检测到初始化配置, 转跳到初始化页面")
         return redirect("/init/")
     if request.user.is_authenticated:
@@ -48,7 +48,7 @@ def update_view(request):
         if int(get_setting("INIT")) <= 5:
             print("未完成初始化配置, 转跳到初始化页面")
             return redirect("/init/")
-    except:
+    except Exception:
         print("未检测到初始化配置, 转跳到初始化页面")
         return redirect("/init/")
     if request.method == 'POST':
@@ -106,8 +106,11 @@ def init_view(request):
             save_setting("INIT", "2")
             step = "2"
         if request.POST.get("step") == "2":
+            username = request.POST.get("username")
+            password = request.POST.get("password")
+            repassword = request.POST.get("repassword")
+            apikey = request.POST.get("apikey")
             try:
-                apikey = request.POST.get("apikey")
                 if apikey:
                     save_setting("WEBHOOK_APIKEY", apikey)
                 else:
@@ -115,9 +118,6 @@ def init_view(request):
                         save_setting("WEBHOOK_APIKEY", ''.join(
                             random.choice("qwertyuiopasdfghjklzxcvbnm1234567890") for x in
                             range(12)))
-                username = request.POST.get("username")
-                password = request.POST.get("password")
-                repassword = request.POST.get("repassword")
                 if repassword != password:
                     msg = "两次密码不一致!"
                     context["username"] = username
@@ -233,7 +233,7 @@ def init_view(request):
                 save_setting("PROJECT_ID", project_id)
                 save_setting("INIT", "6")
                 step = "6"
-            except:
+            except Exception as e:
                 print("初始化Vercel配置错误:" + repr(e))
                 context["project_id"] = project_id
                 context["vercel_token"] = vercel_token
@@ -269,7 +269,7 @@ def migrate_view(request):
     try:
         if int(get_setting("INIT")) <= 5:
             return redirect("/init/")
-    except:
+    except Exception:
         print("未检测到初始化配置, 转跳到初始化页面")
         return redirect("/init/")
     context = {}
@@ -330,14 +330,14 @@ def index(request):
         if int(get_setting("INIT")) <= 5:
             print("初始化未完成, 转跳到初始化页面")
             return redirect("/init/")
-    except:
+    except Exception:
         print("未检测到初始化配置, 转跳到初始化页面")
         return redirect("/init/")
     try:
         if get_setting("UPDATE_FROM") != "false":
             print("检测到更新配置, 转跳至配置更新页面")
             return redirect("/update/")
-    except:
+    except Exception:
         print("检测配置更新失败, 转跳至更新页面")
         return redirect("/update/")
     context = {'segment': 'index'}
@@ -372,14 +372,14 @@ def pages(request):
         if int(get_setting("INIT")) <= 5:
             print("初始化未完成, 转跳到初始化页面")
             return redirect("/init/")
-    except:
+    except Exception:
         print("未检测到初始化配置, 转跳到初始化页面")
         return redirect("/init/")
     try:
         if get_setting("UPDATE_FROM") != "false":
             print("检测到更新配置, 转跳至配置更新页面")
             return redirect("/update/")
-    except:
+    except Exception:
         print("检测配置更新失败, 转跳至更新页面")
         return redirect("/update/")
     try:
@@ -400,7 +400,7 @@ def pages(request):
             try:
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
-            except:
+            except Exception:
                 print("未检测到图床配置, 图床功能关闭")
         elif "edit_page" in load_template:
             file_path = request.GET.get("file")
@@ -414,7 +414,7 @@ def pages(request):
             try:
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
-            except:
+            except Exception:
                 print("未检测到图床配置, 图床功能关闭")
         elif "edit_config" in load_template:
             file_path = request.GET.get("file")
@@ -433,7 +433,7 @@ def pages(request):
             try:
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
-            except:
+            except Exception:
                 print("未检测到图床配置, 图床功能关闭")
         elif "new_page" in load_template:
             context["emoji"] = get_setting("VDITOR_EMOJI")
@@ -448,7 +448,7 @@ def pages(request):
             try:
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
-            except:
+            except Exception:
                 print("未检测到图床配置, 图床功能关闭")
         elif "new" in load_template:
             context["emoji"] = get_setting("VDITOR_EMOJI")
@@ -463,7 +463,7 @@ def pages(request):
             try:
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
-            except:
+            except Exception:
                 print("未检测到图床配置, 图床功能关闭")
         elif "posts" in load_template:
             search = request.GET.get("s")
@@ -587,15 +587,6 @@ def pages(request):
             context["search"] = search
         elif 'settings' in load_template:
             try:
-                context['GH_REPO_PATH'] = get_setting("GH_REPO_PATH")
-                context['GH_REPO_BRANCH'] = get_setting("GH_REPO_BRANCH")
-                context['GH_REPO'] = get_setting("GH_REPO")
-                context['GH_TOKEN'] = get_setting("GH_TOKEN")
-                token_len = len(context['GH_TOKEN'])
-                if token_len >= 5:
-                    context['GH_TOKEN'] = context['GH_TOKEN'][:3] + "*" * (token_len - 5) + \
-                                          context['GH_TOKEN'][-1]
-                context['IMG_TYPE'] = get_setting("IMG_TYPE")
                 context['ABBRLINK_ALG'] = get_setting("ABBRLINK_ALG")
                 context['ABBRLINK_REP'] = get_setting("ABBRLINK_REP")
                 context["ALLOW_FRIEND"] = get_setting("ALLOW_FRIEND")
@@ -640,7 +631,7 @@ def pages(request):
                     context["all_image_hosts"][provider] = params
                 # CDNs
                 context["ALL_CDN"] = ALL_CDN
-            except:
+            except Exception:
                 print("配置获取错误, 转跳至配置更新页面")
                 return redirect("/update/")
         elif 'advanced' in load_template:

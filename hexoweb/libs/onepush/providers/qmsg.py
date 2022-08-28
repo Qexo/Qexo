@@ -8,7 +8,7 @@ from ..core import Provider
 
 
 class Qmsg(Provider):
-    name = 'qmsg'
+    name = 'Qmsg酱'
     base_url = 'https://qmsg.zendee.cn/{}/{}'
     site_url = 'https://qmsg.zendee.cn/api.html'
 

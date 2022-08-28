@@ -8,7 +8,7 @@ from ..core import Provider
 
 
 class DingTalk(Provider):
-    name = 'dingtalk'
+    name = '钉钉'
     base_url = 'https://oapi.dingtalk.com/robot/send?access_token={}'
     site_url = 'https://developers.dingtalk.com/document/app/custom-robot-access'
 
@@ -48,12 +48,12 @@ class DingTalk(Provider):
     def _prepare_data(self,
                       title: str = None,
                       content: str = None,
-                      markdown: str = "false",
+                      markdown: bool = False,
                       **kwargs):
         message = self.process_message(title, content)
         self.data = {'msgtype': 'text', 'text': {'content': message}}
 
-        if markdown == "true":
+        if markdown:
             self.data = {
                 'msgtype': 'markdown',
                 'markdown': {

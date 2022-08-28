@@ -8,13 +8,13 @@ from ..core import Provider
 
 
 class PushDeer(Provider):
-    name = 'pushdeer'
+    name = 'Pushdeer'
     base_url = 'https://api2.pushdeer.com/message/push'
     site_url = 'https://www.pushdeer.com/official.html'
 
     _params = {
-        'required': ['pushkey', 'title', 'content'],
-        'optional': ['url', 'type']
+        'required': ['pushkey', 'content'],
+        'optional': ['url', 'title', 'type']
     }
 
     def _prepare_url(self, url: str = None, **kwargs):
@@ -31,10 +31,13 @@ class PushDeer(Provider):
                       **kwargs):
         self.data = {
             'pushkey': pushkey,
-            'text': title,
             'type': type,
-            'desp': content
         }
+        if title:
+            self.data["text"] = title
+            self.data["desp"] = content
+        else:
+            self.data["text"] = content
         return self.data
 
     def _send_message(self):

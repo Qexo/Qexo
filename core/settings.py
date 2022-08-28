@@ -29,7 +29,6 @@ except:
             raise exceptions.InitError(f"\"{env}\"环境变量未设置")
     ALLOWED_HOSTS = json.loads(os.environ.get("DOMAINS", False))
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -84,7 +83,6 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 try:
     import configs
-
     DATABASES = configs.DATABASES
 except:
     print("获取本地配置文件失败, 使用环境变量进行初始化")

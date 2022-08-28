@@ -1,0 +1,293 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} 编辑说说 {% endblock title %}
+
+{% block content %}
+
+    <div class="header bg-primary pb-6">
+        <div class="container-fluid">
+            <div class="header-body">
+                <div class="row align-items-center py-4">
+                    <div class="col-lg-6 col-7">
+                        <h6 class="h2 text-white d-inline-block mb-0">编辑说说</h6>
+                        <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
+                            <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+                                <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i></a>
+                                </li>
+                                <li class="breadcrumb-item"><a href="/talks.html">说说</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">编辑</li>
+                            </ol>
+                        </nav>
+                    </div>
+                    <div class="col-lg-6 col-5 text-right">
+                        <a href="javascript:Publish()" class="btn btn-sm btn-neutral">发布</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page content -->
+    <div class="container-fluid mt--6">
+        <div class="row">
+            <div class="card col-md-8 px-0 ml-md-4" id="weditor-container">
+                <div id="weditor-toolbar" class="px-1"></div>
+                <div id="weditor"></div>
+            </div>
+            <div class="card col-md-3 ml-md-4">
+                <div id="sidebar-container">
+                    <h3 class="mt-3">说说参数</h3>
+                    <hr class="my-2"/>
+                    <div class="form-group">
+                        <label class="form-control-label"><i class="fas fa-globe-americas"></i>
+                            更新于</label>
+                        <input type="text" name="title"
+                               class="form-control"
+                               placeholder="更新时间"
+                               id="time"
+                               value="{{ time }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-control-label"><i class="fas fa-tags"></i> 标签</label>
+                        <div class="input-group">
+                            <input type="text" name="qexo-tag"
+                                   class="form-control"
+                                   placeholder="添加标签"
+                                   id="qexo-tag">
+                            <div class="input-group-append">
+                                <button class="btn" type="button"
+                                        style="border: 1px solid #dee2e6;border-radius: 0 .25rem .25rem 0;"
+                                        onclick="add_tag($('#qexo-tag').val());$('#qexo-tag').val
+                                        ('')">+
+                                </button>
+                            </div>
+                        </div>
+                        <div id="tag-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% include "includes/footer.html" %}
+
+    </div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE -->
+{% block javascripts %}
+    <script src="{{ cdnjs }}wangeditor5/5.1.14/index.min.js"></script>
+    <link rel="stylesheet" href="{{ cdnjs }}wangeditor5/5.1.14/css/style.min.css">
+
+    <script>
+        var title = "{{ title }}", tags = {{ tags|safe }}, _status = true, id = "{{ id }}";
+        var file_content = {{ content|safe }};
+        var height = window.innerHeight * 0.75;
+
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+
+        function getTimeFormat() {
+            let date = new Date();
+            let month = date.getMonth() + 1 < 10 ? "0" + (date.getMonth() + 1) : date.getMonth()
+                + 1;
+            let currentDate = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
+            let hh = date.getHours() < 10 ? "0" + date.getHours() : date.getHours();
+            let mm = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
+            let ss = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
+            return date.getFullYear() + "-" + month + "-" + currentDate + " " + hh + ":" + mm + ":" + ss;
+            //返回格式：yyyy-MM-dd hh:mm:ss
+        }
+
+
+        function Publish() {
+            if (!_status) {
+                return false;
+            }
+            let loading = new KZ_Loading('正在保存中...');
+            _status = false;
+            loading.show();
+            $.ajax({
+                url: '/api/save_talk/',
+                method: 'post',
+                data: {
+                    "content": editor.getHtml(), "tags": JSON.stringify(tags), "id": id, "time":
+                        (Number(new Date($("#time").val())) / 1000).toString()
+                },
+                dataType: 'JSON',
+                success: function (res) {
+                    loading.destroy();
+                    if (res.status) {
+                        notyf.success(res.msg);
+                        if (res.id) {
+                            id = res.id;
+                        }
+                        file_content = editor.getHtml();
+                        _status = true;
+                    } else {
+                        notyf.error(res.msg);
+                        _status = true;
+                    }
+                },
+                error: function (res) {
+                    loading.destroy();
+                    notyf.error("网络错误！");
+                    _status = true;
+                }
+            })
+        }
+
+        function fIsMobile() {
+            return /Android|iPhone|iPad|iPod|BlackBerry|webOS|Windows Phone|SymbianOS|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+
+        //挂载到全局
+        if (fIsMobile()) {
+            height = window.innerHeight * 0.75;
+        }
+
+        const E = window.wangEditor;
+
+        // 切换语言
+        const LANG = location.href.indexOf('lang=en') > 0 ? 'en' : 'zh-CN';
+        E.i18nChangeLanguage(LANG);
+        window.editor = E.createEditor({
+            selector: '#weditor',
+            html: file_content,
+            mode: 'simple',
+            scroll: true,
+            config: {
+                placeholder: '在这里书写说说...',
+                onCreated: function () {
+                    file_content = editor.getHtml();
+                },
+                MENU_CONF: {
+                    uploadImage: {
+                        server: '/api/upload/',
+                        fieldName: 'file',
+                        customInsert(res, insertFn) {
+                            insertFn(res.url);
+                        },
+                    }
+                }
+
+            }
+        })
+
+        window.toolbar = E.createToolbar({
+            editor,
+            mode: 'simple',
+            selector: '#weditor-toolbar',
+            config: {
+                toolbarKeys: [
+                    "blockquote",
+                    "header1",
+                    "header2",
+                    "header3",
+                    "|",
+                    "bold",
+                    "underline",
+                    "italic",
+                    "through",
+                    "color",
+                    "bgColor",
+                    "clearStyle",
+                    "|",
+                    "bulletedList",
+                    "numberedList",
+                    "todo",
+                    "justifyLeft",
+                    "justifyRight",
+                    "justifyCenter",
+                    "|",
+                    "insertLink",
+                    {
+                        "key": "group-image",
+                        "title": "图片",
+                        "iconSvg": "<svg viewBox=\"0 0 1024 1024\"><path d=\"M959.877 128l0.123 0.123v767.775l-0.123 0.122H64.102l-0.122-0.122V128.123l0.122-0.123h895.775zM960 64H64C28.795 64 0 92.795 0 128v768c0 35.205 28.795 64 64 64h896c35.205 0 64-28.795 64-64V128c0-35.205-28.795-64-64-64zM832 288.01c0 53.023-42.988 96.01-96.01 96.01s-96.01-42.987-96.01-96.01S682.967 192 735.99 192 832 234.988 832 288.01zM896 832H128V704l224.01-384 256 320h64l224.01-192z\"></path></svg>",
+                        "menuKeys": [
+                            "insertImage"{% if img_bed %},
+                                "uploadImage"
+                            {% endif %}
+                        ]
+                    },
+                    "insertVideo",
+                    "insertTable",
+                    "codeBlock",
+                    "|",
+                    "undo",
+                    "redo",
+                ],
+            }
+        })
+
+        // 退出页面确认
+        window.onbeforeunload = function (e) {
+            e = e || window.event;
+            if (e && file_content !== editor.getHtml()) {
+                e.returnValue = '确定要离开吗?';
+                return '确定要离开吗?';
+            }
+        }
+        document.addEventListener('keydown', function (e) {
+            if (e.keyCode == 83 && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
+                e.preventDefault();
+                Publish();
+            }
+        });
+
+        function set_weditor_size() {
+            let _height = $("#sidebar-container").height();
+            if (_height < height - 25) {
+                _height = height - 25;
+            }
+            $("#weditor").css({
+                "height": _height
+            });
+        }
+
+        function show_tags() {
+            let html = "";
+            for (let i = 0; i < tags.length; i++) {
+                html += `<span class="px-1 py-0.5 text-xs select-none
+                            d-inline-block  rounded-pill mr-1 mb-0.5"
+                            style="color: rgb(255, 255, 255); background-color: rgb(52, 152, 219);"
+                            onclick="del_tag(this.innerText);">` + tags[i]
+                    + `</span>`;
+            }
+            $("#tag-container").html(html);
+            set_weditor_size();
+        }
+
+        function add_tag(name) {
+            if (tags.includes(name)) {
+                notyf.error("标签已存在! ");
+            } else {
+                tags.push(name);
+                show_tags();
+            }
+        }
+
+        function del_tag(name) {
+            for (let i = 0; i < tags.length; i++) {
+                if (String(tags[i]) === String(name)) {
+                    tags.splice(i, 1);
+                }
+            }
+            $("#qexo-tag").val(String(name));
+            show_tags();
+        }
+
+        show_tags();
+        $('#qexo-tag').bind('keypress', function (event) {
+            if (event.keyCode === 13) {
+                event.preventDefault();
+                add_tag($('#qexo-tag').val());
+                $('#qexo-tag').val('')
+            }
+        });
+
+        $("#time").val(getTimeFormat());
+    </script>
+{% endblock javascripts %}

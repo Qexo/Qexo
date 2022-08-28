@@ -3,7 +3,7 @@ from time import strftime, localtime
 from time import time
 
 from django.http.response import HttpResponseForbidden
-from django.shortcuts import render
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from .functions import *
@@ -14,8 +14,7 @@ from .models import ImageModel
 @csrf_exempt
 def save(request):
     if not check_if_api_auth(request):
-        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
-                                                                         "status": False})})
+        return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         file_path = request.POST.get('file')
@@ -25,15 +24,14 @@ def save(request):
             context = {"msg": "OK!", "status": True}
         except Exception as error:
             context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 保存文章 pub/save_post
 @csrf_exempt
 def save_post(request):
     if not check_if_api_auth(request):
-        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
-                                                                         "status": False})})
+        return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         file_name = request.POST.get('file')
@@ -42,7 +40,7 @@ def save_post(request):
             # 删除草稿
             try:
                 Provider().delete("source/_drafts/" + file_name)
-            except:
+            except Exception:
                 pass
             # 创建/更新文章
             Provider().save("source/_posts/" + file_name, content)
@@ -50,15 +48,14 @@ def save_post(request):
         except Exception as error:
             print(repr(error))
             context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 保存草稿 pub/save_draft
 @csrf_exempt
 def save_draft(request):
     if not check_if_api_auth(request):
-        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
-                                                                         "status": False})})
+        return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         file_name = request.POST.get('file')
@@ -70,15 +67,14 @@ def save_draft(request):
         except Exception as error:
             print(repr(error))
             context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 删除内容 pub/delete
 @csrf_exempt
 def delete(request):
     if not check_if_api_auth(request):
-        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
-                                                                         "status": False})})
+        return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         file_path = request.POST.get('file')
@@ -92,15 +88,14 @@ def delete(request):
                 delete_all_caches()
         except Exception as error:
             context = {"msg": repr(error)}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 自动设置 Webhook 事件 pub/create_webhook
 @csrf_exempt
 def create_webhook_config(request):
     if not check_if_api_auth(request):
-        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
-                                                                         "status": False})})
+        return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         try:
@@ -124,15 +119,14 @@ def create_webhook_config(request):
         except Exception as error:
             print(repr(error))
             context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 获取所有文章 pub/get_posts
 @csrf_exempt
 def get_posts(request):
     if not check_if_api_auth(request):
-        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
-                                                                         "status": False})})
+        return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
     try:
         cache = Cache.objects.filter(name="posts")
         if cache.count():
@@ -142,15 +136,14 @@ def get_posts(request):
         context = {"status": True, "posts": posts}
     except Exception as error:
         context = {"status": False, "error": repr(error)}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 获取所有页面 pub/get_pages
 @csrf_exempt
 def get_pages(request):
     if not check_if_api_auth(request):
-        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
-                                                                         "status": False})})
+        return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
     try:
         cache = Cache.objects.filter(name="pages")
         if cache.count():
@@ -160,15 +153,14 @@ def get_pages(request):
         context = {"status": True, "pages": posts}
     except Exception as error:
         context = {"status": False, "error": repr(error)}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 获取所有配置 pub/get_configs
 @csrf_exempt
 def get_configs(request):
     if not check_if_api_auth(request):
-        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
-                                                                         "status": False})})
+        return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
     try:
         cache = Cache.objects.filter(name="configs")
         if cache.count():
@@ -178,15 +170,14 @@ def get_configs(request):
         context = {"status": True, "configs": posts}
     except Exception as error:
         context = {"status": False, "error": repr(error)}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 获取所有图片 pub/get_images
 @csrf_exempt
 def get_images(request):
     if not check_if_api_auth(request):
-        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
-                                                                         "status": False})})
+        return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
     try:
         posts = list()
         images = ImageModel.objects.all()
@@ -198,15 +189,14 @@ def get_images(request):
         context = {"status": True, "images": posts}
     except Exception as error:
         context = {"status": False, "error": repr(error)}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 自动修复程序 api/fix
 @csrf_exempt
 def auto_fix(request):
     if not check_if_api_auth(request):
-        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
-                                                                         "status": False})})
+        return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
     try:
         counter = fix_all()
         msg = "尝试自动修复了 {} 个字段，请在稍后检查和修改配置".format(counter)
@@ -214,16 +204,16 @@ def auto_fix(request):
     except Exception as e:
         print(repr(e))
         context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 获取友情链接 pub/friends
 @csrf_exempt
 def friends(request):
     try:
-        friends = FriendModel.objects.all()
+        all_friends = FriendModel.objects.all()
         data = list()
-        for i in friends:
+        for i in all_friends:
             if i.status:
                 data.append({"name": i.name, "url": i.url, "image": i.imageUrl,
                              "description": i.description,
@@ -233,15 +223,14 @@ def friends(request):
     except Exception as e:
         print(repr(e))
         context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 新增友链 pub/add_friend
 @csrf_exempt
 def add_friend(request):
     if not check_if_api_auth(request):
-        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
-                                                                         "status": False})})
+        return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
     try:
         friend = FriendModel()
         friend.name = request.POST.get("name")
@@ -255,15 +244,14 @@ def add_friend(request):
     except Exception as error:
         print(repr(error))
         context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 编辑友链 pub/edit_friend
 @csrf_exempt
 def edit_friend(request):
     if not check_if_api_auth(request):
-        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
-                                                                         "status": False})})
+        return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
     try:
         friend = FriendModel.objects.get(time=request.POST.get("time"))
         friend.name = request.POST.get("name")
@@ -276,15 +264,14 @@ def edit_friend(request):
     except Exception as error:
         print(repr(error))
         context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 删除友链 pub/del_friend
 @csrf_exempt
 def del_friend(request):
     if not check_if_api_auth(request):
-        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
-                                                                         "status": False})})
+        return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
     try:
         friend = FriendModel.objects.get(time=request.POST.get("time"))
         friend.delete()
@@ -292,7 +279,7 @@ def del_friend(request):
     except Exception as error:
         print(repr(error))
         context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 申请友链 pub/ask_friend
@@ -332,12 +319,12 @@ def ask_friend(request):
         friend.save()
         CreateNotification("友链申请 " + friend.name,
                            "站点名: {}\n链接: {}\n图片: {}\n简介: {}\n".format(friend.name, friend.url, friend.imageUrl,
-                                                                      friend.description), time())
+                                                                               friend.description), time())
         context = {"msg": "申请成功！", "time": friend.time, "status": True}
     except Exception as error:
         print(repr(error))
         context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 获取自定义字段 pub/get_custom 无需鉴权
@@ -352,65 +339,62 @@ def get_custom(request):
     except Exception as error:
         print(repr(error))
         context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 编辑自定义字段 pub/set_custom
 @csrf_exempt
 def set_custom(request):
     if not check_if_api_auth(request):
-        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
-                                                                         "status": False})})
+        return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
     try:
         save_custom(request.POST.get("name"), request.POST.get("content"))
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
         print(repr(e))
         context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 删除自定义的字段 pub/del_custom
 @csrf_exempt
 def del_custom(request):
     if not check_if_api_auth(request):
-        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
-                                                                         "status": False})})
+        return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
     try:
         CustomModel.objects.filter(name=request.POST.get("name")).delete()
         context = {"msg": "删除成功!", "status": True}
     except Exception as e:
         print(repr(e))
         context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 新建自定义的字段 pub/new_custom
 @csrf_exempt
 def new_custom(request):
     if not check_if_api_auth(request):
-        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！",
-                                                                         "status": False})})
+        return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
     try:
         save_custom(request.POST.get("name"), request.POST.get("content"))
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
         print(repr(e))
         context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 获取全部消息 pub/get_notifications
 @csrf_exempt
 def get_notifications(request):
     if not check_if_api_auth(request):
-        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！", "status": False})})
+        return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
     try:
         context = {"data": GetNotifications(), "status": True}
     except Exception as error:
         print(repr(error))
         context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 获取博客基本信息 pub/status
@@ -428,7 +412,7 @@ def status(request):
     except Exception as error:
         print(repr(error))
         context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 统计API pub/statistic
@@ -479,28 +463,25 @@ def statistic(request):
             'REMOTE_ADDR']
         uv = StatisticUV.objects.filter(ip=ip)
         if uv.count() >= 1:
-            data = json.dumps(
-                {"site_pv": site_pv.number, "page_pv": pv.number, "site_uv": StatisticUV.objects.all().count(),
-                 "status": True})
-            return render(request, 'layouts/json.html', {"data": data})
+            return JsonResponse(safe=False,
+                                data={"site_pv": site_pv.number, "page_pv": pv.number, "site_uv": StatisticUV.objects.all().count(),
+                                      "status": True})
         uv = StatisticUV()
         uv.ip = ip
         uv.save()
         print("登记用户UV: " + ip)
-        data = json.dumps(
-            {"site_pv": site_pv.number, "page_pv": pv.number, "site_uv": StatisticUV.objects.all().count(),
-             "status": True})
-        return render(request, 'layouts/json.html', {"data": data})
+        return JsonResponse(safe=False, data={"site_pv": site_pv.number, "page_pv": pv.number, "site_uv": StatisticUV.objects.all().count(),
+                                              "status": True})
     except Exception as e:
         print(repr(e))
-        return render(request, 'layouts/json.html', {"data": json.dumps({"status": False, "error": repr(e)})})
+        return JsonResponse(safe=False, data={"status": False, "error": repr(e)})
 
 
 # Waline Webhook通知 pub/waline
 @csrf_exempt
 def waline(request):
     if not check_if_api_auth(request):
-        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！", "status": False})})
+        return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
     try:
         data = json.loads(request.body.decode())
         if data.get("type") == "new_comment":
@@ -508,30 +489,119 @@ def waline(request):
             msg = "评论者: {}\n邮箱: {}\n".format(comment["nick"], comment["mail"])
             if comment.get("link"):
                 msg += "网址: {}\n".format(comment["link"])
-            msg += "内容: {}\nIP: {}\n时间: {}\n地址: {}\n状态: {}\nUA: {}".format(comment["comment"], comment["ip"],
-                                                                           comment["insertedAt"],
-                                                                           comment["url"], comment["status"],
-                                                                           comment["ua"])
+            msg += "内容: {}\nIP: {}\n时间: {}\n地址: {}\n状态: {}\nUA: {}".format(comment["comment"], comment["ip"], comment["insertedAt"],
+                                                                                   comment["url"], comment["status"], comment["ua"])
             CreateNotification("Waline评论通知", msg, time())
     except Exception as error:
         print(repr(error))
         context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 自定义通知api pub/notifications
 @csrf_exempt
 def notifications(request):
     if not check_if_api_auth(request):
-        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "鉴权错误！", "status": False})})
-
+        return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
     try:
         data = json.loads(request.body.decode())
         content = data.get('content')
         title = data.get('title')
         CreateNotification(title, content, time())
-        return render(request, 'layouts/json.html', {"data": json.dumps({"msg": "添加成功！", "status": True})})
+        return JsonResponse(safe=False, data={"msg": "添加成功！", "status": True})
     except Exception as error:
         print(repr(error))
         context = {"msg": repr(error), "status": False}
-        return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+        return JsonResponse(safe=False, data=context)
+
+
+# 获取说说 pub/talks
+@csrf_exempt
+def get_talks(request):
+    try:
+        page = int(request.GET.get('page')) if request.GET.get('page') else 1
+        limit = int(request.GET.get('limit')) if request.GET.get('limit') else 5
+        ip = request.META['HTTP_X_FORWARDED_FOR'] if 'HTTP_X_FORWARDED_FOR' in request.META.keys() else request.META[
+            'REMOTE_ADDR']  # 使用用户IP判断点赞是否成立
+        if not page:
+            page = 1
+        if not limit:
+            limit = 10
+        all_talks = TalkModel.objects.all()
+        count = all_talks.count()
+        all_talks = all_talks.order_by("time")[::-1][(page - 1) * limit:page * limit]
+        talks = []
+        for i in all_talks:
+            t = json.loads(i.like)
+            talks.append({"id": i.id.hex, "content": i.content, "time": i.time, "tags": json.loads(i.tags), "like": len(t),
+                          "liked": True if ip in t else False})
+        context = {"msg": "获取成功！", "status": True, "count": count, "data": talks}
+    except Exception as error:
+        print(repr(error))
+        context = {"msg": repr(error), "status": False}
+    return JsonResponse(safe=False, data=context)
+
+
+# 点赞说说 pub/like_talk
+@csrf_exempt
+def like_talk(request):
+    try:
+        talk_id = request.POST.get('id')
+        ip = request.META['HTTP_X_FORWARDED_FOR'] if 'HTTP_X_FORWARDED_FOR' in request.META.keys() else request.META[
+            'REMOTE_ADDR']  # 使用用户IP判断点赞是否成立
+        talk = TalkModel.objects.get(id=uuid.UUID(hex=talk_id))
+        t = json.loads(talk.like)
+        if ip in t:
+            t.remove(ip)
+            talk.like = json.dumps(t)
+            talk.save()
+            print(ip + "取消点赞: " + talk_id)
+            context = {"msg": "取消成功！", "action": False, "status": True}
+        else:
+            t.append(ip)
+            talk.like = json.dumps(t)
+            talk.save()
+            print(ip + "成功点赞: " + talk_id)
+            context = {"msg": "点赞成功！", "action": True, "status": True}
+    except Exception as error:
+        print(repr(error))
+        context = {"msg": repr(error), "status": False}
+    return JsonResponse(safe=False, data=context)
+
+
+# 保存说说 pub/save_talk
+@csrf_exempt
+def save_talk(request):
+    try:
+        if not check_if_api_auth(request):
+            return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
+        context = {"msg": "发布成功!", "status": True}
+        if request.POST.get("id"):
+            talk = TalkModel.objects.get(id=uuid.UUID(hex=request.POST.get("id")))
+            talk.content = request.POST.get("content")
+            talk.tags = request.POST.get("tags")
+            talk.time = request.POST.get("time")
+            talk.save()
+            context["msg"] = "修改成功"
+        else:
+            talk = TalkModel(content=request.POST.get("content"), tags=request.POST.get("tags"), time=str(int(time())), like="[]")
+            talk.save()
+            context["id"] = talk.id.hex
+    except Exception as error:
+        print(repr(error))
+        context = {"msg": repr(error), "status": False}
+    return JsonResponse(safe=False, data=context)
+
+
+# 删除说说 pub/del_talk
+@csrf_exempt
+def del_talk(request):
+    try:
+        if not check_if_api_auth(request):
+            return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
+        TalkModel.objects.get(id=uuid.UUID(hex=request.POST.get("id"))).delete()
+        context = {"msg": "删除成功！", "status": True}
+    except Exception as error:
+        print(repr(error))
+        context = {"msg": repr(error), "status": False}
+    return JsonResponse(safe=False, data=context)

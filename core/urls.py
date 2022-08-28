@@ -59,6 +59,8 @@ urlpatterns = [
     path('api/test_onepush/', test_onepush, name='test_onepush'),
     path('api/set_sidebar/', set_sidebar, name='set_sidebar'),
     path('api/set_cdn/', set_cdn, name='set_cdn'),
+    path('api/save_talk/', save_talk, name='save_talk'),
+    path('api/del_talk/', del_talk, name='del_talk'),
 
     path('pub/save/', pub.save, name='pub_save'),
     path('pub/save_post/', pub.save_post, name='pub_save_post'),
@@ -83,7 +85,11 @@ urlpatterns = [
     path('pub/set_custom/', pub.set_custom, name='pub_set_custom'),
     path('pub/del_custom/', pub.del_custom, name='pub_del_custom'),
     path('pub/new_custom/', pub.new_custom, name='pub_new_custom'),
-    path('pub/notifications', pub.notifications, name='pub_notifications'),
+    path('pub/notifications/', pub.notifications, name='pub_notifications'),
+    path('pub/talks/', pub.get_talks, name='pub_talks'),
+    path('pub/like_talk/', pub.like_talk, name='pub_like_talk'),
+    path('pub/save_talk/', pub.save_talk, name='pub_save_talk'),
+    path('pub/del_talk/', pub.del_talk, name='pub_del_talk'),
 
     re_path(r'^(?!api)^(?!pub).*$\.*', pages, name='pages'),
 ]

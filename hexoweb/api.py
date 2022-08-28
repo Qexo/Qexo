@@ -3,13 +3,13 @@ import random
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.shortcuts import render
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from .functions import *
 
 
-# 登录验证 API api/auth
+# 登录验证API api/auth
 def auth(request):
     try:
         username = request.POST.get("username")
@@ -22,9 +22,9 @@ def auth(request):
                 captcha = requests.get(
                     "https://recaptcha.net/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
                 if captcha["score"] <= 0.5:
-                    return {"msg": "人机验证失败！", "status": False}
+                    return JsonResponse(safe=False, data={"msg": "人机验证失败！", "status": False})
             else:
-                return {"msg": "人机验证失败！", "status": False}
+                return JsonResponse(safe=False, data={"msg": "人机验证失败！", "status": False})
         # print(captcha)
         user = authenticate(username=username, password=password)
         if user is not None:
@@ -35,7 +35,7 @@ def auth(request):
     except Exception as e:
         print(repr(e))
         context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 设置 Hexo Provider 配置 api/set_hexo
@@ -46,8 +46,7 @@ def set_hexo(request):
         verify = verify_provider(json.loads(provider))
         msg = ""
         if verify["status"] == -1:
-            return render(request, 'layouts/json.html',
-                          {"data": json.dumps({"msg": "远程连接错误!请检查Token", "status": False})})
+            return JsonResponse(safe=False, data={"msg": "远程连接错误!请检查Token", "status": False})
         if verify["hexo"]:
             msg += "检测到Hexo版本: " + verify["hexo"]
         else:
@@ -89,7 +88,7 @@ def set_hexo(request):
     except Exception as e:
         print(repr(e))
         context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 设置 OnePush api/set_onepush
@@ -102,7 +101,7 @@ def set_onepush(request):
     except Exception as e:
         print(repr(e))
         context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 测试 OnePush api/test_onepush
@@ -110,16 +109,17 @@ def set_onepush(request):
 def test_onepush(request):
     try:
         onepush = json.loads(request.POST.get("onepush"))
-        ntfy = notify(onepush["notifier"], **onepush["params"], title="Qexo消息测试", content="如果你收到了这则消息, 那么代表您的消息配置成功了")
+        ntfy = notify(onepush["notifier"], **onepush["params"], title="Qexo消息测试",
+                      content="如果你收到了这则消息, 那么代表您的消息配置成功了")
         try:
             data = ntfy.text
-        except:
+        except Exception:
             data = "OK"
         context = {"msg": data, "status": True}
     except Exception as e:
         print(repr(e))
         context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 设置API api/setapi
@@ -140,7 +140,7 @@ def set_api(request):
     except Exception as e:
         print(repr(e))
         context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 安全设置 api/et_security
@@ -153,7 +153,7 @@ def set_security(request):
     except Exception as e:
         print(repr(e))
         context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 设置图床配置 api/set_image_host
@@ -166,7 +166,7 @@ def set_image_host(request):
     except Exception as e:
         print(repr(e))
         context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 设置 Abbrlink 配置 api/set_abbrlink
@@ -181,7 +181,7 @@ def set_abbrlink(request):
     except Exception as e:
         print(repr(e))
         context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 设置CDN api/set_cdn
@@ -194,7 +194,7 @@ def set_cdn(request):
     except Exception as e:
         print(repr(e))
         context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 设置自定义配置 api/set_cust
@@ -213,7 +213,7 @@ def set_cust(request):
     except Exception as e:
         print(repr(e))
         context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 设置用户信息 api/set_user
@@ -228,13 +228,13 @@ def set_user(request):
         if user is not None:
             if repassword != newpassword:
                 context = {"msg": "两次密码不一致!", "status": False}
-                return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+                return JsonResponse(safe=False, data=context)
             if not newpassword:
                 context = {"msg": "请输入正确的密码！", "status": False}
-                return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+                return JsonResponse(safe=False, data=context)
             if not username:
                 context = {"msg": "请输入正确的用户名！", "status": False}
-                return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+                return JsonResponse(safe=False, data=context)
             u = User.objects.get(username__exact=request.user.username)
             u.delete()
             User.objects.create_superuser(username=username, password=newpassword)
@@ -244,7 +244,7 @@ def set_user(request):
     except Exception as e:
         print(repr(e))
         context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 设置统计配置 api/set_statistic
@@ -259,7 +259,7 @@ def set_statistic(request):
     except Exception as e:
         print(repr(e))
         context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 设置 CustomModel 的字段 api/set_custom
@@ -271,7 +271,7 @@ def set_custom(request):
     except Exception as e:
         print(repr(e))
         context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 设置 CustomModel 的字段 api/del_custom
@@ -283,7 +283,7 @@ def del_custom(request):
     except Exception as e:
         print(repr(e))
         context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 新建 CustomModel 的字段 api/new_custom
@@ -295,7 +295,7 @@ def new_custom(request):
     except Exception as e:
         print(repr(e))
         context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 设置 SettingsModel 的字段 api/set_value
@@ -307,7 +307,7 @@ def set_value(request):
     except Exception as e:
         print(repr(e))
         context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 设置 SettingsModel 的字段 api/del_value
@@ -319,7 +319,7 @@ def del_value(request):
     except Exception as e:
         print(repr(e))
         context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 新建 SettingsModel 的字段 api/new_value
@@ -331,7 +331,7 @@ def new_value(request):
     except Exception as e:
         print(repr(e))
         context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 自动修复程序 api/fix
@@ -344,7 +344,7 @@ def auto_fix(request):
     except Exception as e:
         print(repr(e))
         context = {"msg": repr(e), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 执行更新 api/do_update
@@ -357,7 +357,7 @@ def do_update(request):
         else:
             res = LocalOnekeyUpdate(branch=branch)
             save_setting("UPDATE_FROM", "true")
-            return render(request, 'layouts/json.html', {"data": json.dumps(res)})
+            return JsonResponse(safe=False, data=res)
         if res["status"]:
             save_setting("UPDATE_FROM", "true")
             context = {"msg": "更新成功，请等待自动部署!", "status": True}
@@ -366,7 +366,7 @@ def do_update(request):
     except Exception as error:
         print(repr(error))
         context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 保存内容 api/save
@@ -383,7 +383,7 @@ def save(request):
         except Exception as error:
             print(repr(error))
             context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 保存文章 api/save_post
@@ -400,7 +400,7 @@ def save_post(request):
             try:
                 commitchange = f"Delete Post Draft {file_name}"
                 Provider().delete("source/_drafts/" + file_name, commitchange)
-            except:
+            except Exception:
                 pass
             # 创建/更新文章
             commitchange = f"Update Post {file_name}"
@@ -409,6 +409,8 @@ def save_post(request):
                 print(f"截取文章{file_name}摘要: " + excerpt)
                 front_matter["excerpt"] = excerpt
             front_matter = "---\n{}---".format(yaml.dump(front_matter, allow_unicode=True))
+            if not content.startswith("\n"):
+                front_matter += "\n"
             Provider().save("source/_posts/" + file_name, front_matter + content, commitchange)
             context = {"msg": "OK!", "status": True}
             if excerpt:
@@ -416,7 +418,7 @@ def save_post(request):
         except Exception as error:
             print(repr(error))
             context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 保存页面 api/save_page
@@ -435,6 +437,8 @@ def save_page(request):
                 print(f"截取页面{file_path}摘要: " + excerpt)
                 front_matter["excerpt"] = excerpt
             front_matter = "---\n{}---".format(yaml.dump(front_matter, allow_unicode=True))
+            if not content.startswith("\n"):
+                front_matter += "\n"
             Provider().save(file_path, front_matter + content, commitchange)
             context = {"msg": "OK!", "status": True}
             if excerpt:
@@ -442,7 +446,7 @@ def save_page(request):
         except Exception as error:
             print(repr(error))
             context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 保存草稿 api/save_draft
@@ -462,6 +466,8 @@ def save_draft(request):
                 print(f"截取文章{file_name}摘要: " + excerpt)
                 front_matter["excerpt"] = excerpt
             front_matter = "---\n{}---\n".format(yaml.dump(front_matter, allow_unicode=True))
+            if not content.startswith("\n"):
+                front_matter += "\n"
             Provider().save("source/_drafts/" + file_name, front_matter + content, commitchange)
             context = {"msg": "OK!", "status": True}
             if excerpt:
@@ -469,7 +475,7 @@ def save_draft(request):
         except Exception as error:
             print(repr(error))
             context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 删除内容 api/delete
@@ -490,7 +496,7 @@ def delete(request):
         except Exception as error:
             print(repr(error))
             context = {"msg": repr(error)}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 删除图片记录 api/delete_img
@@ -506,7 +512,7 @@ def delete_img(request):
         except Exception as error:
             print(repr(error))
             context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 清除缓存 api/purge
@@ -518,7 +524,7 @@ def purge(request):
     except Exception as error:
         print(repr(error))
         context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 自动设置 Webhook 事件 api/create_webhook
@@ -547,13 +553,12 @@ def create_webhook_config(request):
         except Exception as error:
             print(repr(error))
             context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # Webhook api/webhook
 @csrf_exempt
 def webhook(request):
-    context = dict(msg="Error!", status=False)
     try:
         if request.GET.get("token") == get_setting("WEBHOOK_APIKEY"):
             delete_all_caches()
@@ -563,7 +568,7 @@ def webhook(request):
     except Exception as error:
         print(repr(error))
         context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 上传图片 api/upload
@@ -572,7 +577,7 @@ def webhook(request):
 def upload_img(request):
     context = dict(msg="上传失败！", url=False)
     if request.method == "POST":
-        file = request.FILES.getlist('file[]')[0]
+        file = request.FILES.getlist('file[]')[0] if request.FILES.getlist('file[]') else request.FILES.getlist('file')[0]
         try:
             image_host = json.loads(get_setting("IMG_HOST"))
             if image_host["type"] != "关闭":
@@ -589,7 +594,7 @@ def upload_img(request):
         except Exception as error:
             print(repr(error))
             context = {"msg": repr(error), "url": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 添加友链 api/add_friend
@@ -608,7 +613,7 @@ def add_friend(request):
     except Exception as error:
         print(repr(error))
         context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 修改友链 api/edit_friend
@@ -626,7 +631,7 @@ def edit_friend(request):
     except Exception as error:
         print(repr(error))
         context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 清理隐藏友链 api/clean_friend
@@ -643,7 +648,7 @@ def clean_friend(request):
     except Exception as error:
         print(repr(error))
         context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 删除友链 api/del_friend
@@ -656,7 +661,7 @@ def del_friend(request):
     except Exception as error:
         print(repr(error))
         context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 获取全部消息 api/get_notifications
@@ -682,7 +687,7 @@ def get_notifications(request):
     except Exception as error:
         print(repr(error))
         context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 删除指定消息 api/del_notifications
@@ -694,7 +699,7 @@ def del_notification(request):
     except Exception as error:
         print(repr(error))
         context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 清理全部消息 api/clear_notifications
@@ -708,7 +713,7 @@ def clear_notification(request):
     except Exception as error:
         print(repr(error))
         context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 设置文章/页面侧边栏 api/set_sidebar
@@ -724,7 +729,7 @@ def set_sidebar(request):
     except Exception as error:
         print(repr(error))
         context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
 
 
 # 设置文章页面自动截取 api/set_excerpt
@@ -739,4 +744,38 @@ def set_excerpt(request):
     except Exception as error:
         print(repr(error))
         context = {"msg": repr(error), "status": False}
-    return render(request, 'layouts/json.html', {"data": json.dumps(context)})
+    return JsonResponse(safe=False, data=context)
+
+
+# 保存说说 api/save_talk
+@login_required(login_url="/login/")
+def save_talk(request):
+    try:
+        context = {"msg": "发布成功!", "status": True}
+        if request.POST.get("id"):
+            talk = TalkModel.objects.get(id=uuid.UUID(hex=request.POST.get("id")))
+            talk.content = request.POST.get("content")
+            talk.tags = request.POST.get("tags")
+            talk.time = request.POST.get("time")
+            talk.save()
+            context["msg"] = "修改成功"
+        else:
+            talk = TalkModel(content=request.POST.get("content"), tags=request.POST.get("tags"), time=str(int(time())), like="[]")
+            talk.save()
+            context["id"] = talk.id.hex
+    except Exception as error:
+        print(repr(error))
+        context = {"msg": repr(error), "status": False}
+    return JsonResponse(safe=False, data=context)
+
+
+# 删除说说 api/del_talk
+@login_required(login_url="/login/")
+def del_talk(request):
+    try:
+        TalkModel.objects.get(id=uuid.UUID(hex=request.POST.get("id"))).delete()
+        context = {"msg": "删除成功！", "status": True}
+    except Exception as error:
+        print(repr(error))
+        context = {"msg": repr(error), "status": False}
+    return JsonResponse(safe=False, data=context)

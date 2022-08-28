@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.contrib.auth import logout
 from django import template
 from django.http import HttpResponse
@@ -26,7 +26,7 @@ def login_view(request):
         if int(get_setting("INIT")) <= 5:
             print("未完成初始化配置, 转跳到初始化页面")
             return redirect("/init/")
-    except:
+    except Exception:
         print("未检测到初始化配置, 转跳到初始化页面")
         return redirect("/init/")
     if request.user.is_authenticated:
@@ -48,7 +48,7 @@ def update_view(request):
         if int(get_setting("INIT")) <= 5:
             print("未完成初始化配置, 转跳到初始化页面")
             return redirect("/init/")
-    except:
+    except Exception:
         print("未检测到初始化配置, 转跳到初始化页面")
         return redirect("/init/")
     if request.method == 'POST':
@@ -106,8 +106,11 @@ def init_view(request):
             save_setting("INIT", "2")
             step = "2"
         if request.POST.get("step") == "2":
+            username = request.POST.get("username")
+            password = request.POST.get("password")
+            repassword = request.POST.get("repassword")
+            apikey = request.POST.get("apikey")
             try:
-                apikey = request.POST.get("apikey")
                 if apikey:
                     save_setting("WEBHOOK_APIKEY", apikey)
                 else:
@@ -115,9 +118,6 @@ def init_view(request):
                         save_setting("WEBHOOK_APIKEY", ''.join(
                             random.choice("qwertyuiopasdfghjklzxcvbnm1234567890") for x in
                             range(12)))
-                username = request.POST.get("username")
-                password = request.POST.get("password")
-                repassword = request.POST.get("repassword")
                 if repassword != password:
                     msg = "两次密码不一致!"
                     context["username"] = username
@@ -233,7 +233,7 @@ def init_view(request):
                 save_setting("PROJECT_ID", project_id)
                 save_setting("INIT", "6")
                 step = "6"
-            except:
+            except Exception as e:
                 print("初始化Vercel配置错误:" + repr(e))
                 context["project_id"] = project_id
                 context["vercel_token"] = vercel_token
@@ -269,7 +269,7 @@ def migrate_view(request):
     try:
         if int(get_setting("INIT")) <= 5:
             return redirect("/init/")
-    except:
+    except Exception:
         print("未检测到初始化配置, 转跳到初始化页面")
         return redirect("/init/")
     context = {}
@@ -284,6 +284,7 @@ def migrate_view(request):
                 exports["custom"] = export_customs()
                 exports["uv"] = export_uv()
                 exports["pv"] = export_pv()
+                exports["talks"] = export_talks()
                 html_template = loader.get_template('layouts/json.html')
                 response = HttpResponse(html_template.render({"data": json.dumps(exports)}, request))
                 response['Content-Type'] = 'application/octet-stream'
@@ -310,10 +311,13 @@ def migrate_view(request):
             elif request.POST.get("type") == "import_pv":
                 import_pv(json.loads(request.POST.get("data")))
                 context["msg"] = "PV统计迁移完成！"
+            elif request.POST.get("type") == "import_talks":
+                import_talks(json.loads(request.POST.get("data")))
+                context["msg"] = "说说迁移完成！"
         except Exception as error:
             print(request.POST.get("type") + "错误: " + repr(error))
             context["msg"] = request.POST.get("type") + "错误: " + repr(error)
-        return render(request, "layouts/json.html", {"data": json.dumps(context)})
+        return JsonResponse(safe=False, data=context)
     else:
         context = get_custom_config()
     return render(request, "accounts/migrate.html", context)
@@ -326,14 +330,14 @@ def index(request):
         if int(get_setting("INIT")) <= 5:
             print("初始化未完成, 转跳到初始化页面")
             return redirect("/init/")
-    except:
+    except Exception:
         print("未检测到初始化配置, 转跳到初始化页面")
         return redirect("/init/")
     try:
         if get_setting("UPDATE_FROM") != "false":
             print("检测到更新配置, 转跳至配置更新页面")
             return redirect("/update/")
-    except:
+    except Exception:
         print("检测配置更新失败, 转跳至更新页面")
         return redirect("/update/")
     context = {'segment': 'index'}
@@ -348,16 +352,10 @@ def index(request):
     for i in _images:
         images.append({"name": i.name, "size": int(i.size), "url": i.url,
                        "date": strftime("%Y-%m-%d", localtime(float(i.date)))})
-    if len(posts) >= 5:
-        context["posts"] = posts[0:5]
-    else:
-        context["posts"] = posts
+    context["posts"] = posts[0:5]
     for item in range(len(context["posts"])):
         context["posts"][item]["fullname"] = quote(context["posts"][item]["fullname"])
-    if len(images) >= 5:
-        context["images"] = images[::-1][0:5]
-    else:
-        context["images"] = images[::-1]
+    context["images"] = images[::-1][0:5]
     context = dict(context, **get_latest_version())
     context["version"] = QEXO_VERSION
     context["post_number"] = str(len(posts))
@@ -374,14 +372,14 @@ def pages(request):
         if int(get_setting("INIT")) <= 5:
             print("初始化未完成, 转跳到初始化页面")
             return redirect("/init/")
-    except:
+    except Exception:
         print("未检测到初始化配置, 转跳到初始化页面")
         return redirect("/init/")
     try:
         if get_setting("UPDATE_FROM") != "false":
             print("检测到更新配置, 转跳至配置更新页面")
             return redirect("/update/")
-    except:
+    except Exception:
         print("检测配置更新失败, 转跳至更新页面")
         return redirect("/update/")
     try:
@@ -390,6 +388,20 @@ def pages(request):
         context['segment'] = load_template
         if "index" in load_template:
             return index(request)
+        elif "edit_talk" in load_template:
+            talk_id = request.GET.get("id")
+            context["content"] = repr("")
+            context["tags"] = "[]"
+            if talk_id:
+                Talk = TalkModel.objects.get(id=uuid.UUID(hex=talk_id))
+                context["content"] = repr(Talk.content)
+                context["tags"] = Talk.tags
+                context["id"] = talk_id
+            try:
+                if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
+                    context["img_bed"] = True
+            except Exception:
+                print("未检测到图床配置, 图床功能关闭")
         elif "edit_page" in load_template:
             file_path = request.GET.get("file")
             context["front_matter"], context["file_content"] = get_post_details(
@@ -402,7 +414,7 @@ def pages(request):
             try:
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
-            except:
+            except Exception:
                 print("未检测到图床配置, 图床功能关闭")
         elif "edit_config" in load_template:
             file_path = request.GET.get("file")
@@ -421,7 +433,7 @@ def pages(request):
             try:
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
-            except:
+            except Exception:
                 print("未检测到图床配置, 图床功能关闭")
         elif "new_page" in load_template:
             context["emoji"] = get_setting("VDITOR_EMOJI")
@@ -436,7 +448,7 @@ def pages(request):
             try:
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
-            except:
+            except Exception:
                 print("未检测到图床配置, 图床功能关闭")
         elif "new" in load_template:
             context["emoji"] = get_setting("VDITOR_EMOJI")
@@ -451,7 +463,7 @@ def pages(request):
             try:
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
-            except:
+            except Exception:
                 print("未检测到图床配置, 图床功能关闭")
         elif "posts" in load_template:
             search = request.GET.get("s")
@@ -507,6 +519,29 @@ def pages(request):
             context["post_number"] = len(posts)
             context["page_number"] = ceil(context["post_number"] / 15)
             context["search"] = search
+        elif "talks" in load_template:
+            search = request.GET.get("s")
+            posts = []
+            if search:
+                talks = TalkModel.objects.filter(content__contains=search)
+                for i in talks:
+                    posts.append({"content": excerpt_post(i.content, 20, mark=False),
+                                  "tags": ', '.join(json.loads(i.tags)),
+                                  "time": strftime("%Y-%m-%d %H:%M:%S", localtime(int(i.time))),
+                                  "like": len(json.loads(i.like)),
+                                  "id": i.id.hex})
+            else:
+                talks = TalkModel.objects.all()
+                for i in talks:
+                    posts.append({"content": excerpt_post(i.content, 20, mark=False),
+                                  "tags": ', '.join(json.loads(i.tags)),
+                                  "time": strftime("%Y-%m-%d %H:%M:%S", localtime(int(i.time))),
+                                  "like": len(json.loads(i.like)),
+                                  "id": i.id.hex})
+            context["posts"] = sorted(posts, key=lambda x: x["time"], reverse=True)
+            context["post_number"] = len(posts)
+            context["page_number"] = ceil(context["post_number"] / 15)
+            context["search"] = search
         elif "images" in load_template:
             search = request.GET.get("s")
             posts = []
@@ -552,15 +587,6 @@ def pages(request):
             context["search"] = search
         elif 'settings' in load_template:
             try:
-                context['GH_REPO_PATH'] = get_setting("GH_REPO_PATH")
-                context['GH_REPO_BRANCH'] = get_setting("GH_REPO_BRANCH")
-                context['GH_REPO'] = get_setting("GH_REPO")
-                context['GH_TOKEN'] = get_setting("GH_TOKEN")
-                token_len = len(context['GH_TOKEN'])
-                if token_len >= 5:
-                    context['GH_TOKEN'] = context['GH_TOKEN'][:3] + "*" * (token_len - 5) + \
-                                          context['GH_TOKEN'][-1]
-                context['IMG_TYPE'] = get_setting("IMG_TYPE")
                 context['ABBRLINK_ALG'] = get_setting("ABBRLINK_ALG")
                 context['ABBRLINK_REP'] = get_setting("ABBRLINK_REP")
                 context["ALLOW_FRIEND"] = get_setting("ALLOW_FRIEND")
@@ -593,8 +619,8 @@ def pages(request):
                         params["required"].remove("content")
                     if "title" in params["required"]:
                         params["required"].remove("title")
-                    if "markdown" not in params["optional"]:
-                        params["optional"].append("markdown")
+                    if "mdFormat" not in params["optional"]:
+                        params["optional"].append("mdFormat")
                     context["all_pushers"][pusher] = params
                 # GET Image Host Settings
                 context["IMG_HOST"] = get_setting("IMG_HOST")
@@ -605,7 +631,7 @@ def pages(request):
                     context["all_image_hosts"][provider] = params
                 # CDNs
                 context["ALL_CDN"] = ALL_CDN
-            except:
+            except Exception:
                 print("配置获取错误, 转跳至配置更新页面")
                 return redirect("/update/")
         elif 'advanced' in load_template:

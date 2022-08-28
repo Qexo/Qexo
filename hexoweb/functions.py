@@ -1,8 +1,8 @@
 import os
-from core.QexoSettings import ALL_SETTINGS, ALL_CDN
+from core.qexoSettings import ALL_SETTINGS, ALL_CDN
 import requests
 from django.template.defaulttags import register
-from core.QexoSettings import QEXO_VERSION
+from core.qexoSettings import QEXO_VERSION
 from .models import Cache, SettingModel, FriendModel, NotificationModel, CustomModel, StatisticUV, StatisticPV, ImageModel, TalkModel
 import github
 import json

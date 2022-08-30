@@ -855,6 +855,8 @@ def import_talks(ss):
 
 
 def excerpt_post(content, length, mark=True):
+    if content is None:
+        content = ""
     result, content = "", (markdown(content) if mark else content)
     soup = BeautifulSoup(content, 'html.parser')
     for dom in soup:

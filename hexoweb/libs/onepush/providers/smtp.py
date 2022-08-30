@@ -41,7 +41,7 @@ class SMTP(Provider):
     See function `_default_message_parser` for more details.
     Use `SMTP.set_message_parser(custom_parser)` to set your custom message parser.
     """
-    name = "Smtp邮件服务器"
+    name = "Smtp邮件"
     _server: smtplib.SMTP
     _message_parser = _default_message_parser
     _params = {

@@ -861,7 +861,7 @@ def excerpt_post(content, length, mark=True):
         if dom.name and dom.name not in ["script", "style"]:
             result += re.sub("{(.*?)}", '', dom.get_text()).replace("\n", " ")
             result += "" if result.endswith(" ") else " "
-    return result[:int(length)] + "..." if len(result) > int(length) else result
+    return result[:int(length)] + "..." if (len(result) if result else 0) > int(length) else result
 
 
 def edit_talk(_id, content):

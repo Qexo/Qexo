@@ -55,3 +55,11 @@ class StatisticPV(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     url = models.URLField()
     number = models.IntegerField(default=0)
+
+
+class TalkModel(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    content = models.TextField(max_length=0x7FFFFFFF, blank=True)
+    tags = models.TextField(max_length=0x7FFFFFFF, blank=True)
+    time = models.TextField(max_length=0x7FFFFFFF)
+    like = models.TextField(max_length=0x7FFFFFFF, blank=True)

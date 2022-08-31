@@ -1,11 +1,12 @@
 import os
-from core.QexoSettings import ALL_SETTINGS, ALL_CDN
+from core.qexoSettings import ALL_SETTINGS, ALL_CDN
 import requests
 from django.template.defaulttags import register
-from core.QexoSettings import QEXO_VERSION
-from .models import Cache, SettingModel, FriendModel, NotificationModel, CustomModel, StatisticUV, StatisticPV, ImageModel
+from core.qexoSettings import QEXO_VERSION
+from .models import Cache, SettingModel, FriendModel, NotificationModel, CustomModel, StatisticUV, StatisticPV, ImageModel, TalkModel
 import github
 import json
+import uuid
 from urllib.parse import quote, unquote
 from datetime import timezone, timedelta, date, datetime
 from time import time
@@ -34,7 +35,7 @@ disable_warnings()
 def get_setting(name):
     try:
         return SettingModel.objects.get(name=name).content
-    except:
+    except Exception:
         return ""
 
 
@@ -47,7 +48,7 @@ def update_provider():
 
 try:
     _Provider = update_provider()
-except:
+except Exception:
     print("Provider初始化失败, 跳过")
     pass
 
@@ -55,7 +56,7 @@ except:
 def Provider():
     try:
         return _Provider
-    except:
+    except Exception:
         print("Provider获取错误, 重新初始化")
         return update_provider()
 
@@ -66,8 +67,8 @@ def get_range(value):
 
 
 @register.filter
-def div(value, div):  # 保留两位小数的除法
-    return round((value / div), 2)
+def div(value, _div):  # 保留两位小数的除法
+    return round((value / _div), 2)
 
 
 def get_cdn():
@@ -241,7 +242,7 @@ def delete_pages_caches():
     for cache in caches:
         try:
             name = cache.name[:5]
-        except:
+        except Exception:
             name = ""
         if name == "pages":
             cache.delete()
@@ -315,8 +316,9 @@ def check_if_api_auth(request):
         return True
     if request.GET.get("token") == get_setting("WEBHOOK_APIKEY"):
         return True
-    print(request.path + ": API鉴权失败 访问IP " + (request.META['HTTP_X_FORWARDED_FOR'] if 'HTTP_X_FORWARDED_FOR' in request.META.keys() else
-                                              request.META['REMOTE_ADDR']))
+    print(
+        request.path + ": API鉴权失败 访问IP " + (
+            request.META['HTTP_X_FORWARDED_FOR'] if 'HTTP_X_FORWARDED_FOR' in request.META.keys() else request.META['REMOTE_ADDR']))
     return False
 
 
@@ -503,7 +505,7 @@ def LocalOnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
         url = 'https://github.com/' + auth + '/' + project + '/tarball/' + quote(branch) + '/'
         with open(_tarfile, "wb") as file:
             file.write(requests.get(url).content)
-    except:
+    except Exception:
         print("下载更新失败, 尝试使用镜像服务器")
         url = 'https://hub.fastgit.xyz/' + auth + '/' + project + '/tarball/' + quote(branch) + '/'
         with open(_tarfile, "wb") as file:
@@ -518,7 +520,7 @@ def LocalOnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
     filelist = os.listdir(Path)
     print("开始删除旧文件...")
     for filename in filelist:  # delete all files except tmp
-        if not filename in ["_tmp", "configs.py", "db"]:
+        if filename not in ["_tmp", "configs.py", "db"]:
             if os.path.isfile(filename):
                 os.remove(filename)
             elif os.path.isdir(filename):
@@ -541,7 +543,7 @@ def CreateNotification(label, content, now):
     N.save()
     try:
         notify_me(label, content)
-    except:
+    except Exception:
         pass
     return N
 
@@ -571,14 +573,14 @@ def notify_me(title, content):
         config = json.loads(config)
     else:
         return False
-    if config.get("markdown") == "true":
+    if config.get("mdFormat") == "true":
         text_maker = ht.HTML2Text()
         text_maker.bypass_tables = False
         content = text_maker.handle(content)
     ntfy = notify(config["notifier"], **config["params"], title="Qexo消息: " + title, content=content)
     try:
         return ntfy.text
-    except:
+    except Exception:
         print("通知类型无输出信息, 使用OK缺省")
         return "OK"
 
@@ -618,7 +620,7 @@ def verify_provider(provider):
                 res = provider.get_content("_config.yml")
                 content = yaml.load(res, Loader=yaml.SafeLoader)
                 if content.get("theme"):
-                    theme = content.get("theme")
+                    theme = str(content.get("theme"))
                     for file in home["data"]:
                         if file["name"] == "_config.{}.yml".format(theme) and file["type"] == "file":
                             config_theme = "_config.{}.yml".format(theme)
@@ -629,7 +631,7 @@ def verify_provider(provider):
                             if file["name"] == "_config.yml" and file["type"] == "file":
                                 config_theme = "themes/" + theme + "_config.yml"
                                 break
-        except:
+        except Exception:
             pass
         # 校验 Package.json 及 Hexo
         if pack:
@@ -642,7 +644,7 @@ def verify_provider(provider):
                     if content.get("dependencies"):
                         if content["dependencies"].get("hexo"):
                             hexo = content["dependencies"].get("hexo")
-            except:
+            except Exception:
                 pass
         # 总结校验
         if hexo and config_hexo and (not indexhtml) and source and theme and pack and config_theme:
@@ -658,23 +660,27 @@ def verify_provider(provider):
             "theme_dir": theme_dir,
             "package": pack,
         }
-    except:
+    except Exception:
         return {"status": -1}
 
 
 def get_post_details(article, safe=True):
-    front_matter = yaml.safe_load(
-        re.search(r"---([\s\S]*?)---", article, flags=0).group()[3:-4].replace("{{ date }}",
-                                                                               strftime("%Y-%m-%d %H:%M:%S", localtime(time()))).replace(
-            "{{ abbrlink }}", get_crc_by_time(str(time()), get_setting("ABBRLINK_ALG"), get_setting("ABBRLINK_REP"))).replace("{",
-                                                                                                                              "").replace(
-            "}", "")) if article[:3] == "---" else json.loads(
-        "{{{}}}".format(re.search(r";;;([\s\S]*?);;;", article, flags=0).group()[3:-4].replace("{{ date }}",
-                                                                                               strftime("%Y-%m-%d %H:%M:%S",
-                                                                                                        localtime(time()))).replace(
-            "{{ abbrlink }}", get_crc_by_time(str(time()), get_setting("ABBRLINK_ALG"), get_setting("ABBRLINK_REP")))))
+    try:
+        front_matter = yaml.safe_load(
+            re.search(r"---([\s\S]*?)---", article, flags=0).group()[3:-4].replace("{{ date }}",
+                                                                                   strftime("%Y-%m-%d %H:%M:%S",
+                                                                                            localtime(time()))).replace(
+                "{{ abbrlink }}", get_crc_by_time(str(time()), get_setting("ABBRLINK_ALG"), get_setting("ABBRLINK_REP"))).replace("{",
+                                                                                                                                  "").replace(
+                "}", "")) if article[:3] == "---" else json.loads(
+            "{{{}}}".format(re.search(r";;;([\s\S]*?);;;", article, flags=0).group()[3:-4].replace("{{ date }}",
+                                                                                                   strftime("%Y-%m-%d %H:%M:%S",
+                                                                                                            localtime(time()))).replace(
+                "{{ abbrlink }}", get_crc_by_time(str(time()), get_setting("ABBRLINK_ALG"), get_setting("ABBRLINK_REP")))))
+    except Exception:
+        return {}, article
     for key in front_matter.keys():
-        if type(front_matter.get(key)) == datetime:
+        if type(front_matter.get(key)) in [datetime, date]:
             front_matter[key] = front_matter[key].strftime("%Y-%m-%d %H:%M:%S")
     if safe:
         passage = repr(re.search(r"[;-][;-][;-]([\s\S]*)", article[3:], flags=0).group()[3:]).replace("<", "\\<").replace(">",
@@ -738,6 +744,14 @@ def export_pv():
     ss = list()
     for s in all_:
         ss.append({"url": s.url, "number": s.number})
+    return ss
+
+
+def export_talks():
+    all_ = TalkModel.objects.all()
+    ss = list()
+    for s in all_:
+        ss.append({"content": s.content, "tags": s.tags, "time": s.time, "like": s.like})
     return ss
 
 
@@ -826,14 +840,35 @@ def import_pv(ss):
     return True
 
 
-def excerpt_post(content, length):
-    result, content = "", markdown(content)
+def import_talks(ss):
+    _all = TalkModel.objects.all()
+    for i in _all:
+        i.delete()
+    for s in ss:
+        talk = TalkModel()
+        talk.content = s["content"]
+        talk.tags = s["tags"]
+        talk.time = s["time"]
+        talk.like = s["like"]
+        talk.save()
+    return True
+
+
+def excerpt_post(content, length, mark=True):
+    result, content = "", (markdown(content) if mark else content)
     soup = BeautifulSoup(content, 'html.parser')
     for dom in soup:
         if dom.name and dom.name not in ["script", "style"]:
             result += re.sub("{(.*?)}", '', dom.get_text()).replace("\n", " ")
             result += "" if result.endswith(" ") else " "
     return result[:int(length)] + "..." if len(result) > int(length) else result
+
+
+def edit_talk(_id, content):
+    talk = TalkModel.objects.get(id=_id)
+    talk.content = content
+    talk.save()
+    return True
 
 
 # print(" ......................阿弥陀佛......................\n" +

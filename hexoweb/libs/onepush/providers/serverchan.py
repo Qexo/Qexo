@@ -8,7 +8,7 @@ from ..core import Provider
 
 
 class ServerChan(Provider):
-    name = 'serverchan'
+    name = 'Server酱'
     base_url = 'https://sc.ftqq.com/{}.send'
     site_url = 'https://sc.ftqq.com/3.version'
 

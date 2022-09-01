@@ -8,7 +8,7 @@ from ..core import Provider
 
 
 class Discord(Provider):
-    name = 'discord'
+    name = 'Discord'
     site_url = 'https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks'
 
     _params = {

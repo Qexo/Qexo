@@ -8,7 +8,7 @@ from ..core import Provider
 
 
 class Gocqhttp(Provider):
-    name = 'gocqhttp'
+    name = 'CqHttp'
     site_url = 'https://docs.go-cqhttp.org'
 
     _params = {

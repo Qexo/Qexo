@@ -24,10 +24,10 @@ try:
     ALLOWED_HOSTS = configs.DOMAINS
 except:
     print("获取本地配置文件失败, 使用环境变量进行初始化")
-    for env in ["DOMAINS", "MONGODB_HOST", "MONGODB_PORT", "MONGODB_USER", "MONGODB_PASS", "MONGODB_DB"]:
+    for env in ["MONGODB_HOST", "MONGODB_PORT", "MONGODB_USER", "MONGODB_PASS", "MONGODB_DB"]:
         if env not in os.environ:
             raise exceptions.InitError(f"\"{env}\"环境变量未设置")
-    ALLOWED_HOSTS = json.loads(os.environ.get("DOMAINS", False))
+    ALLOWED_HOSTS = json.loads(os.environ.get("DOMAINS", False)) if os.environ.get("DOMAINS", False) else ["*"]
 
 # Application definition
 

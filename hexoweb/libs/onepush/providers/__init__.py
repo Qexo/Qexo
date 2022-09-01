@@ -14,10 +14,12 @@ from . import pushdeer
 from . import qmsg
 from . import serverchan
 from . import serverchanturbo
+from . import smtp
 from . import telegram
 from . import wechatworkapp
 from . import wechatworkbot
-from . import smtp
+from . import lark
+from . import gotify
 
 _all_providers = {
     bark.Bark.name: bark.Bark,
@@ -30,8 +32,10 @@ _all_providers = {
     qmsg.Qmsg.name: qmsg.Qmsg,
     serverchan.ServerChan.name: serverchan.ServerChan,
     serverchanturbo.ServerChanTurbo.name: serverchanturbo.ServerChanTurbo,
-    smtp.Smtp.name: smtp.Smtp,
+    smtp.SMTP.name: smtp.SMTP,
     telegram.Telegram.name: telegram.Telegram,
     wechatworkapp.WechatWorkApp.name: wechatworkapp.WechatWorkApp,
-    wechatworkbot.WechatWorkBot.name: wechatworkbot.WechatWorkBot
+    wechatworkbot.WechatWorkBot.name: wechatworkbot.WechatWorkBot,
+    lark.Lark.name: lark.Lark,
+    gotify.Gotify.name: gotify.Gotify
 }

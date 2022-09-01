@@ -8,7 +8,7 @@ from ..core import Provider
 
 
 class ServerChanTurbo(Provider):
-    name = 'serverchanturbo'
+    name = 'Server酱·Turbo版'
     base_url = 'https://sctapi.ftqq.com/{}.send'
     site_url = 'https://sct.ftqq.com'
 

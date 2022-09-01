@@ -525,18 +525,20 @@ def pages(request):
             if search:
                 talks = TalkModel.objects.filter(content__contains=search)
                 for i in talks:
+                    t = json.loads(i.like)
                     posts.append({"content": excerpt_post(i.content, 20, mark=False),
                                   "tags": ', '.join(json.loads(i.tags)),
                                   "time": strftime("%Y-%m-%d %H:%M:%S", localtime(int(i.time))),
-                                  "like": len(json.loads(i.like)),
+                                  "like": len(t) if t else 0,
                                   "id": i.id.hex})
             else:
                 talks = TalkModel.objects.all()
                 for i in talks:
+                    t = json.loads(i.like)
                     posts.append({"content": excerpt_post(i.content, 20, mark=False),
                                   "tags": ', '.join(json.loads(i.tags)),
                                   "time": strftime("%Y-%m-%d %H:%M:%S", localtime(int(i.time))),
-                                  "like": len(json.loads(i.like)),
+                                  "like": len(t) if t else 0,
                                   "id": i.id.hex})
             context["posts"] = sorted(posts, key=lambda x: x["time"], reverse=True)
             context["post_number"] = len(posts)

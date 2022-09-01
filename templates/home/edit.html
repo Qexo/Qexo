@@ -140,7 +140,6 @@
         }
 
 
-
         function getTimeFormat() {
             let date = new Date();
             let month = date.getMonth() + 1 < 10 ? "0" + (date.getMonth() + 1) : date.getMonth()
@@ -173,7 +172,7 @@
                     loading.destroy();
                     if (res.status) {
                         notyf.success('发布成功！');
-                        if(res.excerpt){
+                        if (res.excerpt) {
                             front_matter = get_front_matter();
                             front_matter.excerpt = res.excerpt;
                             OrgSidebar = [...Sidebar];
@@ -213,7 +212,7 @@
                     loading.destroy();
                     if (res.status) {
                         notyf.success('草稿保存成功！');
-                        if(res.excerpt){
+                        if (res.excerpt) {
                             front_matter = get_front_matter();
                             front_matter.excerpt = res.excerpt;
                             OrgSidebar = [...Sidebar];
@@ -593,28 +592,32 @@
                 html += `<span class="px-1 py-0.5 text-xs select-none
                             d-inline-block  rounded-pill mr-1 mb-0.5"
                             style="color: rgb(255, 255, 255); background-color: rgb(52, 152, 219);
-                            " onclick="del_category(this.innerText);">` + categories[i] + `</span>`;
+                            " onclick="del_category(this.innerText);">` + ((typeof categories[i]
+                        === "object") ? categories[i][0] : categories[i]) +
+                    `</span>`;
             }
             $("#category-container").html(html);
             set_vditor_size();
         }
 
         function add_category(name) {
-            if (categories.includes(name)) {
-                notyf.error("分类已存在! ");
-            } else {
-                categories.push(name);
-                show_categories();
+            for (let i = 0; i < categories.length; i++) {
+                if (String(typeof (categories[i]) === "object" ? categories[i][0] : categories[i]) === name) {
+                    notyf.error("分类已存在! ");
+                    return;
+                }
             }
+            categories.push([name]);
+            show_categories();
         }
 
         function del_category(name) {
             for (let i = 0; i < categories.length; i++) {
-                if (String(categories[i]) === String(name)) {
+                if (String(typeof (categories[i]) === "object" ? categories[i][0] : categories[i]) === String(name)) {
                     categories.splice(i, 1);
                 }
             }
-            $("#category").val(String(name));
+            $("#qexo-category").val(String(name));
             show_categories();
         }
 

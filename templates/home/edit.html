@@ -568,6 +568,9 @@
         }
 
         function add_tag(name) {
+            if (!name){
+                return;
+            }
             if (tags.includes(name)) {
                 notyf.error("标签已存在! ");
             } else {
@@ -601,6 +604,9 @@
         }
 
         function add_category(name) {
+            if (!name){
+                return;
+            }
             for (let i = 0; i < categories.length; i++) {
                 if (String(typeof (categories[i]) === "object" ? categories[i][0] : categories[i]) === name) {
                     notyf.error("分类已存在! ");

@@ -571,6 +571,9 @@
         }
 
         function add_tag(name) {
+            if (!name){
+                return;
+            }
             if (tags.includes(name)) {
                 notyf.error("标签已存在! ");
             } else {
@@ -604,6 +607,9 @@
         }
 
         function add_category(name) {
+            if (!name){
+                return;
+            }
             for (let i = 0; i < categories.length; i++) {
                 if (String(typeof (categories[i]) === "object" ? categories[i][0] : categories[i]) === name) {
                     notyf.error("分类已存在! ");
@@ -632,7 +638,7 @@
                 if (OrgSidebar[i]["search"] === "tags") {
                     custom["tags"] = tags;
                 } else if (OrgSidebar[i]["search"] === "categories") {
-                    custom["categories"] =;
+                    custom["categories"] = categories;
                 } else {
                     let tmp = $("#" + OrgSidebar[i]["search"]).val();
                     if (tmp === "true") {

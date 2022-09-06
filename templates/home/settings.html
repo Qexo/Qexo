@@ -1165,16 +1165,21 @@
 
         function change_pusher(pusher) {
             let params = all_pushers[pusher];
+            if (typeof params !== "object") {
+                console.log("获取Pusher失败，显示Bark");
+                params = all_pushers["Bark"];
+            }
             let t = 0, tmp;
             let html = '';
             let required = params["required"];
             let optional = params["optional"];
             if (pusher === now_pusher["notifier"]) {
-                for (let i = 0; i < required.length; i++) {
-                    tmp = now_pusher["params"][required[i]] ?
-                        now_pusher["params"][required[i]] : "";
-                    if (t % 2 === 0) {  // first param
-                        html += `<div class="row">
+                if (typeof required === "object") {
+                    for (let i = 0; i < required.length; i++) {
+                        tmp = now_pusher["params"][required[i]] ?
+                            now_pusher["params"][required[i]] : "";
+                        if (t % 2 === 0) {  // first param
+                            html += `<div class="row">
                                 <div class="col-lg-6">
                                     <div class="form-group">
                                         <label class="form-control-label">` + required[i] + `(必填)
@@ -1184,9 +1189,9 @@
                                                value="` + EscapeString(tmp) + `">
                                     </div>
                                 </div>`
-                        t += 1;
-                    } else {
-                        html += `<div class="col-lg-6">
+                            t += 1;
+                        } else {
+                            html += `<div class="col-lg-6">
                                 <div class="form-group">
                                     <label class="form-control-label">` + required[i] + `(必填)</label>
                                     <input type="text" name="` + required[i] + `" class="form-control"
@@ -1195,14 +1200,16 @@
                                 </div>
                             </div>
                         </div>`
-                        t += 1;
+                            t += 1;
+                        }
                     }
                 }
-                for (let i = 0; i < optional.length; i++) {
-                    tmp = now_pusher["params"][optional[i]] ?
-                        now_pusher["params"][optional[i]] : "";
-                    if (t % 2 === 0) {  // first param
-                        html += `<div class="row">
+                if (typeof optional === "object") {
+                    for (let i = 0; i < optional.length; i++) {
+                        tmp = now_pusher["params"][optional[i]] ?
+                            now_pusher["params"][optional[i]] : "";
+                        if (t % 2 === 0) {  // first param
+                            html += `<div class="row">
                                 <div class="col-lg-6">
                                     <div class="form-group">
                                         <label class="form-control-label">` + optional[i] + `</label>
@@ -1211,9 +1218,9 @@
                                                value="` + EscapeString(tmp) + `">
                                     </div>
                                 </div>`
-                        t += 1;
-                    } else {
-                        html += `<div class="col-lg-6">
+                            t += 1;
+                        } else {
+                            html += `<div class="col-lg-6">
                                 <div class="form-group">
                                     <label class="form-control-label">` + optional[i] + `</label>
                                     <input type="text" name="` + optional[i] + `" class="form-control"
@@ -1222,16 +1229,18 @@
                                 </div>
                             </div>
                         </div>`
-                        t += 1;
+                            t += 1;
+                        }
                     }
                 }
                 if (t % 2 === 1) {
                     html += '</div>';
                 }
             } else {
-                for (let i = 0; i < required.length; i++) {
-                    if (t % 2 === 0) {  // first param
-                        html += `<div class="row">
+                if (typeof required === "object") {
+                    for (let i = 0; i < required.length; i++) {
+                        if (t % 2 === 0) {  // first param
+                            html += `<div class="row">
                                 <div class="col-lg-6">
                                     <div class="form-group">
                                         <label class="form-control-label">` + required[i] + `(必填)
@@ -1241,9 +1250,9 @@
                                                value="">
                                     </div>
                                 </div>`
-                        t += 1;
-                    } else {
-                        html += `<div class="col-lg-6">
+                            t += 1;
+                        } else {
+                            html += `<div class="col-lg-6">
                                 <div class="form-group">
                                     <label class="form-control-label">` + required[i] + `(必填)</label>
                                     <input type="text" name="` + required[i] + `" class="form-control"
@@ -1252,24 +1261,26 @@
                                 </div>
                             </div>
                         </div>`
-                        t += 1;
+                            t += 1;
+                        }
                     }
                 }
-                for (let i = 0; i < optional.length; i++) {
-                    if (t % 2 === 0) {  // first param
-                        html += `<div class="row">
+                if (typeof optional === "object") {
+                    for (let i = 0; i < optional.length; i++) {
+                        if (t % 2 === 0) {  // first param
+                            html += `<div class="row">
                                 <div class="col-lg-6">
                                     <div class="form-group">
                                         <label class="form-control-label">` + optional[i] +
-                            `</label>
+                                `</label>
                                         <input type="text" name="` + optional[i] + `" class="form-control"
                                                placeholder="` + optional[i] + `"
                                                value="">
                                     </div>
                                 </div>`
-                        t += 1;
-                    } else {
-                        html += `<div class="col-lg-6">
+                            t += 1;
+                        } else {
+                            html += `<div class="col-lg-6">
                                 <div class="form-group">
                                     <label class="form-control-label">` + optional[i] + `</label>
                                     <input type="text" name="` + optional[i] + `" class="form-control"
@@ -1278,7 +1289,8 @@
                                 </div>
                             </div>
                         </div>`
-                        t += 1;
+                            t += 1;
+                        }
                     }
                 }
                 if (t % 2 === 1) {
@@ -1298,7 +1310,7 @@
             }
         }
         if (!now_pusher["notifier"]) {
-            change_pusher("bark");
+            change_pusher("Bark");
         }
         $("#onepush-container").html(onepush_container);
 

@@ -571,15 +571,15 @@ def pages(request):
             if search:
                 friends = FriendModel.objects.filter(name__contains=search)
                 for i in friends:
-                    posts.append({"name": i.name, "url": i.url, "image": i.imageUrl,
-                                  "description": i.description,
+                    posts.append({"name": escape(i.name), "url": escape(i.url), "image": escape(i.imageUrl),
+                                  "description": escape(i.description),
                                   "time": i.time,
                                   "status": i.status})
             else:
                 images = FriendModel.objects.all()
                 for i in images:
-                    posts.append({"name": i.name, "url": i.url, "image": i.imageUrl,
-                                  "description": i.description,
+                    posts.append({"name": escape(i.name), "url": escape(i.url), "image": escape(i.imageUrl),
+                                  "description": escape(i.description),
                                   "time": i.time,
                                   "status": i.status})
             posts.sort(key=lambda x: x["time"])

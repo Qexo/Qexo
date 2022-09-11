@@ -28,6 +28,7 @@ import yaml
 import re
 import shutil
 from bs4 import BeautifulSoup
+from html import escape
 
 disable_warnings()
 

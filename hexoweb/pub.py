@@ -1,6 +1,4 @@
 import random
-from time import strftime, localtime
-from time import time
 
 from django.http.response import HttpResponseForbidden
 from django.http import JsonResponse
@@ -331,9 +329,27 @@ def ask_friend(request):
 @csrf_exempt
 def get_custom(request):
     try:
+        func_str = CustomModel.objects.get(
+                name=request.GET.get("key") if request.GET.get("key") else request.POST.get("key")).content
+        body = request.GET
+        body.update(request.POST)
+        body = dict(body)
+        # print(body)
+        for key in body.keys():
+            if len(body[key]) == 1:
+                body[key] = body[key][0]
+        old_stdout = sys.stdout
+        output = sys.stdout = StringIO()
+        try:
+            print(eval(func_str))
+        except Exception:
+            try:
+                exec(func_str, body)
+            except Exception:
+                print(func_str)
+        sys.stdout = old_stdout
         context = {
-            "data": CustomModel.objects.get(
-                name=request.GET.get("key") if request.GET.get("key") else request.POST.get("key")).content,
+            "data": output.getvalue(),
             "status": True
         }
     except Exception as error:

@@ -875,6 +875,20 @@ def edit_talk(_id, content):
     return True
 
 
+def EscapeString(_str):
+    temp = ""
+    _str = _str.toString()
+    if len(_str) == 0:
+        return ""
+    temp = _str.replace("&", "&amp;")
+    temp = temp.replace("<", "&lt;")
+    temp = temp.replace(">", "&gt;")
+    temp = temp.replace(" ", "&nbsp;")
+    temp = temp.replace("'", "&#39;")
+    temp = temp.replace("\"", "&quot;")
+    return temp
+
+
 # print(" ......................阿弥陀佛......................\n" +
 #       "                       _oo0oo_                      \n" +
 #       "                      o8888888o                     \n" +

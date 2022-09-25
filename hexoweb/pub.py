@@ -316,8 +316,9 @@ def ask_friend(request):
         friend.status = False
         friend.save()
         CreateNotification("友链申请 " + friend.name,
-                           "站点名: {}\n链接: {}\n图片: {}\n简介: {}\n".format(friend.name, friend.url, friend.imageUrl,
-                                                                               friend.description), time())
+                           "站点名: {}\n链接: {}\n图片: {}\n简介: {}\n".format(EscapeString(friend.name), EscapeString(friend.url),
+                                                                               EscapeString(friend.imageUrl),
+                                                                               EscapeString(friend.description)), time())
         context = {"msg": "申请成功！", "time": friend.time, "status": True}
     except Exception as error:
         print(repr(error))
@@ -330,7 +331,7 @@ def ask_friend(request):
 def get_custom(request):
     try:
         func_str = CustomModel.objects.get(
-                name=request.GET.get("key") if request.GET.get("key") else request.POST.get("key")).content
+            name=request.GET.get("key") if request.GET.get("key") else request.POST.get("key")).content
         body = request.GET
         body.update(request.POST)
         body = dict(body)

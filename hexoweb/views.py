@@ -168,7 +168,7 @@ def init_view(request):
                     else:
                         msg = ""
                         if verify["status"] == -1:
-                            msg = "远程连接错误!请检查Token"
+                            msg = "远程连接错误!请检查Token或分支是否正确"
                         else:
                             if verify["hexo"]:
                                 msg += "检测到Hexo版本: " + verify["hexo"]

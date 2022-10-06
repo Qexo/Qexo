@@ -64,7 +64,7 @@ class Provider(object):
                              "path": posts[i]["path"],
                              "size": posts[i]["size"],
                              "status": True})
-                if posts[i].type == "dir":
+                if posts[i]["type"] == "dir":
                     dir_content = self.get_posts(path=posts[i]["path"].split("source/_posts")[1])
                     for file in dir_content:
                         if ("source/_posts" in file["path"]) and (file["fullname"] not in names):
@@ -122,7 +122,7 @@ class Provider(object):
                 except:
                     pass
             if source["type"] == "dir":
-                for post in self.get_posts(source["data"])["data"]:
+                for post in self.get_posts(source["path"])["data"]:
                     try:
                         if post["name"][-4:] in [".yml", "yaml"]:
                             results.append({"name": post["name"], "path": post["path"], "size": post["size"]})

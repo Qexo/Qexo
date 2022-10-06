@@ -36,14 +36,14 @@ class Provider(object):
         _drafts = list()
         names = list()
         try:
-            drafts = self.get_path(path + 'source/_drafts' + path)["data"]
+            drafts = self.get_path('source/_drafts' + path)["data"]
             for i in range(len(drafts)):
                 if drafts[i]["type"] == "file" and drafts[i]["name"][-2:] == "md":
-                    _drafts.append({"name": drafts[i]["path"].split(
-                        "source/_drafts/")[1][0:-3], "fullname": drafts[i]["path"].split(
-                        "source/_drafts/")[1],
+                    _drafts.append({"name": drafts[i]["path"].split("source/_drafts/")[1][0:-3],
+                                    "fullname": drafts[i]["path"].split("source/_drafts/")[1],
                                     "path": drafts[i]["path"],
-                                    "size": drafts[i]["size"], "status": False})
+                                    "size": drafts[i]["size"],
+                                    "status": False})
                     names.append(drafts[i]["path"].split("source/_drafts/")[1])
                 if drafts[i].type == "dir":
                     dir_content = self.get_posts(path=drafts[i]["path"].split("source/_drafts")[1])
@@ -54,7 +54,7 @@ class Provider(object):
         except:
             pass
         try:
-            posts = self.get_path(path + 'source/_posts' + path)["data"]
+            posts = self.get_path('source/_posts' + path)["data"]
             for i in range(len(posts)):
                 if posts[i]["type"] == "file" and posts[i]["name"][-2:] == "md":
                     if posts[i]["path"].split("source/_posts/")[1] not in names:
@@ -122,7 +122,7 @@ class Provider(object):
                 except:
                     pass
             if source["type"] == "dir":
-                for post in self.get_posts(source)["path"]:
+                for post in self.get_posts(source["data"])["data"]:
                     try:
                         if post["name"][-4:] in [".yml", "yaml"]:
                             results.append({"name": post["name"], "path": post["path"], "size": post["size"]})

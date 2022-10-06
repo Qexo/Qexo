@@ -37,11 +37,13 @@ class Github(Provider):
                 results.append({
                     "name": file.name,
                     "size": file.size,
+                    "path": file.path,
                     "type": file.type
                 })
             else:
                 results.append({
                     "name": file.name,
+                    "path": file.path,
                     "type": file.type
                 })
         print("获取路径{}成功".format(path))

@@ -122,7 +122,7 @@ class Provider(object):
                 except:
                     pass
             if source["type"] == "dir":
-                for post in self.get_posts(source["path"]):
+                for post in self.get_posts(source)["path"]:
                     try:
                         if post["name"][-4:] in [".yml", "yaml"]:
                             results.append({"name": post["name"], "path": post["path"], "size": post["size"]})

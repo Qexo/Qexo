@@ -547,9 +547,11 @@ def create_webhook_config(request):
                     "url": request.POST.get("uri") + "?token=" + SettingModel.objects.get(
                         name="WEBHOOK_APIKEY").content
                 }
-            Provider().delete_hooks()
-            Provider().create_hook(config)
-            context = {"msg": "设置成功！", "status": True}
+            if Provider().delete_hooks():
+                Provider().create_hook(config)
+                context = {"msg": "设置成功！", "status": True}
+            else:
+                context = {"msg": "服务商不支持！", "status": False}
         except Exception as error:
             print(repr(error))
             context = {"msg": repr(error), "status": False}

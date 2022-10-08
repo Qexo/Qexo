@@ -17,10 +17,10 @@ class Provider(object):
         ...
 
     def delete_hooks(self):
-        ...
+        return False
 
     def create_hook(self, config):
-        ...
+        return False
 
     def get_post(self, post):
         try:

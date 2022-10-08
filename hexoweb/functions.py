@@ -633,8 +633,8 @@ def verify_provider(provider):
                             if file["name"] == "_config.yml" and file["type"] == "file":
                                 config_theme = "themes/" + theme + "_config.yml"
                                 break
-        except Exception:
-            pass
+        except Exception as e:
+            print("校验配置报错" + repr(e))
         # 校验 Package.json 及 Hexo
         if pack:
             try:
@@ -646,8 +646,8 @@ def verify_provider(provider):
                     if content.get("dependencies"):
                         if content["dependencies"].get("hexo"):
                             hexo = content["dependencies"].get("hexo")
-            except Exception:
-                pass
+            except Exception as e:
+                print("校验配置报错" + repr(e))
         # 总结校验
         if hexo and config_hexo and (not indexhtml) and source and theme and pack and config_theme:
             status = 1

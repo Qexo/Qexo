@@ -32,20 +32,22 @@ class Local(Provider):
                 results.append({
                     "name": file,
                     "size": os.stat(filedir).st_size,
-                    "path": filedir,
+                    "path": filedir.replace("\\", "/"),
                     "type": "file"
                 })
             else:
                 results.append({
                     "name": file,
-                    "path": filedir,
+                    "path": filedir.replace("\\", "/"),
                     "type": "dir"
                 })
         print("获取路径{}成功".format(path))
         return {"path": path, "data": results}
 
     def save(self, file, content, commitchange="Update by Qexo"):
-        path = os.path.join(self.path, file)
+        path = os.path.join(self.path, file).replace("\\", "/")
+        if not os.path.exists("/".join(path.split("/")[0:-1])):
+            os.makedirs("/".join(path.split("/")[0:-1]))
         with open(path, "w", encoding="UTF-8") as f:
             f.write(content)
             print("保存文件{}成功".format(file))

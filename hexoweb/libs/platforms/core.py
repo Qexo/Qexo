@@ -70,8 +70,8 @@ class Provider(object):
                         if ("source/_posts" in file["path"]) and (file["fullname"] not in names):
                             _posts.append(file)
                             names.append(file["fullname"])
-        except:
-            pass
+        except Exception as e:
+            print("读取文章出错: " + repr(e))
         posts = _posts + _drafts
         print("读取文章列表成功")
         return posts

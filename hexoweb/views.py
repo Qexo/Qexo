@@ -444,7 +444,8 @@ def pages(request):
                 context["front_matter"] = json.dumps(context["front_matter"])
             except Exception as error:
                 print("获取页面模板失败, 错误信息: " + repr(error))
-                context["error"] = repr(error)
+                # context["error"] = repr(error)
+                context["front_matter"], context["file_content"] = {}, ""
             try:
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
@@ -459,7 +460,8 @@ def pages(request):
                 context["front_matter"] = json.dumps(context["front_matter"])
             except Exception as error:
                 print("获取文章模板失败, 错误信息: " + repr(error))
-                context["error"] = repr(error)
+                # context["error"] = repr(error)
+                context["front_matter"], context["file_content"] = {}, ""
             try:
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True

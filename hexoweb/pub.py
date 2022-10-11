@@ -551,7 +551,7 @@ def get_talks(request):
         for i in all_talks:
             t = json.loads(i.like)
             talks.append({"id": i.id.hex, "content": i.content, "time": i.time, "tags": json.loads(i.tags), "like": len(t) if t else 0,
-                          "liked": True if ip in t else False})
+                          "liked": True if ip in t else False, "values": json.loads(i.values)})
         context = {"msg": "获取成功！", "status": True, "count": count, "data": talks}
     except Exception as error:
         print(repr(error))
@@ -598,10 +598,15 @@ def save_talk(request):
             talk.content = request.POST.get("content")
             talk.tags = request.POST.get("tags")
             talk.time = request.POST.get("time")
+            talk.values = request.POST.get("values")
             talk.save()
             context["msg"] = "修改成功"
         else:
-            talk = TalkModel(content=request.POST.get("content"), tags=request.POST.get("tags"), time=str(int(time())), like="[]")
+            talk = TalkModel(content=request.POST.get("content"),
+                             tags=request.POST.get("tags"),
+                             time=str(int(time())),
+                             like="[]",
+                             values=request.POST.get("values"))
             talk.save()
             context["id"] = talk.id.hex
     except Exception as error:

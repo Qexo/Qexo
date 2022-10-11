@@ -392,11 +392,13 @@ def pages(request):
             talk_id = request.GET.get("id")
             context["content"] = repr("")
             context["tags"] = "[]"
+            context["values"] = "{}"
             if talk_id:
                 Talk = TalkModel.objects.get(id=uuid.UUID(hex=talk_id))
                 context["content"] = repr(Talk.content)
                 context["tags"] = Talk.tags
                 context["id"] = talk_id
+                context["values"] = Talk.values
             try:
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True

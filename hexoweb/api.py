@@ -759,10 +759,15 @@ def save_talk(request):
             talk.content = request.POST.get("content")
             talk.tags = request.POST.get("tags")
             talk.time = request.POST.get("time")
+            talk.values = request.POST.get("values")
             talk.save()
             context["msg"] = "修改成功"
         else:
-            talk = TalkModel(content=request.POST.get("content"), tags=request.POST.get("tags"), time=str(int(time())), like="[]")
+            talk = TalkModel(content=request.POST.get("content"),
+                             tags=request.POST.get("tags"),
+                             time=str(int(time())),
+                             like="[]",
+                             values=request.POST.get("values"))
             talk.save()
             context["id"] = talk.id.hex
     except Exception as error:

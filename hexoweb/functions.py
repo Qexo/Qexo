@@ -622,15 +622,15 @@ def verify_provider(provider):
                 res = provider.get_content("_config.yml")
                 content = yaml.load(res, Loader=yaml.SafeLoader)
                 if content.get("theme"):
-                    theme = str(content.get("theme"))
+                    theme = str(content.get("theme")).lower()
                     for file in home["data"]:
-                        if file["name"] == "_config.{}.yml".format(theme) and file["type"] == "file":
+                        if file["name"].lower() == "_config.{}.yml".format(theme) and file["type"] == "file":
                             config_theme = "_config.{}.yml".format(theme)
                             break
                     if (not config_theme) and theme_dir:
                         theme_path = provider.get_path("themes/" + theme)
                         for file in theme_path["data"]:
-                            if file["name"] == "_config.yml" and file["type"] == "file":
+                            if file["name"].lower() == "_config.yml" and file["type"] == "file":
                                 config_theme = "themes/" + theme + "_config.yml"
                                 break
         except Exception as e:

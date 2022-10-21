@@ -168,7 +168,7 @@ def init_view(request):
                     else:
                         msg = ""
                         if verify["status"] == -1:
-                            msg = "远程连接错误!请检查Token"
+                            msg = "远程连接错误!请检查Token或分支是否正确"
                         else:
                             if verify["hexo"]:
                                 msg += "检测到Hexo版本: " + verify["hexo"]
@@ -392,11 +392,13 @@ def pages(request):
             talk_id = request.GET.get("id")
             context["content"] = repr("")
             context["tags"] = "[]"
+            context["values"] = "{}"
             if talk_id:
                 Talk = TalkModel.objects.get(id=uuid.UUID(hex=talk_id))
                 context["content"] = repr(Talk.content)
                 context["tags"] = Talk.tags
                 context["id"] = talk_id
+                context["values"] = Talk.values
             try:
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
@@ -444,7 +446,8 @@ def pages(request):
                 context["front_matter"] = json.dumps(context["front_matter"])
             except Exception as error:
                 print("获取页面模板失败, 错误信息: " + repr(error))
-                context["error"] = repr(error)
+                # context["error"] = repr(error)
+                context["front_matter"], context["file_content"] = {}, ""
             try:
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
@@ -459,7 +462,8 @@ def pages(request):
                 context["front_matter"] = json.dumps(context["front_matter"])
             except Exception as error:
                 print("获取文章模板失败, 错误信息: " + repr(error))
-                context["error"] = repr(error)
+                # context["error"] = repr(error)
+                context["front_matter"], context["file_content"] = {}, ""
             try:
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True

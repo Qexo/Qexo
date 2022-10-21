@@ -67,8 +67,32 @@
                 </div>
             </div>
         </div>
-        {% include "includes/footer.html" %}
+        <style>
+            @media (min-width: 768px) {
+                #bottom-bar {
+                    flex: 0 0 93.666667%;
+                    max-width: 93.666667%;
+                }
+            }
+        </style>
+        <div class="row">
+            <div class="card ml-md-4 col-md-11" id="bottom-bar">
+                <div class="col-12">
+                    <input type="button" class="btn btn-sm float-right mt-3"
+                           value="添加"
+                           style="border: 1px solid #dee2e6;border-radius: .25rem;"
+                           onclick="addBottomItem()">
+                    <h2 class="mt-3"><i class="fas fa-cogs"></i> 自定义参数</h2>
+                    <hr class="my-2"/>
+                    <div id="bottom-container">
 
+                    </div>
+                    <br>
+                </div>
+
+            </div>
+        </div>
+        {% include "includes/footer.html" %}
     </div>
 
 {% endblock content %}
@@ -82,6 +106,7 @@
         var title = "{{ title }}", tags = {{ tags|safe }}, _status = true, id = "{{ id }}";
         var file_content = {{ content|safe }};
         var height = window.innerHeight * 0.75;
+        var values = {{ values|safe }};
 
         $.ajaxSetup({
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
@@ -108,12 +133,14 @@
             let loading = new KZ_Loading('正在保存中...');
             _status = false;
             loading.show();
+            save_bottom();
             $.ajax({
                 url: '/api/save_talk/',
                 method: 'post',
                 data: {
                     "content": editor.getHtml(), "tags": JSON.stringify(tags), "id": id, "time":
-                        (Number(new Date($("#time").val())) / 1000).toString()
+                        (Number(new Date($("#time").val())) / 1000).toString(),
+                    "values": JSON.stringify(values)
                 },
                 dataType: 'JSON',
                 success: function (res) {
@@ -289,5 +316,70 @@
         });
 
         $("#time").val(getTimeFormat());
+
+        // 底栏自定义字段
+        function show_bottom() {
+            let html = "";
+            let keys = Object.keys(values);
+            if (keys.length === 0) {
+                $("#bottom-container").html("暂无其他参数");
+                return;
+            }
+            html = `<div class="form-row">
+                        <div class="col-2">
+                            <label class="form-control-label">标头</label>
+                        </div>
+                        <div class="col-4">
+                            <label class="form-control-label">内容</label>
+                        </div>
+                    </div>`
+            for (let i = 0; i < keys.length; i++) {
+                html += `<form class="form-row" id="bottom-row-` + i + `">
+                                <div class="col-2">
+                                    <input type="text" class="form-control" name="search"
+                                           placeholder="字段名" value="` + EscapeString(keys[i]) + `">
+                                </div>
+                                <div class="col-10">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" name="icon"
+                                               placeholder="内容"  value="` + values[keys[i]] + `">
+                                        <div class="input-group-append">
+                                            <button class="btn" type="button"
+                                                    style="border: 1px solid #dee2e6;border-radius: 0 .25rem .25rem 0"
+                                                    onclick="delBottomItem(` + i + `)">
+                                                -
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>`;
+            }
+            $("#bottom-container").html(html);
+        }
+
+        function delBottomItem(i) {
+            save_bottom();
+            let keys = Object.keys(values);
+            delete values[keys[i]];
+            show_bottom();
+        }
+
+        function addBottomItem() {
+            save_bottom();
+            if (values[""] !== "") values[""] = "";
+            show_bottom();
+        }
+
+        function save_bottom() {
+            let tmp;
+            let keys = Object.keys(values);
+            values = {};
+            for (let i = 0; i < keys.length; i++) {
+                tmp = $("#bottom-row-" + i).serializeArray();
+                values[tmp[0].value] = tmp[1].value;
+            }
+        }
+
+        show_bottom();
     </script>
 {% endblock javascripts %}

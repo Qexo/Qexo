@@ -1,6 +1,4 @@
 import random
-from time import strftime, localtime
-from time import time
 
 from django.http.response import HttpResponseForbidden
 from django.http import JsonResponse
@@ -318,8 +316,9 @@ def ask_friend(request):
         friend.status = False
         friend.save()
         CreateNotification("友链申请 " + friend.name,
-                           "站点名: {}\n链接: {}\n图片: {}\n简介: {}\n".format(friend.name, friend.url, friend.imageUrl,
-                                                                               friend.description), time())
+                           "站点名: {}\n链接: {}\n图片: {}\n简介: {}\n".format(EscapeString(friend.name), EscapeString(friend.url),
+                                                                               EscapeString(friend.imageUrl),
+                                                                               EscapeString(friend.description)), time())
         context = {"msg": "申请成功！", "time": friend.time, "status": True}
     except Exception as error:
         print(repr(error))
@@ -331,9 +330,27 @@ def ask_friend(request):
 @csrf_exempt
 def get_custom(request):
     try:
+        func_str = CustomModel.objects.get(
+            name=request.GET.get("key") if request.GET.get("key") else request.POST.get("key")).content
+        body = request.GET
+        body.update(request.POST)
+        body = dict(body)
+        # print(body)
+        for key in body.keys():
+            if len(body[key]) == 1:
+                body[key] = body[key][0]
+        old_stdout = sys.stdout
+        output = sys.stdout = StringIO()
+        try:
+            print(eval(func_str))
+        except Exception:
+            try:
+                exec(func_str, body)
+            except Exception:
+                print(func_str)
+        sys.stdout = old_stdout
         context = {
-            "data": CustomModel.objects.get(
-                name=request.GET.get("key") if request.GET.get("key") else request.POST.get("key")).content,
+            "data": output.getvalue(),
             "status": True
         }
     except Exception as error:
@@ -534,7 +551,7 @@ def get_talks(request):
         for i in all_talks:
             t = json.loads(i.like)
             talks.append({"id": i.id.hex, "content": i.content, "time": i.time, "tags": json.loads(i.tags), "like": len(t) if t else 0,
-                          "liked": True if ip in t else False})
+                          "liked": True if ip in t else False, "values": json.loads(i.values)})
         context = {"msg": "获取成功！", "status": True, "count": count, "data": talks}
     except Exception as error:
         print(repr(error))
@@ -581,10 +598,15 @@ def save_talk(request):
             talk.content = request.POST.get("content")
             talk.tags = request.POST.get("tags")
             talk.time = request.POST.get("time")
+            talk.values = request.POST.get("values")
             talk.save()
             context["msg"] = "修改成功"
         else:
-            talk = TalkModel(content=request.POST.get("content"), tags=request.POST.get("tags"), time=str(int(time())), like="[]")
+            talk = TalkModel(content=request.POST.get("content"),
+                             tags=request.POST.get("tags"),
+                             time=str(int(time())),
+                             like="[]",
+                             values=request.POST.get("values"))
             talk.save()
             context["id"] = talk.id.hex
     except Exception as error:

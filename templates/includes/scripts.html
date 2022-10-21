@@ -100,7 +100,7 @@
                         '</h4></div><div ' +
                     'class="text-right text-muted"><small>' + notifications[i]["time"] +
                     '</small></div></div><p class="text-sm mb-0">' +
-                    EscapeString(notifications[i]["content"]) + '</p></div></div></a>';
+                    notifications[i]["content"] + '</p></div></div></a>';
             }
             html += '<div class="px-3 py-3"><h6 class="text-sm text-primary m-0 text-right" ' +
                 'style="cursor: pointer" onclick="clearNotification()">清除全部' +

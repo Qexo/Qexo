@@ -547,9 +547,11 @@ def create_webhook_config(request):
                     "url": request.POST.get("uri") + "?token=" + SettingModel.objects.get(
                         name="WEBHOOK_APIKEY").content
                 }
-            Provider().delete_hooks()
-            Provider().create_hook(config)
-            context = {"msg": "设置成功！", "status": True}
+            if Provider().delete_hooks():
+                Provider().create_hook(config)
+                context = {"msg": "设置成功！", "status": True}
+            else:
+                context = {"msg": "服务商不支持！", "status": False}
         except Exception as error:
             print(repr(error))
             context = {"msg": repr(error), "status": False}
@@ -757,10 +759,15 @@ def save_talk(request):
             talk.content = request.POST.get("content")
             talk.tags = request.POST.get("tags")
             talk.time = request.POST.get("time")
+            talk.values = request.POST.get("values")
             talk.save()
             context["msg"] = "修改成功"
         else:
-            talk = TalkModel(content=request.POST.get("content"), tags=request.POST.get("tags"), time=str(int(time())), like="[]")
+            talk = TalkModel(content=request.POST.get("content"),
+                             tags=request.POST.get("tags"),
+                             time=str(int(time())),
+                             like="[]",
+                             values=request.POST.get("values"))
             talk.save()
             context["id"] = talk.id.hex
     except Exception as error:

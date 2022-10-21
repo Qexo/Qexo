@@ -1,4 +1,6 @@
 import os
+import sys
+from io import StringIO
 from core.qexoSettings import ALL_SETTINGS, ALL_CDN
 import requests
 from django.template.defaulttags import register
@@ -7,15 +9,14 @@ from .models import Cache, SettingModel, FriendModel, NotificationModel, CustomM
 import github
 import json
 import uuid
-from urllib.parse import quote, unquote
 from datetime import timezone, timedelta, date, datetime
-from time import time
+from time import strftime, localtime, time
 from hashlib import md5
 from urllib3 import disable_warnings
+from urllib.parse import quote, unquote
 from markdown import markdown
 from zlib import crc32 as zlib_crc32
 from urllib.parse import quote
-from time import strftime, localtime
 import tarfile
 import html2text as ht
 from hexoweb.libs.onepush import notify, get_notifier
@@ -621,19 +622,19 @@ def verify_provider(provider):
                 res = provider.get_content("_config.yml")
                 content = yaml.load(res, Loader=yaml.SafeLoader)
                 if content.get("theme"):
-                    theme = str(content.get("theme"))
+                    theme = str(content.get("theme")).lower()
                     for file in home["data"]:
-                        if file["name"] == "_config.{}.yml".format(theme) and file["type"] == "file":
+                        if file["name"].lower() == "_config.{}.yml".format(theme) and file["type"] == "file":
                             config_theme = "_config.{}.yml".format(theme)
                             break
                     if (not config_theme) and theme_dir:
                         theme_path = provider.get_path("themes/" + theme)
                         for file in theme_path["data"]:
-                            if file["name"] == "_config.yml" and file["type"] == "file":
+                            if file["name"].lower() == "_config.yml" and file["type"] == "file":
                                 config_theme = "themes/" + theme + "_config.yml"
                                 break
-        except Exception:
-            pass
+        except Exception as e:
+            print("校验配置报错" + repr(e))
         # 校验 Package.json 及 Hexo
         if pack:
             try:
@@ -645,8 +646,8 @@ def verify_provider(provider):
                     if content.get("dependencies"):
                         if content["dependencies"].get("hexo"):
                             hexo = content["dependencies"].get("hexo")
-            except Exception:
-                pass
+            except Exception as e:
+                print("校验配置报错" + repr(e))
         # 总结校验
         if hexo and config_hexo and (not indexhtml) and source and theme and pack and config_theme:
             status = 1
@@ -872,6 +873,20 @@ def edit_talk(_id, content):
     talk.content = content
     talk.save()
     return True
+
+
+def EscapeString(_str):
+    temp = ""
+    _str = _str.toString()
+    if len(_str) == 0:
+        return ""
+    temp = _str.replace("&", "&amp;")
+    temp = temp.replace("<", "&lt;")
+    temp = temp.replace(">", "&gt;")
+    temp = temp.replace(" ", "&nbsp;")
+    temp = temp.replace("'", "&#39;")
+    temp = temp.replace("\"", "&quot;")
+    return temp
 
 
 # print(" ......................阿弥陀佛......................\n" +

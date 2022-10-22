@@ -4,6 +4,7 @@ from io import StringIO
 from core.qexoSettings import ALL_SETTINGS, ALL_CDN
 import requests
 from django.template.defaulttags import register
+from django.core.management import execute_from_command_line
 from core.qexoSettings import QEXO_VERSION
 from .models import Cache, SettingModel, FriendModel, NotificationModel, CustomModel, StatisticUV, StatisticPV, ImageModel, TalkModel
 import github
@@ -533,6 +534,9 @@ def LocalOnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
     copy_all_files(outPath, Path)
     print("删除临时目录")
     shutil.rmtree(tmpPath)
+    print("开始Migrate数据库")
+    execute_from_command_line(['manage.py', 'makemigrations'])
+    execute_from_command_line(['manage.py', 'migrate'])
     print("更新完成")
     return {"status": True, "msg": "更新成功!"}
 

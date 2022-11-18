@@ -672,6 +672,8 @@ def verify_provider(provider):
 
 def get_post_details(article, safe=True):
     try:
+        if not (article.startswith("---") or article.startswith(";;;")):
+            article = ";;;\n" + article if ";;;" in article else "---\n" + article
         front_matter = yaml.safe_load(
             re.search(r"---([\s\S]*?)---", article, flags=0).group()[3:-4].replace("{{ date }}",
                                                                                    strftime("%Y-%m-%d %H:%M:%S",
@@ -684,7 +686,7 @@ def get_post_details(article, safe=True):
                                                                                                             localtime(time()))).replace(
                 "{{ abbrlink }}", get_crc_by_time(str(time()), get_setting("ABBRLINK_ALG"), get_setting("ABBRLINK_REP")))))
     except Exception:
-        return {}, article
+        return {}, repr(article)
     for key in front_matter.keys():
         if type(front_matter.get(key)) in [datetime, date]:
             front_matter[key] = front_matter[key].strftime("%Y-%m-%d %H:%M:%S")

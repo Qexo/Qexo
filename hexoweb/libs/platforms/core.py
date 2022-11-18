@@ -45,14 +45,14 @@ class Provider(object):
                                     "size": drafts[i]["size"],
                                     "status": False})
                     names.append(drafts[i]["path"].split("source/_drafts/")[1])
-                if drafts[i].type == "dir":
+                if drafts[i]["type"] == "dir":
                     dir_content = self.get_posts(path=drafts[i]["path"].split("source/_drafts")[1])
                     for file in dir_content:
                         if "source/_drafts" in file["path"]:
                             _drafts.append(file)
                             names.append(file["fullname"])
-        except:
-            pass
+        except Exception as e:
+            print("读取草稿错误: {}，跳过".format(repr(e)))
         try:
             posts = self.get_path('source/_posts' + path)["data"]
             for i in range(len(posts)):
@@ -71,7 +71,7 @@ class Provider(object):
                             _posts.append(file)
                             names.append(file["fullname"])
         except Exception as e:
-            print("读取文章出错: " + repr(e))
+            print("读取文章出错: {}，跳过".format(repr(e)))
         posts = _posts + _drafts
         print("读取文章列表成功")
         return posts

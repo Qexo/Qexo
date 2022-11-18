@@ -4,6 +4,7 @@ from io import StringIO
 from core.qexoSettings import ALL_SETTINGS, ALL_CDN
 import requests
 from django.template.defaulttags import register
+from django.core.management import execute_from_command_line
 from core.qexoSettings import QEXO_VERSION
 from .models import Cache, SettingModel, FriendModel, NotificationModel, CustomModel, StatisticUV, StatisticPV, ImageModel, TalkModel
 import github
@@ -533,6 +534,9 @@ def LocalOnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
     copy_all_files(outPath, Path)
     print("删除临时目录")
     shutil.rmtree(tmpPath)
+    print("开始Migrate数据库")
+    execute_from_command_line(['manage.py', 'makemigrations'])
+    execute_from_command_line(['manage.py', 'migrate'])
     print("更新完成")
     return {"status": True, "msg": "更新成功!"}
 
@@ -668,6 +672,8 @@ def verify_provider(provider):
 
 def get_post_details(article, safe=True):
     try:
+        if not (article.startswith("---") or article.startswith(";;;")):
+            article = ";;;\n" + article if ";;;" in article else "---\n" + article
         front_matter = yaml.safe_load(
             re.search(r"---([\s\S]*?)---", article, flags=0).group()[3:-4].replace("{{ date }}",
                                                                                    strftime("%Y-%m-%d %H:%M:%S",
@@ -680,7 +686,7 @@ def get_post_details(article, safe=True):
                                                                                                             localtime(time()))).replace(
                 "{{ abbrlink }}", get_crc_by_time(str(time()), get_setting("ABBRLINK_ALG"), get_setting("ABBRLINK_REP")))))
     except Exception:
-        return {}, article
+        return {}, repr(article)
     for key in front_matter.keys():
         if type(front_matter.get(key)) in [datetime, date]:
             front_matter[key] = front_matter[key].strftime("%Y-%m-%d %H:%M:%S")

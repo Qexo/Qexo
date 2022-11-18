@@ -550,8 +550,14 @@ def get_talks(request):
         talks = []
         for i in all_talks:
             t = json.loads(i.like)
+            try:
+                values = json.loads(i.values)
+            except Exception:
+                i.values = "{}"
+                values = {}
+                i.save()
             talks.append({"id": i.id.hex, "content": i.content, "time": i.time, "tags": json.loads(i.tags), "like": len(t) if t else 0,
-                          "liked": True if ip in t else False, "values": json.loads(i.values)})
+                          "liked": True if ip in t else False, "values": values})
         context = {"msg": "获取成功！", "status": True, "count": count, "data": talks}
     except Exception as error:
         print(repr(error))

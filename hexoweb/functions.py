@@ -295,6 +295,7 @@ def get_latest_version():
         if provider["provider"] == "github":
             user = github.Github(provider["params"]["token"])
             latest = user.get_repo("am-abudu/Qexo").get_latest_release()
+            print("获取更新成功: {}".format(latest.tag_name))
             if latest.tag_name and (latest.tag_name != QEXO_VERSION):
                 context["hasNew"] = True
             else:
@@ -307,7 +308,19 @@ def get_latest_version():
             context["newer_text"] = markdown(latest.body).replace("\n", "")
             context["status"] = True
         else:
-            context["status"] = False
+            latest = requests.get("https://api.github.com/repos/Qexo/Qexo/releases/latest").json()
+            print("获取更新成功: {}".format(latest["tag_name"]))
+            if latest["tag_name"] and (latest["tag_name"] != QEXO_VERSION):
+                context["hasNew"] = True
+            else:
+                context["hasNew"] = False
+            context["newer"] = latest["tag_name"]
+            context["newer_link"] = latest["html_url"]
+            context["newer_time"] = datetime.strptime(latest["created_at"], "%Y-%m-%dT%H:%M:%SZ").astimezone(
+                timezone(timedelta(hours=16))).strftime(
+                "%Y-%m-%d %H:%M:%S")
+            context["newer_text"] = markdown(latest["body"]).replace("\n", "")
+            context["status"] = True
     except Exception as e:
         print("获取更新错误: " + repr(e))
         context["status"] = False

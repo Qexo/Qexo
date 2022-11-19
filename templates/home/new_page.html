@@ -142,7 +142,6 @@
         }
 
 
-
         function getTimeFormat() {
             let date = new Date();
             let month = date.getMonth() + 1 < 10 ? "0" + (date.getMonth() + 1) : date.getMonth()
@@ -178,7 +177,7 @@
                     success: function (res) {
                         loading.destroy();
                         if (res.status) {
-                            notyf.success('保存成功！');
+                            notyf.success(res.msg + "等待转跳...");
                             file_content = vditor.getValue();
                             setTimeout(window.location.href = "edit_page.html?file=source/" +
                                 encodeURIComponent($("input[name='filename']").val() + "/index.md"), 1000);

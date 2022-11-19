@@ -173,7 +173,7 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        notyf.success('保存成功！');
+                        notyf.success(res.msg);
                         if(res.excerpt){
                             front_matter = get_front_matter();
                             front_matter.excerpt = res.excerpt;

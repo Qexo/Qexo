@@ -42,7 +42,7 @@ def auth(request):
 @login_required(login_url="/login/")
 def set_hexo(request):
     try:
-        provider = request.POST.get('provider')
+        provider = unicodedata.normalize('NFKC', request.POST.get('provider'))
         verify = verify_provider(json.loads(provider))
         msg = ""
         if verify["status"] == -1:
@@ -376,10 +376,12 @@ def save(request):
     if request.method == "POST":
         file_path = request.POST.get('file')
         content = request.POST.get('content')
-        commitchange = f"Update Post Draft {file_path}"
+        commitchange = f"Update Post Draft {file_path} by Qexo"
         try:
-            Provider().save(file_path, content, commitchange)
-            context = {"msg": "OK!", "status": True}
+            if Provider().save(file_path, content, commitchange):
+                context = {"msg": "保存成功并提交部署！", "status": True}
+            else:
+                context = {"msg": "保存成功！", "status": True}
         except Exception as error:
             print(repr(error))
             context = {"msg": repr(error), "status": False}
@@ -398,7 +400,7 @@ def save_post(request):
         try:
             # 删除草稿
             try:
-                commitchange = f"Delete Post Draft {file_name}"
+                commitchange = f"Delete Post Draft {file_name} by Qexo"
                 Provider().delete("source/_drafts/" + file_name, commitchange)
             except Exception:
                 pass
@@ -411,8 +413,10 @@ def save_post(request):
             front_matter = "---\n{}---".format(yaml.dump(front_matter, allow_unicode=True))
             if not content.startswith("\n"):
                 front_matter += "\n"
-            Provider().save("source/_posts/" + file_name, front_matter + content, commitchange)
-            context = {"msg": "OK!", "status": True}
+            if Provider().save("source/_posts/" + file_name, front_matter + content, commitchange):
+                context = {"msg": "保存成功并提交部署！", "status": True}
+            else:
+                context = {"msg": "保存成功！", "status": True}
             if excerpt:
                 context["excerpt"] = excerpt
         except Exception as error:
@@ -439,8 +443,10 @@ def save_page(request):
             front_matter = "---\n{}---".format(yaml.dump(front_matter, allow_unicode=True))
             if not content.startswith("\n"):
                 front_matter += "\n"
-            Provider().save(file_path, front_matter + content, commitchange)
-            context = {"msg": "OK!", "status": True}
+            if Provider().save(file_path, front_matter + content, commitchange):
+                context = {"msg": "保存成功并提交部署！", "status": True}
+            else:
+                context = {"msg": "保存成功！", "status": True}
             if excerpt:
                 context["excerpt"] = excerpt
         except Exception as error:
@@ -468,8 +474,10 @@ def save_draft(request):
             front_matter = "---\n{}---\n".format(yaml.dump(front_matter, allow_unicode=True))
             if not content.startswith("\n"):
                 front_matter += "\n"
-            Provider().save("source/_drafts/" + file_name, front_matter + content, commitchange)
-            context = {"msg": "OK!", "status": True}
+            if Provider().save("source/_drafts/" + file_name, front_matter + content, commitchange):
+                context = {"msg": "保存草稿成功并提交部署！", "status": True}
+            else:
+                context = {"msg": "保存草稿成功！", "status": True}
             if excerpt:
                 context["excerpt"] = excerpt
         except Exception as error:
@@ -486,8 +494,10 @@ def delete(request):
         file_path = request.POST.get('file')
         commitchange = f"Delete {file_path}"
         try:
-            Provider().delete(file_path, commitchange)
-            context = {"msg": "OK!", "status": True}
+            if Provider().delete(file_path, commitchange):
+                context = {"msg": "删除成功并提交部署！", "status": True}
+            else:
+                context = {"msg": "删除成功！", "status": True}
             # Delete Caches
             if ("_posts" in file_path) or ("_drafts" in file_path):
                 delete_posts_caches()

@@ -1,14 +1,17 @@
 from ..core import Provider
 import os
+import subprocess
 
 
 class Local(Provider):
     name = "本地"
 
-    def __init__(self, path):
+    def __init__(self, path, auto=False):
         self.path = path
+        self.auto = auto
 
-    params = {'path': {"description": "Hexo 路径", "placeholder": "Hexo源码的绝对路径"}}
+    params = {"path": {"description": "Hexo 路径", "placeholder": "Hexo源码的绝对路径"},
+              "auto": {"description": "自动部署", "placeholder": "是否自动部署 是/否"}}
 
     def get_content(self, file):  # 获取文件内容UTF8
         with open(os.path.join(self.path, file), 'r', encoding='UTF-8') as f:
@@ -51,7 +54,7 @@ class Local(Provider):
         with open(path, "w", encoding="UTF-8") as f:
             f.write(content)
             print("保存文件{}成功".format(file))
-        return True
+        return self.build()
 
     def delete(self, path, commitchange="Delete by Qexo"):
         path = os.path.join(self.path, path)
@@ -61,4 +64,11 @@ class Local(Provider):
         else:
             os.remove(path)
             print("删除文件{}成功".format(path))
-        return True
+        return self.build()
+
+    def build(self):
+        if self.auto != "是":
+            return False
+        print("进行自动部署...")
+        p = subprocess.Popen("cd {} && hexo clean && hexo g".format(self.path), shell=True)
+        return p

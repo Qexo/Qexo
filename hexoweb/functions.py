@@ -1,6 +1,7 @@
 import os
 import sys
 from io import StringIO
+import unicodedata
 from core.qexoSettings import ALL_SETTINGS, ALL_CDN
 import requests
 from django.template.defaulttags import register
@@ -253,6 +254,8 @@ def delete_pages_caches():
 
 
 def save_setting(name, content):
+    name = unicodedata.normalize('NFKC', name)
+    content = unicodedata.normalize('NFKC', content)
     obj = SettingModel.objects.filter(name=name)
     if obj.count() == 1:
         obj.delete()
@@ -271,6 +274,8 @@ def save_setting(name, content):
 
 
 def save_custom(name, content):
+    name = unicodedata.normalize('NFKC', name)
+    content = unicodedata.normalize('NFKC', content)
     obj = CustomModel.objects.filter(name=name)
     if obj.count() == 1:
         obj.delete()
@@ -679,7 +684,8 @@ def verify_provider(provider):
             "theme_dir": theme_dir,
             "package": pack,
         }
-    except Exception:
+    except Exception as e:
+        print("校验配置出错: " + repr(e))
         return {"status": -1}
 
 

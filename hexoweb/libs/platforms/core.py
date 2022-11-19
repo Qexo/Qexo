@@ -16,6 +16,9 @@ class Provider(object):
     def delete(self, path):
         ...
 
+    def build(self):
+        return False
+
     def delete_hooks(self):
         return False
 

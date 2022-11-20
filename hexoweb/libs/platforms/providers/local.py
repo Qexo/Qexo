@@ -11,7 +11,7 @@ class Local(Provider):
         self.auto = auto
 
     params = {"path": {"description": "Hexo 路径", "placeholder": "Hexo源码的绝对路径"},
-              "auto": {"description": "自动部署", "placeholder": "是否自动部署 是/否"}}
+              "auto": {"description": "自动部署", "placeholder": "自动部署命令 留空不开启"}}
 
     def get_content(self, file):  # 获取文件内容UTF8
         with open(os.path.join(self.path, file), 'r', encoding='UTF-8') as f:
@@ -67,8 +67,8 @@ class Local(Provider):
         return self.build()
 
     def build(self):
-        if self.auto != "是":
+        if not self.auto:
             return False
         print("进行自动部署...")
-        p = subprocess.Popen("cd {} && hexo clean && hexo g".format(self.path), shell=True)
+        p = subprocess.Popen("cd {} && {}".format(self.path, self.auto), shell=True)
         return p

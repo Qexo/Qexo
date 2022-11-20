@@ -1,6 +1,7 @@
 import os
 import sys
 from io import StringIO
+import subprocess
 import unicodedata
 from core.qexoSettings import ALL_SETTINGS, ALL_CDN
 import requests
@@ -552,8 +553,6 @@ def LocalOnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
     copy_all_files(outPath, Path)
     print("删除临时目录")
     shutil.rmtree(tmpPath)
-    print("开始升级依赖")
-    execute_from_command_line(['pip3', 'install', '-r', 'requirements.txt'])
     print("开始Migrate数据库")
     execute_from_command_line(['manage.py', 'makemigrations'])
     execute_from_command_line(['manage.py', 'migrate'])

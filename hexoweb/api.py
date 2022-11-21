@@ -507,6 +507,13 @@ def delete_img(request):
         image_date = request.POST.get('image')
         try:
             image = ImageModel.objects.filter(date=image_date)
+            image_host = json.loads(get_setting("IMG_HOST"))
+            if image_host["type"] == 'Github':
+                try:
+                    get_image_host(image_host["type"], **image_host["params"]).del_img(image.get().name)
+                except Exception as error:
+                    print(repr(error))
+                    return JsonResponse(safe=False, data=dict(msg="Github 删除失败", status=False))
             image.delete()
             context = {"msg": "删除成功！", "status": True}
         except Exception as error:
@@ -579,7 +586,9 @@ def webhook(request):
 def upload_img(request):
     context = dict(msg="上传失败！", url=False)
     if request.method == "POST":
-        file = request.FILES.getlist('file[]')[0] if request.FILES.getlist('file[]') else request.FILES.getlist('file')[0]
+        file = request.FILES.getlist('file[]')[0] if request.FILES.getlist('file[]') else request.FILES.getlist('file')[
+            0]
+        file.name = str(int(time())) + file.name
         try:
             image_host = json.loads(get_setting("IMG_HOST"))
             if image_host["type"] != "关闭":

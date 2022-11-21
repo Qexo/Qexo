@@ -13,6 +13,9 @@ class Provider(object):
     def upload(self, file):
         ...
 
+    def del_img(self, file):
+        ...
+
 
 from .providers import _all_providers
 

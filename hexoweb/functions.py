@@ -883,7 +883,7 @@ def edit_talk(_id, content):
 
 def EscapeString(_str):
     temp = ""
-    _str = _str.toString()
+    _str = str(_str)
     if len(_str) == 0:
         return ""
     temp = _str.replace("&", "&amp;")

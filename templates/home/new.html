@@ -257,7 +257,7 @@
                     enable: true
                 },
                 "cdn": "{{ cdn_prev }}vditor@3.8.17",
-                "mode": "ir",
+                "mode": "wysiwyg",
                 "height": window.innerHeight * 0.75,
                 {% if file_content %}
                     "value": {{ file_content|safe }},
@@ -386,7 +386,7 @@
                 "cache": {
                     "enable": false
                 },
-                "mode": "ir",
+                "mode": "wysiwyg",
                 "debugger": false,
                 "preview": {
                     "mode": "both",

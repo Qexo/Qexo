@@ -1,6 +1,8 @@
 import os
 import sys
 from io import StringIO
+import subprocess
+import unicodedata
 from core.qexoSettings import ALL_SETTINGS, ALL_CDN
 import requests
 from django.template.defaulttags import register
@@ -253,6 +255,8 @@ def delete_pages_caches():
 
 
 def save_setting(name, content):
+    name = unicodedata.normalize('NFKC', name)
+    content = unicodedata.normalize('NFKC', content)
     obj = SettingModel.objects.filter(name=name)
     if obj.count() == 1:
         obj.delete()
@@ -271,6 +275,8 @@ def save_setting(name, content):
 
 
 def save_custom(name, content):
+    name = unicodedata.normalize('NFKC', name)
+    content = unicodedata.normalize('NFKC', content)
     obj = CustomModel.objects.filter(name=name)
     if obj.count() == 1:
         obj.delete()
@@ -295,6 +301,7 @@ def get_latest_version():
         if provider["provider"] == "github":
             user = github.Github(provider["params"]["token"])
             latest = user.get_repo("am-abudu/Qexo").get_latest_release()
+            print("获取更新成功: {}".format(latest.tag_name))
             if latest.tag_name and (latest.tag_name != QEXO_VERSION):
                 context["hasNew"] = True
             else:
@@ -307,7 +314,19 @@ def get_latest_version():
             context["newer_text"] = markdown(latest.body).replace("\n", "")
             context["status"] = True
         else:
-            context["status"] = False
+            latest = requests.get("https://api.github.com/repos/Qexo/Qexo/releases/latest").json()
+            print("获取更新成功: {}".format(latest["tag_name"]))
+            if latest["tag_name"] and (latest["tag_name"] != QEXO_VERSION):
+                context["hasNew"] = True
+            else:
+                context["hasNew"] = False
+            context["newer"] = latest["tag_name"]
+            context["newer_link"] = latest["html_url"]
+            context["newer_time"] = datetime.strptime(latest["created_at"], "%Y-%m-%dT%H:%M:%SZ").astimezone(
+                timezone(timedelta(hours=16))).strftime(
+                "%Y-%m-%d %H:%M:%S")
+            context["newer_text"] = markdown(latest["body"]).replace("\n", "")
+            context["status"] = True
     except Exception as e:
         print("获取更新错误: " + repr(e))
         context["status"] = False
@@ -666,7 +685,8 @@ def verify_provider(provider):
             "theme_dir": theme_dir,
             "package": pack,
         }
-    except Exception:
+    except Exception as e:
+        print("校验配置出错: " + repr(e))
         return {"status": -1}
 
 
@@ -883,7 +903,7 @@ def edit_talk(_id, content):
 
 def EscapeString(_str):
     temp = ""
-    _str = _str.toString()
+    _str = str(_str)
     if len(_str) == 0:
         return ""
     temp = _str.replace("&", "&amp;")

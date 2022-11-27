@@ -95,7 +95,7 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        notyf.success('保存成功！');
+                        notyf.success(res.msg);
                         file_content = editor.getValue();
                     } else {
                         notyf.error(res.msg);

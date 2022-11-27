@@ -40,7 +40,7 @@ class Github(Provider):
                     "path": file.path,
                     "type": file.type
                 })
-            else:
+            if file.type == "dir":
                 results.append({
                     "name": file.name,
                     "path": file.path,
@@ -53,20 +53,22 @@ class Github(Provider):
         try:
             self.repo.update_file(self.path + file, commitchange, content,
                                   self.repo.get_contents(self.path + file, ref=self.branch).sha, branch=self.branch)
+            print("保存文件{}成功".format(file))
         except:
             self.repo.create_file(self.path + file, commitchange, content, branch=self.branch)
-        print("保存文件{}成功".format(file))
-        return True
+            print("新建文件{}成功".format(file))
+        return False  # 返回False表示没有进行自动部署
 
     def delete(self, path, commitchange="Delete by Qexo"):
         file = self.repo.get_contents(self.path + path, ref=self.branch)
         if not isinstance(file, list):
             self.repo.delete_file(self.path + path, commitchange, file.sha, branch=self.branch)
+            print("删除文件{}成功".format(path))
         else:
             for i in file:
-                self.repo.delete_file(self.path + i.path, commitchange, i.sha, branch=self.branch)
-        print("删除文件{}成功".format(path))
-        return True
+                self.delete(i["path"][len(self.path):], commitchange)
+            print("删除目录{}成功".format(path))
+        return False
 
     def delete_hooks(self):
         for hook in self.repo.get_hooks():  # 删除所有HOOK

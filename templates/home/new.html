@@ -181,7 +181,7 @@
                     success: function (res) {
                         loading.destroy();
                         if (res.status) {
-                            notyf.success('发布成功！等待转跳...');
+                            notyf.success(res.msg + '等待转跳...');
                             file_content = vditor.getValue();
                             setTimeout(window.location.href = "edit.html?file=" +
                                 encodeURIComponent($("input[name='filename']").val() + ".md"), 1000);
@@ -206,7 +206,7 @@
                 if (!_status) {
                     return false;
                 }
-                var loading = new KZ_Loading('草稿保存中...');
+                var loading = new KZ_Loading(res.msg + '等待转跳...');
                 _status = false;
                 loading.show();
                 $.ajax({
@@ -257,7 +257,7 @@
                     enable: true
                 },
                 "cdn": "{{ cdn_prev }}vditor@3.8.17",
-                "mode": "ir",
+                "mode": "wysiwyg",
                 "height": window.innerHeight * 0.75,
                 {% if file_content %}
                     "value": {{ file_content|safe }},
@@ -386,7 +386,7 @@
                 "cache": {
                     "enable": false
                 },
-                "mode": "ir",
+                "mode": "wysiwyg",
                 "debugger": false,
                 "preview": {
                     "mode": "both",
@@ -571,7 +571,7 @@
         }
 
         function add_tag(name) {
-            if (!name){
+            if (!name) {
                 return;
             }
             if (tags.includes(name)) {
@@ -607,7 +607,7 @@
         }
 
         function add_category(name) {
-            if (!name){
+            if (!name) {
                 return;
             }
             for (let i = 0; i < categories.length; i++) {

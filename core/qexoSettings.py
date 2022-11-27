@@ -1,7 +1,7 @@
 import json
 import random
 
-QEXO_VERSION = "2.1.5"
+QEXO_VERSION = "2.2.0"
 
 ALL_SETTINGS = [  # [名称, 默认值, 是否在尝试修复时重置, 简介]
     ["ABBRLINK_ALG", "crc16", False, "短链接算法"],
@@ -67,6 +67,7 @@ ALL_CDN = [
     {"name": "Loli", "url": "https://cdnjs.loli.net/ajax/libs/"},
     {"name": "七牛云", "url": "https://cdn.staticfile.org/"},
     {"name": "75CDN", "url": "https://lib.baomitu.com/"},
-    # {"name": "重庆邮电大学", "url": "https://mirrors.cqupt.edu.cn/cdnjs/ajax/libs/"},
+    {"name": "BootCDN", "url": "https://cdn.bootcdn.net/ajax/libs/"},
+    # {"name": "重庆邮电大学", "url": "https://mirrors.cqupt.edu.cn/cdnjs/ajax/libs/"},  # 新不及时
     {"name": "南方科技大学", "url": "https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/"}
 ]

@@ -1,5 +1,7 @@
 # Qexo
-一个快速、强大、漂亮的在线 Hexo 编辑器，您的 Star 是对我最大的支持。 [Wiki](https://github.com/Qexo/Qexo/wiki)
+一个快速、强大、漂亮的在线 Hexo 编辑器，您的 Star 是对我最大的支持。
+
+*请查看 [文档](https://www.oplog.cn/qexo)*
 ![](https://user-images.githubusercontent.com/51912589/159258766-19a1ce22-d34b-4b29-b291-7d70e8942859.png)
 ## 特色功能
 - 自定义图床上传图片
@@ -13,11 +15,11 @@
 - 类似不算子的统计
 - 自动填文章模板
 ## 你可能需要
-* [文档](https://github.com/Qexo/Qexo/wiki)
+* [文档](https://www.oplog.cn/qexo)
 ### 快速上手
-* [Vercel 部署](https://github.com/am-abudu/Qexo/wiki/Vercel-%E9%83%A8%E7%BD%B2)
-* [服务器部署](https://github.com/am-abudu/Qexo/wiki/%E6%9C%8D%E5%8A%A1%E5%99%A8%E9%83%A8%E7%BD%B2)
-* [版本更新](https://github.com/am-abudu/Qexo/wiki/%E5%A6%82%E4%BD%95%E6%9B%B4%E6%96%B0)
+* [部署程序](https://www.oplog.cn/qexo/start/build.html)
+* [如何更新](https://www.oplog.cn/qexo/start/update.html)
+* [常见问题](https://www.oplog.cn/qexo/start/questions.html)
 ## 常见问题
 这里汇集了一些常见的问题，如果你遇到同样的问题，请先尝试如下的回答
 ### 什么是 API 密钥

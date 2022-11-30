@@ -532,8 +532,8 @@
                 } else if (front[OrgSidebar[i]["search"]] !== undefined) {
                     content = front[OrgSidebar[i]["search"]];
                 } else content = "";
-                content = (typeof content) === "object" ? EscapeString(JSON.stringify(content)) :
-                    EscapeString(content);
+                content = (typeof content) === "object" ? escapeString(JSON.stringify(content)) :
+                    escapeString(content);
                 html += `<div class="form-group">
                         <label class="form-control-label"><i class="` + OrgSidebar[i]["icon"]
                     + `"></i> ` + OrgSidebar[i]["name"] + `</label>
@@ -597,14 +597,14 @@
                 html += `<form class="form-row" id="bottom-row-` + i + `">
                                 <div class="col-2">
                                     <input type="text" class="form-control" name="search"
-                                           placeholder="冒号前的内容" value="` + EscapeString(keys[i]) +
+                                           placeholder="冒号前的内容" value="` + escapeString(keys[i]) +
                     `">
                                 </div>
                                 <div class="col-10">
                                     <div class="input-group">
                                         <input type="text" class="form-control" name="icon"
                                                placeholder="若有多级, 请使用JSON格式"  value="` +
-                    EscapeString(typeof(front_matter[keys[i]]) === "object" ? JSON.stringify
+                    escapeString(typeof(front_matter[keys[i]]) === "object" ? JSON.stringify
                 (front_matter[keys[i]]) : front_matter[keys[i]]) + `">
                                         <div class="input-group-append">
                                             <button class="btn" type="button"

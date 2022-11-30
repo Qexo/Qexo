@@ -96,7 +96,7 @@
                     'class="row align-items-center"><div class="col-auto"><i class="fas ' +
                     'fa-quote-left"></i></div><div class="col ml--2 text-sm mb-0"><div ' +
                     'class="d-flex justify-content-between align-items-center"><div><h4 ' +
-                    'class="mb-0 text-sm">' + EscapeString(notifications[i]["label"]) +
+                    'class="mb-0 text-sm">' + escapeString(notifications[i]["label"]) +
                         '</h4></div><div ' +
                     'class="text-right text-muted"><small>' + notifications[i]["time"] +
                     '</small></div></div><p class="text-sm mb-0">' +
@@ -180,7 +180,7 @@
         })
     }
 
-    function EscapeString(str) {
+    function escapeString(str) {
         var temp = "";
         str = str.toString();
         if (str.length === 0) return "";

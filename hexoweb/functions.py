@@ -901,7 +901,7 @@ def edit_talk(_id, content):
     return True
 
 
-def EscapeString(_str):
+def escapeString(_str):
     if not _str:
         return ""
     return escape(_str)

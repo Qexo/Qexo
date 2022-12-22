@@ -244,15 +244,14 @@ def init_view(request):
     elif int(step) >= 6:
         print("已完成初始化, 转跳至首页")
         return redirect("/")
-    else:
-        if int(step) == 3:
-            context["PROVIDER"] = get_setting("PROVIDER")
-            # Get Provider Settings
-            all_provider = all_providers()
-            context["all_providers"] = dict()
-            for provider in all_provider:
-                params = get_params(provider)
-                context["all_providers"][provider] = params
+    if int(step) == 3:
+        context["PROVIDER"] = get_setting("PROVIDER")
+        # Get Provider Settings
+        all_provider = all_providers()
+        context["all_providers"] = dict()
+        for provider in all_provider:
+            params = get_params(provider)
+            context["all_providers"][provider] = params
     context["msg"] = msg
     context["step"] = step
     return render(request, "accounts/init.html", context)
@@ -575,15 +574,15 @@ def pages(request):
             if search:
                 friends = FriendModel.objects.filter(name__contains=search)
                 for i in friends:
-                    posts.append({"name": escape(i.name), "url": escape(i.url), "image": escape(i.imageUrl),
-                                  "description": escape(i.description),
+                    posts.append({"name": escapeString(i.name), "url": escapeString(i.url), "image": escapeString(i.imageUrl),
+                                  "description": escapeString(i.description),
                                   "time": i.time,
                                   "status": i.status})
             else:
                 images = FriendModel.objects.all()
                 for i in images:
-                    posts.append({"name": escape(i.name), "url": escape(i.url), "image": escape(i.imageUrl),
-                                  "description": escape(i.description),
+                    posts.append({"name": escapeString(i.name), "url": escapeString(i.url), "image": escapeString(i.imageUrl),
+                                  "description": escapeString(i.description),
                                   "time": i.time,
                                   "status": i.status})
             posts.sort(key=lambda x: x["time"])

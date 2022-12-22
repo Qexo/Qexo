@@ -1088,7 +1088,7 @@
                             `</label>
                                         <input type="text" name="` + key + `" class="form-control"
                                                placeholder="` + params[key]["placeholder"] + `"
-                                               value="` + EscapeString(now_provider["params"][key]) + `">
+                                               value="` + escapeString(now_provider["params"][key]) + `">
                                     </div>
                                 </div>`
                         t += 1;
@@ -1098,7 +1098,7 @@
                                     <label class="form-control-label">` + params[key]["description"] + `</label>
                                     <input type="text" name="` + key + `" class="form-control"
                                            placeholder="` + params[key]["placeholder"] + `"
-                                           value="` + EscapeString(now_provider["params"][key]) + `">
+                                           value="` + escapeString(now_provider["params"][key]) + `">
                                 </div>
                             </div>
                         </div>`
@@ -1186,7 +1186,7 @@
                                         </label>
                                         <input type="text" name="` + required[i] + `" class="form-control"
                                                placeholder="` + required[i] + `"
-                                               value="` + EscapeString(tmp) + `">
+                                               value="` + escapeString(tmp) + `">
                                     </div>
                                 </div>`
                             t += 1;
@@ -1196,7 +1196,7 @@
                                     <label class="form-control-label">` + required[i] + `(必填)</label>
                                     <input type="text" name="` + required[i] + `" class="form-control"
                                            placeholder="` + required[i] + `"
-                                           value="` + EscapeString(tmp) + `">
+                                           value="` + escapeString(tmp) + `">
                                 </div>
                             </div>
                         </div>`
@@ -1215,7 +1215,7 @@
                                         <label class="form-control-label">` + optional[i] + `</label>
                                         <input type="text" name="` + optional[i] + `" class="form-control"
                                                placeholder="` + optional[i] + `"
-                                               value="` + EscapeString(tmp) + `">
+                                               value="` + escapeString(tmp) + `">
                                     </div>
                                 </div>`
                             t += 1;
@@ -1225,7 +1225,7 @@
                                     <label class="form-control-label">` + optional[i] + `</label>
                                     <input type="text" name="` + optional[i] + `" class="form-control"
                                            placeholder="` + optional[i] + `"
-                                           value="` + EscapeString(tmp) + `">
+                                           value="` + escapeString(tmp) + `">
                                 </div>
                             </div>
                         </div>`
@@ -1339,7 +1339,7 @@
                             `</label>
                                         <input type="text" name="` + key + `" class="form-control"
                                                placeholder="` + params[key]["placeholder"] + `"
-                                               value="` + EscapeString
+                                               value="` + escapeString
                             (now_image_host["params"][key]) + `">
                                     </div>
                                 </div>`
@@ -1350,7 +1350,7 @@
                                     <label class="form-control-label">` + params[key]["description"] + `</label>
                                     <input type="text" name="` + key + `" class="form-control"
                                            placeholder="` + params[key]["placeholder"] + `"
-                                           value="` + EscapeString(now_image_host["params"][key])
+                                           value="` + escapeString(now_image_host["params"][key])
                             + `">
                                 </div>
                             </div>

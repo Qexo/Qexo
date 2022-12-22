@@ -901,18 +901,10 @@ def edit_talk(_id, content):
     return True
 
 
-def EscapeString(_str):
-    temp = ""
-    _str = str(_str)
-    if len(_str) == 0:
+def escapeString(_str):
+    if not _str:
         return ""
-    temp = _str.replace("&", "&amp;")
-    temp = temp.replace("<", "&lt;")
-    temp = temp.replace(">", "&gt;")
-    temp = temp.replace(" ", "&nbsp;")
-    temp = temp.replace("'", "&#39;")
-    temp = temp.replace("\"", "&quot;")
-    return temp
+    return escape(_str)
 
 
 # print(" ......................阿弥陀佛......................\n" +

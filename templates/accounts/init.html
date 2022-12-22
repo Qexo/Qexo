@@ -237,7 +237,7 @@
                                 `</label>
                                         <input type="text" name="` + key + `" class="form-control"
                                                placeholder="` + params[key]["placeholder"] + `"
-                                               value="` + EscapeString(now_provider["params"][key]) + `">
+                                               value="` + escapeString(now_provider["params"][key]) + `">
                                     </div>
                                 </div>`
                             t += 1;
@@ -247,7 +247,7 @@
                                     <label class="form-control-label">` + params[key]["description"] + `</label>
                                     <input type="text" name="` + key + `" class="form-control"
                                            placeholder="` + params[key]["placeholder"] + `"
-                                           value="` + EscapeString(now_provider["params"][key]) + `">
+                                           value="` + escapeString(now_provider["params"][key]) + `">
                                 </div>
                             </div>
                         </div>`

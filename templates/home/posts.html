@@ -153,7 +153,7 @@
                 }
                 list += "</td><td><a href=\"/edit.html?file=" + encodeURIComponent(page_posts[i]["fullname"]) + "\">" +
                     "<i class=\"fa fa-edit mr-2\"></i></a>" + "<a href=\"javascript:query_delete('" +
-                    EscapeString(page_posts[i]["path"]) + "')\"><i class=\"fa fa-trash-alt " +
+                    escapeString(page_posts[i]["path"]) + "')\"><i class=\"fa fa-trash-alt " +
                     "mr-2\"></i></a></td></tr>";
             }
             $("#page-" + _page).removeClass("active");

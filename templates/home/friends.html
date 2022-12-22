@@ -303,7 +303,7 @@
         }
 
         function query_delete(name, time) {
-            let html = "确认要删除链接 " + EscapeString(name) + " 吗？该操作不可回退";
+            let html = "确认要删除链接 " + escapeString(name) + " 吗？该操作不可回退";
             $("#query-modal-body").html(html);
             $("#queryLabel").html("提示");
             let footer = "<button type=\"button\" class=\"btn btn-secondary\" " +

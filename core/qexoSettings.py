@@ -68,6 +68,6 @@ ALL_CDN = [
     {"name": "七牛云", "url": "https://cdn.staticfile.org/"},
     {"name": "75CDN", "url": "https://lib.baomitu.com/"},
     {"name": "BootCDN", "url": "https://cdn.bootcdn.net/ajax/libs/"},
-    # {"name": "重庆邮电大学", "url": "https://mirrors.cqupt.edu.cn/cdnjs/ajax/libs/"},  # 新不及时
+    # {"name": "重庆邮电大学", "url": "https://mirrors.cqupt.edu.cn/cdnjs/ajax/libs/"},  # 更新不及时
     {"name": "南方科技大学", "url": "https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/"}
 ]

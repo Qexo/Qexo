@@ -13,7 +13,7 @@ import github
 import json
 import uuid
 from datetime import timezone, timedelta, date, datetime
-from time import strftime, localtime, time
+from time import strftime, localtime, time, sleep
 from hashlib import md5
 from urllib3 import disable_warnings
 from urllib.parse import quote, unquote
@@ -553,11 +553,22 @@ def LocalOnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
     copy_all_files(outPath, Path)
     print("删除临时目录")
     shutil.rmtree(tmpPath)
-    print("开始Migrate数据库")
+    print("开始更新库...")
+    import pip
+    pip.main(['install', '-r', 'requirements.txt'])
+    print("开始迁移数据库")
     execute_from_command_line(['manage.py', 'makemigrations'])
     execute_from_command_line(['manage.py', 'migrate'])
-    print("更新完成")
+    print("更新完成，五秒后重启线程")
+    import threading
+    t = threading.Thread(target=lambda: rerun(5))
+    t.start()
     return {"status": True, "msg": "更新成功!"}
+
+
+def rerun(wait):
+    sleep(wait)
+    os._exit(3)
 
 
 def CreateNotification(label, content, now):

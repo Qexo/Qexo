@@ -516,6 +516,19 @@ def copy_all_files(src_dir, dst_dir):
                 shutil.copytree(file_path, dst_path)
 
 
+def pip_main(args):
+    try:
+        import pip
+    except ImportError:
+        raise 'pip is not installed'
+    try:
+        func = pip.main
+    except AttributeError:
+        from pip._internal import main as func
+
+    func(args)
+
+
 def LocalOnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
     print("开始更新, 使用本地方案, 准备临时目录")
     Path = os.path.abspath("")
@@ -554,8 +567,7 @@ def LocalOnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
     print("删除临时目录")
     shutil.rmtree(tmpPath)
     print("开始更新库...")
-    import pip
-    pip.main(['install', '-r', 'requirements.txt'])
+    pip_main(['install', '-r', 'requirements.txt'])
     print("开始迁移数据库")
     execute_from_command_line(['manage.py', 'makemigrations'])
     execute_from_command_line(['manage.py', 'migrate'])

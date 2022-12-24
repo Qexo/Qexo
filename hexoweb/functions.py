@@ -3,7 +3,7 @@ import sys
 from io import StringIO
 import subprocess
 import unicodedata
-from core.qexoSettings import ALL_SETTINGS, ALL_CDN
+from core.qexoSettings import ALL_SETTINGS
 import requests
 from django.template.defaulttags import register
 from django.core.management import execute_from_command_line
@@ -458,6 +458,14 @@ def getIndexFile(base, path=""):
     return index
 
 
+def get_update_url(target):
+    all_updates = json.loads(get_setting("ALL_UPDATES"))
+    for update in all_updates:
+        if update["name"] == target:
+            return update["url"]
+    return False
+
+
 def VercelUpdate(appId, token, sourcePath=""):
     if checkBuilding(appId, token):
         print("更新失败: 当前有部署正在进行")
@@ -478,12 +486,11 @@ def VercelUpdate(appId, token, sourcePath=""):
     return {"status": True, "msg": response.json()}
 
 
-def VercelOnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
+def VercelOnekeyUpdate(url):
     print("开始更新, 使用Vercel方案")
     vercel_config = get_project_detail()
     tmpPath = '/tmp'
     # 从github下载对应tar.gz，并解压
-    url = 'https://github.com/' + auth + '/' + project + '/tarball/' + quote(branch) + '/'
     # print("download from " + url)
     _tarfile = tmpPath + '/github.tar.gz'
     with open(_tarfile, "wb") as file:
@@ -529,22 +536,15 @@ def pip_main(args):
     func(args)
 
 
-def LocalOnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
+def LocalOnekeyUpdate(url):
     print("开始更新, 使用本地方案, 准备临时目录")
     Path = os.path.abspath("")
     tmpPath = os.path.abspath("./_tmp")
     if not os.path.exists(tmpPath):
         os.mkdir(tmpPath)
     _tarfile = tmpPath + '/github.tar.gz'
-    try:
-        url = 'https://github.com/' + auth + '/' + project + '/tarball/' + quote(branch) + '/'
-        with open(_tarfile, "wb") as file:
-            file.write(requests.get(url).content)
-    except Exception:
-        print("下载更新失败, 尝试使用镜像服务器")
-        url = 'https://hub.fastgit.xyz/' + auth + '/' + project + '/tarball/' + quote(branch) + '/'
-        with open(_tarfile, "wb") as file:
-            file.write(requests.get(url).content)
+    with open(_tarfile, "wb") as file:
+        file.write(requests.get(url).content)
     print("下载更新完成, 正在解压缩...")
     t = tarfile.open(_tarfile)
     t.extractall(path=tmpPath)

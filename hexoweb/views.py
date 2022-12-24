@@ -635,7 +635,9 @@ def pages(request):
                     params = get_image_params(provider)
                     context["all_image_hosts"][provider] = params
                 # CDNs
-                context["ALL_CDN"] = ALL_CDN
+                context["ALL_CDN"] = json.loads(get_setting("ALL_CDN"))
+                # 更新通道
+                context["ALL_UPDATES"] = json.loads(get_setting("ALL_UPDATES"))
             except Exception:
                 print("配置获取错误, 转跳至配置更新页面")
                 return redirect("/update/")

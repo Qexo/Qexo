@@ -206,7 +206,7 @@
                 if (!_status) {
                     return false;
                 }
-                var loading = new KZ_Loading(res.msg + '等待转跳...');
+                var loading = new KZ_Loading('等待转跳...');
                 _status = false;
                 loading.show();
                 $.ajax({

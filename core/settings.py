@@ -3,6 +3,7 @@ import os
 import json
 import random
 import hexoweb.exceptions as exceptions
+import logging
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,7 +24,7 @@ try:
     import configs
     ALLOWED_HOSTS = configs.DOMAINS
 except:
-    print("获取本地配置文件失败, 使用环境变量进行初始化")
+    logging.info("获取本地配置文件失败, 使用环境变量获取配置")
     for env in ["MONGODB_HOST", "MONGODB_PORT", "MONGODB_USER", "MONGODB_PASS", "MONGODB_DB"]:
         if env not in os.environ:
             raise exceptions.InitError(f"\"{env}\"环境变量未设置")
@@ -85,7 +86,7 @@ try:
     import configs
     DATABASES = configs.DATABASES
 except:
-    print("获取本地配置文件失败, 使用环境变量进行初始化")
+    logging.info("获取本地配置文件失败, 使用环境变量配置数据库")
     DATABASES = {
         'default': {
             'ENGINE': 'djongo',

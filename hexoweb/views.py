@@ -24,10 +24,10 @@ def page_500(request):
 def login_view(request):
     try:
         if int(get_setting("INIT")) <= 5:
-            print("未完成初始化配置, 转跳到初始化页面")
+            logging.info("未完成初始化配置, 转跳到初始化页面")
             return redirect("/init/")
     except Exception:
-        print("未检测到初始化配置, 转跳到初始化页面")
+        logging.info("未检测到初始化配置, 转跳到初始化页面")
         return redirect("/init/")
     if request.user.is_authenticated:
         if not request.GET.get("next"):
@@ -46,10 +46,10 @@ def login_view(request):
 def update_view(request):
     try:
         if int(get_setting("INIT")) <= 5:
-            print("未完成初始化配置, 转跳到初始化页面")
+            logging.info("未完成初始化配置, 转跳到初始化页面")
             return redirect("/init/")
     except Exception:
-        print("未检测到初始化配置, 转跳到初始化页面")
+        logging.info("未检测到初始化配置, 转跳到初始化页面")
         return redirect("/init/")
     if request.method == 'POST':
         for setting in request.POST.keys():
@@ -141,7 +141,7 @@ def init_view(request):
                     save_setting("INIT", "3")
                     step = "3"
             except Exception as e:
-                print("初始化用户名密码错误:" + repr(e))
+                logging.error("初始化用户名密码错误:" + repr(e))
                 msg = repr(e)
                 context["username"] = username
                 context["password"] = password
@@ -216,7 +216,7 @@ def init_view(request):
                     save_setting("INIT", step)
             except Exception as e:
                 msg = repr(e)
-                print("初始化Provider错误:" + repr(e))
+                logging.error("初始化Provider错误:" + repr(e))
                 context["PROVIDER"] = json.dumps(get_setting("PROVIDER") if not provider else provider)
                 # Get Provider Settings
                 all_provider = all_providers()
@@ -234,7 +234,7 @@ def init_view(request):
                 save_setting("INIT", "6")
                 step = "6"
             except Exception as e:
-                print("初始化Vercel配置错误:" + repr(e))
+                logging.error("初始化Vercel配置错误:" + repr(e))
                 context["project_id"] = project_id
                 context["vercel_token"] = vercel_token
                 msg = "校验错误"
@@ -242,7 +242,7 @@ def init_view(request):
             user = User.objects.all()[0]
             context["username"] = user.username
     elif int(step) >= 6:
-        print("已完成初始化, 转跳至首页")
+        logging.info("已完成初始化, 转跳至首页")
         return redirect("/")
     if int(step) == 3:
         context["PROVIDER"] = get_setting("PROVIDER")
@@ -259,7 +259,7 @@ def init_view(request):
 
 def logout_view(request):
     logout(request)
-    print("注销成功")
+    logging.info("注销成功")
     return redirect('/login/?next=/')
 
 
@@ -269,7 +269,7 @@ def migrate_view(request):
         if int(get_setting("INIT")) <= 5:
             return redirect("/init/")
     except Exception:
-        print("未检测到初始化配置, 转跳到初始化页面")
+        logging.info("未检测到初始化配置, 转跳到初始化页面")
         return redirect("/init/")
     context = {}
     if request.method == "POST":
@@ -314,7 +314,7 @@ def migrate_view(request):
                 import_talks(json.loads(request.POST.get("data")))
                 context["msg"] = "说说迁移完成！"
         except Exception as error:
-            print(request.POST.get("type") + "错误: " + repr(error))
+            logging.error(request.POST.get("type") + "错误: " + repr(error))
             context["msg"] = request.POST.get("type") + "错误: " + repr(error)
         return JsonResponse(safe=False, data=context)
     else:
@@ -327,17 +327,17 @@ def migrate_view(request):
 def index(request):
     try:
         if int(get_setting("INIT")) <= 5:
-            print("初始化未完成, 转跳到初始化页面")
+            logging.info("初始化未完成, 转跳到初始化页面")
             return redirect("/init/")
     except Exception:
-        print("未检测到初始化配置, 转跳到初始化页面")
+        logging.info("未检测到初始化配置, 转跳到初始化页面")
         return redirect("/init/")
     try:
         if get_setting("UPDATE_FROM") != "false":
-            print("检测到更新配置, 转跳至配置更新页面")
+            logging.info("检测到更新配置, 转跳至配置更新页面")
             return redirect("/update/")
     except Exception:
-        print("检测配置更新失败, 转跳至更新页面")
+        logging.info("检测配置更新失败, 转跳至更新页面")
         return redirect("/update/")
     context = {'segment': 'index'}
     context.update(get_custom_config())
@@ -369,17 +369,17 @@ def pages(request):
     context = dict()
     try:
         if int(get_setting("INIT")) <= 5:
-            print("初始化未完成, 转跳到初始化页面")
+            logging.info("初始化未完成, 转跳到初始化页面")
             return redirect("/init/")
     except Exception:
-        print("未检测到初始化配置, 转跳到初始化页面")
+        logging.info("未检测到初始化配置, 转跳到初始化页面")
         return redirect("/init/")
     try:
         if get_setting("UPDATE_FROM") != "false":
-            print("检测到更新配置, 转跳至配置更新页面")
+            logging.info("检测到更新配置, 转跳至配置更新页面")
             return redirect("/update/")
     except Exception:
-        print("检测配置更新失败, 转跳至更新页面")
+        logging.info("检测配置更新失败, 转跳至更新页面")
         return redirect("/update/")
     try:
         context.update(get_custom_config())
@@ -402,7 +402,7 @@ def pages(request):
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
             except Exception:
-                print("未检测到图床配置, 图床功能关闭")
+                logging.info("未检测到图床配置, 图床功能关闭")
         elif "edit_page" in load_template:
             file_path = request.GET.get("file")
             context["front_matter"], context["file_content"] = get_post_details(
@@ -416,7 +416,7 @@ def pages(request):
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
             except Exception:
-                print("未检测到图床配置, 图床功能关闭")
+                logging.info("未检测到图床配置, 图床功能关闭")
         elif "edit_config" in load_template:
             file_path = request.GET.get("file")
             context["file_content"] = repr(Provider().get_content(file_path)).replace("<", "\\<").replace(">", "\\>").replace("!", "\\!")
@@ -435,7 +435,7 @@ def pages(request):
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
             except Exception:
-                print("未检测到图床配置, 图床功能关闭")
+                logging.info("未检测到图床配置, 图床功能关闭")
         elif "new_page" in load_template:
             context["emoji"] = get_setting("VDITOR_EMOJI")
             context["sidebar"] = get_setting("PAGE_SIDEBAR")
@@ -444,14 +444,14 @@ def pages(request):
                     (Provider().get_content("scaffolds/page.md")))
                 context["front_matter"] = json.dumps(context["front_matter"])
             except Exception as error:
-                print("获取页面模板失败, 错误信息: " + repr(error))
+                logging.error("获取页面模板失败, 错误信息: " + repr(error))
                 # context["error"] = repr(error)
                 context["front_matter"], context["file_content"] = {}, ""
             try:
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
             except Exception:
-                print("未检测到图床配置, 图床功能关闭")
+                logging.info("未检测到图床配置, 图床功能关闭")
         elif "new" in load_template:
             context["emoji"] = get_setting("VDITOR_EMOJI")
             context["sidebar"] = get_setting("POST_SIDEBAR")
@@ -460,7 +460,7 @@ def pages(request):
                     (Provider().get_content("scaffolds/post.md")))
                 context["front_matter"] = json.dumps(context["front_matter"])
             except Exception as error:
-                print("获取文章模板失败, 错误信息: " + repr(error))
+                logging.error("获取文章模板失败, 错误信息: " + repr(error))
                 # context["error"] = repr(error)
                 context["front_matter"], context["file_content"] = {}, ""
             try:
@@ -639,7 +639,7 @@ def pages(request):
                 # 更新通道
                 context["ALL_UPDATES"] = json.loads(get_setting("ALL_UPDATES"))
             except Exception:
-                print("配置获取错误, 转跳至配置更新页面")
+                logging.error("配置获取错误, 转跳至配置更新页面")
                 return redirect("/update/")
         elif 'advanced' in load_template:
             try:
@@ -651,7 +651,7 @@ def pages(request):
                 context["settings_number"] = len(context["settings"])
                 context["page_number"] = ceil(context["settings_number"] / 15)
             except Exception as e:
-                print("高级设置获取错误: " + repr(e))
+                logging.error("高级设置获取错误: " + repr(e))
                 context["error"] = repr(e)
         elif 'custom' in load_template:
             try:
@@ -667,19 +667,19 @@ def pages(request):
                 context["settings_number"] = len(context["settings"])
                 context["page_number"] = ceil(context["settings_number"] / 15)
             except Exception as e:
-                print("自定义字段获取错误: " + repr(e))
+                logging.error("自定义字段获取错误: " + repr(e))
                 context["error"] = repr(e)
         save_setting("LAST_LOGIN", str(int(time())))
         html_template = loader.get_template('home/' + load_template)
         return HttpResponse(html_template.render(context, request))
 
     except template.TemplateDoesNotExist as e:
-        print("页面不存在: " + repr(e))
+        logging.error("页面不存在: " + repr(e))
         html_template = loader.get_template('home/page-404.html')
         return HttpResponse(html_template.render(context, request))
 
     except Exception as error:
-        print("服务端错误: " + repr(error))
+        logging.error("服务端错误: " + repr(error))
         html_template = loader.get_template('home/page-500.html')
         context["error"] = error
         return HttpResponse(html_template.render(context, request))

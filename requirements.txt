@@ -47,3 +47,4 @@ Markdown==3.4.1
 html2text==2020.1.16
 pyyaml==6.0
 python-gitlab==3.11.0
+pip

@@ -534,8 +534,9 @@
                         <div class="col">
                             <label class="form-control-label">更新通道</label>
                             <select class="form-control" id="update-origin-branch">
-                                <option>master</option>
-                                <option>dev</option>
+                                {% for update in ALL_UPDATES %}
+                                    <option>{{ update.name }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                     </div>

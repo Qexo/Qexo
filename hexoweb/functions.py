@@ -3,7 +3,7 @@ import sys
 from io import StringIO
 import subprocess
 import unicodedata
-from core.qexoSettings import ALL_SETTINGS, ALL_CDN
+from core.qexoSettings import ALL_SETTINGS
 import requests
 from django.template.defaulttags import register
 from django.core.management import execute_from_command_line
@@ -13,7 +13,7 @@ import github
 import json
 import uuid
 from datetime import timezone, timedelta, date, datetime
-from time import strftime, localtime, time
+from time import strftime, localtime, time, sleep
 from hashlib import md5
 from urllib3 import disable_warnings
 from urllib.parse import quote, unquote
@@ -458,6 +458,14 @@ def getIndexFile(base, path=""):
     return index
 
 
+def get_update_url(target):
+    all_updates = json.loads(get_setting("ALL_UPDATES"))
+    for update in all_updates:
+        if update["name"] == target:
+            return update["url"]
+    return False
+
+
 def VercelUpdate(appId, token, sourcePath=""):
     if checkBuilding(appId, token):
         print("更新失败: 当前有部署正在进行")
@@ -478,12 +486,11 @@ def VercelUpdate(appId, token, sourcePath=""):
     return {"status": True, "msg": response.json()}
 
 
-def VercelOnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
+def VercelOnekeyUpdate(url):
     print("开始更新, 使用Vercel方案")
     vercel_config = get_project_detail()
     tmpPath = '/tmp'
     # 从github下载对应tar.gz，并解压
-    url = 'https://github.com/' + auth + '/' + project + '/tarball/' + quote(branch) + '/'
     # print("download from " + url)
     _tarfile = tmpPath + '/github.tar.gz'
     with open(_tarfile, "wb") as file:
@@ -516,22 +523,28 @@ def copy_all_files(src_dir, dst_dir):
                 shutil.copytree(file_path, dst_path)
 
 
-def LocalOnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
+def pip_main(args):
+    try:
+        import pip
+    except ImportError:
+        raise 'pip is not installed'
+    try:
+        func = pip.main
+    except AttributeError:
+        from pip._internal import main as func
+
+    func(args)
+
+
+def LocalOnekeyUpdate(url):
     print("开始更新, 使用本地方案, 准备临时目录")
     Path = os.path.abspath("")
     tmpPath = os.path.abspath("./_tmp")
     if not os.path.exists(tmpPath):
         os.mkdir(tmpPath)
     _tarfile = tmpPath + '/github.tar.gz'
-    try:
-        url = 'https://github.com/' + auth + '/' + project + '/tarball/' + quote(branch) + '/'
-        with open(_tarfile, "wb") as file:
-            file.write(requests.get(url).content)
-    except Exception:
-        print("下载更新失败, 尝试使用镜像服务器")
-        url = 'https://hub.fastgit.xyz/' + auth + '/' + project + '/tarball/' + quote(branch) + '/'
-        with open(_tarfile, "wb") as file:
-            file.write(requests.get(url).content)
+    with open(_tarfile, "wb") as file:
+        file.write(requests.get(url).content)
     print("下载更新完成, 正在解压缩...")
     t = tarfile.open(_tarfile)
     t.extractall(path=tmpPath)
@@ -553,11 +566,21 @@ def LocalOnekeyUpdate(auth='am-abudu', project='Qexo', branch='master'):
     copy_all_files(outPath, Path)
     print("删除临时目录")
     shutil.rmtree(tmpPath)
-    print("开始Migrate数据库")
+    print("开始更新库...")
+    pip_main(['install', '-r', 'requirements.txt'])
+    print("开始迁移数据库")
     execute_from_command_line(['manage.py', 'makemigrations'])
     execute_from_command_line(['manage.py', 'migrate'])
-    print("更新完成")
+    print("更新完成，五秒后重启线程")
+    import threading
+    t = threading.Thread(target=lambda: rerun(5))
+    t.start()
     return {"status": True, "msg": "更新成功!"}
+
+
+def rerun(wait):
+    sleep(wait)
+    os._exit(3)
 
 
 def CreateNotification(label, content, now):

@@ -352,10 +352,14 @@ def auto_fix(request):
 def do_update(request):
     branch = request.POST.get("branch")
     try:
+        url = get_update_url(branch)
+        if not url:
+            context = {"msg": "无此更新途径", "status": False}
+            return JsonResponse(safe=False, data=context)
         if check_if_vercel():
-            res = VercelOnekeyUpdate(branch=branch)
+            res = VercelOnekeyUpdate(url)
         else:
-            res = LocalOnekeyUpdate(branch=branch)
+            res = LocalOnekeyUpdate(url)
             save_setting("UPDATE_FROM", "true")
             return JsonResponse(safe=False, data=res)
         if res["status"]:

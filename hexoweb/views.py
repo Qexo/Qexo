@@ -4,9 +4,9 @@ from django.contrib.auth import logout
 from django import template
 from django.http import HttpResponse
 from django.template import loader
+from hexoweb.libs.elevator import elevator
 from .api import *
 from math import ceil
-from libs.elevator import elevator
 
 
 def page_404(request, exception):

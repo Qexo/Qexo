@@ -6,6 +6,7 @@ from django.http import HttpResponse
 from django.template import loader
 from .api import *
 from math import ceil
+from libs.elevator import elevator
 
 
 def page_404(request, exception):
@@ -57,6 +58,7 @@ def update_view(request):
             if setting == "PROVIDER":
                 update_provider()
         delete_all_caches()
+        elevator.elevator(get_setting("UPDATE_FROM"), QEXO_VERSION)
     already = list()
     settings = SettingModel.objects.all()
     for query in settings:

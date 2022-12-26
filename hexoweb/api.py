@@ -354,16 +354,16 @@ def do_update(request):
     try:
         url = get_update_url(branch)
         if not url:
-            context = {"msg": "无此更新途径", "status": False}
+            context = {"msg": "无此更新通道", "status": False}
             return JsonResponse(safe=False, data=context)
         if check_if_vercel():
             res = VercelOnekeyUpdate(url)
         else:
             res = LocalOnekeyUpdate(url)
-            save_setting("UPDATE_FROM", "true")
+            save_setting("UPDATE_FROM", QEXO_VERSION)
             return JsonResponse(safe=False, data=res)
         if res["status"]:
-            save_setting("UPDATE_FROM", "true")
+            save_setting("UPDATE_FROM", QEXO_VERSION)
             context = {"msg": "更新成功，请等待自动部署!", "status": True}
         else:
             context = {"msg": res["msg"], "status": False}

@@ -677,7 +677,7 @@ def pages(request):
                 scripts = requests.get("https://raw.githubusercontent.com/Qexo/Scripts/main/index.json").json()
                 context["posts"] = list()
                 for script in scripts:
-                    if (not search) or (search in script["name"]) or (search in script["author"]):
+                    if (not search) or (search.upper() in script["name"].upper()) or (search.upper() in script["author"].upper()):
                         context["posts"].append(script)
                 if search:
                     context["search"] = search

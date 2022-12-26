@@ -671,6 +671,23 @@ def pages(request):
             except Exception as e:
                 logging.error("自定义字段获取错误: " + repr(e))
                 context["error"] = repr(e)
+        elif "userscripts" in load_template:
+            try:
+                search = request.GET.get("s")
+                scripts = requests.get("https://raw.githubusercontent.com/Qexo/Scripts/main/index.json").json()
+                context["posts"] = list()
+                for script in scripts:
+                    if (not search) or (search in script["name"]) or (search in script["author"]):
+                        context["posts"].append(script)
+                if search:
+                    context["search"] = search
+                context["post_number"] = len(context["posts"])
+                context["page_number"] = ceil(context["post_number"] / 15)
+                context["all_posts"] = json.dumps(context["posts"])
+            except Exception as e:
+                logging.error("获取错误: " + repr(e))
+                context["error"] = repr(e)
+
         save_setting("LAST_LOGIN", str(int(time())))
         html_template = loader.get_template('home/' + load_template)
         return HttpResponse(html_template.render(context, request))

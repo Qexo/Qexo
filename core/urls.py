@@ -61,6 +61,7 @@ urlpatterns = [
     path('api/set_cdn/', set_cdn, name='set_cdn'),
     path('api/save_talk/', save_talk, name='save_talk'),
     path('api/del_talk/', del_talk, name='del_talk'),
+    path('api/run_online_script/', run_online_script, name='run_online_script'),
 
     path('pub/save/', pub.save, name='pub_save'),
     path('pub/save_post/', pub.save_post, name='pub_save_post'),

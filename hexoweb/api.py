@@ -801,3 +801,25 @@ def del_talk(request):
         logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
+
+
+# 运行云端命令
+@login_required(login_url="/login/")
+def run_online_script(request):
+    try:
+        path = request.POST.get("path")
+        if path:
+            remote_script = requests.get("https://raw.githubusercontent.com/Qexo/Scripts/main/" + path).text
+            logging.info("执行云端命令: " + path)
+            old_stdout = sys.stdout
+            output = sys.stdout = StringIO()
+            exec(remote_script)
+            sys.stdout = old_stdout
+            logging.info(f"执行{path}成功: " + output.getvalue())
+            context = {"msg": "运行成功！", "data": output.getvalue(), "status": True}
+        else:
+            context = {"msg": "请输入正确的参数！", "status": False}
+    except Exception as error:
+        logging.error(repr(error))
+        context = {"msg": repr(error), "status": False}
+    return JsonResponse(safe=False, data=context)

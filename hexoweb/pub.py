@@ -44,7 +44,7 @@ def save_post(request):
             Provider().save("source/_posts/" + file_name, content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
-            logging.error(repr(e))
+            logging.error(repr(error))
             context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -63,7 +63,7 @@ def save_draft(request):
             Provider().save("source/_drafts/" + file_name, content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
-            logging.error(repr(e))
+            logging.error(repr(error))
             context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -115,7 +115,7 @@ def create_webhook_config(request):
             Provider().create_hook(config)
             context = {"msg": "设置成功！", "status": True}
         except Exception as error:
-            logging.error(repr(e))
+            logging.error(repr(error))
             context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -240,7 +240,7 @@ def add_friend(request):
         friend.save()
         context = {"msg": "添加成功！", "time": friend.time, "status": True}
     except Exception as error:
-        logging.error(repr(e))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -260,7 +260,7 @@ def edit_friend(request):
         friend.save()
         context = {"msg": "修改成功！", "status": True}
     except Exception as error:
-        logging.error(repr(e))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -275,7 +275,7 @@ def del_friend(request):
         friend.delete()
         context = {"msg": "删除成功！", "status": True}
     except Exception as error:
-        logging.error(repr(e))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -321,7 +321,7 @@ def ask_friend(request):
                                                                                escapeString(friend.description)), time())
         context = {"msg": "申请成功！", "time": friend.time, "status": True}
     except Exception as error:
-        logging.error(repr(e))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -354,7 +354,7 @@ def get_custom(request):
             "status": True
         }
     except Exception as error:
-        logging.error(repr(e))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -409,7 +409,7 @@ def get_notifications(request):
     try:
         context = {"data": GetNotifications(), "status": True}
     except Exception as error:
-        logging.error(repr(e))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -427,7 +427,7 @@ def status(request):
         last = get_setting("LAST_LOGIN")
         context = {"data": {"posts": str(posts_count), "last": last}, "status": True}
     except Exception as error:
-        logging.error(repr(e))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -510,7 +510,7 @@ def waline(request):
                                                                                    comment["url"], comment["status"], comment["ua"])
             CreateNotification("Waline评论通知", msg, time())
     except Exception as error:
-        logging.error(repr(e))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -527,7 +527,7 @@ def notifications(request):
         CreateNotification(title, content, time())
         return JsonResponse(safe=False, data={"msg": "添加成功！", "status": True})
     except Exception as error:
-        logging.error(repr(e))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
         return JsonResponse(safe=False, data=context)
 
@@ -560,7 +560,7 @@ def get_talks(request):
                           "liked": True if ip in t else False, "values": values})
         context = {"msg": "获取成功！", "status": True, "count": count, "data": talks}
     except Exception as error:
-        logging.error(repr(e))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -587,7 +587,7 @@ def like_talk(request):
             logging.info(ip + "成功点赞: " + talk_id)
             context = {"msg": "点赞成功！", "action": True, "status": True}
     except Exception as error:
-        logging.error(repr(e))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -616,7 +616,7 @@ def save_talk(request):
             talk.save()
             context["id"] = talk.id.hex
     except Exception as error:
-        logging.error(repr(e))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -630,6 +630,6 @@ def del_talk(request):
         TalkModel.objects.get(id=uuid.UUID(hex=request.POST.get("id"))).delete()
         context = {"msg": "删除成功！", "status": True}
     except Exception as error:
-        logging.error(repr(e))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)

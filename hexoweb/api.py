@@ -368,7 +368,7 @@ def do_update(request):
         else:
             context = {"msg": res["msg"], "status": False}
     except Exception as error:
-        logging.error(repr(e))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -387,7 +387,7 @@ def save(request):
             else:
                 context = {"msg": "保存成功！", "status": True}
         except Exception as error:
-            logging.error(repr(e))
+            logging.error(repr(error))
             context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -424,7 +424,7 @@ def save_post(request):
             if excerpt:
                 context["excerpt"] = excerpt
         except Exception as error:
-            logging.error(repr(e))
+            logging.error(repr(error))
             context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -454,7 +454,7 @@ def save_page(request):
             if excerpt:
                 context["excerpt"] = excerpt
         except Exception as error:
-            logging.error(repr(e))
+            logging.error(repr(error))
             context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -485,7 +485,7 @@ def save_draft(request):
             if excerpt:
                 context["excerpt"] = excerpt
         except Exception as error:
-            logging.error(repr(e))
+            logging.error(repr(error))
             context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -508,7 +508,7 @@ def delete(request):
             else:
                 delete_all_caches()
         except Exception as error:
-            logging.error(repr(e))
+            logging.error(repr(error))
             context = {"msg": repr(error)}
     return JsonResponse(safe=False, data=context)
 
@@ -524,7 +524,7 @@ def delete_img(request):
             image.delete()
             context = {"msg": "删除成功！", "status": True}
         except Exception as error:
-            logging.error(repr(e))
+            logging.error(repr(error))
             context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -536,7 +536,7 @@ def purge(request):
         delete_all_caches()
         context = {"msg": "清除成功！", "status": True}
     except Exception as error:
-        logging.error(repr(e))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -567,7 +567,7 @@ def create_webhook_config(request):
             else:
                 context = {"msg": "服务商不支持！", "status": False}
         except Exception as error:
-            logging.error(repr(e))
+            logging.error(repr(error))
             context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -582,7 +582,7 @@ def webhook(request):
         else:
             context = {"msg": "校验错误", "status": False}
     except Exception as error:
-        logging.error(repr(e))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -608,7 +608,7 @@ def upload_img(request):
                 image.date = time()
                 image.save()
         except Exception as error:
-            logging.error(repr(e))
+            logging.error(repr(error))
             context = {"msg": repr(error), "url": False}
     return JsonResponse(safe=False, data=context)
 
@@ -627,7 +627,7 @@ def add_friend(request):
         friend.save()
         context = {"msg": "添加成功！", "time": friend.time, "status": True}
     except Exception as error:
-        logging.error(repr(e))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -645,7 +645,7 @@ def edit_friend(request):
         friend.save()
         context = {"msg": "修改成功！", "status": True}
     except Exception as error:
-        logging.error(repr(e))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -662,7 +662,7 @@ def clean_friend(request):
                 counter += 1
         context = {"msg": "成功清理了{}条友链".format(counter) if counter else "无隐藏的友链", "status": True}
     except Exception as error:
-        logging.error(repr(e))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -675,7 +675,7 @@ def del_friend(request):
         friend.delete()
         context = {"msg": "删除成功！", "status": True}
     except Exception as error:
-        logging.error(repr(e))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -702,7 +702,7 @@ def get_notifications(request):
                     update_caches("update", latest["newer_time"], "text")
         context = {"data": GetNotifications(), "status": True}
     except Exception as error:
-        logging.error(repr(e))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -714,7 +714,7 @@ def del_notification(request):
         DelNotification(request.POST.get("time"))
         context = {"msg": "删除成功！", "status": True}
     except Exception as error:
-        logging.error(repr(e))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -728,7 +728,7 @@ def clear_notification(request):
             N.delete()
         context = {"msg": "删除成功！", "status": True}
     except Exception as error:
-        logging.error(repr(e))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -744,7 +744,7 @@ def set_sidebar(request):
             save_setting("POST_SIDEBAR", request.POST.get("content"))
         context = {"msg": "修改成功！", "status": True}
     except Exception as error:
-        logging.error(repr(e))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -759,7 +759,7 @@ def set_excerpt(request):
         save_setting("EXCERPT_LENGTH", length)
         context = {"msg": "修改成功！", "status": True}
     except Exception as error:
-        logging.error(repr(e))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -786,7 +786,7 @@ def save_talk(request):
             talk.save()
             context["id"] = talk.id.hex
     except Exception as error:
-        logging.error(repr(e))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -798,6 +798,6 @@ def del_talk(request):
         TalkModel.objects.get(id=uuid.UUID(hex=request.POST.get("id"))).delete()
         context = {"msg": "删除成功！", "status": True}
     except Exception as error:
-        logging.error(repr(e))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)

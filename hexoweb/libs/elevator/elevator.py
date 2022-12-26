@@ -1,5 +1,6 @@
 import logging
 
+
 def parse_version(version):
     return tuple(
         map(int, (version.split(".") if len(version.split(".")) == 3 else version.split(".") + ["0"]))) if version != "false" else None

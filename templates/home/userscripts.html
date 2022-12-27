@@ -280,9 +280,9 @@
                 html = "请输入参数:";
                 for (let i = 0; i < argv.length; i++) {
                     html += `<row><div class="form-group">
-                                        <input type="text" name="argv-${argv[i]}"
+                                        <input type="text" name="argv-${argv[i]["name"]}"
                                         class="form-control"
-                                               placeholder="${argv[i]}">
+                                               placeholder="${argv[i]["placeholder"]}">
                                     </div></row>`;
                 }
             }
@@ -304,7 +304,7 @@
             let data = {};
             if (argv) {
                 for (let i = 0; i < argv.length; i++) {
-                    data[argv[i]] = $(`input[name=argv-${argv[i]}]`).val();
+                    data[argv[i]["name"]] = $(`input[name=argv-${argv[i]["name"]}]`).val();
                 }
             }
             loading.show();

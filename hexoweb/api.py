@@ -813,9 +813,10 @@ def run_online_script(request):
             logging.info("执行云端命令: " + path)
             old_stdout = sys.stdout
             output = sys.stdout = StringIO()
+            locals().update(json.loads(request.POST.get("argv")))
             exec(remote_script)
             sys.stdout = old_stdout
-            logging.info(f"执行{path}成功: " + output.getvalue())
+            logging.info(f"执行{path}成功: " + output.getvalue().rstrip())
             context = {"msg": "运行成功！", "data": output.getvalue(), "status": True}
         else:
             context = {"msg": "请输入正确的参数！", "status": False}

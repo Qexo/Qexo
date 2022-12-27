@@ -339,13 +339,14 @@ def get_custom(request):
         for key in body.keys():
             if len(body[key]) == 1:
                 body[key] = body[key][0]
+        locals().update(body)
         old_stdout = sys.stdout
         output = sys.stdout = StringIO()
         try:
             print(eval(func_str))
         except Exception:
             try:
-                exec(func_str, body)
+                exec(func_str)
             except Exception:
                 print(func_str)
         sys.stdout = old_stdout

@@ -90,14 +90,7 @@
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <div class="modal-body">
-                        确认要执行 <a id="script-path"></a> 吗？
-                        <br>
-                        作者: <a id="script-author"></a>
-                        <br>
-                        简介: <a id="script-description"></a>
-                        <br>
-                        请注意此操作不可撤回
+                    <div class="modal-body" id="runContainer">
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">取消
@@ -167,9 +160,8 @@
             for (let i = 0; i < page_posts.length; i++) {
                 list += "<tr><th scope=\"row\">" + page_posts[i]["name"] + "</th><td>" +
                     page_posts[i]["author"] + "</td><td>" + page_posts[i]["description"] +
-                    "</td><td><a href=\"javascript:show_run('" + page_posts[i]["author"] + "','" +
-                    page_posts[i]["path"] + "','" + page_posts[i]["description"] + "')" + "\"><i " +
-                    "class=\"fa fa-external-link-alt\"></i></a></td></tr>";
+                    "</td><td><a href=\"javascript:show_run('" + page_posts[i]["path"] + "')\">" +
+                    "<i class=\"fa fa-external-link-alt\"></i></a></td></tr>";
             }
             $("#page-" + _page).removeClass("active");
             $("#page-" + page).addClass("active");
@@ -274,21 +266,52 @@
             }
         }
 
-        function show_run(author, name, description) {
-            $("#script-author").text(author);
-            $("#script-path").text(name);
-            $("#script-description").text(description);
+        function show_run(path) {
+            let html = "";
+            //$("#script-description").text(description);
+            let argv = [];
+            for (let i = 0; i <= posts.length; i++) {
+                if (posts[i]["path"] === path) {
+                    argv = posts[i]["argv"];
+                    break;
+                }
+            }
+            if (argv) {
+                html = "请输入参数:";
+                for (let i = 0; i < argv.length; i++) {
+                    html += `<row><div class="form-group">
+                                        <input type="text" name="argv-${argv[i]}"
+                                        class="form-control"
+                                               placeholder="${argv[i]}">
+                                    </div></row>`;
+                }
+            }
+            html += "确认要执行 <a id='script-path'>" + path + "</a> 吗？此操作不可中止";
+            $("#runContainer").html(html);
             $("#runModal").modal("show");
         }
 
         function run_script() {
             let loading = new KZ_Loading('正在运行中...');
-            let file = $("#script-path").text()
+            let file = $("#script-path").text();
+            let argv = [];
+            for (let i = 0; i <= posts.length; i++) {
+                if (posts[i]["path"] === file) {
+                    argv = posts[i]["argv"];
+                    break;
+                }
+            }
+            let data = {};
+            if (argv) {
+                for (let i = 0; i < argv.length; i++) {
+                    data[argv[i]] = $(`input[name=argv-${argv[i]}]`).val();
+                }
+            }
             loading.show();
             $.ajax({
                 url: '/api/run_online_script/',
                 method: 'post',
-                data: {"path": file},
+                data: {"path": file, "argv": JSON.stringify(data)},
                 dataType: 'JSON',
                 success: function (res) {
                     loading.destroy();

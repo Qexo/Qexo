@@ -37,7 +37,8 @@ import logging
 
 disable_warnings()
 
-logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s: %(message)s(%(filename)s.%(funcName)s[line:%(lineno)d])', datefmt="%d/%b/%Y %H:%M:%S")
+logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s: %(message)s(%(filename)s.%(funcName)s[line:%(lineno)d])',
+                    datefmt="%d/%b/%Y %H:%M:%S")
 
 
 def get_setting(name):
@@ -642,6 +643,7 @@ def get_domain(domain):
 
 def verify_provider(provider):
     try:
+        logging.info("开始验证Provider: " + provider["provider"])
         provider = get_provider(provider["provider"], **provider["params"])
         home = provider.get_path("")
         hexo = 0
@@ -657,14 +659,19 @@ def verify_provider(provider):
         for file in home["data"]:
             if file["name"] == "index.html" and file["type"] == "file":
                 indexhtml = 1
+                logging.info("检测到错误的index.html")
             if file["name"] == "source" and file["type"] == "dir":
                 source = 1
+                logging.info("检测到source目录")
             if file["name"] == "themes" and file["type"] == "dir":
                 theme_dir = 1
+                logging.info("检测到themes目录")
             if file["name"] == "package.json" and file["type"] == "file":
                 pack = "package.json"
+                logging.info("检测到package.json")
             if file["name"] == "_config.yml" and file["type"] == "file":
                 config_hexo = "_config.yml"
+                logging.info("检测到根目录_config.yml")
         # 读取主题 校验主题配置
         try:
             if config_hexo:
@@ -675,12 +682,14 @@ def verify_provider(provider):
                     for file in home["data"]:
                         if file["name"].lower() == "_config.{}.yml".format(theme) and file["type"] == "file":
                             config_theme = "_config.{}.yml".format(theme)
+                            logging.info("检测到主题配置文件: _config.{}.yml".format(theme))
                             break
                     if (not config_theme) and theme_dir:
                         theme_path = provider.get_path("themes/" + theme)
                         for file in theme_path["data"]:
                             if file["name"].lower() == "_config.yml" and file["type"] == "file":
                                 config_theme = "themes/" + theme + "_config.yml"
+                                logging.info("检测到主题配置文件: themes/" + theme + "_config.yml")
                                 break
         except Exception as e:
             logging.error("校验配置报错" + repr(e))
@@ -692,15 +701,17 @@ def verify_provider(provider):
                     if content.get("hexo"):
                         if content["hexo"].get("version"):
                             hexo = content["hexo"].get("version")
+                            logging.info("检测到Hexo版本: " + hexo)
                     if content.get("dependencies"):
                         if content["dependencies"].get("hexo"):
                             hexo = content["dependencies"].get("hexo")
+                            logging.info("检测到Hexo版本: " + hexo)
             except Exception as e:
                 logging.error("校验配置报错" + repr(e))
         # 总结校验
         if hexo and config_hexo and (not indexhtml) and source and theme and pack and config_theme:
             status = 1
-        return {
+        result = {
             "status": status,
             "hexo": hexo,
             "config_theme": config_theme,
@@ -711,6 +722,8 @@ def verify_provider(provider):
             "theme_dir": theme_dir,
             "package": pack,
         }
+        logging.info("Provider校验结果: " + str(result))
+        return result
     except Exception as e:
         logging.error("校验配置出错: " + repr(e))
         return {"status": -1}

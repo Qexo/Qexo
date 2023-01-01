@@ -487,6 +487,18 @@ def VercelUpdate(appId, token, sourcePath=""):
     data["files"] = getEachFiles(sourcePath)
     response = requests.post(url, data=json.dumps(data), headers=header)
     logging.info("更新完成: " + response.text)
+    filelist = os.listdir("/tmp")
+    logging.info("开始删除文件...")
+    for filename in filelist:  # delete all files except tmp
+        try:
+            if os.path.isfile("/tmp/" + filename):
+                os.remove("/tmp/" + filename)
+            elif os.path.isdir("/tmp/" + filename):
+                shutil.rmtree("/tmp/" + filename)
+            else:
+                pass
+        except Exception as e:
+            logging.error("删除失败: " + repr(e))
     return {"status": True, "msg": response.json()}
 
 

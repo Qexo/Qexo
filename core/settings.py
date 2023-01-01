@@ -21,13 +21,11 @@ SECRET_KEY = 'django-insecure-mrf1flh+i8*!ao73h6)ne#%gowhtype!ld#+(j^r*!^11al2vz
 DEBUG = False
 
 try:
-    import configs
+    import configs  # 本地部署
+
     ALLOWED_HOSTS = configs.DOMAINS
 except:
-    logging.info("获取本地配置文件失败, 使用环境变量获取配置")
-    for env in ["MONGODB_HOST", "MONGODB_PORT", "MONGODB_USER", "MONGODB_PASS", "MONGODB_DB"]:
-        if env not in os.environ:
-            raise exceptions.InitError(f"\"{env}\"环境变量未设置")
+    logging.info("获取本地配置文件失败, 使用环境变量获取配置")  # Serverless部署
     ALLOWED_HOSTS = json.loads(os.environ.get("DOMAINS", False)) if os.environ.get("DOMAINS", False) else ["*"]
 
 # Application definition
@@ -84,27 +82,43 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 try:
     import configs
+
     DATABASES = configs.DATABASES
 except:
-    logging.info("获取本地配置文件失败, 使用环境变量配置数据库")
-    DATABASES = {
-        'default': {
-            'ENGINE': 'djongo',
-            'ENFORCE_SCHEMA': False,
-            'LOGGING': {
-                'version': 1,
-            },
-            'NAME': 'django',
-            'CLIENT': {
-                'host': os.environ["MONGODB_HOST"],
-                'port': int(os.environ["MONGODB_PORT"]),
-                'username': os.environ["MONGODB_USER"],
-                'password': os.environ["MONGODB_PASS"],
-                'authSource': os.environ["MONGODB_DB"],
-                'authMechanism': 'SCRAM-SHA-1'
+    logging.info(" 使用环境变量配置数据库")
+    if not os.environ.get("MYSQL_NAME"):  # 使用MONGODB
+        for env in ["MONGODB_HOST", "MONGODB_PORT", "MONGODB_USER", "MONGODB_PASS", "MONGODB_DB"]:
+            if env not in os.environ:
+                raise exceptions.InitError(f"\"{env}\"环境变量未设置")
+        DATABASES = {
+            'default': {
+                'ENGINE': 'djongo',
+                'ENFORCE_SCHEMA': False,
+                'LOGGING': {
+                    'version': 1,
+                },
+                'NAME': 'django',
+                'CLIENT': {
+                    'host': os.environ["MONGODB_HOST"],
+                    'port': int(os.environ["MONGODB_PORT"]),
+                    'username': os.environ["MONGODB_USER"],
+                    'password': os.environ["MONGODB_PASS"],
+                    'authSource': os.environ["MONGODB_DB"],
+                    'authMechanism': 'SCRAM-SHA-1'
+                }
             }
         }
-    }
+    else:  # 使用MYSQL
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.mysql',
+                'NAME': os.environ.get('MYSQL_NAME'),
+                'HOST': os.environ.get('MYSQL_HOST'),
+                'PORT': os.environ.get('MYSQL_PORT'),
+                'USER': os.environ.get('MYSQL_USER'),
+                'PASSWORD': os.environ.get('MYSQL_PASSWORD')
+            }
+        }
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators

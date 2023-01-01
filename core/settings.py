@@ -83,10 +83,11 @@ WSGI_APPLICATION = 'core.wsgi.application'
 try:
     import configs
 
+    print("获取本地配置文件成功, 使用本地数据库配置")
     DATABASES = configs.DATABASES
 except:
-    logging.info(" 使用环境变量配置数据库")
     if not os.environ.get("MYSQL_NAME"):  # 使用MONGODB
+        print("使用环境变量中的MONGODB数据库")
         for env in ["MONGODB_HOST", "MONGODB_PORT", "MONGODB_USER", "MONGODB_PASS", "MONGODB_DB"]:
             if env not in os.environ:
                 raise exceptions.InitError(f"\"{env}\"环境变量未设置")
@@ -109,7 +110,12 @@ except:
             }
         }
     else:  # 使用MYSQL
+        print("使用环境变量中的MYSQL数据库")
+        for env in ["MYSQL_NAME", "MYSQL_HOST", "MYSQL_PORT", "MYSQL_USER", "MYSQL_PASSWORD"]:
+            if env not in os.environ:
+                raise exceptions.InitError(f"\"{env}\"环境变量未设置")
         import pymysql
+
         pymysql.install_as_MySQLdb()
         DATABASES = {
             'default': {
@@ -118,11 +124,14 @@ except:
                 'HOST': os.environ.get('MYSQL_HOST'),
                 'PORT': os.environ.get('MYSQL_PORT'),
                 'USER': os.environ.get('MYSQL_USER'),
-                'PASSWORD': os.environ.get('MYSQL_PASSWORD')
+                'PASSWORD': os.environ.get('MYSQL_PASSWORD'),
+                'OPTIONS': {'ssl': {'ca': False}}
             }
         }
+        if os.environ.get("PLANETSCALE"):
+            DATABASES["default"]["ENGINE"] = "hexoweb.libs.django_psdb_engine"
 
-# Password validation
+        # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [

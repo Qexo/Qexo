@@ -1,7 +1,7 @@
 # Qexo
 一个快速、强大、漂亮的在线 Hexo 编辑器，您的 Star 是对我最大的支持。
 
-**请查看 [文档](https://www.oplog.cn/qexo)**
+*请查看 [文档](https://www.oplog.cn/qexo)*
 ![](https://user-images.githubusercontent.com/51912589/159258766-19a1ce22-d34b-4b29-b291-7d70e8942859.png)
 ## 特色功能
 - 自定义图床上传图片

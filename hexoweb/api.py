@@ -25,7 +25,7 @@ def auth(request):
                     return JsonResponse(safe=False, data={"msg": "人机验证失败！", "status": False})
             else:
                 return JsonResponse(safe=False, data={"msg": "人机验证失败！", "status": False})
-        # print(captcha)
+        # logging.info(captcha)
         user = authenticate(username=username, password=password)
         if user is not None:
             login(request, user)
@@ -33,7 +33,7 @@ def auth(request):
         else:
             context = {"msg": "登录信息错误", "status": False}
     except Exception as e:
-        print(repr(e))
+        logging.error(repr(e))
         context = {"msg": repr(e), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -86,7 +86,7 @@ def set_hexo(request):
         else:
             context = {"msg": msg + "\n配置校验失败", "status": False}
     except Exception as e:
-        print(repr(e))
+        logging.error(repr(e))
         context = {"msg": repr(e), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -99,7 +99,7 @@ def set_onepush(request):
         save_setting("ONEPUSH", onepush)
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
-        print(repr(e))
+        logging.error(repr(e))
         context = {"msg": repr(e), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -117,7 +117,7 @@ def test_onepush(request):
             data = "OK"
         context = {"msg": data, "status": True}
     except Exception as e:
-        print(repr(e))
+        logging.error(repr(e))
         context = {"msg": repr(e), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -138,7 +138,7 @@ def set_api(request):
         save_setting("RECAPTCHA_TOKEN", request.POST.get("recaptcha-token"))
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
-        print(repr(e))
+        logging.error(repr(e))
         context = {"msg": repr(e), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -151,7 +151,7 @@ def set_security(request):
         save_setting("LOGIN_RECAPTCHA_SITE_TOKEN", request.POST.get("site-token"))
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
-        print(repr(e))
+        logging.error(repr(e))
         context = {"msg": repr(e), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -164,7 +164,7 @@ def set_image_host(request):
         save_setting("IMG_HOST", image_host)
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
-        print(repr(e))
+        logging.error(repr(e))
         context = {"msg": repr(e), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -179,7 +179,7 @@ def set_abbrlink(request):
         save_setting("ABBRLINK_REP", rep)
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
-        print(repr(e))
+        logging.error(repr(e))
         context = {"msg": repr(e), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -192,7 +192,7 @@ def set_cdn(request):
         save_setting("CDNJS", cdnjs)
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
-        print(repr(e))
+        logging.error(repr(e))
         context = {"msg": repr(e), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -211,7 +211,7 @@ def set_cust(request):
         save_setting("QEXO_ICON", icon)
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
-        print(repr(e))
+        logging.error(repr(e))
         context = {"msg": repr(e), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -242,7 +242,7 @@ def set_user(request):
         else:
             context = {"msg": "原密码错误!", "status": False}
     except Exception as e:
-        print(repr(e))
+        logging.error(repr(e))
         context = {"msg": repr(e), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -257,7 +257,7 @@ def set_statistic(request):
         save_setting("STATISTIC_DOMAINS", domains)
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
-        print(repr(e))
+        logging.error(repr(e))
         context = {"msg": repr(e), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -269,7 +269,7 @@ def set_custom(request):
         save_custom(request.POST.get("name"), request.POST.get("content"))
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
-        print(repr(e))
+        logging.error(repr(e))
         context = {"msg": repr(e), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -281,7 +281,7 @@ def del_custom(request):
         CustomModel.objects.filter(name=request.POST.get("name")).delete()
         context = {"msg": "删除成功!", "status": True}
     except Exception as e:
-        print(repr(e))
+        logging.error(repr(e))
         context = {"msg": repr(e), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -293,7 +293,7 @@ def new_custom(request):
         save_custom(request.POST.get("name"), request.POST.get("content"))
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
-        print(repr(e))
+        logging.error(repr(e))
         context = {"msg": repr(e), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -305,7 +305,7 @@ def set_value(request):
         save_setting(request.POST.get("name"), request.POST.get("content"))
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
-        print(repr(e))
+        logging.error(repr(e))
         context = {"msg": repr(e), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -317,7 +317,7 @@ def del_value(request):
         SettingModel.objects.filter(name=request.POST.get("name")).delete()
         context = {"msg": "删除成功!", "status": True}
     except Exception as e:
-        print(repr(e))
+        logging.error(repr(e))
         context = {"msg": repr(e), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -329,7 +329,7 @@ def new_value(request):
         save_setting(request.POST.get("name"), request.POST.get("content"))
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
-        print(repr(e))
+        logging.error(repr(e))
         context = {"msg": repr(e), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -342,7 +342,7 @@ def auto_fix(request):
         msg = "尝试自动修复了 {} 个字段，请在稍后检查和修改配置".format(counter)
         context = {"msg": msg, "status": True}
     except Exception as e:
-        print(repr(e))
+        logging.error(repr(e))
         context = {"msg": repr(e), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -354,21 +354,21 @@ def do_update(request):
     try:
         url = get_update_url(branch)
         if not url:
-            context = {"msg": "无此更新途径", "status": False}
+            context = {"msg": "无此更新通道", "status": False}
             return JsonResponse(safe=False, data=context)
         if check_if_vercel():
             res = VercelOnekeyUpdate(url)
         else:
             res = LocalOnekeyUpdate(url)
-            save_setting("UPDATE_FROM", "true")
+            save_setting("UPDATE_FROM", QEXO_VERSION)
             return JsonResponse(safe=False, data=res)
         if res["status"]:
-            save_setting("UPDATE_FROM", "true")
+            save_setting("UPDATE_FROM", QEXO_VERSION)
             context = {"msg": "更新成功，请等待自动部署!", "status": True}
         else:
             context = {"msg": res["msg"], "status": False}
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -387,7 +387,7 @@ def save(request):
             else:
                 context = {"msg": "保存成功！", "status": True}
         except Exception as error:
-            print(repr(error))
+            logging.error(repr(error))
             context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -412,7 +412,7 @@ def save_post(request):
             commitchange = f"Update Post {file_name}"
             if get_setting("EXCERPT_POST") == "是":
                 excerpt = excerpt_post(content, get_setting("EXCERPT_LENGTH"))
-                print(f"截取文章{file_name}摘要: " + excerpt)
+                logging.info(f"截取文章{file_name}摘要: " + excerpt)
                 front_matter["excerpt"] = excerpt
             front_matter = "---\n{}---".format(yaml.dump(front_matter, allow_unicode=True))
             if not content.startswith("\n"):
@@ -424,7 +424,7 @@ def save_post(request):
             if excerpt:
                 context["excerpt"] = excerpt
         except Exception as error:
-            print(repr(error))
+            logging.error(repr(error))
             context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -442,7 +442,7 @@ def save_page(request):
         try:
             if get_setting("EXCERPT_POST") == "是":
                 excerpt = excerpt_post(content, get_setting("EXCERPT_LENGTH"))
-                print(f"截取页面{file_path}摘要: " + excerpt)
+                logging.info(f"截取页面{file_path}摘要: " + excerpt)
                 front_matter["excerpt"] = excerpt
             front_matter = "---\n{}---".format(yaml.dump(front_matter, allow_unicode=True))
             if not content.startswith("\n"):
@@ -454,7 +454,7 @@ def save_page(request):
             if excerpt:
                 context["excerpt"] = excerpt
         except Exception as error:
-            print(repr(error))
+            logging.error(repr(error))
             context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -473,7 +473,7 @@ def save_draft(request):
             # 创建/更新草稿
             if get_setting("EXCERPT_POST") == "是":
                 excerpt = excerpt_post(content, get_setting("EXCERPT_LENGTH"))
-                print(f"截取文章{file_name}摘要: " + excerpt)
+                logging.info(f"截取文章{file_name}摘要: " + excerpt)
                 front_matter["excerpt"] = excerpt
             front_matter = "---\n{}---\n".format(yaml.dump(front_matter, allow_unicode=True))
             if not content.startswith("\n"):
@@ -485,7 +485,7 @@ def save_draft(request):
             if excerpt:
                 context["excerpt"] = excerpt
         except Exception as error:
-            print(repr(error))
+            logging.error(repr(error))
             context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -508,7 +508,7 @@ def delete(request):
             else:
                 delete_all_caches()
         except Exception as error:
-            print(repr(error))
+            logging.error(repr(error))
             context = {"msg": repr(error)}
     return JsonResponse(safe=False, data=context)
 
@@ -524,7 +524,7 @@ def delete_img(request):
             image.delete()
             context = {"msg": "删除成功！", "status": True}
         except Exception as error:
-            print(repr(error))
+            logging.error(repr(error))
             context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -536,7 +536,7 @@ def purge(request):
         delete_all_caches()
         context = {"msg": "清除成功！", "status": True}
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -567,7 +567,7 @@ def create_webhook_config(request):
             else:
                 context = {"msg": "服务商不支持！", "status": False}
         except Exception as error:
-            print(repr(error))
+            logging.error(repr(error))
             context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -582,7 +582,7 @@ def webhook(request):
         else:
             context = {"msg": "校验错误", "status": False}
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -608,7 +608,7 @@ def upload_img(request):
                 image.date = time()
                 image.save()
         except Exception as error:
-            print(repr(error))
+            logging.error(repr(error))
             context = {"msg": repr(error), "url": False}
     return JsonResponse(safe=False, data=context)
 
@@ -627,7 +627,7 @@ def add_friend(request):
         friend.save()
         context = {"msg": "添加成功！", "time": friend.time, "status": True}
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -645,7 +645,7 @@ def edit_friend(request):
         friend.save()
         context = {"msg": "修改成功！", "status": True}
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -662,7 +662,7 @@ def clean_friend(request):
                 counter += 1
         context = {"msg": "成功清理了{}条友链".format(counter) if counter else "无隐藏的友链", "status": True}
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -675,7 +675,7 @@ def del_friend(request):
         friend.delete()
         context = {"msg": "删除成功！", "status": True}
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -702,7 +702,7 @@ def get_notifications(request):
                     update_caches("update", latest["newer_time"], "text")
         context = {"data": GetNotifications(), "status": True}
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -714,7 +714,7 @@ def del_notification(request):
         DelNotification(request.POST.get("time"))
         context = {"msg": "删除成功！", "status": True}
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -728,7 +728,7 @@ def clear_notification(request):
             N.delete()
         context = {"msg": "删除成功！", "status": True}
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -744,7 +744,7 @@ def set_sidebar(request):
             save_setting("POST_SIDEBAR", request.POST.get("content"))
         context = {"msg": "修改成功！", "status": True}
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -759,7 +759,7 @@ def set_excerpt(request):
         save_setting("EXCERPT_LENGTH", length)
         context = {"msg": "修改成功！", "status": True}
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -786,7 +786,7 @@ def save_talk(request):
             talk.save()
             context["id"] = talk.id.hex
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -798,6 +798,29 @@ def del_talk(request):
         TalkModel.objects.get(id=uuid.UUID(hex=request.POST.get("id"))).delete()
         context = {"msg": "删除成功！", "status": True}
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
+        context = {"msg": repr(error), "status": False}
+    return JsonResponse(safe=False, data=context)
+
+
+# 运行云端命令
+@login_required(login_url="/login/")
+def run_online_script(request):
+    try:
+        path = request.POST.get("path")
+        if path:
+            remote_script = requests.get("https://raw.githubusercontent.com/Qexo/Scripts/main/" + path).text
+            logging.info("执行云端命令: " + path)
+            old_stdout = sys.stdout
+            output = sys.stdout = StringIO()
+            locals().update(json.loads(request.POST.get("argv")))
+            exec(remote_script)
+            sys.stdout = old_stdout
+            logging.info(f"执行{path}成功: " + output.getvalue().rstrip())
+            context = {"msg": "运行成功！", "data": output.getvalue(), "status": True}
+        else:
+            context = {"msg": "请输入正确的参数！", "status": False}
+    except Exception as error:
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)

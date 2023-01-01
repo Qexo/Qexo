@@ -1,5 +1,6 @@
 import github
 from ..core import Provider
+import logging
 
 
 class Github(Provider):
@@ -18,7 +19,7 @@ class Github(Provider):
               'path': {"description": "Hexo 路径", "placeholder": "留空为根目录"}}
 
     def get_content(self, file):  # 获取文件内容UTF8
-        print("获取文件{}".format(file))
+        logging.info("获取文件{}".format(file))
         content = self.repo.get_contents(self.path + file, self.branch).decoded_content.decode("utf8")
         return content
 
@@ -46,37 +47,37 @@ class Github(Provider):
                     "path": file.path,
                     "type": file.type
                 })
-        print("获取路径{}成功".format(path))
+        logging.info("获取路径{}成功".format(path))
         return {"path": path, "data": results}
 
     def save(self, file, content, commitchange="Update by Qexo"):
         try:
             self.repo.update_file(self.path + file, commitchange, content,
                                   self.repo.get_contents(self.path + file, ref=self.branch).sha, branch=self.branch)
-            print("保存文件{}成功".format(file))
+            logging.info("保存文件{}成功".format(file))
         except:
             self.repo.create_file(self.path + file, commitchange, content, branch=self.branch)
-            print("新建文件{}成功".format(file))
+            logging.info("新建文件{}成功".format(file))
         return False  # 返回False表示没有进行自动部署
 
     def delete(self, path, commitchange="Delete by Qexo"):
         file = self.repo.get_contents(self.path + path, ref=self.branch)
         if not isinstance(file, list):
             self.repo.delete_file(self.path + path, commitchange, file.sha, branch=self.branch)
-            print("删除文件{}成功".format(path))
+            logging.info("删除文件{}成功".format(path))
         else:
             for i in file:
                 self.delete(i["path"][len(self.path):], commitchange)
-            print("删除目录{}成功".format(path))
+            logging.info("删除目录{}成功".format(path))
         return False
 
     def delete_hooks(self):
         for hook in self.repo.get_hooks():  # 删除所有HOOK
             hook.delete()
-        print("删除所有WebHook成功")
+        logging.info("删除所有WebHook成功")
         return True
 
     def create_hook(self, config):
         self.repo.create_hook(active=True, config=config, events=["push"], name="web")
-        print("创建WebHook成功{}".format(config))
+        logging.info("创建WebHook成功{}".format(config))
         return True

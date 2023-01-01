@@ -1,6 +1,7 @@
 from ..core import Provider
 import os
 import subprocess
+import logging
 
 
 class Local(Provider):
@@ -15,7 +16,7 @@ class Local(Provider):
 
     def get_content(self, file):  # 获取文件内容UTF8
         with open(os.path.join(self.path, file), 'r', encoding='UTF-8') as f:
-            print("获取文件{}成功".format(os.path.join(self.path, file)))
+            logging.info("获取文件{}成功".format(os.path.join(self.path, file)))
             return f.read()
 
     def get_path(self, path):  # 获取目录下的文件列表
@@ -44,7 +45,7 @@ class Local(Provider):
                     "path": filedir.replace("\\", "/"),
                     "type": "dir"
                 })
-        print("获取路径{}成功".format(path))
+        logging.info("获取路径{}成功".format(path))
         return {"path": path, "data": results}
 
     def save(self, file, content, commitchange="Update by Qexo"):
@@ -53,22 +54,22 @@ class Local(Provider):
             os.makedirs("/".join(path.split("/")[0:-1]))
         with open(path, "w", encoding="UTF-8") as f:
             f.write(content)
-            print("保存文件{}成功".format(file))
+            logging.info("保存文件{}成功".format(file))
         return self.build()
 
     def delete(self, path, commitchange="Delete by Qexo"):
         path = os.path.join(self.path, path)
         if os.path.isdir(path):
             os.removedirs(path)
-            print("删除目录{}成功".format(path))
+            logging.info("删除目录{}成功".format(path))
         else:
             os.remove(path)
-            print("删除文件{}成功".format(path))
+            logging.info("删除文件{}成功".format(path))
         return self.build()
 
     def build(self):
         if not self.auto:
             return False
-        print("进行自动部署...")
+        logging.info("进行自动部署...")
         p = subprocess.Popen("cd {} && {}".format(self.path, self.auto), shell=True)
         return p

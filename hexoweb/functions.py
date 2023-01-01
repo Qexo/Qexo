@@ -33,8 +33,12 @@ import re
 import shutil
 from bs4 import BeautifulSoup
 from html import escape
+import logging
 
 disable_warnings()
+
+logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s: %(message)s(%(filename)s.%(funcName)s[line:%(lineno)d])',
+                    datefmt="%d/%b/%Y %H:%M:%S")
 
 
 def get_setting(name):
@@ -54,7 +58,7 @@ def update_provider():
 try:
     _Provider = update_provider()
 except Exception:
-    print("Provider初始化失败, 跳过")
+    logging.error("Provider初始化失败, 跳过")
     pass
 
 
@@ -62,7 +66,7 @@ def Provider():
     try:
         return _Provider
     except Exception:
-        print("Provider获取错误, 重新初始化")
+        logging.error("Provider获取错误, 重新初始化")
         return update_provider()
 
 
@@ -133,7 +137,7 @@ def update_caches(name, content, _type="json"):
     else:
         posts_cache.content = content
     posts_cache.save()
-    print("重建{}缓存成功".format(name))
+    logging.info("重建{}缓存成功".format(name))
 
 
 def update_posts_cache(s=None):
@@ -231,7 +235,7 @@ def delete_all_caches():
     for cache in caches:
         if cache.name != "update":
             cache.delete()
-    print("清除全部缓存成功")
+    logging.info("清除全部缓存成功")
 
 
 def delete_posts_caches():
@@ -239,7 +243,7 @@ def delete_posts_caches():
     for cache in caches:
         if cache.name[:5] == "posts":
             cache.delete()
-    print("清除文章缓存成功")
+    logging.info("清除文章缓存成功")
 
 
 def delete_pages_caches():
@@ -251,7 +255,7 @@ def delete_pages_caches():
             name = ""
         if name == "pages":
             cache.delete()
-    print("清除页面缓存成功")
+    logging.info("清除页面缓存成功")
 
 
 def save_setting(name, content):
@@ -270,7 +274,7 @@ def save_setting(name, content):
     else:
         new_set.content = ""
     new_set.save()
-    print("保存设置{} => {}".format(name, content))
+    logging.info("保存设置{} => {}".format(name, content))
     return new_set
 
 
@@ -290,7 +294,7 @@ def save_custom(name, content):
     else:
         new_set.content = ""
     new_set.save()
-    print("保存自定义字段{} => {}".format(name, content))
+    logging.info("保存自定义字段{} => {}".format(name, content))
     return new_set
 
 
@@ -301,7 +305,7 @@ def get_latest_version():
         if provider["provider"] == "github":
             user = github.Github(provider["params"]["token"])
             latest = user.get_repo("am-abudu/Qexo").get_latest_release()
-            print("获取更新成功: {}".format(latest.tag_name))
+            logging.info("获取更新成功: {}".format(latest.tag_name))
             if latest.tag_name and (latest.tag_name != QEXO_VERSION):
                 context["hasNew"] = True
             else:
@@ -315,7 +319,7 @@ def get_latest_version():
             context["status"] = True
         else:
             latest = requests.get("https://api.github.com/repos/Qexo/Qexo/releases/latest").json()
-            print("获取更新成功: {}".format(latest["tag_name"]))
+            logging.info("获取更新成功: {}".format(latest["tag_name"]))
             if latest["tag_name"] and (latest["tag_name"] != QEXO_VERSION):
                 context["hasNew"] = True
             else:
@@ -328,7 +332,7 @@ def get_latest_version():
             context["newer_text"] = markdown(latest["body"]).replace("\n", "")
             context["status"] = True
     except Exception as e:
-        print("获取更新错误: " + repr(e))
+        logging.error("获取更新错误: " + repr(e))
         context["status"] = False
     return context
 
@@ -338,7 +342,7 @@ def check_if_api_auth(request):
         return True
     if request.GET.get("token") == get_setting("WEBHOOK_APIKEY"):
         return True
-    print(
+    logging.info(
         request.path + ": API鉴权失败 访问IP " + (
             request.META['HTTP_X_FORWARDED_FOR'] if 'HTTP_X_FORWARDED_FOR' in request.META.keys() else request.META['REMOTE_ADDR']))
     return False
@@ -397,9 +401,9 @@ def fix_all(all_settings=ALL_SETTINGS):
             additions.append(setting[0])
             save_setting(setting[0], setting[1])
             counter += 1
-    print("已修复{}个设置".format(counter))
-    print("删除字段" + str(deleted))
-    print("修正字段" + str(additions))
+    logging.info("已修复{}个设置".format(counter))
+    logging.info("删除字段" + str(deleted))
+    logging.info("修正字段" + str(additions))
     return counter
 
 
@@ -468,7 +472,7 @@ def get_update_url(target):
 
 def VercelUpdate(appId, token, sourcePath=""):
     if checkBuilding(appId, token):
-        print("更新失败: 当前有部署正在进行")
+        logging.error("更新失败: 当前有部署正在进行")
         return {"status": False, "msg": "更新失败, 当前有部署正在进行"}
     url = "https://api.vercel.com/v13/deployments"
     header = dict()
@@ -482,31 +486,43 @@ def VercelUpdate(appId, token, sourcePath=""):
         sourcePath = os.path.abspath("")
     data["files"] = getEachFiles(sourcePath)
     response = requests.post(url, data=json.dumps(data), headers=header)
-    print("更新完成: " + response.text)
+    logging.info("更新完成: " + response.text)
+    filelist = os.listdir("/tmp")
+    logging.info("开始删除文件...")
+    for filename in filelist:  # delete all files except tmp
+        try:
+            if os.path.isfile("/tmp/" + filename):
+                os.remove("/tmp/" + filename)
+            elif os.path.isdir("/tmp/" + filename):
+                shutil.rmtree("/tmp/" + filename)
+            else:
+                pass
+        except Exception as e:
+            logging.error("删除失败: " + repr(e))
     return {"status": True, "msg": response.json()}
 
 
 def VercelOnekeyUpdate(url):
-    print("开始更新, 使用Vercel方案")
+    logging.info("开始更新, 使用Vercel方案")
     vercel_config = get_project_detail()
     tmpPath = '/tmp'
     # 从github下载对应tar.gz，并解压
-    # print("download from " + url)
+    # logging.info("download from " + url)
     _tarfile = tmpPath + '/github.tar.gz'
     with open(_tarfile, "wb") as file:
         file.write(requests.get(url).content)
-    print("下载更新完成, 开始解压")
-    # print("ext files")
+    logging.info("下载更新完成, 开始解压")
+    # logging.info("ext files")
     t = tarfile.open(_tarfile)
     t.extractall(path=tmpPath)
     t.close()
     os.remove(_tarfile)
-    print("解压完成, 寻找Index目录")
+    logging.info("解压完成, 寻找Index目录")
     outPath = os.path.abspath(tmpPath + getIndexFile(tmpPath))
-    # print("outPath: " + outPath)
+    # logging.info("outPath: " + outPath)
     if outPath == '':
         return {"status": False, "msg": '更新失败: 未找到Index目录'}
-    print("找到Index目录: " + outPath)
+    logging.info("找到Index目录: " + outPath)
     return VercelUpdate(vercel_config["id"], vercel_config["token"], outPath)
 
 
@@ -537,7 +553,7 @@ def pip_main(args):
 
 
 def LocalOnekeyUpdate(url):
-    print("开始更新, 使用本地方案, 准备临时目录")
+    logging.info("开始更新, 使用本地方案, 准备临时目录")
     Path = os.path.abspath("")
     tmpPath = os.path.abspath("./_tmp")
     if not os.path.exists(tmpPath):
@@ -545,15 +561,15 @@ def LocalOnekeyUpdate(url):
     _tarfile = tmpPath + '/github.tar.gz'
     with open(_tarfile, "wb") as file:
         file.write(requests.get(url).content)
-    print("下载更新完成, 正在解压缩...")
+    logging.info("下载更新完成, 正在解压缩...")
     t = tarfile.open(_tarfile)
     t.extractall(path=tmpPath)
     t.close()
     os.remove(_tarfile)
     outPath = os.path.abspath(tmpPath + getIndexFile(tmpPath))
-    print("找到Index目录: " + outPath)
+    logging.info("找到Index目录: " + outPath)
     filelist = os.listdir(Path)
-    print("开始删除旧文件...")
+    logging.info("开始删除旧文件...")
     for filename in filelist:  # delete all files except tmp
         if filename not in ["_tmp", "configs.py", "db"]:
             if os.path.isfile(filename):
@@ -562,16 +578,16 @@ def LocalOnekeyUpdate(url):
                 shutil.rmtree(filename)
             else:
                 pass
-    print("删除完成, 正在拷贝文件...")
+    logging.info("删除完成, 正在拷贝文件...")
     copy_all_files(outPath, Path)
-    print("删除临时目录")
+    logging.info("删除临时目录")
     shutil.rmtree(tmpPath)
-    print("开始更新库...")
+    logging.info("开始更新库...")
     pip_main(['install', '-r', 'requirements.txt'])
-    print("开始迁移数据库")
+    logging.info("开始迁移数据库")
     execute_from_command_line(['manage.py', 'makemigrations'])
     execute_from_command_line(['manage.py', 'migrate'])
-    print("更新完成，五秒后重启线程")
+    logging.info("更新完成，五秒后重启线程")
     import threading
     t = threading.Thread(target=lambda: rerun(5))
     t.start()
@@ -629,7 +645,7 @@ def notify_me(title, content):
     try:
         return ntfy.text
     except Exception:
-        print("通知类型无输出信息, 使用OK缺省")
+        logging.info("通知类型无输出信息, 使用OK缺省")
         return "OK"
 
 
@@ -639,6 +655,7 @@ def get_domain(domain):
 
 def verify_provider(provider):
     try:
+        logging.info("开始验证Provider: " + provider["provider"])
         provider = get_provider(provider["provider"], **provider["params"])
         home = provider.get_path("")
         hexo = 0
@@ -654,14 +671,19 @@ def verify_provider(provider):
         for file in home["data"]:
             if file["name"] == "index.html" and file["type"] == "file":
                 indexhtml = 1
+                logging.info("检测到错误的index.html")
             if file["name"] == "source" and file["type"] == "dir":
                 source = 1
+                logging.info("检测到source目录")
             if file["name"] == "themes" and file["type"] == "dir":
                 theme_dir = 1
+                logging.info("检测到themes目录")
             if file["name"] == "package.json" and file["type"] == "file":
                 pack = "package.json"
+                logging.info("检测到package.json")
             if file["name"] == "_config.yml" and file["type"] == "file":
                 config_hexo = "_config.yml"
+                logging.info("检测到根目录_config.yml")
         # 读取主题 校验主题配置
         try:
             if config_hexo:
@@ -672,15 +694,17 @@ def verify_provider(provider):
                     for file in home["data"]:
                         if file["name"].lower() == "_config.{}.yml".format(theme) and file["type"] == "file":
                             config_theme = "_config.{}.yml".format(theme)
+                            logging.info("检测到主题配置文件: _config.{}.yml".format(theme))
                             break
                     if (not config_theme) and theme_dir:
                         theme_path = provider.get_path("themes/" + theme)
                         for file in theme_path["data"]:
                             if file["name"].lower() == "_config.yml" and file["type"] == "file":
                                 config_theme = "themes/" + theme + "_config.yml"
+                                logging.info("检测到主题配置文件: themes/" + theme + "_config.yml")
                                 break
         except Exception as e:
-            print("校验配置报错" + repr(e))
+            logging.error("校验配置报错" + repr(e))
         # 校验 Package.json 及 Hexo
         if pack:
             try:
@@ -689,15 +713,17 @@ def verify_provider(provider):
                     if content.get("hexo"):
                         if content["hexo"].get("version"):
                             hexo = content["hexo"].get("version")
+                            logging.info("检测到Hexo版本: " + hexo)
                     if content.get("dependencies"):
                         if content["dependencies"].get("hexo"):
                             hexo = content["dependencies"].get("hexo")
+                            logging.info("检测到Hexo版本: " + hexo)
             except Exception as e:
-                print("校验配置报错" + repr(e))
+                logging.error("校验配置报错" + repr(e))
         # 总结校验
         if hexo and config_hexo and (not indexhtml) and source and theme and pack and config_theme:
             status = 1
-        return {
+        result = {
             "status": status,
             "hexo": hexo,
             "config_theme": config_theme,
@@ -708,8 +734,10 @@ def verify_provider(provider):
             "theme_dir": theme_dir,
             "package": pack,
         }
+        logging.info("Provider校验结果: " + str(result))
+        return result
     except Exception as e:
-        print("校验配置出错: " + repr(e))
+        logging.error("校验配置出错: " + repr(e))
         return {"status": -1}
 
 

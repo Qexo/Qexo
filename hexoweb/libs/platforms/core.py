@@ -1,4 +1,5 @@
 from .exceptions import NoSuchProviderError
+import logging
 
 
 class Provider(object):
@@ -28,10 +29,10 @@ class Provider(object):
     def get_post(self, post):
         try:
             content = self.get_content("source/_drafts/" + post)
-            print("从草稿中获取文章{}成功".format(post))
+            logging.info("从草稿中获取文章{}成功".format(post))
         except:
             content = self.get_content("source/_posts/" + post)
-            print("获取文章{}成功".format(post))
+            logging.info("获取文章{}成功".format(post))
         return content
 
     def get_posts(self, path=""):
@@ -55,7 +56,7 @@ class Provider(object):
                             _drafts.append(file)
                             names.append(file["fullname"])
         except Exception as e:
-            print("读取草稿错误: {}，跳过".format(repr(e)))
+            logging.error("读取草稿错误: {}，跳过".format(repr(e)))
         try:
             posts = self.get_path('source/_posts' + path)["data"]
             for i in range(len(posts)):
@@ -74,9 +75,9 @@ class Provider(object):
                             _posts.append(file)
                             names.append(file["fullname"])
         except Exception as e:
-            print("读取文章出错: {}，跳过".format(repr(e)))
+            logging.error("读取文章出错: {}，跳过".format(repr(e)))
         posts = _posts + _drafts
-        print("读取文章列表成功")
+        logging.info("读取文章列表成功")
         return posts
 
     def get_pages(self):
@@ -89,7 +90,7 @@ class Provider(object):
                         if i["name"] == "index.md" or i["name"] == "index.html":
                             results.append({"name": post["name"], "path": i["path"], "size": i["size"]})
                             break
-        print("读取页面列表成功")
+        logging.info("读取页面列表成功")
         return results
 
     def get_configs(self):
@@ -131,7 +132,7 @@ class Provider(object):
                             results.append({"name": post["name"], "path": post["path"], "size": post["size"]})
                     except:
                         pass
-        print("读取博客配置列表成功")
+        logging.info("读取博客配置列表成功")
         return results
 
 

@@ -44,7 +44,7 @@ def save_post(request):
             Provider().save("source/_posts/" + file_name, content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
-            print(repr(error))
+            logging.error(repr(error))
             context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -63,7 +63,7 @@ def save_draft(request):
             Provider().save("source/_drafts/" + file_name, content)
             context = {"msg": "OK!", "status": True}
         except Exception as error:
-            print(repr(error))
+            logging.error(repr(error))
             context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -115,7 +115,7 @@ def create_webhook_config(request):
             Provider().create_hook(config)
             context = {"msg": "设置成功！", "status": True}
         except Exception as error:
-            print(repr(error))
+            logging.error(repr(error))
             context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -200,7 +200,7 @@ def auto_fix(request):
         msg = "尝试自动修复了 {} 个字段，请在稍后检查和修改配置".format(counter)
         context = {"msg": msg, "status": True}
     except Exception as e:
-        print(repr(e))
+        logging.error(repr(e))
         context = {"msg": repr(e), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -219,7 +219,7 @@ def friends(request):
         data.sort(key=lambda x: x["time"])
         context = {"data": data, "status": True}
     except Exception as e:
-        print(repr(e))
+        logging.error(repr(e))
         context = {"msg": repr(e), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -240,7 +240,7 @@ def add_friend(request):
         friend.save()
         context = {"msg": "添加成功！", "time": friend.time, "status": True}
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -260,7 +260,7 @@ def edit_friend(request):
         friend.save()
         context = {"msg": "修改成功！", "status": True}
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -275,7 +275,7 @@ def del_friend(request):
         friend.delete()
         context = {"msg": "删除成功！", "status": True}
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -321,7 +321,7 @@ def ask_friend(request):
                                                                                escapeString(friend.description)), time())
         context = {"msg": "申请成功！", "time": friend.time, "status": True}
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -339,13 +339,14 @@ def get_custom(request):
         for key in body.keys():
             if len(body[key]) == 1:
                 body[key] = body[key][0]
+        locals().update(body)
         old_stdout = sys.stdout
         output = sys.stdout = StringIO()
         try:
             print(eval(func_str))
         except Exception:
             try:
-                exec(func_str, body)
+                exec(func_str)
             except Exception:
                 print(func_str)
         sys.stdout = old_stdout
@@ -354,7 +355,7 @@ def get_custom(request):
             "status": True
         }
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -368,7 +369,7 @@ def set_custom(request):
         save_custom(request.POST.get("name"), request.POST.get("content"))
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
-        print(repr(e))
+        logging.error(repr(e))
         context = {"msg": repr(e), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -382,7 +383,7 @@ def del_custom(request):
         CustomModel.objects.filter(name=request.POST.get("name")).delete()
         context = {"msg": "删除成功!", "status": True}
     except Exception as e:
-        print(repr(e))
+        logging.error(repr(e))
         context = {"msg": repr(e), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -396,7 +397,7 @@ def new_custom(request):
         save_custom(request.POST.get("name"), request.POST.get("content"))
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
-        print(repr(e))
+        logging.error(repr(e))
         context = {"msg": repr(e), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -409,7 +410,7 @@ def get_notifications(request):
     try:
         context = {"data": GetNotifications(), "status": True}
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -427,7 +428,7 @@ def status(request):
         last = get_setting("LAST_LOGIN")
         context = {"data": {"posts": str(posts_count), "last": last}, "status": True}
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -444,7 +445,7 @@ def statistic(request):
                 allow = True
                 break
         if not (allow and (t and get_setting("STATISTIC_ALLOW") == "是")):
-            print("域名未验证: " + url)
+            logging.error("域名未验证: " + url)
             return HttpResponseForbidden()
         if url[:7] == "http://":
             url = url[7:]
@@ -475,7 +476,7 @@ def statistic(request):
             site_pv.url = domain
             site_pv.number = 1
             site_pv.save()
-        print("登记页面PV: {} => {}".format(url, pv.number))
+        logging.info("登记页面PV: {} => {}".format(url, pv.number))
         ip = request.META['HTTP_X_FORWARDED_FOR'] if 'HTTP_X_FORWARDED_FOR' in request.META.keys() else request.META[
             'REMOTE_ADDR']
         uv = StatisticUV.objects.filter(ip=ip)
@@ -486,11 +487,11 @@ def statistic(request):
         uv = StatisticUV()
         uv.ip = ip
         uv.save()
-        print("登记用户UV: " + ip)
+        logging.info("登记用户UV: " + ip)
         return JsonResponse(safe=False, data={"site_pv": site_pv.number, "page_pv": pv.number, "site_uv": StatisticUV.objects.all().count(),
                                               "status": True})
     except Exception as e:
-        print(repr(e))
+        logging.error(repr(e))
         return JsonResponse(safe=False, data={"status": False, "error": repr(e)})
 
 
@@ -510,7 +511,7 @@ def waline(request):
                                                                                    comment["url"], comment["status"], comment["ua"])
             CreateNotification("Waline评论通知", msg, time())
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -527,7 +528,7 @@ def notifications(request):
         CreateNotification(title, content, time())
         return JsonResponse(safe=False, data={"msg": "添加成功！", "status": True})
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
         return JsonResponse(safe=False, data=context)
 
@@ -560,7 +561,7 @@ def get_talks(request):
                           "liked": True if ip in t else False, "values": values})
         context = {"msg": "获取成功！", "status": True, "count": count, "data": talks}
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -578,16 +579,16 @@ def like_talk(request):
             t.remove(ip)
             talk.like = json.dumps(t)
             talk.save()
-            print(ip + "取消点赞: " + talk_id)
+            logging.info(ip + "取消点赞: " + talk_id)
             context = {"msg": "取消成功！", "action": False, "status": True}
         else:
             t.append(ip)
             talk.like = json.dumps(t)
             talk.save()
-            print(ip + "成功点赞: " + talk_id)
+            logging.info(ip + "成功点赞: " + talk_id)
             context = {"msg": "点赞成功！", "action": True, "status": True}
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -616,7 +617,7 @@ def save_talk(request):
             talk.save()
             context["id"] = talk.id.hex
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -630,6 +631,6 @@ def del_talk(request):
         TalkModel.objects.get(id=uuid.UUID(hex=request.POST.get("id"))).delete()
         context = {"msg": "删除成功！", "status": True}
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)

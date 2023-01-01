@@ -1,6 +1,6 @@
 import gitlab
 from ..core import Provider
-
+import logging
 
 class Gitlab(Provider):
     name = "gitlab"
@@ -20,7 +20,7 @@ class Gitlab(Provider):
               'path': {"description": "Hexo 路径", "placeholder": "留空为根目录"}}
 
     def get_content(self, file):  # 获取文件内容UTF8
-        print("获取文件{}".format(file))
+        logging.info("获取文件{}".format(file))
         content = self.repo.files.get(self.path + file, ref=self.branch).decode().decode("utf8")
         return content
 
@@ -48,7 +48,7 @@ class Gitlab(Provider):
                     "path": file["path"],
                     "type": "dir"
                 })
-        print("获取路径{}成功".format(path))
+        logging.info("获取路径{}成功".format(path))
         return {"path": path, "data": results}
 
     def save(self, file, content, commitchange="Update by Qexo"):
@@ -57,22 +57,22 @@ class Gitlab(Provider):
                           'branch': self.branch,
                           'content': content,
                           'commit_message': commitchange})
-            print("新建文件{}成功".format(file))
+            logging.info("新建文件{}成功".format(file))
         except:
             f = self.repo.files.get(file_path=self.path + file, ref=self.branch)
             f.content = content
             f.save(branch=self.branch, commit_message=commitchange)
-            print("保存文件{}成功".format(file))
+            logging.info("保存文件{}成功".format(file))
         return False
 
     def delete(self, path, commitchange="Delete by Qexo"):
         try:
             file = self.repo.files.get(file_path=self.path + path, ref=self.branch)
             file.delete(commit_message=commitchange, branch=self.branch)
-            print("删除文件{}成功".format(path))
+            logging.info("删除文件{}成功".format(path))
         except:
             tree = self.get_path(self.path + path)
             for i in tree["data"]:
                 self.delete(i["path"][len(self.path):], commitchange=commitchange)
-            print("删除目录{}成功".format(path))
+            logging.info("删除目录{}成功".format(path))
         return False

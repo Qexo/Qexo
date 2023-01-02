@@ -4,7 +4,6 @@ from django.contrib.auth import logout
 from django import template
 from django.http import HttpResponse
 from django.template import loader
-from hexoweb.libs.elevator import elevator
 from .api import *
 from math import ceil
 
@@ -58,7 +57,6 @@ def update_view(request):
             if setting == "PROVIDER":
                 update_provider()
         delete_all_caches()
-        elevator.elevator(get_setting("UPDATE_FROM"), QEXO_VERSION)
     already = list()
     settings = SettingModel.objects.all()
     for query in settings:

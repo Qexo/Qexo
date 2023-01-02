@@ -991,7 +991,7 @@ print("           _               _ \n" +
 print("当前环境: " + ("Vercel" if check_if_vercel() else "本地"))
 
 UPDATE_FROM = get_setting("UPDATE_FROM")
-if UPDATE_FROM != "false" and UPDATE_FROM:
+if UPDATE_FROM != "false" and UPDATE_FROM != "true" and UPDATE_FROM:
     elevator.elevator(UPDATE_FROM, QEXO_VERSION)
     save_setting("UPDATE_FROM", "false")
     save_setting("JUMP_UPDATE", "true")

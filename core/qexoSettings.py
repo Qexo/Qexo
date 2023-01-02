@@ -1,7 +1,7 @@
 import json
 import random
 
-QEXO_VERSION = "2.4.0"
+QEXO_VERSION = "2.4.1"
 
 DEFAULT_EMOJI = {"微笑": "🙂", "撇嘴": "😦", "色": "😍", "发呆": "😍", "得意": "😎",
                  "流泪": "😭", "害羞": "😊", "闭嘴": "😷", "睡": "😴",
@@ -73,4 +73,6 @@ ALL_SETTINGS = [  # [名称, 默认值, 是否在尝试修复时重置, 简介]
     ["EXCERPT_LENGTH", "200", False, "自动截取文章的长度"],
     ["ALL_CDN", json.dumps(DEFAULT_CDN), True, "CDN列表"],
     ["ALL_UPDATES", json.dumps(DEFAULT_UPDATES), True, "更新源列表"],
+    ["UPDATE_FROM", "false", False, "是否更新过"],
+    ["JUMP_UPDATE", "false", False, "是否转跳到更新界面"],
 ]

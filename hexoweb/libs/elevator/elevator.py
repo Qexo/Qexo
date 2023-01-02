@@ -3,7 +3,8 @@ import logging
 
 def parse_version(version):
     return tuple(
-        map(int, (version.split(".") if len(version.split(".")) == 3 else version.split(".") + ["0"]))) if version != "false" else None
+        map(int, (version.split(".") if len(version.split(".")) == 3 else version.split(".") + ["0"]))) if len(
+        version.split(".")) == 3 else None
 
 
 def elevator(from_version, to_version):

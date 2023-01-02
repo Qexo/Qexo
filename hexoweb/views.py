@@ -4,7 +4,6 @@ from django.contrib.auth import logout
 from django import template
 from django.http import HttpResponse
 from django.template import loader
-from hexoweb.libs.elevator import elevator
 from .api import *
 from math import ceil
 
@@ -58,7 +57,6 @@ def update_view(request):
             if setting == "PROVIDER":
                 update_provider()
         delete_all_caches()
-        elevator.elevator(get_setting("UPDATE_FROM"), QEXO_VERSION)
     already = list()
     settings = SettingModel.objects.all()
     for query in settings:
@@ -89,7 +87,7 @@ def update_view(request):
 
             context["counter"] += 1
     if not context["counter"]:
-        save_setting("UPDATE_FROM", "false")
+        save_setting("JUMP_UPDATE", "false")
         return redirect("/")
     return render(request, "accounts/update.html", context)
 
@@ -335,7 +333,7 @@ def index(request):
         logging.info("未检测到初始化配置, 转跳到初始化页面")
         return redirect("/init/")
     try:
-        if get_setting("UPDATE_FROM") != "false":
+        if get_setting("JUMP_UPDATE") != "false":
             logging.info("检测到更新配置, 转跳至配置更新页面")
             return redirect("/update/")
     except Exception:
@@ -377,7 +375,7 @@ def pages(request):
         logging.info("未检测到初始化配置, 转跳到初始化页面")
         return redirect("/init/")
     try:
-        if get_setting("UPDATE_FROM") != "false":
+        if get_setting("JUMP_UPDATE") != "false":
             logging.info("检测到更新配置, 转跳至配置更新页面")
             return redirect("/update/")
     except Exception:

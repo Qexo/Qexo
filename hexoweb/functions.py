@@ -28,6 +28,7 @@ from hexoweb.libs.platforms import get_provider, all_providers, get_params
 from hexoweb.libs.image import get_image_host
 from hexoweb.libs.image import get_params as get_image_params
 from hexoweb.libs.image import all_providers as all_image_providers
+from hexoweb.libs.elevator import elevator
 import yaml
 import re
 import shutil
@@ -988,3 +989,9 @@ print("           _               _ \n" +
       " /_/    \\_\\____/ \\____|\\____|\\____|")
 
 print("当前环境: " + ("Vercel" if check_if_vercel() else "本地"))
+
+UPDATE_FROM = get_setting("UPDATE_FROM")
+if UPDATE_FROM != "false" and UPDATE_FROM != "true" and UPDATE_FROM:
+    elevator.elevator(UPDATE_FROM, QEXO_VERSION)
+    save_setting("UPDATE_FROM", "false")
+    save_setting("JUMP_UPDATE", "true")

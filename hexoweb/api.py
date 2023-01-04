@@ -22,8 +22,10 @@ def auth(request):
                 captcha = requests.get(
                     "https://recaptcha.net/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
                 if captcha["score"] <= 0.5:
+                    logging.info("reCaptchaV3结果: " + str(captcha))
                     return JsonResponse(safe=False, data={"msg": "人机验证失败！", "status": False})
             else:
+                logging.info("未收到人机验证信息")
                 return JsonResponse(safe=False, data={"msg": "人机验证失败！", "status": False})
         # logging.info(captcha)
         user = authenticate(username=username, password=password)

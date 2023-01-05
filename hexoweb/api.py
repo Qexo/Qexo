@@ -657,11 +657,10 @@ def edit_friend(request):
 def clean_friend(request):
     try:
         counter = 0
-        all_friends = FriendModel.objects.all()
+        all_friends = FriendModel.objects.filter(status=False)
         for friend in all_friends:
-            if not friend.status:
-                friend.delete()
-                counter += 1
+            friend.delete()
+            counter += 1
         context = {"msg": "成功清理了{}条友链".format(counter) if counter else "无隐藏的友链", "status": True}
     except Exception as error:
         logging.error(repr(error))

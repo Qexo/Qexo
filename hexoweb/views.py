@@ -100,6 +100,7 @@ def init_view(request):
     if not step:
         save_setting("INIT", "1")
         step = "1"
+    provider = False
     if request.method == "POST":
         if request.POST.get("step") == "1":
             fix_all()
@@ -147,7 +148,6 @@ def init_view(request):
                 context["password"] = password
                 context["repassword"] = repassword
         if request.POST.get("step") == "3":
-            provider = False
             try:
                 provider = {
                     "provider": request.POST.get("provider"),
@@ -245,7 +245,7 @@ def init_view(request):
         logging.info("已完成初始化, 转跳至首页")
         return redirect("/")
     if int(step) == 3:
-        context["PROVIDER"] = get_setting("PROVIDER")
+        context["PROVIDER"] = get_setting("PROVIDER") if not provider else provider
         # Get Provider Settings
         all_provider = all_providers()
         context["all_providers"] = dict()

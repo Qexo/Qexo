@@ -294,18 +294,22 @@ def ask_friend(request):
             if verify:
                 captcha = requests.get(
                     "https://recaptcha.net/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
+                logging.info("reCaptchaV3结果: " + str(captcha))
                 if captcha["score"] <= 0.5:
-                    return {"msg": "人机验证失败！", "status": False}
+                    return JsonResponse(safe=False, data={"msg": "人机验证失败！", "status": False})
             else:
-                return {"msg": "人机验证失败！", "status": False}
+                logging.info("未收到人机验信息")
+                return JsonResponse(safe=False, data={"msg": "人机验证失败！", "status": False})
         if typ == "v2":
             if verify:
                 captcha = requests.get(
                     "https://recaptcha.net/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
+                logging.info("reCaptchaV2结果: " + str(captcha))
                 if not captcha["success"]:
-                    return {"msg": "人机验证失败！", "status": False}
+                    return JsonResponse(safe=False, data={"msg": "人机验证失败！", "status": False})
             else:
-                return {"msg": "人机验证失败！", "status": False}
+                logging.info("未收到人机验信息")
+                return JsonResponse(safe=False, data={"msg": "人机验证失败！", "status": False})
         # 通过验证
         friend = FriendModel()
         friend.name = request.POST.get("name")
@@ -316,9 +320,9 @@ def ask_friend(request):
         friend.status = False
         friend.save()
         CreateNotification("友链申请 " + friend.name,
-                           "站点名: {}\n链接: {}\n图片: {}\n简介: {}\n".format(escapeString(friend.name), escapeString(friend.url),
-                                                                               escapeString(friend.imageUrl),
-                                                                               escapeString(friend.description)), time())
+                           "站点名: {}<br>链接: {}<br>图片: {}<br>简介: {}<br>".format(escapeString(friend.name), escapeString(friend.url),
+                                                                                       escapeString(friend.imageUrl),
+                                                                                       escapeString(friend.description)), time())
         context = {"msg": "申请成功！", "time": friend.time, "status": True}
     except Exception as error:
         logging.error(repr(error))

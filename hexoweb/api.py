@@ -22,8 +22,10 @@ def auth(request):
                 captcha = requests.get(
                     "https://recaptcha.net/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
                 if captcha["score"] <= 0.5:
+                    logging.info("reCaptchaV3结果: " + str(captcha))
                     return JsonResponse(safe=False, data={"msg": "人机验证失败！", "status": False})
             else:
+                logging.info("未收到人机验证信息")
                 return JsonResponse(safe=False, data={"msg": "人机验证失败！", "status": False})
         # logging.info(captcha)
         user = authenticate(username=username, password=password)
@@ -655,11 +657,10 @@ def edit_friend(request):
 def clean_friend(request):
     try:
         counter = 0
-        all_friends = FriendModel.objects.all()
+        all_friends = FriendModel.objects.filter(status=False)
         for friend in all_friends:
-            if not friend.status:
-                friend.delete()
-                counter += 1
+            friend.delete()
+            counter += 1
         context = {"msg": "成功清理了{}条友链".format(counter) if counter else "无隐藏的友链", "status": True}
     except Exception as error:
         logging.error(repr(error))

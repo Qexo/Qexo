@@ -100,6 +100,7 @@ def init_view(request):
     if not step:
         save_setting("INIT", "1")
         step = "1"
+    provider = False
     if request.method == "POST":
         if request.POST.get("step") == "1":
             fix_all()
@@ -147,15 +148,17 @@ def init_view(request):
                 context["password"] = password
                 context["repassword"] = repassword
         if request.POST.get("step") == "3":
-            provider = False
             try:
                 provider = {
                     "provider": request.POST.get("provider"),
                     "params": dict(request.POST)
                 }
-                del provider["params"]["provider"]
-                del provider["params"]["step"]
-                del provider["params"]["csrfmiddlewaretoken"]
+                if "provider" in provider["params"]:
+                    del provider["params"]["provider"]
+                if "step" in provider["params"]:
+                    del provider["params"]["step"]
+                if "csrfmiddlewaretoken" in provider["params"]:
+                    del provider["params"]["csrfmiddlewaretoken"]
                 for key in provider["params"].keys():
                     provider["params"][key] = provider["params"][key][0]
                 if provider["params"].get("_force") is None:
@@ -244,14 +247,15 @@ def init_view(request):
     elif int(step) >= 6:
         logging.info("已完成初始化, 转跳至首页")
         return redirect("/")
-    if int(step) == 3:
-        context["PROVIDER"] = get_setting("PROVIDER")
-        # Get Provider Settings
-        all_provider = all_providers()
-        context["all_providers"] = dict()
-        for provider in all_provider:
-            params = get_params(provider)
-            context["all_providers"][provider] = params
+    else:
+        if int(step) == 3:
+            context["PROVIDER"] = get_setting("PROVIDER")
+            # Get Provider Settings
+            all_provider = all_providers()
+            context["all_providers"] = dict()
+            for provider in all_provider:
+                params = get_params(provider)
+                context["all_providers"][provider] = params
     context["msg"] = msg
     context["step"] = step
     return render(request, "accounts/init.html", context)

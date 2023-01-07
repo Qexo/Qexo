@@ -101,11 +101,14 @@ def init_view(request):
         save_setting("INIT", "1")
         step = "1"
     provider = False
+    if step == "2" and User.objects.all():
+        step = "3"
+        save_setting("INIT", "3")
     if request.method == "POST":
         if request.POST.get("step") == "1":
             fix_all()
             save_setting("INIT", "2")
-            step = "2"
+            step = "2" if not User.objects.all() else "3"
         if request.POST.get("step") == "2":
             username = request.POST.get("username")
             password = request.POST.get("password")
@@ -141,6 +144,13 @@ def init_view(request):
                     User.objects.create_superuser(username=username, password=password)
                     save_setting("INIT", "3")
                     step = "3"
+                    context["PROVIDER"] = get_setting("PROVIDER")
+                    # Get Provider Settings
+                    all_provider = all_providers()
+                    context["all_providers"] = dict()
+                    for provider in all_provider:
+                        params = get_params(provider)
+                        context["all_providers"][provider] = params
             except Exception as e:
                 logging.error("初始化用户名密码错误:" + repr(e))
                 msg = repr(e)

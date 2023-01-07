@@ -33,7 +33,7 @@ class Gitlab(Provider):
             }
         """
         results = list()
-        contents = self.repo.repository_tree(self.path + path, ref=self.branch)
+        contents = self.repo.repository_tree(self.path + path, ref=self.branch, get_all=True)
         for file in contents:
             if file["type"] == "blob":
                 results.append({

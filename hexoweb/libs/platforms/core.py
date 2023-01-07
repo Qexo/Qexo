@@ -84,7 +84,7 @@ class Provider(object):
         posts = self.get_path('source')["data"]
         results = list()
         for post in posts:
-            if post["type"] == "dir":
+            if post["type"] == "dir" and not post["name"].startswith("_"):
                 for i in self.get_path(post["path"])["data"]:
                     if i["type"] == "file":
                         if i["name"] == "index.md" or i["name"] == "index.html":
@@ -116,7 +116,7 @@ class Provider(object):
                             pass
         except:
             pass
-        # 检索 source 仅最多一层目录
+        # 检索 source 和 source/_data
         sources = self.get_path("source")["data"]
         for source in sources:
             if source["type"] == "file":
@@ -125,7 +125,7 @@ class Provider(object):
                         results.append({"name": source["name"], "path": source["path"], "size": source["size"]})
                 except:
                     pass
-            if source["type"] == "dir":
+            if source["type"] == "dir" and source["name"] == "_data":
                 for post in self.get_path(source["path"])["data"]:
                     try:
                         if post["name"][-4:] in [".yml", "yaml"]:

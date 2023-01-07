@@ -14,3 +14,4 @@ django-cors-headers==3.13.0
 pymongo==3.13.0
 dnspython==2.2.1
 sqlparse==0.2.4
+psycopg2-binary==2.9.5

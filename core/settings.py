@@ -86,8 +86,8 @@ try:
     print("获取本地配置文件成功, 使用本地数据库配置")
     DATABASES = configs.DATABASES
 except:
-    if not os.environ.get("MYSQL_NAME"):  # 使用MONGODB
-        print("使用环境变量中的MONGODB数据库")
+    if os.environ.get("MONGODB_HOST"):  # 使用MONGODB
+        print("使用环境变量中的MongoDB数据库")
         for env in ["MONGODB_HOST", "MONGODB_PORT", "MONGODB_USER", "MONGODB_PASS", "MONGODB_DB"]:
             if env not in os.environ:
                 raise exceptions.InitError(f"\"{env}\"环境变量未设置")
@@ -109,8 +109,23 @@ except:
                 }
             }
         }
+    elif os.environ.get("PG_HOST"):  # 使用 PostgreSQL
+        print("使用环境变量中的PostgreSQL数据库")
+        for env in ["PG_HOST", "PG_PORT", "PG_USER", "PG_PASS", "PG_DB"]:
+            if env not in os.environ:
+                raise exceptions.InitError(f"\"{env}\"环境变量未设置")
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': os.environ["PG_DB"],
+                'USER': os.environ["PG_USER"],
+                'PASSWORD': os.environ["PG_PASS"],
+                'HOST': os.environ["PG_HOST"],
+                'PORT': os.environ["PG_PORT"],
+            }
+        }
     else:  # 使用MYSQL
-        print("使用环境变量中的MYSQL数据库")
+        print("使用环境变量中的MySQL数据库")
         for env in ["MYSQL_NAME", "MYSQL_HOST", "MYSQL_PORT", "MYSQL_USER", "MYSQL_PASSWORD"]:
             if env not in os.environ:
                 raise exceptions.InitError(f"\"{env}\"环境变量未设置")

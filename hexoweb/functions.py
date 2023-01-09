@@ -59,15 +59,14 @@ def update_provider():
 try:
     _Provider = update_provider()
 except Exception:
-    logging.error("Provider初始化失败, 跳过")
-    pass
+    logging.error("Provider获取失败, 跳过")
 
 
 def Provider():
     try:
         return _Provider
     except Exception:
-        logging.error("Provider获取错误, 重新初始化")
+        logging.error("Provider获取错误, 重新获取")
         return update_provider()
 
 

@@ -67,7 +67,7 @@ class Github(Provider):
             logging.info("删除文件{}成功".format(path))
         else:
             for i in file:
-                self.delete(i["path"][len(self.path):], commitchange)
+                self.delete(i.path[len(self.path):], commitchange)
             logging.info("删除目录{}成功".format(path))
         return False
 

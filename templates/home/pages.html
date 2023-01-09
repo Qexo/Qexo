@@ -273,7 +273,7 @@
                     if (res.status) {
                         notyf.success('删除成功！');
                         for (let i = 0; i < posts.length; i++) {
-                            if (posts[i]["fullname"] === file) {
+                            if ("source/" + posts[i]["name"] === file) {
                                posts.splice(i, 1);
                                $("#post-number").html(posts.length);
                                break;

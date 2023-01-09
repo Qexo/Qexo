@@ -14,6 +14,13 @@ body:
       placeholder: v1.5.3
     validations:
       required: true
+  - type: input
+    id: version
+    attributes:
+      label: 数据库
+      description: 您使用的是什么数据库？
+    validations:
+      required: true
   - type: textarea
     id: bug-description
     attributes:

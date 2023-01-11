@@ -806,6 +806,10 @@ def set_sidebar(request):
             save_setting("PAGE_SIDEBAR", request.POST.get("content"))
         elif typ == "post":
             save_setting("POST_SIDEBAR", request.POST.get("content"))
+        elif typ == "talk":
+            save_setting("TALK_SIDEBAR", request.POST.get("content"))
+        else:
+            raise "未知侧边栏"
         context = {"msg": "修改成功！", "status": True}
     except Exception as error:
         logging.error(repr(error))

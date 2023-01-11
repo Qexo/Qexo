@@ -412,6 +412,7 @@ def pages(request):
             context["content"] = repr("")
             context["tags"] = "[]"
             context["values"] = "{}"
+            context["sidebar"] = get_setting("TALK_SIDEBAR")
             if talk_id:
                 Talk = TalkModel.objects.get(id=uuid.UUID(hex=talk_id))
                 context["content"] = repr(Talk.content)

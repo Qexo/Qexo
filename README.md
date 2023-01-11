@@ -75,5 +75,5 @@ Vercel 的无服务器函数用量对于 Qexo 来说是充裕的，但这依然�
 - [OnePush](https://github.com/y1ndan/onepush)
 - [Vercel-Python-WSGI](https://github.com/ardnt/vercel-python-wsgi)
 ## 捐赠
-作为一个开源项目，本项目不会给我带来任何利润。如果您觉得本项目对您有帮助，您的支持是我最大的动力。
+作为一个开源项目，本项目不会给我带来任何直接收益。如果您觉得本项目对您有帮助，您的支持是我最大的动力。
 ![支付宝&微信](https://img.gejiba.com/images/6e89738d71ddada2408deb31efeacddc.png)

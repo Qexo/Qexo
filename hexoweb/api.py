@@ -43,6 +43,9 @@ def auth(request):
 # 设置 Hexo Provider 配置 api/set_hexo
 @login_required(login_url="/login/")
 def set_hexo(request):
+    if not request.user.is_staff:
+        logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+        return JsonResponse(safe=False, data={"msg": "子用户不支持此操作！", "status": False})
     try:
         provider = unicodedata.normalize('NFKC', request.POST.get('provider'))
         verify = verify_provider(json.loads(provider))
@@ -96,6 +99,9 @@ def set_hexo(request):
 # 设置 OnePush api/set_onepush
 @login_required(login_url="/login/")
 def set_onepush(request):
+    if not request.user.is_staff:
+        logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+        return JsonResponse(safe=False, data={"msg": "子用户不支持此操作！", "status": False})
     try:
         onepush = request.POST.get("onepush")
         save_setting("ONEPUSH", onepush)
@@ -109,6 +115,9 @@ def set_onepush(request):
 # 测试 OnePush api/test_onepush
 @login_required(login_url="/login/")
 def test_onepush(request):
+    if not request.user.is_staff:
+        logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+        return JsonResponse(safe=False, data={"msg": "子用户不支持此操作！", "status": False})
     try:
         onepush = json.loads(request.POST.get("onepush"))
         ntfy = notify(onepush["notifier"], **onepush["params"], title="Qexo消息测试",
@@ -127,6 +136,9 @@ def test_onepush(request):
 # 设置API api/setapi
 @login_required(login_url="/login/")
 def set_api(request):
+    if not request.user.is_staff:
+        logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+        return JsonResponse(safe=False, data={"msg": "子用户不支持此操作！", "status": False})
     try:
         apikey = request.POST.get("apikey")
         if apikey:
@@ -148,6 +160,9 @@ def set_api(request):
 # 安全设置 api/et_security
 @login_required(login_url="/login/")
 def set_security(request):
+    if not request.user.is_staff:
+        logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+        return JsonResponse(safe=False, data={"msg": "子用户不支持此操作！", "status": False})
     try:
         save_setting("LOGIN_RECAPTCHA_SERVER_TOKEN", request.POST.get("server-token"))
         save_setting("LOGIN_RECAPTCHA_SITE_TOKEN", request.POST.get("site-token"))
@@ -161,6 +176,9 @@ def set_security(request):
 # 设置图床配置 api/set_image_host
 @login_required(login_url="/login/")
 def set_image_host(request):
+    if not request.user.is_staff:
+        logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+        return JsonResponse(safe=False, data={"msg": "子用户不支持此操作！", "status": False})
     try:
         image_host = request.POST.get("image_host")
         save_setting("IMG_HOST", image_host)
@@ -174,6 +192,9 @@ def set_image_host(request):
 # 设置 Abbrlink 配置 api/set_abbrlink
 @login_required(login_url="/login/")
 def set_abbrlink(request):
+    if not request.user.is_staff:
+        logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+        return JsonResponse(safe=False, data={"msg": "子用户不支持此操作！", "status": False})
     try:
         alg = request.POST.get("alg")
         rep = request.POST.get("rep")
@@ -189,6 +210,9 @@ def set_abbrlink(request):
 # 设置CDN api/set_cdn
 @login_required(login_url="/login/")
 def set_cdn(request):
+    if not request.user.is_staff:
+        logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+        return JsonResponse(safe=False, data={"msg": "子用户不支持此操作！", "status": False})
     try:
         cdnjs = request.POST.get("cdn")
         save_setting("CDNJS", cdnjs)
@@ -202,6 +226,9 @@ def set_cdn(request):
 # 设置自定义配置 api/set_cust
 @login_required(login_url="/login/")
 def set_cust(request):
+    if not request.user.is_staff:
+        logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+        return JsonResponse(safe=False, data={"msg": "子用户不支持此操作！", "status": False})
     try:
         site_name = request.POST.get("name")
         split_word = request.POST.get("split")
@@ -221,6 +248,9 @@ def set_cust(request):
 # 设置用户信息 api/set_user
 @login_required(login_url="/login/")
 def set_user(request):
+    if not request.user.is_staff:
+        logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+        return JsonResponse(safe=False, data={"msg": "子用户不支持此操作！", "status": False})
     try:
         password = request.POST.get("password")
         username = request.POST.get("username")
@@ -252,6 +282,9 @@ def set_user(request):
 # 设置统计配置 api/set_statistic
 @login_required(login_url="/login/")
 def set_statistic(request):
+    if not request.user.is_staff:
+        logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+        return JsonResponse(safe=False, data={"msg": "子用户不支持此操作！", "status": False})
     try:
         domains = request.POST.get("statistic_domains")
         allow = request.POST.get("allow_statistic")
@@ -267,6 +300,9 @@ def set_statistic(request):
 # 设置 CustomModel 的字段 api/set_custom
 @login_required(login_url="/login/")
 def set_custom(request):
+    if not request.user.is_staff:
+        logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+        return JsonResponse(safe=False, data={"msg": "子用户不支持此操作！", "status": False})
     try:
         save_custom(request.POST.get("name"), request.POST.get("content"))
         context = {"msg": "保存成功!", "status": True}
@@ -279,6 +315,9 @@ def set_custom(request):
 # 设置 CustomModel 的字段 api/del_custom
 @login_required(login_url="/login/")
 def del_custom(request):
+    if not request.user.is_staff:
+        logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+        return JsonResponse(safe=False, data={"msg": "子用户不支持此操作！", "status": False})
     try:
         CustomModel.objects.filter(name=request.POST.get("name")).delete()
         context = {"msg": "删除成功!", "status": True}
@@ -291,6 +330,9 @@ def del_custom(request):
 # 新建 CustomModel 的字段 api/new_custom
 @login_required(login_url="/login/")
 def new_custom(request):
+    if not request.user.is_staff:
+        logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+        return JsonResponse(safe=False, data={"msg": "子用户不支持此操作！", "status": False})
     try:
         save_custom(request.POST.get("name"), request.POST.get("content"))
         context = {"msg": "保存成功!", "status": True}
@@ -315,6 +357,9 @@ def set_value(request):
 # 设置 SettingsModel 的字段 api/del_value
 @login_required(login_url="/login/")
 def del_value(request):
+    if not request.user.is_staff:
+        logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+        return JsonResponse(safe=False, data={"msg": "子用户不支持此操作！", "status": False})
     try:
         SettingModel.objects.filter(name=request.POST.get("name")).delete()
         context = {"msg": "删除成功!", "status": True}
@@ -327,6 +372,9 @@ def del_value(request):
 # 新建 SettingsModel 的字段 api/new_value
 @login_required(login_url="/login/")
 def new_value(request):
+    if not request.user.is_staff:
+        logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+        return JsonResponse(safe=False, data={"msg": "子用户不支持此操作！", "status": False})
     try:
         save_setting(request.POST.get("name"), request.POST.get("content"))
         context = {"msg": "保存成功!", "status": True}
@@ -339,6 +387,9 @@ def new_value(request):
 # 自动修复程序 api/fix
 @login_required(login_url="/login/")
 def auto_fix(request):
+    if not request.user.is_staff:
+        logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+        return JsonResponse(safe=False, data={"msg": "子用户不支持此操作！", "status": False})
     try:
         counter = fix_all()
         msg = "尝试自动修复了 {} 个字段，请在稍后检查和修改配置".format(counter)
@@ -352,6 +403,9 @@ def auto_fix(request):
 # 执行更新 api/do_update
 @login_required(login_url="/login/")
 def do_update(request):
+    if not request.user.is_staff:
+        logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+        return JsonResponse(safe=False, data={"msg": "子用户不支持此操作！", "status": False})
     branch = request.POST.get("branch")
     try:
         url = get_update_url(branch)
@@ -382,6 +436,9 @@ def save(request):
     if request.method == "POST":
         file_path = request.POST.get('file')
         content = request.POST.get('content')
+        if (not request.user.is_staff) and file_path[:4] in ["yaml", ".yml"]:
+            logging.info(f"子用户{request.user.username}尝试修改{file_path}被拒绝")
+            return JsonResponse(safe=False, data={"msg": "子用户不支持此操作！", "status": False})
         commitchange = f"Update Post Draft {file_path} by Qexo"
         try:
             if Provider().save(file_path, content, commitchange):
@@ -498,6 +555,9 @@ def delete(request):
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         file_path = request.POST.get('file')
+        if (not request.user.is_staff) and file_path[:4] in ["yaml", ".yml"]:
+            logging.info(f"子用户{request.user.username}尝试删除{file_path}被拒绝")
+            return JsonResponse(safe=False, data={"msg": "子用户不支持此操作！", "status": False})
         commitchange = f"Delete {file_path}"
         try:
             if Provider().delete(file_path, commitchange):
@@ -546,6 +606,9 @@ def purge(request):
 # 自动设置 Webhook 事件 api/create_webhook
 @login_required(login_url="/login/")
 def create_webhook_config(request):
+    if not request.user.is_staff:
+        logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+        return JsonResponse(safe=False, data={"msg": "子用户不支持此操作！", "status": False})
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         try:
@@ -807,6 +870,9 @@ def del_talk(request):
 # 运行云端命令
 @login_required(login_url="/login/")
 def run_online_script(request):
+    if not request.user.is_staff:
+        logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+        return JsonResponse(safe=False, data={"msg": "子用户不支持此操作！", "status": False})
     try:
         path = request.POST.get("path")
         if path:

@@ -44,6 +44,9 @@ def login_view(request):
 
 @login_required(login_url="/login/")
 def update_view(request):
+    if not request.user.is_staff:
+        logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+        return page_403(request, "您没有权限访问此页面")
     try:
         if int(get_setting("INIT")) <= 5:
             logging.info("未完成初始化配置, 转跳到初始化页面")
@@ -279,6 +282,9 @@ def logout_view(request):
 
 @login_required(login_url='/login/')
 def migrate_view(request):
+    if not request.user.is_staff:
+        logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+        return page_403(request, "您没有权限访问此页面")
     try:
         if int(get_setting("INIT")) <= 5:
             return redirect("/init/")
@@ -519,6 +525,9 @@ def pages(request):
             context["page_number"] = ceil(context["post_number"] / 15)
             context["search"] = search
         elif "configs" in load_template:
+            if not request.user.is_staff:
+                logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+                return page_403(request, "您没有权限访问此页面")
             search = request.GET.get("s")
             if search:
                 cache = Cache.objects.filter(name="configs." + search)
@@ -605,6 +614,9 @@ def pages(request):
             context["page_number"] = ceil(context["post_number"] / 15)
             context["search"] = search
         elif 'settings' in load_template:
+            if not request.user.is_staff:
+                logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+                return page_403(request, "您没有权限访问此页面")
             try:
                 context['ABBRLINK_ALG'] = get_setting("ABBRLINK_ALG")
                 context['ABBRLINK_REP'] = get_setting("ABBRLINK_REP")
@@ -656,6 +668,9 @@ def pages(request):
                 logging.error("配置获取错误, 转跳至配置更新页面")
                 return redirect("/update/")
         elif 'advanced' in load_template:
+            if not request.user.is_staff:
+                logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+                return page_403(request, "您没有权限访问此页面")
             try:
                 all_settings = SettingModel.objects.all()
                 context["settings"] = list()
@@ -668,6 +683,9 @@ def pages(request):
                 logging.error("高级设置获取错误: " + repr(e))
                 context["error"] = repr(e)
         elif 'custom' in load_template:
+            if not request.user.is_staff:
+                logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+                return page_403(request, "您没有权限访问此页面")
             try:
                 search = request.GET.get("s")
                 all_values = CustomModel.objects.all()
@@ -684,6 +702,9 @@ def pages(request):
                 logging.error("自定义字段获取错误: " + repr(e))
                 context["error"] = repr(e)
         elif "userscripts" in load_template:
+            if not request.user.is_staff:
+                logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+                return page_403(request, "您没有权限访问此页面")
             try:
                 search = request.GET.get("s")
                 scripts = requests.get("https://raw.githubusercontent.com/Qexo/Scripts/main/index.json").json()

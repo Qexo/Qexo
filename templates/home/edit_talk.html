@@ -390,10 +390,6 @@
         function show_bottom() {
             let html = "";
             let keys = Object.keys(values);
-            if (keys.length === 0) {
-                $("#bottom-container").html("暂无其他参数");
-                return;
-            }
             html = `<div class="form-row">
                         <div class="col-2">
                             <label class="form-control-label">标头</label>
@@ -408,8 +404,14 @@
             }
             for (let i = 0; i < keys.length; i++) {
                 if (sidebar_items.includes(keys[i])) {
-                    continue;
+                    keys.splice(i, 1);
                 }
+            }
+            if (keys.length === 0) {
+                $("#bottom-container").html("暂无其他参数");
+                return;
+            }
+            for (let i = 0; i < keys.length; i++) {
                 html += `<form class="form-row" id="bottom-row-` + i + `">
                                 <div class="col-2">
                                     <input type="text" class="form-control" name="search"
@@ -461,7 +463,6 @@
             }
         }
 
-        show_bottom();
 
         var OrgSidebar = {{ sidebar|safe }};
         var Sidebar = [...OrgSidebar];
@@ -541,7 +542,6 @@
                     i--;
                 }
             }
-            showSidebar();
             let loading = new KZ_Loading('边栏保存中...');
             loading.show();
             $.ajax({
@@ -567,15 +567,20 @@
             })
         }
 
-        function showSidebar() {
+        function showSidebar(first = false) {
             let html = "", content;
-            save_bottom();
+            if (!first) {
+                save_bottom();
+            }
             OrgSidebar = [...Sidebar];
             for (let i = 0; i < OrgSidebar.length; i++) {
+                console.log(values);
+                console.log(OrgSidebar[i]["name"]);
+                console.log(values[OrgSidebar[i]["name"]]);
                 if (values[OrgSidebar[i]["name"]] !== undefined) {
                     content = values[OrgSidebar[i]["name"]];
                 } else content = "";
-                content = content.toString().replaceAll("\"", "&quot;")
+                content = escapeString(content);
                 html += `<div class="form-group">
                         <label class="form-control-label"><i class="` + OrgSidebar[i]["icon"]
                     + `"></i> ` + OrgSidebar[i]["name"] + `</label>
@@ -584,8 +589,7 @@
                                placeholder="` + OrgSidebar[i]["name"] + `"
                                id="sidebar-item-` + OrgSidebar[i]["name"] + `"
                                value="` + content + `"></div>`;
-
-                delete values[OrgSidebar[i]["name"]];
+                //delete values[OrgSidebar[i]["name"]];
             }
             $("#custom-sidebar").html(html);
             show_bottom();
@@ -595,7 +599,7 @@
         function query_delete() {
             $("#deleteModal").modal("show");
         }
-        
+
         function delete_talk() {
             let loading = new KZ_Loading('正在删除中...');
             loading.show();
@@ -620,5 +624,7 @@
             })
         }
 
+        show_bottom();
+        showSidebar(first = true);
     </script>
 {% endblock javascripts %}

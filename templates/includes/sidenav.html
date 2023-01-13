@@ -32,12 +32,14 @@
               <span class="nav-link-text">页面</span>
             </a>
           </li>
+        {% if request.user.is_staff %}
           <li class="nav-item">
             <a class="nav-link {% if 'configs' in segment %} active {% endif %}" href="/configs.html">
               <i class="ni ni-settings-gear-65 text-primary"></i>
               <span class="nav-link-text">配置</span>
             </a>
           </li>
+        {% endif %}
           <li class="nav-item">
             <a class="nav-link {% if 'images' in segment %} active {% endif %}" href="/images.html">
               <i class="ni ni-image text-info"></i>
@@ -56,12 +58,14 @@
               <span class="nav-link-text">说说</span>
             </a>
           </li>
+        {% if request.user.is_staff %}
           <li class="nav-item">
             <a class="nav-link {% if 'custom' in segment %} active {% endif %}" href="/custom.html">
               <i class="ni ni-archive-2 text-primary"></i>
               <span class="nav-link-text">自定</span>
             </a>
           </li>
+        {% endif %}
         </ul>
         <!-- Divider -->
         <hr class="my-3">

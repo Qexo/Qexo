@@ -62,7 +62,7 @@
                 <li class="nav-item d-xl-none">
                     <!-- Sidenav toggler -->
                     <div class="pr-3 sidenav-toggler sidenav-toggler-dark"
-                         data-target="#sidenav-main">
+                         data-target="#sidenav-main" data-action="sidenav-pin">
                         <div class="sidenav-toggler-inner">
                             <i class="sidenav-toggler-line"></i>
                             <i class="sidenav-toggler-line"></i>
@@ -103,11 +103,13 @@
                         </div>
                     </div>
                 </li>
+                {% if request.user.is_staff %}
                 <li class="nav-item">
                     <a class="nav-link" href="/settings.html">
                         <i class="ni ni-settings"></i>
                     </a>
                 </li>
+                {% endif %}
             </ul>
             <ul class="navbar-nav align-items-center  ml-auto ml-md-0 ">
                 <li class="nav-item dropdown">
@@ -125,11 +127,13 @@
                         <div class="dropdown-header noti-title">
                             <h6 class="text-overflow m-0">欢迎</h6>
                         </div>
+                        {% if request.user.is_staff %}
                         <a href="/settings.html" class="dropdown-item">
                             <i class="ni ni-single-02"></i>
                             <span>设置</span>
                         </a>
-                        <a target="_blank" href="https://github.com/Qexo/Qexo/wiki"
+                        {% endif %}
+                        <a target="_blank" href="https://www.oplog.cn/qexo"
                            class="dropdown-item">
                             <i class="ni ni-support-16"></i>
                             <span>支持</span>

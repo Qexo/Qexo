@@ -274,7 +274,7 @@ def save_setting(name, content):
     else:
         new_set.content = ""
     new_set.save()
-    logging.info("保存设置{} => {}".format(name, content))
+    logging.info("保存设置{} => {}".format(name, content if name != "PROVIDER" else "******"))
     return new_set
 
 

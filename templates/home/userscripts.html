@@ -317,7 +317,7 @@
                     loading.destroy();
                     if (res.status) {
                         notyf.success(res.msg);
-                        $("#result-container").html(res.data);
+                        $("#result-container").html(res.data.replaceAll("\n", "<br>"));
                         $("#resultModal").modal("show");
                     } else {
                         notyf.error(res.msg);

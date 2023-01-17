@@ -95,9 +95,6 @@ except:
             'default': {
                 'ENGINE': 'djongo',
                 'ENFORCE_SCHEMA': False,
-                'LOGGING': {
-                    'version': 1,
-                },
                 'NAME': 'django',
                 'CLIENT': {
                     'host': os.environ["MONGODB_HOST"],

@@ -30,7 +30,8 @@ DEFAULT_CDN = [
     {"name": "75CDN", "url": "https://lib.baomitu.com/"},
     {"name": "BootCDN", "url": "https://cdn.bootcdn.net/ajax/libs/"},
     # {"name": "重庆邮电大学", "url": "https://mirrors.cqupt.edu.cn/cdnjs/ajax/libs/"},  # 更新不及时
-    {"name": "南方科技大学", "url": "https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/"}
+    {"name": "南方科技大学", "url": "https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/"},
+    {"name": "渺软公益 CDN", "url": "https://cdnjs.onmicrosoft.cn/ajax/libs/"}
 ]
 
 DEFAULT_UPDATES = [

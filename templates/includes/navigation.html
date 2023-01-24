@@ -23,6 +23,9 @@
             {% elif 'userscripts' in segment %}
                 <form class="navbar-search navbar-search-light form-inline mr-sm-3"
                       id="navbar-search-main" action="/userscripts.html" method="get">
+            {% elif 'advanced' in segment %}
+                <form class="navbar-search navbar-search-light form-inline mr-sm-3"
+                      id="navbar-search-main" action="/advanced.html" method="get">
             {% else %}
                 <form class="navbar-search navbar-search-light form-inline mr-sm-3"
                       id="navbar-search-main" action="/posts.html" method="get">
@@ -47,6 +50,8 @@
                         <input class="form-control" placeholder="搜索说说..." type="text" name="s">
                     {% elif 'userscripts' in segment %}
                         <input class="form-control" placeholder="搜索命令..." type="text" name="s">
+                    {% elif 'advanced' in segment %}
+                        <input class="form-control" placeholder="搜索高级..." type="text" name="s">
                     {% else %}
                         <input class="form-control" placeholder="搜索文章..." type="text" name="s">
                     {% endif %}

@@ -673,7 +673,12 @@ def pages(request):
                 logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
                 return page_403(request, "您没有权限访问此页面")
             try:
-                all_settings = SettingModel.objects.all()
+                search = request.GET.get("s")
+                if search:
+                    all_settings = SettingModel.objects.filter(name__contains=search.upper())
+                    context["search"] = search
+                else:
+                    all_settings = SettingModel.objects.all()
                 context["settings"] = list()
                 for setting in all_settings:
                     context["settings"].append({"name": setting.name, "content": setting.content})

@@ -155,7 +155,7 @@
                      content_show + "</td>";
                 list += "<td><a href=\"javascript:query_edit('" + page_posts[i]["name"] + "', " +
                     "'" + page_posts[i]["content"].replaceAll("\"", "&quot;") + "')\">" +
-                    "<i class=\"fa fa-edit mr-2\"></i></a>" + "<a href=\"javascript:query_delete('" +
+                    "<i class=\"fa fa-edit mr-2\"></i></a>|&nbsp;&nbsp;" + "<a href=\"javascript:query_delete('" +
                     page_posts[i]["name"] + "')\"><i class=\"fa fa-trash-alt " +
                     "mr-2\"></i></a></td></tr>";
             }

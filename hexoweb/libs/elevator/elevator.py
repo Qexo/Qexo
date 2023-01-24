@@ -1,10 +1,11 @@
-import logging
-
+from importlib import import_module
 
 def parse_version(version):
-    return tuple(
-        map(int, (version.split(".") if len(version.split(".")) == 3 else version.split(".") + ["0"]))) if len(
-        version.split(".")) == 3 else None
+    if len(version.split(".")) == 3:
+        return tuple(map(int, version.split(".")))
+    elif len(version.split(".")) == 2:
+        return tuple(map(int, version.split(".") + ["0"]))
+    return None
 
 
 def elevator(from_version, to_version):
@@ -17,8 +18,7 @@ def elevator(from_version, to_version):
             for j in range(from_version[1], to_version[1] + 1):
                 for k in range(from_version[2], to_version[2] + 1):
                     try:
-                        logging.info("Elevator: %s.%s.%s" % (i, j, k))
-                        exec(f"from {i}_{j}_{k} import elevator")
+                        import_module(".updater.%s_%s_%s" % (i, j, k), "hexoweb.libs.elevator")
                     except:
                         pass
-    return
+    return 1

@@ -1,7 +1,7 @@
 import json
 import random
 
-QEXO_VERSION = "2.5.0"
+QEXO_VERSION = "2.5.1"
 
 DEFAULT_EMOJI = {"微笑": "🙂", "撇嘴": "😦", "色": "😍", "发呆": "😍", "得意": "😎",
                  "流泪": "😭", "害羞": "😊", "闭嘴": "😷", "睡": "😴",
@@ -30,7 +30,8 @@ DEFAULT_CDN = [
     {"name": "75CDN", "url": "https://lib.baomitu.com/"},
     {"name": "BootCDN", "url": "https://cdn.bootcdn.net/ajax/libs/"},
     # {"name": "重庆邮电大学", "url": "https://mirrors.cqupt.edu.cn/cdnjs/ajax/libs/"},  # 更新不及时
-    {"name": "南方科技大学", "url": "https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/"}
+    {"name": "南方科技大学", "url": "https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/"},
+    {"name": "渺软公益 CDN", "url": "https://cdnjs.onmicrosoft.cn/ajax/libs/"}
 ]
 
 DEFAULT_UPDATES = [

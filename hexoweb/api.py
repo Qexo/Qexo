@@ -48,42 +48,46 @@ def set_hexo(request):
         return JsonResponse(safe=False, data={"msg": "子用户不支持此操作！", "status": False})
     try:
         provider = unicodedata.normalize('NFKC', request.POST.get('provider'))
-        verify = verify_provider(json.loads(provider))
+        config = json.loads(provider)["params"]["config"]
+        verify = {"status": -1}
         msg = ""
-        if verify["status"] == -1:
-            return JsonResponse(safe=False, data={"msg": "远程连接错误!请检查Token", "status": False})
-        if verify["hexo"]:
-            msg += "检测到Hexo版本: " + verify["hexo"]
-        else:
-            msg += "未检测到Hexo"
-        if verify["indexhtml"]:
-            msg += "\n检测到index.html, 这可能不是正确的仓库"
-        if verify["config_hexo"]:
-            msg += "\n检测到Hexo配置文件"
-        else:
-            msg += "\n未检测到Hexo配置"
-        if verify["theme"]:
-            msg += "\n检测到主题: " + verify["theme"]
-        else:
-            msg += "\n未检测到主题"
-        if verify["config_theme"]:
-            msg += "\n检测到主题配置" + verify["config_theme"]
-        else:
-            msg += "\n未检测到主题配置"
-        if verify["theme_dir"]:
-            msg += "\n检测到主题目录"
-        else:
-            msg += "\n未检测到主题目录"
-        if verify["package"]:
-            msg += "\n检测到package.json"
-        else:
-            msg += "\n未检测到package.json"
-        if verify["source"]:
-            msg += "\n检测到source目录 "
-        else:
-            msg += "\n未检测到source目录"
-        msg = msg.replace("\n", "<br>")
-        if verify["status"]:
+        if config == "Hexo":
+            verify = verify_provider(json.loads(provider))
+            msg = ""
+            if verify["status"] == -1:
+                return JsonResponse(safe=False, data={"msg": "远程连接错误!请检查Token", "status": False})
+            if verify["hexo"]:
+                msg += "检测到Hexo版本: " + verify["hexo"]
+            else:
+                msg += "未检测到Hexo"
+            if verify["indexhtml"]:
+                msg += "\n检测到index.html, 这可能不是正确的仓库"
+            if verify["config_hexo"]:
+                msg += "\n检测到Hexo配置文件"
+            else:
+                msg += "\n未检测到Hexo配置"
+            if verify["theme"]:
+                msg += "\n检测到主题: " + verify["theme"]
+            else:
+                msg += "\n未检测到主题"
+            if verify["config_theme"]:
+                msg += "\n检测到主题配置" + verify["config_theme"]
+            else:
+                msg += "\n未检测到主题配置"
+            if verify["theme_dir"]:
+                msg += "\n检测到主题目录"
+            else:
+                msg += "\n未检测到主题目录"
+            if verify["package"]:
+                msg += "\n检测到package.json"
+            else:
+                msg += "\n未检测到package.json"
+            if verify["source"]:
+                msg += "\n检测到source目录 "
+            else:
+                msg += "\n未检测到source目录"
+            msg = msg.replace("\n", "<br>")
+        if verify["status"] or config != "Hexo":
             save_setting("PROVIDER", provider)
             update_provider()
             delete_all_caches()
@@ -436,7 +440,12 @@ def save(request):
     if request.method == "POST":
         file_path = request.POST.get('file')
         content = request.POST.get('content')
-        if (not request.user.is_staff) and file_path[:4] in ["yaml", ".yml"]:
+        flag = False
+        for i in Provider().config["configs"]["type"]:
+            if file_path.endswith(i):
+                flag = True
+                break
+        if (not request.user.is_staff) and flag:
             logging.info(f"子用户{request.user.username}尝试修改{file_path}被拒绝")
             return JsonResponse(safe=False, data={"msg": "子用户不支持此操作！", "status": False})
         commitchange = f"Update Post Draft {file_path} by Qexo"
@@ -461,14 +470,6 @@ def save_post(request):
         front_matter = json.loads(request.POST.get('front_matter'))
         excerpt = ""
         try:
-            # 删除草稿
-            try:
-                commitchange = f"Delete Post Draft {file_name} by Qexo"
-                Provider().delete("source/_drafts/" + file_name, commitchange)
-            except Exception:
-                pass
-            # 创建/更新文章
-            commitchange = f"Update Post {file_name}"
             if get_setting("EXCERPT_POST") == "是":
                 excerpt = excerpt_post(content, get_setting("EXCERPT_LENGTH"))
                 logging.info(f"截取文章{file_name}摘要: " + excerpt)
@@ -476,7 +477,7 @@ def save_post(request):
             front_matter = "---\n{}---".format(yaml.dump(front_matter, allow_unicode=True))
             if not content.startswith("\n"):
                 front_matter += "\n"
-            if Provider().save("source/_posts/" + file_name, front_matter + content, commitchange):
+            if Provider().save_post(file_name, front_matter + content, status=True):
                 context = {"msg": "保存成功并提交部署！", "status": True}
             else:
                 context = {"msg": "保存成功！", "status": True}
@@ -518,6 +519,36 @@ def save_page(request):
     return JsonResponse(safe=False, data=context)
 
 
+# 保存页面 api/new_page
+@login_required(login_url="/login/")
+def new_page(request):
+    context = dict(msg="Error!", status=False)
+    if request.method == "POST":
+        file_path = request.POST.get('file')
+        content = request.POST.get('content')
+        front_matter = json.loads(request.POST.get('front_matter'))
+        excerpt = ""
+        try:
+            if get_setting("EXCERPT_POST") == "是":
+                excerpt = excerpt_post(content, get_setting("EXCERPT_LENGTH"))
+                logging.info(f"截取页面{file_path}摘要: " + excerpt)
+                front_matter["excerpt"] = excerpt
+            front_matter = "---\n{}---".format(yaml.dump(front_matter, allow_unicode=True))
+            if not content.startswith("\n"):
+                front_matter += "\n"
+            result = Provider().save_page(file_path, front_matter + content)
+            if result[0]:
+                context = {"msg": "保存成功并提交部署！", "status": True, "path": result[1]}
+            else:
+                context = {"msg": "保存成功！", "status": True, "path": result[1]}
+            if excerpt:
+                context["excerpt"] = excerpt
+        except Exception as error:
+            logging.error(repr(error))
+            context = {"msg": repr(error), "status": False}
+    return JsonResponse(safe=False, data=context)
+
+
 # 保存草稿 api/save_draft
 @login_required(login_url="/login/")
 def save_draft(request):
@@ -526,7 +557,6 @@ def save_draft(request):
         file_name = request.POST.get('file')
         content = request.POST.get('content')
         front_matter = json.loads(request.POST.get('front_matter'))
-        commitchange = f"Update Post Draft {file_name}"
         excerpt = ""
         try:
             # 创建/更新草稿
@@ -537,7 +567,7 @@ def save_draft(request):
             front_matter = "---\n{}---\n".format(yaml.dump(front_matter, allow_unicode=True))
             if not content.startswith("\n"):
                 front_matter += "\n"
-            if Provider().save("source/_drafts/" + file_name, front_matter + content, commitchange):
+            if Provider().save_post(file_name, front_matter + content, status=False):
                 context = {"msg": "保存草稿成功并提交部署！", "status": True}
             else:
                 context = {"msg": "保存草稿成功！", "status": True}

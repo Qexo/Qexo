@@ -5,7 +5,8 @@ import logging
 class Gitlab(Provider):
     name = "gitlab"
 
-    def __init__(self, url, token, repo, branch, path):
+    def __init__(self, url, token, repo, branch, path, config):
+        super(Gitlab, self).__init__(config)
         self.url = url
         self.token = token
         self._repo = repo

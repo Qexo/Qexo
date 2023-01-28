@@ -6,7 +6,8 @@ import logging
 class Github(Provider):
     name = "github"
 
-    def __init__(self, token, repo, branch, path):
+    def __init__(self, token, repo, branch, path, config):
+        super(Github, self).__init__(config)
         self.token = token
         self._repo = repo
         self.branch = branch

@@ -165,10 +165,10 @@
                 _status = false;
                 loading.show();
                 $.ajax({
-                    url: '/api/save_page/',
+                    url: '/api/new_page/',
                     method: 'post',
                     data: {
-                        "file": "source/" + $("input[name='filename']").val() + "/index.md",
+                        "file": $("input[name='filename']").val(),
                         "content": vditor.getValue(),
                         "front_matter":
                             JSON.stringify(get_front_matter())
@@ -179,8 +179,8 @@
                         if (res.status) {
                             notyf.success(res.msg + "等待转跳...");
                             file_content = vditor.getValue();
-                            setTimeout(window.location.href = "edit_page.html?file=source/" +
-                                encodeURIComponent($("input[name='filename']").val() + "/index.md"), 1000);
+                            setTimeout(window.location.href = "edit_page.html?file=" +
+                                encodeURIComponent(res.path), 1000);
                         } else {
                             notyf.error(res.msg);
                         }

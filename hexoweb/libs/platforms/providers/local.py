@@ -7,7 +7,8 @@ import logging
 class Local(Provider):
     name = "本地"
 
-    def __init__(self, path, auto=False):
+    def __init__(self, path, config, auto=False):
+        super(Local, self).__init__(config)
         self.path = path
         self.auto = auto
 
@@ -28,21 +29,21 @@ class Local(Provider):
             }
         """
         results = list()
-        path = os.path.join(self.path, path)
-        contents = os.listdir(path)
+        _path = os.path.join(self.path, path)
+        contents = os.listdir(_path)
         for file in contents:
-            filedir = os.path.join(path, file)
+            filedir = os.path.join(_path, file)
             if not os.path.isdir(filedir):
                 results.append({
                     "name": file,
                     "size": os.stat(filedir).st_size,
-                    "path": filedir.replace("\\", "/"),
+                    "path": os.path.join(path, file).replace("\\", "/"),
                     "type": "file"
                 })
             else:
                 results.append({
                     "name": file,
-                    "path": filedir.replace("\\", "/"),
+                    "path": os.path.join(path, file).replace("\\", "/"),
                     "type": "dir"
                 })
         logging.info("获取路径{}成功".format(path))

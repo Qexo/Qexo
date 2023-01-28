@@ -34,15 +34,22 @@ def save_post(request):
     if request.method == "POST":
         file_name = request.POST.get('file')
         content = request.POST.get('content')
+        front_matter = json.loads(request.POST.get('front_matter'))
+        excerpt = ""
         try:
-            # 删除草稿
-            try:
-                Provider().delete("source/_drafts/" + file_name)
-            except Exception:
-                pass
-            # 创建/更新文章
-            Provider().save("source/_posts/" + file_name, content)
-            context = {"msg": "OK!", "status": True}
+            if get_setting("EXCERPT_POST") == "是":
+                excerpt = excerpt_post(content, get_setting("EXCERPT_LENGTH"))
+                logging.info(f"截取文章{file_name}摘要: " + excerpt)
+                front_matter["excerpt"] = excerpt
+            front_matter = "---\n{}---".format(yaml.dump(front_matter, allow_unicode=True))
+            if not content.startswith("\n"):
+                front_matter += "\n"
+            if Provider().save_post(file_name, front_matter + content, status=True):
+                context = {"msg": "保存成功并提交部署！", "status": True}
+            else:
+                context = {"msg": "保存成功！", "status": True}
+            if excerpt:
+                context["excerpt"] = excerpt
         except Exception as error:
             logging.error(repr(error))
             context = {"msg": repr(error), "status": False}
@@ -58,10 +65,23 @@ def save_draft(request):
     if request.method == "POST":
         file_name = request.POST.get('file')
         content = request.POST.get('content')
+        front_matter = json.loads(request.POST.get('front_matter'))
+        excerpt = ""
         try:
             # 创建/更新草稿
-            Provider().save("source/_drafts/" + file_name, content)
-            context = {"msg": "OK!", "status": True}
+            if get_setting("EXCERPT_POST") == "是":
+                excerpt = excerpt_post(content, get_setting("EXCERPT_LENGTH"))
+                logging.info(f"截取文章{file_name}摘要: " + excerpt)
+                front_matter["excerpt"] = excerpt
+            front_matter = "---\n{}---\n".format(yaml.dump(front_matter, allow_unicode=True))
+            if not content.startswith("\n"):
+                front_matter += "\n"
+            if Provider().save_post(file_name, front_matter + content, status=False):
+                context = {"msg": "保存草稿成功并提交部署！", "status": True}
+            else:
+                context = {"msg": "保存草稿成功！", "status": True}
+            if excerpt:
+                context["excerpt"] = excerpt
         except Exception as error:
             logging.error(repr(error))
             context = {"msg": repr(error), "status": False}

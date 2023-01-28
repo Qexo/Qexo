@@ -1,9 +1,14 @@
 from .exceptions import NoSuchProviderError
+from .configs import configs
 import logging
+import os
 
 
 class Provider(object):
     params = None
+
+    def __init__(self, config):
+        self.config = configs[config]
 
     def get_content(self, file):
         ...
@@ -26,114 +31,149 @@ class Provider(object):
     def create_hook(self, config):
         return False
 
-    def get_post(self, post):
-        try:
-            content = self.get_content("source/_drafts/" + post)
-            logging.info("从草稿中获取文章{}成功".format(post))
-        except:
-            content = self.get_content("source/_posts/" + post)
-            logging.info("获取文章{}成功".format(post))
-        return content
+    def get_tree(self, path, depth):  # run if depth >=1
+        if not depth:
+            return []
+        path = path.replace("\\", "/")
+        tree = self.get_path(path)["data"]
+        for i in range(len(tree)):
+            if tree[i]["type"] == "dir":
+                child = self.get_tree(tree[i]["path"], depth - 1)
+                tree += child
+        return tree
 
-    def get_posts(self, path=""):
+    def get_post(self, post):
+        for base in self.config["drafts"]["path"] + self.config["posts"]["path"]:
+            try:
+                content = self.get_content(os.path.join(base, post).replace("\\", "/"))
+                logging.info("获取文章{}成功".format(post))
+                return content
+            except:
+                pass
+        return False
+
+    def get_posts(self):
         _posts = list()
         _drafts = list()
         names = list()
         try:
-            drafts = self.get_path('source/_drafts' + path)["data"]
-            for i in range(len(drafts)):
-                if drafts[i]["type"] == "file" and drafts[i]["name"][-2:] == "md":
-                    _drafts.append({"name": drafts[i]["path"].split("source/_drafts/")[1][0:-3],
-                                    "fullname": drafts[i]["path"].split("source/_drafts/")[1],
-                                    "path": drafts[i]["path"],
-                                    "size": drafts[i]["size"],
-                                    "status": False})
-                    names.append(drafts[i]["path"].split("source/_drafts/")[1])
-                if drafts[i]["type"] == "dir":
-                    dir_content = self.get_posts(path=drafts[i]["path"].split("source/_drafts")[1])
-                    for file in dir_content:
-                        if "source/_drafts" in file["path"]:
-                            _drafts.append(file)
-                            names.append(file["fullname"])
+            for path_index in range(len(self.config["drafts"]["path"])):
+                drafts = self.get_tree(
+                    self.config["drafts"]["path"][path_index], self.config["drafts"]["depth"][path_index])
+                for i in range(len(drafts)):
+                    flag = False
+                    for j in self.config["drafts"]["type"]:
+                        if drafts[i]["path"].endswith(j):
+                            flag = True
+                            break
+                    if drafts[i]["type"] == "file" and flag:
+                        _drafts.append({"name": drafts[i]["path"].split(
+                            self.config["drafts"]["path"][path_index] if self.config["drafts"]["path"][path_index][-1] == "/" else
+                            self.config["drafts"]["path"][path_index] + "/")[1].split(".")[0],
+                                        "fullname": drafts[i]["path"].split(
+                                            self.config["drafts"]["path"][path_index] if self.config["drafts"]["path"][path_index][
+                                                                                             -1] == "/" else self.config["drafts"]["path"][
+                                                                                                                 path_index] + "/")[1],
+                                        "path": drafts[i]["path"],
+                                        "size": drafts[i]["size"],
+                                        "status": False})
+                        names.append(drafts[i]["path"].split(
+                            self.config["drafts"]["path"][path_index])[1])
         except Exception as e:
             logging.error("读取草稿错误: {}，跳过".format(repr(e)))
         try:
-            posts = self.get_path('source/_posts' + path)["data"]
-            for i in range(len(posts)):
-                if posts[i]["type"] == "file" and posts[i]["name"][-2:] == "md":
-                    if posts[i]["path"].split("source/_posts/")[1] not in names:
-                        _posts.append(
-                            {"name": posts[i]["path"].split("source/_posts/")[1][0:-3],
-                             "fullname": posts[i]["path"].split("source/_posts/")[1],
-                             "path": posts[i]["path"],
-                             "size": posts[i]["size"],
-                             "status": True})
-                if posts[i]["type"] == "dir":
-                    dir_content = self.get_posts(path=posts[i]["path"].split("source/_posts")[1])
-                    for file in dir_content:
-                        if ("source/_posts" in file["path"]) and (file["fullname"] not in names):
-                            _posts.append(file)
-                            names.append(file["fullname"])
+            for path_index in range(len(self.config["posts"]["path"])):
+                posts = self.get_tree(
+                    self.config["posts"]["path"][path_index], self.config["posts"]["depth"][path_index])
+                for i in range(len(posts)):
+                    flag = False
+                    for j in self.config["posts"]["type"]:
+                        if posts[i]["path"].endswith(j):
+                            flag = True
+                            break
+                    if posts[i]["type"] == "file" and flag:
+                        _posts.append({"name": posts[i]["path"].split(
+                            self.config["posts"]["path"][path_index] if self.config["posts"]["path"][path_index][-1] == "/" else
+                            self.config["posts"]["path"][path_index] + "/")[1].split(".")[0],
+                                       "fullname": posts[i]["path"].split(
+                                           self.config["posts"]["path"][path_index] if self.config["posts"]["path"][path_index][
+                                                                                           -1] == "/" else self.config["posts"]["path"][
+                                                                                                               path_index] + "/")[1],
+                                       "path": posts[i]["path"],
+                                       "size": posts[i]["size"],
+                                       "status": True})
+                        names.append(posts[i]["path"].split(
+                            self.config["posts"]["path"][path_index])[1])
         except Exception as e:
-            logging.error("读取文章出错: {}，跳过".format(repr(e)))
+            logging.error("读取已发布错误: {}，跳过".format(repr(e)))
         posts = _posts + _drafts
         logging.info("读取文章列表成功")
         return posts
 
     def get_pages(self):
-        posts = self.get_path('source')["data"]
         results = list()
-        for post in posts:
-            if post["type"] == "dir" and not post["name"].startswith("_"):
-                for i in self.get_path(post["path"])["data"]:
-                    if i["type"] == "file":
-                        if i["name"] == "index.md" or i["name"] == "index.html":
-                            results.append({"name": post["name"], "path": i["path"], "size": i["size"]})
+        for path_index in range(len(self.config["pages"]["path"])):
+            try:
+                posts = self.get_tree(
+                    self.config["pages"]["path"][path_index], self.config["pages"]["depth"][path_index])
+                for post in posts:
+                    flag = False
+                    for i in self.config["pages"]["type"]:
+                        if post["path"].endswith(i):
+                            flag = i
                             break
+                    if post["type"] == "file" and flag:
+                        results.append({"name": post["path"][len(self.config["pages"]["path"][path_index]) + (
+                            0 if self.config["pages"]["path"][path_index].endswith("/") else 1):-len(flag) - 1],
+                                        "path": post["path"],
+                                        "size": post["size"]})
+            except Exception as e:
+                logging.error("读取页面 {} 错误: {}，跳过".format(self.config["pages"]["path"][path_index], repr(e)))
         logging.info("读取页面列表成功")
         return results
 
     def get_configs(self):
         results = list()
-        posts = self.get_path("")["data"]
-        for post in posts:
+        for path_index in range(len(self.config["configs"]["path"])):
             try:
-                if post["name"][-4:] in [".yml", "yaml"]:
-                    results.append({"name": post["name"], "path": post["path"], "size": post["size"]})
-            except:
-                pass
-        # 检索 themes 仅下一级目录下的文件
-        try:
-            themes = self.get_path("themes")["data"]
-            for theme in themes:
-                if theme["type"] == "dir":
-                    for post in self.get_path(theme["path"])["data"]:
-                        try:
-                            if post["name"][-4:] in [".yml", "yaml"]:
-                                results.append(
-                                    {"name": post["name"], "path": post["path"], "size": post["size"]})
-                        except:
-                            pass
-        except:
-            pass
-        # 检索 source 和 source/_data
-        sources = self.get_path("source")["data"]
-        for source in sources:
-            if source["type"] == "file":
-                try:
-                    if source["name"][-4:] in [".yml", "yaml"]:
-                        results.append({"name": source["name"], "path": source["path"], "size": source["size"]})
-                except:
-                    pass
-            if source["type"] == "dir" and source["name"] == "_data":
-                for post in self.get_path(source["path"])["data"]:
-                    try:
-                        if post["name"][-4:] in [".yml", "yaml"]:
-                            results.append({"name": post["name"], "path": post["path"], "size": post["size"]})
-                    except:
-                        pass
+                posts = self.get_tree(
+                    self.config["configs"]["path"][path_index], self.config["configs"]["depth"][path_index])
+                for post in posts:
+                    flag = False
+                    for i in self.config["configs"]["type"]:
+                        if post["path"].endswith(i):
+                            flag = True
+                            break
+                    if post["type"] == "file" and flag:
+                        results.append({"name": post["path"][len(self.config["configs"]["path"][path_index]) + (
+                            0 if self.config["configs"]["path"][path_index].endswith("/") else 1):],
+                                        "path": post["path"],
+                                        "size": post["size"]})
+            except Exception as e:
+                logging.error("读取页面 {} 错误: {}，跳过".format(self.config["configs"]["path"][path_index], repr(e)))
         logging.info("读取博客配置列表成功")
         return results
+
+    def get_scaffold(self, scaffold_type):
+        return self.get_content(self.config[scaffold_type]["scaffold"])
+
+    def save_post(self, name, content, status=False):  # status: True -> posts, False -> drafts
+        if status:
+            draft_file = self.config["drafts"]["save_path"].replace("${filename}", name)
+            save_file = self.config["posts"]["save_path"].replace("${filename}", name)
+            try:
+                self.delete(draft_file, f"Delete Post Draft {draft_file} by Qexo")
+            except:
+                logging.info(f"删除草稿{draft_file}失败, 可能无需删除草稿")
+            return self.save(save_file, content, f"Publish Post {save_file} by Qexo")
+        else:
+            draft_file = self.config["drafts"]["save_path"].replace("${filename}", name)
+            return self.save(self.config["drafts"]["save_path"].replace("${filename}", name), content,
+                             f"Save Post Draft {draft_file} by Qexo")
+
+    def save_page(self, name, content):
+        path = self.config["pages"]["save_path"].replace("${filename}", name)
+        return [self.save(path, content, f"Update Page {name}"), path]
 
 
 from .providers import _all_providers

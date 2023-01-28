@@ -241,7 +241,7 @@
                         </form>
                         <form id="hexo-settings" onsubmit="return false;">
                             <hr class="my-4"/>
-                            <h6 class="heading-small text-muted mb-4">Hexo配置</h6>
+                            <h6 class="heading-small text-muted mb-4">博客配置</h6>
                             <div class="pl-lg-4">
                                 {% csrf_token %}
                                 <div class="row">
@@ -252,6 +252,18 @@
                                                     class="form-control"
                                                     onchange="change_provider(this.value)">
                                             </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">使用配置</label>
+                                            <select name="config" id="config-container"
+                                                    class="form-control">
+                                                {% for config in ALL_PLATFORM_CONFIGS %}
+                                                <option value="{{ config }}">{{ config }}</option>
+                                                {% endfor %}
+                                            </select>
+
                                         </div>
                                     </div>
                                 </div>

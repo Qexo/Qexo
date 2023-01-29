@@ -452,9 +452,9 @@ def pages(request):
         elif "edit" in load_template:
             file_path = request.GET.get("file")
             context["front_matter"], context["file_content"] = get_post_details(
-                (get_post(file_path)))
+                (Provider().get_content(file_path)))
             context["front_matter"] = json.dumps(context["front_matter"])
-            context['filename'] = file_path.split("/")[-1]
+            context['filename'] = request.GET.get("postname")
             context['fullname'] = file_path
             context["emoji"] = get_setting("VDITOR_EMOJI")
             context["sidebar"] = get_setting("POST_SIDEBAR")

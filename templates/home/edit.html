@@ -164,8 +164,8 @@
                 url: '/api/save_post/',
                 method: 'post',
                 data: {
-                    "file": "{{ fullname }}", "content": vditor.getValue(), "front_matter":
-                        JSON.stringify(get_front_matter())
+                    "file": "{{ filename }}", "content": vditor.getValue(), "front_matter":
+                        JSON.stringify(get_front_matter()), "path": "{{ file }}"
                 },
                 dataType: 'JSON',
                 success: function (res) {
@@ -204,8 +204,8 @@
                 url: '/api/save_draft/',
                 method: 'post',
                 data: {
-                    "file": "{{ fullname }}", "content": vditor.getValue(), "front_matter":
-                        JSON.stringify(get_front_matter())
+                    "file": "{{ filename }}", "content": vditor.getValue(), "front_matter":
+                        JSON.stringify(get_front_matter()), "path": "{{ file }}"
                 },
                 dataType: 'JSON',
                 success: function (res) {

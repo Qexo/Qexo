@@ -42,16 +42,6 @@ class Provider(object):
                 tree += child
         return tree
 
-    def get_post(self, post):
-        for base in self.config["drafts"]["path"] + self.config["posts"]["path"]:
-            try:
-                content = self.get_content(os.path.join(base, post).replace("\\", "/"))
-                logging.info("获取文章{}成功".format(post))
-                return content
-            except:
-                pass
-        return False
-
     def get_posts(self):
         _posts = list()
         _drafts = list()
@@ -64,12 +54,14 @@ class Provider(object):
                     flag = False
                     for j in self.config["drafts"]["type"]:
                         if drafts[i]["path"].endswith(j):
-                            flag = True
+                            flag = j
                             break
                     if drafts[i]["type"] == "file" and flag:
-                        _drafts.append({"name": drafts[i]["path"].split(
+                        name = drafts[i]["path"].split(
                             self.config["drafts"]["path"][path_index] if self.config["drafts"]["path"][path_index][-1] == "/" else
-                            self.config["drafts"]["path"][path_index] + "/")[1].split(".")[0],
+                            self.config["drafts"]["path"][path_index] + "/")[1]
+                        name = name[:-len(flag) - (1 if name[-1] == "/" else 0)]
+                        _drafts.append({"name": name,
                                         "fullname": drafts[i]["path"].split(
                                             self.config["drafts"]["path"][path_index] if self.config["drafts"]["path"][path_index][
                                                                                              -1] == "/" else self.config["drafts"]["path"][
@@ -77,6 +69,7 @@ class Provider(object):
                                         "path": drafts[i]["path"],
                                         "size": drafts[i]["size"],
                                         "status": False})
+
                         names.append(drafts[i]["path"].split(
                             self.config["drafts"]["path"][path_index])[1])
         except Exception as e:
@@ -89,12 +82,14 @@ class Provider(object):
                     flag = False
                     for j in self.config["posts"]["type"]:
                         if posts[i]["path"].endswith(j):
-                            flag = True
+                            flag = j
                             break
                     if posts[i]["type"] == "file" and flag:
-                        _posts.append({"name": posts[i]["path"].split(
+                        name = posts[i]["path"].split(
                             self.config["posts"]["path"][path_index] if self.config["posts"]["path"][path_index][-1] == "/" else
-                            self.config["posts"]["path"][path_index] + "/")[1].split(".")[0],
+                            self.config["posts"]["path"][path_index] + "/")[1]
+                        name = name[:-len(flag) - (1 if name[-1] == "/" else 0)]
+                        _posts.append({"name": name,
                                        "fullname": posts[i]["path"].split(
                                            self.config["posts"]["path"][path_index] if self.config["posts"]["path"][path_index][
                                                                                            -1] == "/" else self.config["posts"]["path"][
@@ -157,19 +152,22 @@ class Provider(object):
     def get_scaffold(self, scaffold_type):
         return self.get_content(self.config[scaffold_type]["scaffold"])
 
-    def save_post(self, name, content, status=False):  # status: True -> posts, False -> drafts
+    def save_post(self, name, content, path=None, status=False):
+        # status: True -> posts, False -> drafts
+        # path 若无则保存至默认路径
+        draft_file = self.config["drafts"]["save_path"].replace("${filename}", name)
+        save_file = self.config["posts"]["save_path"].replace("${filename}", name)
+        if path and (path not in [draft_file, save_file]):
+            return [self.save(path, content, f"Save Post {name} by Qexo"), path]
         if status:
-            draft_file = self.config["drafts"]["save_path"].replace("${filename}", name)
-            save_file = self.config["posts"]["save_path"].replace("${filename}", name)
             try:
                 self.delete(draft_file, f"Delete Post Draft {draft_file} by Qexo")
             except:
                 logging.info(f"删除草稿{draft_file}失败, 可能无需删除草稿")
-            return self.save(save_file, content, f"Publish Post {save_file} by Qexo")
+            return [self.save(save_file, content, f"Publish Post {save_file} by Qexo"), save_file]
         else:
-            draft_file = self.config["drafts"]["save_path"].replace("${filename}", name)
-            return self.save(self.config["drafts"]["save_path"].replace("${filename}", name), content,
-                             f"Save Post Draft {draft_file} by Qexo")
+            return [self.save(self.config["drafts"]["save_path"].replace("${filename}", name), content,
+                              f"Save Post Draft {draft_file} by Qexo"), draft_file]
 
     def save_page(self, name, content):
         path = self.config["pages"]["save_path"].replace("${filename}", name)

@@ -477,10 +477,11 @@ def save_post(request):
             front_matter = "---\n{}---".format(yaml.dump(front_matter, allow_unicode=True))
             if not content.startswith("\n"):
                 front_matter += "\n"
-            if Provider().save_post(file_name, front_matter + content, status=True):
-                context = {"msg": "保存成功并提交部署！", "status": True}
+            result = Provider().save_post(file_name, front_matter + content, path=request.POST.get("path"), status=True)
+            if result[0]:
+                context = {"msg": "保存成功并提交部署！", "status": True, "path": result[1]}
             else:
-                context = {"msg": "保存成功！", "status": True}
+                context = {"msg": "保存成功！", "status": True, "path": result[1]}
             if excerpt:
                 context["excerpt"] = excerpt
         except Exception as error:
@@ -567,10 +568,11 @@ def save_draft(request):
             front_matter = "---\n{}---\n".format(yaml.dump(front_matter, allow_unicode=True))
             if not content.startswith("\n"):
                 front_matter += "\n"
-            if Provider().save_post(file_name, front_matter + content, status=False):
-                context = {"msg": "保存草稿成功并提交部署！", "status": True}
+            result = Provider().save_post(file_name, front_matter + content, path=request.POST.get("path"), status=False)
+            if result[0]:
+                context = {"msg": "保存草稿成功并提交部署！", "status": True, "path": result[1]}
             else:
-                context = {"msg": "保存草稿成功！", "status": True}
+                context = {"msg": "保存草稿成功！", "status": True, "path": result[1]}
             if excerpt:
                 context["excerpt"] = excerpt
         except Exception as error:

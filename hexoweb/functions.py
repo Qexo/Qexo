@@ -97,10 +97,6 @@ def get_cdnjs():
     return cdnjs
 
 
-def get_post(post):
-    return Provider().get_post(post)
-
-
 # 获取用户自定义的样式配置
 def get_custom_config():
     context = {"cdn_prev": get_cdn(), "cdnjs": get_cdnjs(), "QEXO_NAME": get_setting("QEXO_NAME")}

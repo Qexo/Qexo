@@ -11,7 +11,7 @@
                     <div class="col-lg-6 col-7">
                         <h6 class="h2 text-white d-inline-block mb-0">新建文章:&nbsp;&nbsp;</h6>
                         <input type="text" name="filename" class="form-control col-lg-5
-                        d-inline-block rounded-pill" placeholder="文章名称"><a class="text-white">&nbsp;.md</a>
+                        d-inline-block rounded-pill" placeholder="文章名称">
                         <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
                             <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                                 <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i></a>
@@ -173,7 +173,7 @@
                     url: '/api/save_post/',
                     method: 'post',
                     data: {
-                        "file": $("input[name='filename']").val() + ".md",
+                        "file": $("input[name='filename']").val(),
                         "content": vditor.getValue(),
                         "front_matter": JSON.stringify(get_front_matter())
                     },
@@ -183,8 +183,9 @@
                         if (res.status) {
                             notyf.success(res.msg + '等待转跳...');
                             file_content = vditor.getValue();
-                            setTimeout(window.location.href = "edit.html?file=" +
-                                encodeURIComponent($("input[name='filename']").val() + ".md"), 1000);
+                            setTimeout(window.location.href = "edit.html?file=" + res.path
+                                + "&postname=" +
+                                encodeURIComponent($("input[name='filename']").val()), 1000);
                         } else {
                             notyf.error(res.msg);
                         }
@@ -213,7 +214,7 @@
                     url: '/api/save_draft/',
                     method: 'post',
                     data: {
-                        "file": $("input[name='filename']").val() + ".md",
+                        "file": $("input[name='filename']").val(),
                         "content": vditor.getValue(),
                         "front_matter": JSON.stringify(get_front_matter())
                     },
@@ -223,7 +224,9 @@
                         if (res.status) {
                             notyf.success('草稿保存成功！等待转跳...');
                             file_content = vditor.getValue();
-                            setTimeout(window.location.href = "edit.html?file=" + encodeURIComponent($("input[name='filename']").val() + ".md"), 1000);
+                            setTimeout(window.location.href = "edit.html?file=" + res.path
+                                + "&postname=" +
+                                encodeURIComponent($("input[name='filename']").val()), 1000);
                         } else {
                             notyf.error(res.msg);
                         }

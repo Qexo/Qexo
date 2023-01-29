@@ -742,17 +742,15 @@ def get_post_details(article, safe=True):
     try:
         if not (article.startswith("---") or article.startswith(";;;")):
             article = ";;;\n" + article if ";;;" in article else "---\n" + article
+        abbrlink = get_crc_by_time(str(time()), get_setting("ABBRLINK_ALG"), get_setting("ABBRLINK_REP"))
+        dateformat = strftime("%Y-%m-%d %H:%M:%S", localtime(time()))
         front_matter = yaml.safe_load(
-            re.search(r"---([\s\S]*?)---", article, flags=0).group()[3:-4].replace("{{ date }}",
-                                                                                   strftime("%Y-%m-%d %H:%M:%S",
-                                                                                            localtime(time()))).replace(
-                "{{ abbrlink }}", get_crc_by_time(str(time()), get_setting("ABBRLINK_ALG"), get_setting("ABBRLINK_REP"))).replace("{",
-                                                                                                                                  "").replace(
-                "}", "")) if article[:3] == "---" else json.loads(
-            "{{{}}}".format(re.search(r";;;([\s\S]*?);;;", article, flags=0).group()[3:-4].replace("{{ date }}",
-                                                                                                   strftime("%Y-%m-%d %H:%M:%S",
-                                                                                                            localtime(time()))).replace(
-                "{{ abbrlink }}", get_crc_by_time(str(time()), get_setting("ABBRLINK_ALG"), get_setting("ABBRLINK_REP")))))
+            re.search(r"---([\s\S]*?)---", article, flags=0).group()[3:-4].replace("{{ date }}", dateformat).replace("{{ abbrlink }}",
+                                                                                                                     abbrlink).replace(
+                "{{ slug }}", abbrlink).replace("{", "").replace("}", "")) if article[:3] == "---" else json.loads("{{{}}}".format(
+            re.search(r";;;([\s\S]*?);;;", article, flags=0).group()[3:-4].replace("{{ date }}", dateformat).replace("{{ abbrlink }}",
+                                                                                                                     abbrlink).replace(
+                "{{ slug }}", abbrlink)))
     except Exception:
         return {}, repr(article)
     for key in front_matter.keys():

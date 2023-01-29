@@ -33,10 +33,10 @@ configs = {
     "Hugo": {
         "name": "Hugo",
         "posts": {
-            "path": ["content/posts"],
+            "path": ["content/post"],
             "depth": [2],
             "type": [".md"],
-            "save_path": "content/posts/${filename}/index.md",
+            "save_path": "content/post/${filename}/index.md",
             "scaffold": "scaffolds/post.md"
         },
         "drafts": {

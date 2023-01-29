@@ -33,7 +33,7 @@ configs = {
     "Hugo": {
         "name": "Hugo",
         "posts": {
-            "path": ["content/posts/"],
+            "path": ["content/posts"],
             "depth": [2],
             "type": [".md"],
             "save_path": "content/posts/${filename}/index.md",

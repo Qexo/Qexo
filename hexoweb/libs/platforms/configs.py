@@ -1,4 +1,4 @@
-all_configs = ["Hexo"]
+all_configs = ["Hexo,Hugo"]
 
 configs = {
     "Hexo": {

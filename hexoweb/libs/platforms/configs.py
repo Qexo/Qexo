@@ -21,7 +21,7 @@ configs = {
             "path": ["source"],
             "depth": [2],
             "type": ["index.md", "index.html"],
-            "save_path": "source/${filename}/index.md",
+            "save_path": "source/${filename}",
             "scaffold": "scaffolds/page.md"
         },
         "configs": {

@@ -55,7 +55,7 @@ configs = {
         },
         "configs": {
             "path":  ["", "themes"],
-            "depth": [1, 4,],
+            "depth": [1, 2],
             "type": [".yml", ".yaml", ".toml"]
         }
     }

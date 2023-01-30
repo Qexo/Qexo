@@ -235,26 +235,6 @@ def delete_all_caches():
     logging.info("清除全部缓存成功")
 
 
-def delete_posts_caches():
-    caches = Cache.objects.all()
-    for cache in caches:
-        if cache.name[:5] == "posts":
-            cache.delete()
-    logging.info("清除文章缓存成功")
-
-
-def delete_pages_caches():
-    caches = Cache.objects.all()
-    for cache in caches:
-        try:
-            name = cache.name[:5]
-        except Exception:
-            name = ""
-        if name == "pages":
-            cache.delete()
-    logging.info("清除页面缓存成功")
-
-
 def save_setting(name, content):
     name = unicodedata.normalize('NFKC', name)
     content = unicodedata.normalize('NFKC', content)

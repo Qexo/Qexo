@@ -1,6 +1,7 @@
 all_configs = ["Hexo", "Hugo"]
 
 configs = {
+    # https://hexo.io/
     "Hexo": {
         "name": "Hexo",
         "posts": {
@@ -20,44 +21,75 @@ configs = {
         "pages": {
             "path": ["source"],
             "depth": [2],
-            "type": ["index.md", "index.html"],
+            "type": ["index.md", "index.html", ".md", ".html"],
             "save_path": "source/${filename}",
             "scaffold": "scaffolds/page.md"
         },
         "configs": {
             "path": ["", "themes", "source", "source/_data"],
             "depth": [1, 2, 1, 1],
-            "type": [".yml", ".yaml"]
+            "type": [".yml", ".yaml", ".toml"]
         }
     },
-
+    # https://gohugo.io/
     "Hugo": {
         "name": "Hugo",
         "posts": {
             "path": ["content/post"],
-            "depth": [2],
+            "depth": [-1],
             "type": [".md"],
             "save_path": "content/post/${filename}.md",
-            "scaffold": "scaffolds/post.md"
+            "scaffold": "archetypes/post.md"
         },
         "drafts": {
-            "path": [],
-            "depth": [],
+            "path": ["content/_drafts"],
+            "depth": [-1],
             "type": [".md"],
-            "save_path": "content/post/${filename}.md",
-            "scaffold": "scaffolds/draft.md"
+            "save_path": "content/_drafts/${filename}.md",
+            "scaffold": "archetypes/draft.md"
         },
         "pages": {
             "path": ["content"],
             "depth": [2],
-            "type": ["index.md", "index.html"],
+            "type": ["index.html", "index.md", ".md", ".html"],
             "save_path": "content/${filename}/index.md",
-            "scaffold": "scaffolds/page.md"
+            "scaffold": "archetypes/page.md"
         },
         "configs": {
             "path": ["", "themes"],
             "depth": [1, 2],
             "type": [".yml", ".yaml", ".toml"]
         }
-    }
+    },
+    # https://valaxy.site/
+    "Valaxy": {
+        "name": "Valaxy",
+        "posts": {
+            "path": ["pages/posts"],
+            "depth": [-1],
+            "type": [".md"],
+            "save_path": "pages/posts/${filename}.md",
+            "scaffold": "scaffolds/post.md"
+        },
+        "drafts": {
+            "path": ["pages/_drafts"],
+            "depth": [-1],
+            "type": [".md"],
+            "save_path": "pages/_drafts/${filename}.md",
+            "scaffold": "scaffolds/draft.md"
+        },
+        "pages": {
+            "path": ["pages"],
+            "depth": [2],
+            "type": ["index.md", "index.html", ".md", ".html"],
+            "save_path": "pages/${filename}",
+            "scaffold": "scaffolds/page.md"
+        },
+        "configs": {
+            "path": [""],
+            "depth": [1],
+            "type": [".yml", ".yaml", ".config.ts", ".toml"]
+        }
+    },
+
 }

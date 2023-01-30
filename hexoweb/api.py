@@ -597,10 +597,7 @@ def delete(request):
             else:
                 context = {"msg": "删除成功！", "status": True}
             # Delete Caches
-            if ("_posts" in file_path) or ("_drafts" in file_path):
-                delete_posts_caches()
-            else:
-                delete_all_caches()
+            delete_all_caches()
         except Exception as error:
             logging.error(repr(error))
             context = {"msg": repr(error)}

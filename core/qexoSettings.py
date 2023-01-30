@@ -47,7 +47,7 @@ ALL_SETTINGS = [  # [名称, 默认值, 是否在尝试修复时重置, 简介]
     ["INIT", "2", False, "初始化标识"],
     ["QEXO_ICON", "https://unpkg.com/qexo-static@1.4.0/assets/img/brand/favicon.ico", False, "站点ICON"],
     ["QEXO_LOGO", "https://unpkg.com/qexo-static@1.4.0/assets/img/brand/qexo.png", False, "站点LOGO"],
-    ["QEXO_NAME", "Hexo管理面板", False, "站点名"],
+    ["QEXO_NAME", "博客管理面板", False, "站点名"],
     ["QEXO_SPLIT", "-", False, "站点分隔符"],
     ["VDITOR_EMOJI", json.dumps(DEFAULT_EMOJI), True, "自定义表情"],
     ["WEBHOOK_APIKEY", ''.join(random.choice("qwertyuiopasdfghjklzxcvbnm1234567890") for x in range(12)), False, "API密钥"],

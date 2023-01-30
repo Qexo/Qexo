@@ -12,7 +12,7 @@ class Local(Provider):
         self.path = path
         self.auto = auto
 
-    params = {"path": {"description": "Hexo 路径", "placeholder": "Hexo源码的绝对路径"},
+    params = {"path": {"description": "博客路径", "placeholder": "博客源码的绝对路径"},
               "auto": {"description": "自动部署", "placeholder": "自动部署命令 留空不开启"}}
 
     def get_content(self, file):  # 获取文件内容UTF8

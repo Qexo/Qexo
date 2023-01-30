@@ -11,13 +11,13 @@ class Github(Provider):
         self.token = token
         self._repo = repo
         self.branch = branch
-        self.path = path
+        self.path = path if path != "/" else ""
         self.repo = github.Github(self.token).get_repo(self._repo)
 
     params = {'token': {"description": "Github 密钥", "placeholder": "token"},
               'repo': {"description": "Github 仓库", "placeholder": "username/repo"},
               'branch': {"description": "项目分支", "placeholder": "e.g. master"},
-              'path': {"description": "Hexo 路径", "placeholder": "留空为根目录"}}
+              'path': {"description": "博客路径", "placeholder": "留空为根目录"}}
 
     def get_content(self, file):  # 获取文件内容UTF8
         logging.info("获取文件{}".format(file))

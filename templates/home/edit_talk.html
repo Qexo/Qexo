@@ -371,7 +371,7 @@
             }
         });
 
-        $("#time").val(new Date().toUTCString());
+        $("#time").val(getTimeFormat());
 
         // 底栏自定义字段
         function show_bottom() {
@@ -519,6 +519,17 @@
             saveSideItems();
             Sidebar.splice(i, 1);
             showEditSide();
+        }
+
+        function getTimeFormat(){
+            let time = new Date();
+            let year = time.getFullYear();
+            let month = time.getMonth() + 1;
+            let day = time.getDate();
+            let hour = time.getHours();
+            let minute = time.getMinutes();
+            let second = time.getSeconds();
+            return year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second;
         }
 
         function applySide() {

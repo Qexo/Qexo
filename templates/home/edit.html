@@ -690,7 +690,7 @@
                     ifCategory = true;
                 } else {
                     if (OrgSidebar[i]["search"] === "updated" || OrgSidebar[i]["search"] === "lastmod") {
-                        content = new Date().toString();
+                        content = new Date().toUTCString();
                     } else if (front[OrgSidebar[i]["search"]] !== undefined) {
                         content = front[OrgSidebar[i]["search"]];
                     } else content = "";

@@ -181,19 +181,6 @@
         });
 
 
-        function getTimeFormat() {
-            let date = new Date();
-            let month = date.getMonth() + 1 < 10 ? "0" + (date.getMonth() + 1) : date.getMonth()
-                + 1;
-            let currentDate = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
-            let hh = date.getHours() < 10 ? "0" + date.getHours() : date.getHours();
-            let mm = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
-            let ss = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
-            return date.getFullYear() + "-" + month + "-" + currentDate + " " + hh + ":" + mm + ":" + ss;
-            //返回格式：yyyy-MM-dd hh:mm:ss
-        }
-
-
         function Publish() {
             if (!_status) {
                 return false;
@@ -384,7 +371,7 @@
             }
         });
 
-        $("#time").val(getTimeFormat());
+        $("#time").val(new Date().toUTCString());
 
         // 底栏自定义字段
         function show_bottom() {

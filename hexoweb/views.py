@@ -458,6 +458,7 @@ def pages(request):
             context['fullname'] = file_path
             context["emoji"] = get_setting("VDITOR_EMOJI")
             context["sidebar"] = get_setting("POST_SIDEBAR")
+            context["config"] = Provider().config
             try:
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
@@ -482,6 +483,7 @@ def pages(request):
         elif "new" in load_template:
             context["emoji"] = get_setting("VDITOR_EMOJI")
             context["sidebar"] = get_setting("POST_SIDEBAR")
+            context["config"] = Provider().config
             try:
                 context["front_matter"], context["file_content"] = get_post_details(
                     (Provider().get_scaffold("posts")))

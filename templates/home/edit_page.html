@@ -527,7 +527,7 @@
                 OrgSidebar = [...Sidebar];
             }
             for (let i = 0; i < OrgSidebar.length; i++) {
-                if (OrgSidebar[i]["search"] === "updated") {
+                if (OrgSidebar[i]["search"] === "updated" || OrgSidebar[i]["search"] === "lastmod") {
                     content = getTimeFormat();
                 } else if (front[OrgSidebar[i]["search"]] !== undefined) {
                     content = front[OrgSidebar[i]["search"]];

@@ -619,7 +619,7 @@
                     return;
                 }
             }
-            categories.push([name]);
+            categories.push("{{ config.name }}" === "Hexo" ? [name] : name);
             show_categories();
         }
 
@@ -708,7 +708,7 @@
                     </div>`;
                     ifCategory = true;
                 } else {
-                    if (OrgSidebar[i]["search"] === "updated") {
+                    if (OrgSidebar[i]["search"] === "updated" || OrgSidebar[i]["search"] === "lastmod") {
                         content = getTimeFormat();
                     } else if (front[OrgSidebar[i]["search"]] !== undefined) {
                         content = front[OrgSidebar[i]["search"]];

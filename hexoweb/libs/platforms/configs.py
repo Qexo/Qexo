@@ -51,15 +51,15 @@ configs = {
         },
         "pages": {
             "path": ["content"],
-            "depth": [2],
-            "type": ["index.html", "index.md", ".md", ".html"],
+            "depth": [3],
+            "type": ["_index.md", "index.html", "index.md", ".md", ".html"],
             "save_path": "content/${filename}/index.md",
             "scaffold": "archetypes/page.md",
             "excludes": ["post", "_drafts"]
         },
         "configs": {
-            "path": ["", "themes"],
-            "depth": [1, 2],
+            "path": ["", "themes", "config"],
+            "depth": [1, 2, 2],
             "type": [".yml", ".yaml", ".toml"]
         }
     },

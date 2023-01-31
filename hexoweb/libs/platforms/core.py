@@ -31,14 +31,18 @@ class Provider(object):
     def create_hook(self, config):
         return False
 
-    def get_tree(self, path, depth):  # run if depth >=1
+    def get_tree(self, path, depth, exclude=None):  # run if depth >=1
         if not depth:
             return []
+        if exclude is None:
+            exclude = []
         path = path.replace("\\", "/")
         tree = self.get_path(path)["data"]
         for i in range(len(tree)):
+            if tree[i]["name"] in exclude:
+                continue
             if tree[i]["type"] == "dir":
-                child = self.get_tree(tree[i]["path"], depth - 1)
+                child = self.get_tree(tree[i]["path"], depth - 1, exclude)
                 tree += child
         return tree
 
@@ -110,7 +114,7 @@ class Provider(object):
         for path_index in range(len(self.config["pages"]["path"])):
             try:
                 posts = self.get_tree(
-                    self.config["pages"]["path"][path_index], self.config["pages"]["depth"][path_index])
+                    self.config["pages"]["path"][path_index], self.config["pages"]["depth"][path_index], self.config["pages"]["excludes"])
                 for post in posts:
                     flag = False
                     for i in self.config["pages"]["type"]:

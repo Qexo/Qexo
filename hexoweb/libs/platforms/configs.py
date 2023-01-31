@@ -23,7 +23,8 @@ configs = {
             "depth": [2],
             "type": ["index.md", "index.html", ".md", ".html"],
             "save_path": "source/${filename}",
-            "scaffold": "scaffolds/page.md"
+            "scaffold": "scaffolds/page.md",
+            "excludes": ["_posts", "_drafts"]
         },
         "configs": {
             "path": ["", "themes", "source", "source/_data"],
@@ -53,7 +54,8 @@ configs = {
             "depth": [2],
             "type": ["index.html", "index.md", ".md", ".html"],
             "save_path": "content/${filename}/index.md",
-            "scaffold": "archetypes/page.md"
+            "scaffold": "archetypes/page.md",
+            "excludes": ["post", "_drafts"]
         },
         "configs": {
             "path": ["", "themes"],
@@ -83,7 +85,8 @@ configs = {
             "depth": [2],
             "type": ["index.md", "index.html", ".md", ".html"],
             "save_path": "pages/${filename}",
-            "scaffold": "scaffolds/page.md"
+            "scaffold": "scaffolds/page.md",
+            "excludes": ["posts", "_drafts"]
         },
         "configs": {
             "path": [""],

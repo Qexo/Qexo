@@ -65,6 +65,8 @@ class Provider(object):
                             self.config["drafts"]["path"][path_index] if self.config["drafts"]["path"][path_index][-1] == "/" else
                             self.config["drafts"]["path"][path_index] + "/")[1]
                         name = name[:-len(flag) - (1 if name[-1] == "/" else 0)]
+                        if name.endswith("/"):
+                            name = name[:-1]
                         _drafts.append({"name": name,
                                         "fullname": drafts[i]["path"].split(
                                             self.config["drafts"]["path"][path_index] if self.config["drafts"]["path"][path_index][
@@ -93,6 +95,8 @@ class Provider(object):
                             self.config["posts"]["path"][path_index] if self.config["posts"]["path"][path_index][-1] == "/" else
                             self.config["posts"]["path"][path_index] + "/")[1]
                         name = name[:-len(flag) - (1 if name[-1] == "/" else 0)]
+                        if name.endswith("/"):
+                            name = name[:-1]
                         _posts.append({"name": name,
                                        "fullname": posts[i]["path"].split(
                                            self.config["posts"]["path"][path_index] if self.config["posts"]["path"][path_index][
@@ -122,8 +126,13 @@ class Provider(object):
                             flag = i
                             break
                     if post["type"] == "file" and flag:
-                        results.append({"name": post["path"][len(self.config["pages"]["path"][path_index]) + (
-                            0 if self.config["pages"]["path"][path_index].endswith("/") else 1):-len(flag) - 1],
+                        name = post["path"].split(
+                            self.config["pages"]["path"][path_index] if self.config["pages"]["path"][path_index][-1] == "/" else
+                            self.config["pages"]["path"][path_index] + "/")[1]
+                        name = name[:-len(flag) - (1 if name[-1] == "/" else 0)]
+                        if name.endswith("/"):
+                            name = name[:-1]
+                        results.append({"name": name,
                                         "path": post["path"],
                                         "size": post["size"]})
             except Exception as e:

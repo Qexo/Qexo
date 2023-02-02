@@ -25,6 +25,7 @@ import html2text as ht
 from hexoweb.libs.onepush import notify, get_notifier
 from hexoweb.libs.onepush import all_providers as onepush_providers
 from hexoweb.libs.platforms import get_provider, all_providers, get_params
+from hexoweb.libs.platforms.configs import all_configs as platfom_configs
 from hexoweb.libs.image import get_image_host
 from hexoweb.libs.image import get_params as get_image_params
 from hexoweb.libs.image import all_providers as all_image_providers
@@ -94,10 +95,6 @@ def get_cdnjs():
         save_setting("CDNJS", "https://cdn.staticfile.org/")
         cdnjs = "https://cdn.staticfile.org/"
     return cdnjs
-
-
-def get_post(post):
-    return Provider().get_post(post)
 
 
 # 获取用户自定义的样式配置
@@ -236,26 +233,6 @@ def delete_all_caches():
         if cache.name != "update":
             cache.delete()
     logging.info("清除全部缓存成功")
-
-
-def delete_posts_caches():
-    caches = Cache.objects.all()
-    for cache in caches:
-        if cache.name[:5] == "posts":
-            cache.delete()
-    logging.info("清除文章缓存成功")
-
-
-def delete_pages_caches():
-    caches = Cache.objects.all()
-    for cache in caches:
-        try:
-            name = cache.name[:5]
-        except Exception:
-            name = ""
-        if name == "pages":
-            cache.delete()
-    logging.info("清除页面缓存成功")
 
 
 def save_setting(name, content):
@@ -745,17 +722,15 @@ def get_post_details(article, safe=True):
     try:
         if not (article.startswith("---") or article.startswith(";;;")):
             article = ";;;\n" + article if ";;;" in article else "---\n" + article
+        abbrlink = get_crc_by_time(str(time()), get_setting("ABBRLINK_ALG"), get_setting("ABBRLINK_REP"))
+        dateformat = strftime("%Y-%m-%d %H:%M:%S", localtime(time()))
         front_matter = yaml.safe_load(
-            re.search(r"---([\s\S]*?)---", article, flags=0).group()[3:-4].replace("{{ date }}",
-                                                                                   strftime("%Y-%m-%d %H:%M:%S",
-                                                                                            localtime(time()))).replace(
-                "{{ abbrlink }}", get_crc_by_time(str(time()), get_setting("ABBRLINK_ALG"), get_setting("ABBRLINK_REP"))).replace("{",
-                                                                                                                                  "").replace(
-                "}", "")) if article[:3] == "---" else json.loads(
-            "{{{}}}".format(re.search(r";;;([\s\S]*?);;;", article, flags=0).group()[3:-4].replace("{{ date }}",
-                                                                                                   strftime("%Y-%m-%d %H:%M:%S",
-                                                                                                            localtime(time()))).replace(
-                "{{ abbrlink }}", get_crc_by_time(str(time()), get_setting("ABBRLINK_ALG"), get_setting("ABBRLINK_REP")))))
+            re.search(r"---([\s\S]*?)---", article, flags=0).group()[3:-4].replace("{{ date }}", dateformat).replace("{{ abbrlink }}",
+                                                                                                                     abbrlink).replace(
+                "{{ slug }}", abbrlink).replace("{", "").replace("}", "")) if article[:3] == "---" else json.loads("{{{}}}".format(
+            re.search(r";;;([\s\S]*?);;;", article, flags=0).group()[3:-4].replace("{{ date }}", dateformat).replace("{{ abbrlink }}",
+                                                                                                                     abbrlink).replace(
+                "{{ slug }}", abbrlink)))
     except Exception:
         return {}, repr(article)
     for key in front_matter.keys():
@@ -988,6 +963,9 @@ print("           _               _ \n" +
       " /_/    \\_\\____/ \\____|\\____|\\____|")
 
 print("当前环境: " + ("Vercel" if check_if_vercel() else "本地"))
+
+if check_if_vercel():
+    logging.info = logging.error
 
 UPDATE_FROM = get_setting("UPDATE_FROM")
 if UPDATE_FROM != "false" and UPDATE_FROM != "true" and UPDATE_FROM:

@@ -7,11 +7,12 @@ import logging
 class Local(Provider):
     name = "本地"
 
-    def __init__(self, path, auto=False):
+    def __init__(self, path, config, auto=False):
+        super(Local, self).__init__(config)
         self.path = path
         self.auto = auto
 
-    params = {"path": {"description": "Hexo 路径", "placeholder": "Hexo源码的绝对路径"},
+    params = {"path": {"description": "博客路径", "placeholder": "博客源码的绝对路径"},
               "auto": {"description": "自动部署", "placeholder": "自动部署命令 留空不开启"}}
 
     def get_content(self, file):  # 获取文件内容UTF8
@@ -28,21 +29,21 @@ class Local(Provider):
             }
         """
         results = list()
-        path = os.path.join(self.path, path)
-        contents = os.listdir(path)
+        _path = os.path.join(self.path, path)
+        contents = os.listdir(_path)
         for file in contents:
-            filedir = os.path.join(path, file)
+            filedir = os.path.join(_path, file)
             if not os.path.isdir(filedir):
                 results.append({
                     "name": file,
                     "size": os.stat(filedir).st_size,
-                    "path": filedir.replace("\\", "/"),
+                    "path": os.path.join(path, file).replace("\\", "/"),
                     "type": "file"
                 })
             else:
                 results.append({
                     "name": file,
-                    "path": filedir.replace("\\", "/"),
+                    "path": os.path.join(path, file).replace("\\", "/"),
                     "type": "dir"
                 })
         logging.info("获取路径{}成功".format(path))

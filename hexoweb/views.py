@@ -154,6 +154,7 @@ def init_view(request):
                     for provider in all_provider:
                         params = get_params(provider)
                         context["all_providers"][provider] = params
+                    context["all_platform_configs"] = platfom_configs
             except Exception as e:
                 logging.error("初始化用户名密码错误:" + repr(e))
                 msg = repr(e)
@@ -174,6 +175,8 @@ def init_view(request):
                     del provider["params"]["csrfmiddlewaretoken"]
                 for key in provider["params"].keys():
                     provider["params"][key] = provider["params"][key][0]
+                if provider["params"]["config"] != "Hexo":
+                    provider["params"]["_force"] = True
                 if provider["params"].get("_force") is None:
                     verify = verify_provider(provider)
                     if verify["status"] and verify["status"] != -1:
@@ -224,6 +227,7 @@ def init_view(request):
                         for provider in all_provider:
                             params = get_params(provider)
                             context["all_providers"][provider] = params
+                        context["all_platform_configs"] = platfom_configs
                 else:
                     del provider["params"]["_force"]
                     save_setting("PROVIDER", json.dumps(provider))
@@ -240,6 +244,7 @@ def init_view(request):
                 for provider in all_provider:
                     params = get_params(provider)
                     context["all_providers"][provider] = params
+                context["all_platform_configs"] = platfom_configs
         if request.POST.get("step") == "5":
             project_id = request.POST.get("id")
             vercel_token = request.POST.get("token")
@@ -269,6 +274,7 @@ def init_view(request):
             for provider in all_provider:
                 params = get_params(provider)
                 context["all_providers"][provider] = params
+            context["all_platform_configs"] = platfom_configs
     context["msg"] = msg
     context["step"] = step
     return render(request, "accounts/init.html", context)
@@ -446,12 +452,13 @@ def pages(request):
         elif "edit" in load_template:
             file_path = request.GET.get("file")
             context["front_matter"], context["file_content"] = get_post_details(
-                (get_post(file_path)))
+                (Provider().get_content(file_path)))
             context["front_matter"] = json.dumps(context["front_matter"])
-            context['filename'] = file_path.split("/")[-1]
+            context['filename'] = request.GET.get("postname")
             context['fullname'] = file_path
             context["emoji"] = get_setting("VDITOR_EMOJI")
             context["sidebar"] = get_setting("POST_SIDEBAR")
+            context["config"] = Provider().config
             try:
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
@@ -462,7 +469,7 @@ def pages(request):
             context["sidebar"] = get_setting("PAGE_SIDEBAR")
             try:
                 context["front_matter"], context["file_content"] = get_post_details(
-                    (Provider().get_content("scaffolds/page.md")))
+                    (Provider().get_scaffold("pages")))
                 context["front_matter"] = json.dumps(context["front_matter"])
             except Exception as error:
                 logging.error("获取页面模板失败, 错误信息: " + repr(error))
@@ -476,9 +483,10 @@ def pages(request):
         elif "new" in load_template:
             context["emoji"] = get_setting("VDITOR_EMOJI")
             context["sidebar"] = get_setting("POST_SIDEBAR")
+            context["config"] = Provider().config
             try:
                 context["front_matter"], context["file_content"] = get_post_details(
-                    (Provider().get_content("scaffolds/post.md")))
+                    (Provider().get_scaffold("posts")))
                 context["front_matter"] = json.dumps(context["front_matter"])
             except Exception as error:
                 logging.error("获取文章模板失败, 错误信息: " + repr(error))
@@ -665,6 +673,7 @@ def pages(request):
                 context["ALL_CDN"] = json.loads(get_setting("ALL_CDN"))
                 # 更新通道
                 context["ALL_UPDATES"] = json.loads(get_setting("ALL_UPDATES"))
+                context["ALL_PLATFORM_CONFIGS"] = platfom_configs
             except Exception:
                 logging.error("配置获取错误, 转跳至配置更新页面")
                 return redirect("/update/")
@@ -673,7 +682,12 @@ def pages(request):
                 logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
                 return page_403(request, "您没有权限访问此页面")
             try:
-                all_settings = SettingModel.objects.all()
+                search = request.GET.get("s")
+                if search:
+                    all_settings = SettingModel.objects.filter(name__contains=search.upper())
+                    context["search"] = search
+                else:
+                    all_settings = SettingModel.objects.all()
                 context["settings"] = list()
                 for setting in all_settings:
                     context["settings"].append({"name": setting.name, "content": setting.content})

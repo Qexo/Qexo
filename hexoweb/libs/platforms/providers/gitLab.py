@@ -5,19 +5,20 @@ import logging
 class Gitlab(Provider):
     name = "gitlab"
 
-    def __init__(self, url, token, repo, branch, path):
+    def __init__(self, url, token, repo, branch, path, config):
+        super(Gitlab, self).__init__(config)
         self.url = url
         self.token = token
         self._repo = repo
         self.branch = branch
-        self.path = path
+        self.path = path if path != "/" else ""
         self.repo = (gitlab.Gitlab(url=url, private_token=token) if url else gitlab.Gitlab(private_token=token)).projects.get(repo)
 
     params = {'url': {"description": "Gitlab 地址", "placeholder": "留空为官网"},
               'token': {"description": "Gitlab 密钥", "placeholder": "token"},
               'repo': {"description": "Gitlab 仓库", "placeholder": "username/repo"},
               'branch': {"description": "项目分支", "placeholder": "e.g. master"},
-              'path': {"description": "Hexo 路径", "placeholder": "留空为根目录"}}
+              'path': {"description": "博客路径", "placeholder": "留空为根目录"}}
 
     def get_content(self, file):  # 获取文件内容UTF8
         logging.info("获取文件{}".format(file))

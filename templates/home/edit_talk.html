@@ -181,19 +181,6 @@
         });
 
 
-        function getTimeFormat() {
-            let date = new Date();
-            let month = date.getMonth() + 1 < 10 ? "0" + (date.getMonth() + 1) : date.getMonth()
-                + 1;
-            let currentDate = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
-            let hh = date.getHours() < 10 ? "0" + date.getHours() : date.getHours();
-            let mm = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
-            let ss = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
-            return date.getFullYear() + "-" + month + "-" + currentDate + " " + hh + ":" + mm + ":" + ss;
-            //返回格式：yyyy-MM-dd hh:mm:ss
-        }
-
-
         function Publish() {
             if (!_status) {
                 return false;
@@ -532,6 +519,17 @@
             saveSideItems();
             Sidebar.splice(i, 1);
             showEditSide();
+        }
+
+        function getTimeFormat(){
+            let time = new Date();
+            let year = time.getFullYear();
+            let month = time.getMonth() + 1;
+            let day = time.getDate();
+            let hour = time.getHours();
+            let minute = time.getMinutes();
+            let second = time.getSeconds();
+            return year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second;
         }
 
         function applySide() {

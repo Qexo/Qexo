@@ -36,7 +36,7 @@
                             <h3>用户配置</h3>
                         {% endif %}
                         {% if step == "3" %}
-                            <h2>Hexo 配置</h2>
+                            <h2>博客配置</h2>
                         {% endif %}
                         {% if step == "4" %}
                             <h3>图床配置</h3>
@@ -115,6 +115,18 @@
                                                     class="form-control"
                                                     onchange="change_provider(this.value)">
                                             </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">使用配置</label>
+                                            <select name="config" id="config-container"
+                                                    class="form-control">
+                                                {% for config in all_platform_configs %}
+                                                <option value="{{ config }}">{{ config }}</option>
+                                                {% endfor %}
+                                            </select>
+
                                         </div>
                                     </div>
                                 </div>

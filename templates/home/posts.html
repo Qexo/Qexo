@@ -151,7 +151,9 @@
                 } else {
                     list += "草稿";
                 }
-                list += "</td><td><a href=\"/edit.html?file=" + encodeURIComponent(page_posts[i]["fullname"]) + "\">" +
+                list += "</td><td><a href=\"/edit.html?file=" + encodeURIComponent
+                    (page_posts[i]["path"]) + "&postname="+ encodeURIComponent
+                    (page_posts[i]["name"]) +"\">" +
                     "<i class=\"fa fa-edit mr-2\"></i></a>|&nbsp;&nbsp;" + "<a " +
                     "href=\"javascript:query_delete('" +
                     escapeString(page_posts[i]["path"]) + "')\"><i class=\"fa fa-trash-alt " +

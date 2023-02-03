@@ -5,4 +5,4 @@ tmp
 venv
 hexoweb/migrations
 staticfiles_build
-configs.py
+./configs.py

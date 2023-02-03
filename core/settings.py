@@ -143,7 +143,7 @@ except:
         if os.environ.get("PLANETSCALE"):
             DATABASES["default"]["ENGINE"] = "hexoweb.libs.django_psdb_engine"
     if errors:
-        raise exceptions.InitError(f"\"{env}\"环境变量未设置")
+        raise exceptions.InitError(f"\"{errors}\"环境变量未设置")
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators

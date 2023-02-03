@@ -965,7 +965,7 @@ print("           _               _ \n" +
 print("当前环境: " + ("Vercel" if check_if_vercel() else "本地"))
 
 if check_if_vercel():
-    logging.info = logging.error
+    logging.info = logging.warn
 
 UPDATE_FROM = get_setting("UPDATE_FROM")
 if UPDATE_FROM != "false" and UPDATE_FROM != "true" and UPDATE_FROM:

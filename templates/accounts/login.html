@@ -46,6 +46,9 @@
                                            placeholder="密码">
                                 </div>
                             </div>
+                            {% if site_token_v2 %}
+                                <div class="g-recaptcha" data-sitekey="{{ site_token_v2 }}"></div>
+                            {% endif %}
                         </form>
                         <div class="text-center" id="submit-button">
                             <button onclick="submit()" class="btn btn-primary my-4">登录</button>
@@ -55,18 +58,18 @@
             </div>
         </div>
     </div>
+    {% if site_token_v2 %}
+        <script src="https://recaptcha.net/recaptcha/api.js"></script>
+    {% endif %}
     {% if site_token %}
         <script src="https://recaptcha.net/recaptcha/api.js?render={{ site_token }}"></script>
     {% endif %}
-
 {% endblock content %}
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
 
     <script>
-
-
         function get_direct_link() {
             let reg = new RegExp("(^|&)next=([^&]*)(&|$)");
             let r = window.location.search.substr(1).match(reg);
@@ -88,37 +91,55 @@
                 grecaptcha.ready(function () {
                 grecaptcha.execute('{{ site_token }}', {action: 'submit'}).then(function (token) {
             {% endif %}
-        $.ajax({
-            url: '/api/auth/',
-            method: 'post',
-            data: {
-                "username": $("input[name='username']").val(),
-                "password": $("input[name='password']").val(),
-                {% if site_token %}
-                    "verify": token,
-                {% endif %}
-            },
-            dataType: "json",
-            success: function (res) {
-                if (res.status) {
-                    notyf.success(res.msg);
-                    setTimeout(window.location = get_direct_link(), 1000);
-                } else {
-                    notyf.error(res.msg);
+            {% if site_token_v2 %}
+            let token = grecaptcha.getResponse();
+                if (!token) {
+                    notyf.error("请完成验证! ");
+                    $("#submit-button").html("<button onclick=\"submit()\" class=\"btn " +
+                        "btn-primary my-4\">登录</button>");
+                    return false;
+                }
+            {% endif %}
+            $.ajax({
+                url: '/api/auth/',
+                method: 'post',
+                data: {
+                    "username": $("input[name='username']").val(),
+                    "password": $("input[name='password']").val(),
+                    {% if site_token or site_token_v2 %}
+                        "verify": token,
+                    {% endif %}
+                    {% if site_token_v2 %}
+                        "type": "v2",
+                    {% endif %}
+                    {% if site_token %}
+                            "type": "v3",
+                    {% endif %}
+                },
+                dataType: "json",
+                success: function (res) {
+                    if (res.status) {
+                        notyf.success(res.msg);
+                        setTimeout(window.location = get_direct_link(), 1000);
+                    } else {
+                        notyf.error(res.msg);
+                        {% if site_token_v2 %}
+                            grecaptcha.reset();
+                        {% endif %}
+                        $("#submit-button").html("<button onclick=\"submit()\" class=\"btn " +
+                            "btn-primary my-4\">登录</button>");
+                    }
+                },
+                error: function (res) {
+                    notyf.error("网络错误！");
                     $("#submit-button").html("<button onclick=\"submit()\" class=\"btn " +
                         "btn-primary my-4\">登录</button>");
                 }
-            },
-            error: function (res) {
-                notyf.error("网络错误！");
-                $("#submit-button").html("<button onclick=\"submit()\" class=\"btn " +
-                    "btn-primary my-4\">登录</button>");
-            }
-        })
-        {% if site_token %}
-            });
-            });
-        {% endif %}
+            })
+            {% if site_token %}
+                });
+                });
+            {% endif %}
         }
 
         document.onkeydown = function (e) {

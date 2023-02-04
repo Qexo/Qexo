@@ -15,9 +15,8 @@ def auth(request):
         username = request.POST.get("username")
         password = request.POST.get("password")
         verify = request.POST.get("verify")
-        token = get_setting("LOGIN_RECAPTCHA_SERVER_TOKEN")
-        site_token = get_setting("LOGIN_RECAPTCHA_SITE_TOKEN")
-        if token and site_token:
+        if request.POST.get("type") == "v3":
+            token = get_setting("LOGIN_RECAPTCHA_SERVER_TOKEN")
             if verify:
                 captcha = requests.get(
                     "https://recaptcha.net/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
@@ -27,7 +26,18 @@ def auth(request):
             else:
                 logging.info("未收到人机验证信息")
                 return JsonResponse(safe=False, data={"msg": "人机验证失败！", "status": False})
-        # logging.info(captcha)
+        elif request.POST.get("type") == "v2":
+            token = get_setting("LOGIN_RECAPTCHAV2_SERVER_TOKEN")
+            if verify:
+                captcha = requests.get(
+                    "https://recaptcha.net/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
+                if not captcha["success"]:
+                    logging.info("reCaptchaV2结果: " + str(captcha))
+                    return JsonResponse(safe=False, data={"msg": "人机验证失败！", "status": False})
+            else:
+                logging.info("未收到人机验证信息")
+                return JsonResponse(safe=False, data={"msg": "人机验证失败！", "status": False})
+        logging.info(captcha)
         user = authenticate(username=username, password=password)
         if user is not None:
             login(request, user)
@@ -170,6 +180,8 @@ def set_security(request):
     try:
         save_setting("LOGIN_RECAPTCHA_SERVER_TOKEN", request.POST.get("server-token"))
         save_setting("LOGIN_RECAPTCHA_SITE_TOKEN", request.POST.get("site-token"))
+        save_setting("LOGIN_RECAPTCHAV2_SERVER_TOKEN", request.POST.get("server-token-v2"))
+        save_setting("LOGIN_RECAPTCHAV2_SITE_TOKEN", request.POST.get("site-token-v2"))
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
         logging.error(repr(e))

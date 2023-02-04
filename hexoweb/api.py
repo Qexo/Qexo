@@ -51,7 +51,7 @@ def set_hexo(request):
         config = json.loads(provider)["params"]["config"]
         verify = {"status": -1}
         msg = ""
-        if config == "Hexo":
+        if config == "Hexo" and not request.POST.get("force"):
             verify = verify_provider(json.loads(provider))
             msg = ""
             if verify["status"] == -1:

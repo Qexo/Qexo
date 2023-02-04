@@ -260,7 +260,7 @@
                                             <select name="config" id="config-container"
                                                     class="form-control">
                                                 {% for config in ALL_PLATFORM_CONFIGS %}
-                                                <option value="{{ config }}">{{ config }}</option>
+                                                    <option value="{{ config }}">{{ config }}</option>
                                                 {% endfor %}
                                             </select>
 
@@ -271,7 +271,9 @@
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <input type="button" class="btn btn-primary" value="提交"
-                                               onclick="set_hexo()">
+                                               onclick="set_hexo(false)">
+                                        <input type="button" class="btn btn-white" value="强制提交"
+                                               onclick="set_hexo(true)">
                                     </div>
                                 </div>
                             </div>
@@ -612,8 +614,14 @@
             return url;
         }
 
-        function set_hexo() {
-            let loading = new KZ_Loading('正在校验并保存中...');
+        function set_hexo(force) {
+            let loading;
+            if ($("#config-container").val() === "Hexo" && !force) {
+                loading = new KZ_Loading('正在校验并保存中...');
+            }
+            else {
+                loading = new KZ_Loading('正在保存中...');
+            }
             loading.show();
             let form = $('#hexo-settings').serializeArray();
             let params = {};
@@ -629,7 +637,8 @@
                     "provider": JSON.stringify({
                         "provider": $("#provider-container").val(),
                         "params": params
-                    })
+                    }),
+                    "force": !!force
                 },
                 dataType: "json",
                 success: function (res) {
@@ -638,7 +647,8 @@
                         notyf.success(res.msg);
                         now_provider = {
                             "provider": $("#provider-container").val(),
-                            "params": params
+                            "params": params,
+                            "force": !!force
                         };
                     } else {
                         notyf.error(res.msg);

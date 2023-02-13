@@ -61,7 +61,8 @@ def set_hexo(request):
         config = json.loads(provider)["params"]["config"]
         verify = {"status": -1}
         msg = ""
-        if config == "Hexo" and not request.POST.get("force"):
+        force = request.POST.get("force") == "true"
+        if config == "Hexo" and not force:
             verify = verify_provider(json.loads(provider))
             msg = ""
             if verify["status"] == -1:
@@ -97,7 +98,7 @@ def set_hexo(request):
             else:
                 msg += "\n未检测到source目录"
             msg = msg.replace("\n", "<br>")
-        if verify["status"] or config != "Hexo":
+        if verify["status"] > 0 or config != "Hexo" or force:
             save_setting("PROVIDER", provider)
             update_provider()
             delete_all_caches()

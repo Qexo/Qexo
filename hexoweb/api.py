@@ -37,7 +37,6 @@ def auth(request):
             else:
                 logging.info("未收到人机验证信息")
                 return JsonResponse(safe=False, data={"msg": "人机验证失败！", "status": False})
-        logging.info(captcha)
         user = authenticate(username=username, password=password)
         if user is not None:
             login(request, user)

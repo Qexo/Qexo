@@ -19,7 +19,7 @@ def auth(request):
             token = get_setting("LOGIN_RECAPTCHA_SERVER_TOKEN")
             if verify:
                 captcha = requests.get(
-                    "https://recaptcha.net/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
+                    "https://recaptcha.google.cn/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
                 if captcha["score"] <= 0.5:
                     logging.info("reCaptchaV3结果: " + str(captcha))
                     return JsonResponse(safe=False, data={"msg": "人机验证失败！", "status": False})
@@ -30,7 +30,7 @@ def auth(request):
             token = get_setting("LOGIN_RECAPTCHAV2_SERVER_TOKEN")
             if verify:
                 captcha = requests.get(
-                    "https://recaptcha.net/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
+                    "https://recaptcha.google.cn/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
                 if not captcha["success"]:
                     logging.info("reCaptchaV2结果: " + str(captcha))
                     return JsonResponse(safe=False, data={"msg": "人机验证失败！", "status": False})

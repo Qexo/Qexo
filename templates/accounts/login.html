@@ -59,10 +59,10 @@
         </div>
     </div>
     {% if site_token_v2 %}
-        <script src="https://recaptcha.net/recaptcha/api.js"></script>
+        <script src="https://recaptcha.google.cn/recaptcha/api.js"></script>
     {% endif %}
     {% if site_token %}
-        <script src="https://recaptcha.net/recaptcha/api.js?render={{ site_token }}"></script>
+        <script src="https://recaptcha.google.cn/recaptcha/api.js?render={{ site_token }}"></script>
     {% endif %}
 {% endblock content %}
 

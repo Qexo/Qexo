@@ -4,6 +4,9 @@ import json
 import random
 import hexoweb.exceptions as exceptions
 import logging
+import urllib3
+
+urllib3.disable_warnings()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -110,7 +113,7 @@ except:
                 }
             }
         }
-    elif os.environ.get("PG_HOST"):  # 使用 PostgreSQL
+    elif os.environ.get("PG_HOST") or os.environ.get("POSTGRESQL_HOST"):  # 使用 PostgreSQL
         print("使用环境变量中的PostgreSQL数据库")
         for env in ["PG_HOST", "PG_PORT", "PG_PASS"]:
             if (env not in os.environ) and (env.replace("PG_", "POSTGRESQL_") not in os.environ):  # 识别不同的格式

@@ -15,19 +15,28 @@ def auth(request):
         username = request.POST.get("username")
         password = request.POST.get("password")
         verify = request.POST.get("verify")
-        token = get_setting("LOGIN_RECAPTCHA_SERVER_TOKEN")
-        site_token = get_setting("LOGIN_RECAPTCHA_SITE_TOKEN")
-        if token and site_token:
+        if request.POST.get("type") == "v3":
+            token = get_setting("LOGIN_RECAPTCHA_SERVER_TOKEN")
             if verify:
                 captcha = requests.get(
-                    "https://recaptcha.net/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
+                    "https://recaptcha.google.cn/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
                 if captcha["score"] <= 0.5:
                     logging.info("reCaptchaV3结果: " + str(captcha))
                     return JsonResponse(safe=False, data={"msg": "人机验证失败！", "status": False})
             else:
                 logging.info("未收到人机验证信息")
                 return JsonResponse(safe=False, data={"msg": "人机验证失败！", "status": False})
-        # logging.info(captcha)
+        elif request.POST.get("type") == "v2":
+            token = get_setting("LOGIN_RECAPTCHAV2_SERVER_TOKEN")
+            if verify:
+                captcha = requests.get(
+                    "https://recaptcha.google.cn/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
+                if not captcha["success"]:
+                    logging.info("reCaptchaV2结果: " + str(captcha))
+                    return JsonResponse(safe=False, data={"msg": "人机验证失败！", "status": False})
+            else:
+                logging.info("未收到人机验证信息")
+                return JsonResponse(safe=False, data={"msg": "人机验证失败！", "status": False})
         user = authenticate(username=username, password=password)
         if user is not None:
             login(request, user)
@@ -51,7 +60,8 @@ def set_hexo(request):
         config = json.loads(provider)["params"]["config"]
         verify = {"status": -1}
         msg = ""
-        if config == "Hexo":
+        force = request.POST.get("force") == "true"
+        if config == "Hexo" and not force:
             verify = verify_provider(json.loads(provider))
             msg = ""
             if verify["status"] == -1:
@@ -87,7 +97,7 @@ def set_hexo(request):
             else:
                 msg += "\n未检测到source目录"
             msg = msg.replace("\n", "<br>")
-        if verify["status"] or config != "Hexo":
+        if verify["status"] > 0 or config != "Hexo" or force:
             save_setting("PROVIDER", provider)
             update_provider()
             delete_all_caches()
@@ -170,6 +180,8 @@ def set_security(request):
     try:
         save_setting("LOGIN_RECAPTCHA_SERVER_TOKEN", request.POST.get("server-token"))
         save_setting("LOGIN_RECAPTCHA_SITE_TOKEN", request.POST.get("site-token"))
+        save_setting("LOGIN_RECAPTCHAV2_SERVER_TOKEN", request.POST.get("server-token-v2"))
+        save_setting("LOGIN_RECAPTCHAV2_SITE_TOKEN", request.POST.get("site-token-v2"))
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
         logging.error(repr(e))

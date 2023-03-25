@@ -37,8 +37,12 @@ def login_view(request):
     context = get_custom_config()
     site_token = get_setting("LOGIN_RECAPTCHA_SITE_TOKEN")
     server_token = get_setting("LOGIN_RECAPTCHA_SERVER_TOKEN")
+    site_token_v2 = get_setting("LOGIN_RECAPTCHAV2_SITE_TOKEN")
+    server_token_v2 = get_setting("LOGIN_RECAPTCHAV2_SERVER_TOKEN")
     if site_token and server_token:
         context["site_token"] = site_token
+    if site_token_v2 and server_token_v2 and not context.get("site_token"):
+        context["site_token_v2"] = site_token_v2
     return render(request, "accounts/login.html", context)
 
 
@@ -529,7 +533,7 @@ def pages(request):
                     posts = json.loads(cache.first().content)
                 else:
                     posts = update_pages_cache(search)
-            context["posts"] = posts
+            context["posts"] = json.dumps(posts)
             context["post_number"] = len(posts)
             context["page_number"] = ceil(context["post_number"] / 15)
             context["search"] = search
@@ -550,7 +554,7 @@ def pages(request):
                     posts = json.loads(cache.first().content)
                 else:
                     posts = update_configs_cache(search)
-            context["posts"] = posts
+            context["posts"] = json.dumps(posts)
             context["post_number"] = len(posts)
             context["page_number"] = ceil(context["post_number"] / 15)
             context["search"] = search
@@ -575,7 +579,7 @@ def pages(request):
                                   "time": strftime("%Y-%m-%d %H:%M:%S", localtime(int(i.time))),
                                   "like": len(t) if t else 0,
                                   "id": i.id.hex})
-            context["posts"] = sorted(posts, key=lambda x: x["time"], reverse=True)
+            context["posts"] = json.dumps(sorted(posts, key=lambda x: x["time"], reverse=True))
             context["post_number"] = len(posts)
             context["page_number"] = ceil(context["post_number"] / 15)
             context["search"] = search
@@ -596,7 +600,7 @@ def pages(request):
                                   "date": strftime("%Y-%m-%d %H:%M:%S",
                                                    localtime(float(i.date))),
                                   "time": i.date})
-            context["posts"] = posts[::-1]
+            context["posts"] = json.dumps(posts[::-1])
             context["post_number"] = len(posts)
             context["page_number"] = ceil(context["post_number"] / 15)
             context["search"] = search
@@ -636,6 +640,8 @@ def pages(request):
                 context["RECAPTCHA_TOKEN"] = get_setting("RECAPTCHA_TOKEN")
                 context["LOGIN_RECAPTCHA_SITE_TOKEN"] = get_setting("LOGIN_RECAPTCHA_SITE_TOKEN")
                 context["LOGIN_RECAPTCHA_SERVER_TOKEN"] = get_setting("LOGIN_RECAPTCHA_SERVER_TOKEN")
+                context["LOGIN_RECAPTCHAV2_SITE_TOKEN"] = get_setting("LOGIN_RECAPTCHAV2_SITE_TOKEN")
+                context["LOGIN_RECAPTCHAV2_SERVER_TOKEN"] = get_setting("LOGIN_RECAPTCHAV2_SERVER_TOKEN")
                 context["EXCERPT_POST"] = get_setting("EXCERPT_POST")
                 context["EXCERPT_LENGTH"] = get_setting("EXCERPT_LENGTH")
                 # Get Provider Settings
@@ -732,6 +738,7 @@ def pages(request):
                 context["post_number"] = len(context["posts"])
                 context["page_number"] = ceil(context["post_number"] / 15)
                 context["all_posts"] = json.dumps(context["posts"])
+                context["posts"] = json.dumps(context["posts"])
             except Exception as e:
                 logging.error("获取错误: " + repr(e))
                 context["error"] = repr(e)

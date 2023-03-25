@@ -90,6 +90,10 @@ except:
         print("使用环境变量中的MongoDB数据库")
         for env in ["MONGODB_HOST", "MONGODB_PORT", "MONGODB_USER", "MONGODB_PASS", "MONGODB_DB"]:
             if env not in os.environ:
+                if env == "MONGODB_USER" and "MONGODB_USERNAME" in os.environ:
+                    continue
+                if env == "MONGODB_PASS" and "MONGODB_PASSWORD" in os.environ:
+                    continue
                 errors += f"\"{env}\" "
         DATABASES = {
             'default': {
@@ -97,11 +101,11 @@ except:
                 'ENFORCE_SCHEMA': False,
                 'NAME': 'django',
                 'CLIENT': {
-                    'host': os.environ["MONGODB_HOST"],
-                    'port': int(os.environ["MONGODB_PORT"]),
-                    'username': os.environ["MONGODB_USER"],
-                    'password': os.environ["MONGODB_PASS"],
-                    'authSource': os.environ["MONGODB_DB"],
+                    'host': os.environ.get("MONGODB_HOST"),
+                    'port': int(os.environ.get("MONGODB_PORT")),
+                    'username': os.environ.get("MONGODB_USER") or os.environ["MONGODB_USERNAME"],
+                    'password': os.environ.get("MONGODB_PASS") or os.environ["MONGODB_PASSWORD"],
+                    'authSource': os.environ.get("MONGODB_DB"),
                     'authMechanism': 'SCRAM-SHA-1'
                 }
             }
@@ -109,22 +113,32 @@ except:
     elif os.environ.get("PG_HOST"):  # 使用 PostgreSQL
         print("使用环境变量中的PostgreSQL数据库")
         for env in ["PG_HOST", "PG_PORT", "PG_USER", "PG_PASS", "PG_DB"]:
-            if env not in os.environ:
+            if (env not in os.environ) and (env.replace("PG_", "POSTGRESQL_") not in os.environ):  # 识别不同的格式
+                if env == "PG_USER" and "POSTGRESQL_USERNAME" in os.environ:
+                    continue
+                if env == "PG_PASS" and "POSTGRESQL_PASSWORD" in os.environ:
+                    continue
                 errors += f"\"{env}\" "
         DATABASES = {
             'default': {
                 'ENGINE': 'django.db.backends.postgresql',
-                'NAME': os.environ["PG_DB"],
-                'USER': os.environ["PG_USER"],
-                'PASSWORD': os.environ["PG_PASS"],
-                'HOST': os.environ["PG_HOST"],
-                'PORT': os.environ["PG_PORT"],
+                'NAME': os.environ.get("PG_DB") or os.environ["POSTGRESQL_DB"],
+                'USER': os.environ.get("PG_USER") or os.environ["POSTGRESQL_USERNAME"],
+                'PASSWORD': os.environ.get("PG_PASS") or os.environ["POSTGRESQL_PASSWORD"],
+                'HOST': os.environ.get("PG_HOST") or os.environ["POSTGRESQL_HOST"],
+                'PORT': os.environ.get("PG_PORT") or os.environ["POSTGRESQL_PORT"],
             }
         }
     else:  # 使用MYSQL
         print("使用环境变量中的MySQL数据库")
         for env in ["MYSQL_NAME", "MYSQL_HOST", "MYSQL_PORT", "MYSQL_USER", "MYSQL_PASSWORD"]:
             if env not in os.environ:
+                if env == "MYSQL_USER" and "MYSQL_USERNAME" in os.environ:
+                    continue
+                if env == "MYSQL_NAME" and "MYSQL_DB" in os.environ:
+                    continue
+                if env == "MYSQL_PASSWORD" and "MYSQL_PASS" in os.environ:
+                    continue
                 errors += f"\"{env}\" "
         import pymysql
 
@@ -132,11 +146,11 @@ except:
         DATABASES = {
             'default': {
                 'ENGINE': 'django.db.backends.mysql',
-                'NAME': os.environ.get('MYSQL_NAME'),
+                'NAME': os.environ.get('MYSQL_NAME') or os.environ.get('MYSQL_DB'),
                 'HOST': os.environ.get('MYSQL_HOST'),
                 'PORT': os.environ.get('MYSQL_PORT'),
-                'USER': os.environ.get('MYSQL_USER'),
-                'PASSWORD': os.environ.get('MYSQL_PASSWORD'),
+                'USER': os.environ.get('MYSQL_USER') or os.environ.get('MYSQL_USERNAME'),
+                'PASSWORD': os.environ.get('MYSQL_PASSWORD') or os.environ.get('MYSQL_PASS'),
                 'OPTIONS': {'ssl': {'ca': False}}
             }
         }

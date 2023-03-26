@@ -968,7 +968,7 @@ if check_if_vercel():
     logging.info = logging.warn
 
 UPDATE_FROM = get_setting("UPDATE_FROM")
-if UPDATE_FROM != "false" and UPDATE_FROM != "true" and UPDATE_FROM != QEXO_VERSION:
+if UPDATE_FROM != "false" and UPDATE_FROM != "true" and UPDATE_FROM != QEXO_VERSION and UPDATE_FROM:
     logging.info(f"开始运行自动更新迁移程序...来自{UPDATE_FROM}")
     try:
         elevator.elevator(UPDATE_FROM, QEXO_VERSION)

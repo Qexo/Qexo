@@ -383,7 +383,7 @@ def index(request):
                        "date": strftime("%Y-%m-%d", localtime(float(i.date)))})
     context["posts"] = posts[0:5]
     for item in range(len(context["posts"])):
-        context["posts"][item]["name"] = quote(context["posts"][item]["name"])
+        context["posts"][item]["quotename"] = quote(context["posts"][item]["name"])
         context["posts"][item]["path"] = quote(context["posts"][item]["path"])
     context["images"] = images[::-1][0:5]
     context = dict(context, **get_latest_version())

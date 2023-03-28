@@ -170,7 +170,8 @@
                         if (res.status) {
                             notyf.success(res.msg + '等待转跳...');
                             file_content = vditor.getValue();
-                            setTimeout(window.location.href = "edit.html?file=" + res.path
+                            setTimeout(window.location.href = "edit.html?file=" +
+                                encodeURIComponent(res.path)
                                 + "&postname=" +
                                 encodeURIComponent($("input[name='filename']").val()), 1000);
                         } else {
@@ -211,7 +212,8 @@
                         if (res.status) {
                             notyf.success('草稿保存成功！等待转跳...');
                             file_content = vditor.getValue();
-                            setTimeout(window.location.href = "edit.html?file=" + res.path
+                            setTimeout(window.location.href = "edit.html?file=" +
+                                encodeURIComponent(res.path)
                                 + "&postname=" +
                                 encodeURIComponent($("input[name='filename']").val()), 1000);
                         } else {

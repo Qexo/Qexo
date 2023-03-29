@@ -281,7 +281,7 @@
                     if (res.status) {
                         notyf.success('删除成功！');
                         for (let i = 0; i < posts.length; i++) {
-                            if (posts[i]["path"] === file) {
+                            if (escapeString(posts[i]["path"]) === escapeString(file)) {
                                 posts.splice(i, 1);
                                 $("#post-number").html(posts.length);
                                 break;

@@ -184,7 +184,7 @@ class Provider(object):
 
     def save_page(self, name, content):
         path = self.config["pages"]["save_path"].replace("${filename}", name)
-        return [self.save(path, content, f"Update Page {name}"), path]
+        return [self.save(path, content, f"Update Page {name} by Qexo"), path]
 
 
 from .providers import _all_providers

@@ -1,7 +1,7 @@
 import json
 import random
 
-QEXO_VERSION = "2.6.3"
+QEXO_VERSION = "2.6.4"
 
 DEFAULT_EMOJI = {"微笑": "🙂", "撇嘴": "😦", "色": "😍", "发呆": "😍", "得意": "😎",
                  "流泪": "😭", "害羞": "😊", "闭嘴": "😷", "睡": "😴",

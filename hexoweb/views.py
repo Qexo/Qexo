@@ -681,6 +681,7 @@ def pages(request):
                 # 更新通道
                 context["ALL_UPDATES"] = json.loads(get_setting("ALL_UPDATES"))
                 context["ALL_PLATFORM_CONFIGS"] = platfom_configs
+                context["NOW_PLATFORM_CONFIG"] = Provider().config["name"]
             except Exception:
                 logging.error("配置获取错误, 转跳至配置更新页面")
                 return redirect("/update/")

@@ -1,4 +1,4 @@
-all_configs = ["Hexo", "Hugo"]
+all_configs = ["Hexo", "Hugo", "Valaxy"]
 
 configs = {
     # https://hexo.io/

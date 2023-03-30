@@ -1,4 +1,4 @@
-all_configs = ["Hexo", "Hugo"]
+all_configs = ["Hexo", "Hugo", "Valaxy"]
 
 configs = {
     # https://hexo.io/
@@ -27,8 +27,8 @@ configs = {
             "excludes": ["_posts", "_drafts"]
         },
         "configs": {
-            "path": ["", "themes", "source", "source/_data"],
-            "depth": [1, 2, 1, 1],
+            "path": [".github", "", "themes", "source", "source/_data"],
+            "depth": [3, 1, 2, 1, 1],
             "type": [".yml", ".yaml", ".toml"]
         }
     },
@@ -36,10 +36,10 @@ configs = {
     "Hugo": {
         "name": "Hugo",
         "posts": {
-            "path": ["content/post"],
+            "path": ["content/posts"],
             "depth": [-1],
             "type": [".md"],
-            "save_path": "content/post/${filename}.md",
+            "save_path": "content/posts/${filename}.md",
             "scaffold": "archetypes/post.md"
         },
         "drafts": {
@@ -58,8 +58,8 @@ configs = {
             "excludes": ["post", "_drafts"]
         },
         "configs": {
-            "path": ["", "themes", "config"],
-            "depth": [1, 2, 2],
+            "path": [".github", "", "themes", "config"],
+            "depth": [3, 1, 2, 2],
             "type": [".yml", ".yaml", ".toml"]
         }
     },
@@ -89,8 +89,8 @@ configs = {
             "excludes": ["posts", "_drafts"]
         },
         "configs": {
-            "path": [""],
-            "depth": [1],
+            "path": [".github", ""],
+            "depth": [3, 1],
             "type": [".yml", ".yaml", ".config.ts", ".toml"]
         }
     },

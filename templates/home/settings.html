@@ -282,7 +282,9 @@
                                             <select name="config" id="config-container"
                                                     class="form-control">
                                                 {% for config in ALL_PLATFORM_CONFIGS %}
-                                                    <option value="{{ config }}">{{ config }}</option>
+                                                    <option value="{{ config }}"
+                                                            {% if NOW_PLATFORM_CONFIG == config %} selected{% endif %}
+                                                    >{{ config }}</option>
                                                 {% endfor %}
                                             </select>
 

@@ -466,6 +466,7 @@ def save(request):
                 context = {"msg": "保存成功并提交部署！", "status": True}
             else:
                 context = {"msg": "保存成功！", "status": True}
+            delete_all_caches()
         except Exception as error:
             logging.error(repr(error))
             context = {"msg": repr(error), "status": False}
@@ -496,6 +497,7 @@ def save_post(request):
                 context = {"msg": "保存成功！", "status": True, "path": result[1]}
             if excerpt:
                 context["excerpt"] = excerpt
+            delete_all_caches()
         except Exception as error:
             logging.error(repr(error))
             context = {"msg": repr(error), "status": False}
@@ -556,6 +558,7 @@ def new_page(request):
                 context = {"msg": "保存成功！", "status": True, "path": result[1]}
             if excerpt:
                 context["excerpt"] = excerpt
+            delete_all_caches()
         except Exception as error:
             logging.error(repr(error))
             context = {"msg": repr(error), "status": False}
@@ -587,6 +590,7 @@ def save_draft(request):
                 context = {"msg": "保存草稿成功！", "status": True, "path": result[1]}
             if excerpt:
                 context["excerpt"] = excerpt
+            delete_all_caches()
         except Exception as error:
             logging.error(repr(error))
             context = {"msg": repr(error), "status": False}

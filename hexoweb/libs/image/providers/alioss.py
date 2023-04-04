@@ -38,6 +38,8 @@ class AliOss(Provider):
         path = self.path.replace("{year}", str(now.year)).replace("{month}", str(now.month)).replace("{day}", str(now.day)).replace(
             "{filename}", file.name[0:-len(file.name.split(".")[-1]) - 1]).replace("{extName}", file.name.split(".")[-1]).replace("{md5}",
                                                                                                                                   file_md5)
+        # 处理路径开头斜杠
+        path = path[1:] if path.startswith("/") else path
 
         # 阿里云账号AccessKey拥有所有API的访问权限，风险很高。强烈建议您创建并使用RAM用户进行API访问或日常运维，请登录RAM控制台创建RAM用户。
         auth = oss2.Auth(self.access_id, self.access_key)

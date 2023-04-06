@@ -236,8 +236,8 @@ def delete_all_caches():
 
 
 def save_setting(name, content):
-    name = unicodedata.normalize('NFKC', name)
-    content = unicodedata.normalize('NFKC', content)
+    name = unicodedata.normalize('NFC', name)
+    content = unicodedata.normalize('NFC', content)
     obj = SettingModel.objects.filter(name=name)
     if obj.count() == 1:
         obj.delete()
@@ -256,8 +256,8 @@ def save_setting(name, content):
 
 
 def save_custom(name, content):
-    name = unicodedata.normalize('NFKC', name)
-    content = unicodedata.normalize('NFKC', content)
+    name = unicodedata.normalize('NFC', name)
+    content = unicodedata.normalize('NFC', content)
     obj = CustomModel.objects.filter(name=name)
     if obj.count() == 1:
         obj.delete()

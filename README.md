@@ -79,4 +79,3 @@ Vercel 的无服务器函数用量对于 Qexo 来说是充裕的，但这依然�
 
 您可以在备注中添加您的称呼和网址博客，大于或等于 1 元的捐助都将在 [文档页面](https://www.oplog.cn/qexo/dev/thanks.html) 永久显示
 ![支付宝&微信](https://img.gejiba.com/images/6e89738d71ddada2408deb31efeacddc.png)
-

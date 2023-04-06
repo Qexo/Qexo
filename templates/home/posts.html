@@ -151,8 +151,11 @@
                 } else {
                     list += "草稿";
                 }
-                list += "</td><td><a href=\"/edit.html?file=" + encodeURIComponent(page_posts[i]["fullname"]) + "\">" +
-                    "<i class=\"fa fa-edit mr-2\"></i></a>" + "<a href=\"javascript:query_delete('" +
+                list += "</td><td><a href=\"/edit.html?file=" + encodeURIComponent
+                    (page_posts[i]["path"]) + "&postname="+ encodeURIComponent
+                    (page_posts[i]["name"]) +"\">" +
+                    "<i class=\"fa fa-edit mr-2\"></i></a>|&nbsp;&nbsp;" + "<a " +
+                    "href=\"javascript:query_delete('" +
                     escapeString(page_posts[i]["path"]) + "')\"><i class=\"fa fa-trash-alt " +
                     "mr-2\"></i></a></td></tr>";
             }
@@ -278,7 +281,7 @@
                     if (res.status) {
                         notyf.success('删除成功！');
                         for (let i = 0; i < posts.length; i++) {
-                            if (posts[i]["path"] === file) {
+                            if (escapeString(posts[i]["path"]) === escapeString(file)) {
                                 posts.splice(i, 1);
                                 $("#post-number").html(posts.length);
                                 break;

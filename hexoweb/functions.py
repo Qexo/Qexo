@@ -25,6 +25,7 @@ import html2text as ht
 from hexoweb.libs.onepush import notify, get_notifier
 from hexoweb.libs.onepush import all_providers as onepush_providers
 from hexoweb.libs.platforms import get_provider, all_providers, get_params
+from hexoweb.libs.platforms.configs import all_configs as platfom_configs
 from hexoweb.libs.image import get_image_host
 from hexoweb.libs.image import get_params as get_image_params
 from hexoweb.libs.image import all_providers as all_image_providers
@@ -59,15 +60,14 @@ def update_provider():
 try:
     _Provider = update_provider()
 except Exception:
-    logging.error("Provider初始化失败, 跳过")
-    pass
+    logging.error("Provider获取失败, 跳过")
 
 
 def Provider():
     try:
         return _Provider
     except Exception:
-        logging.error("Provider获取错误, 重新初始化")
+        logging.error("Provider获取错误, 重新获取")
         return update_provider()
 
 
@@ -95,10 +95,6 @@ def get_cdnjs():
         save_setting("CDNJS", "https://cdn.staticfile.org/")
         cdnjs = "https://cdn.staticfile.org/"
     return cdnjs
-
-
-def get_post(post):
-    return Provider().get_post(post)
 
 
 # 获取用户自定义的样式配置
@@ -239,26 +235,6 @@ def delete_all_caches():
     logging.info("清除全部缓存成功")
 
 
-def delete_posts_caches():
-    caches = Cache.objects.all()
-    for cache in caches:
-        if cache.name[:5] == "posts":
-            cache.delete()
-    logging.info("清除文章缓存成功")
-
-
-def delete_pages_caches():
-    caches = Cache.objects.all()
-    for cache in caches:
-        try:
-            name = cache.name[:5]
-        except Exception:
-            name = ""
-        if name == "pages":
-            cache.delete()
-    logging.info("清除页面缓存成功")
-
-
 def save_setting(name, content):
     name = unicodedata.normalize('NFKC', name)
     content = unicodedata.normalize('NFKC', content)
@@ -275,7 +251,7 @@ def save_setting(name, content):
     else:
         new_set.content = ""
     new_set.save()
-    logging.info("保存设置{} => {}".format(name, content))
+    logging.info("保存设置{} => {}".format(name, content if name != "PROVIDER" else "******"))
     return new_set
 
 
@@ -746,17 +722,15 @@ def get_post_details(article, safe=True):
     try:
         if not (article.startswith("---") or article.startswith(";;;")):
             article = ";;;\n" + article if ";;;" in article else "---\n" + article
+        abbrlink = get_crc_by_time(str(time()), get_setting("ABBRLINK_ALG"), get_setting("ABBRLINK_REP"))
+        dateformat = strftime("%Y-%m-%d %H:%M:%S", localtime(time()))
         front_matter = yaml.safe_load(
-            re.search(r"---([\s\S]*?)---", article, flags=0).group()[3:-4].replace("{{ date }}",
-                                                                                   strftime("%Y-%m-%d %H:%M:%S",
-                                                                                            localtime(time()))).replace(
-                "{{ abbrlink }}", get_crc_by_time(str(time()), get_setting("ABBRLINK_ALG"), get_setting("ABBRLINK_REP"))).replace("{",
-                                                                                                                                  "").replace(
-                "}", "")) if article[:3] == "---" else json.loads(
-            "{{{}}}".format(re.search(r";;;([\s\S]*?);;;", article, flags=0).group()[3:-4].replace("{{ date }}",
-                                                                                                   strftime("%Y-%m-%d %H:%M:%S",
-                                                                                                            localtime(time()))).replace(
-                "{{ abbrlink }}", get_crc_by_time(str(time()), get_setting("ABBRLINK_ALG"), get_setting("ABBRLINK_REP")))))
+            re.search(r"---([\s\S]*?)---", article, flags=0).group()[3:-4].replace("{{ date }}", dateformat).replace("{{ abbrlink }}",
+                                                                                                                     abbrlink).replace(
+                "{{ slug }}", abbrlink).replace("{", "").replace("}", "")) if article[:3] == "---" else json.loads("{{{}}}".format(
+            re.search(r";;;([\s\S]*?);;;", article, flags=0).group()[3:-4].replace("{{ date }}", dateformat).replace("{{ abbrlink }}",
+                                                                                                                     abbrlink).replace(
+                "{{ slug }}", abbrlink)))
     except Exception:
         return {}, repr(article)
     for key in front_matter.keys():
@@ -990,8 +964,15 @@ print("           _               _ \n" +
 
 print("当前环境: " + ("Vercel" if check_if_vercel() else "本地"))
 
+if check_if_vercel():
+    logging.info = logging.warn
+
 UPDATE_FROM = get_setting("UPDATE_FROM")
-if UPDATE_FROM != "false" and UPDATE_FROM != "true" and UPDATE_FROM:
-    elevator.elevator(UPDATE_FROM, QEXO_VERSION)
-    save_setting("UPDATE_FROM", "false")
+if UPDATE_FROM != "false" and UPDATE_FROM != "true" and UPDATE_FROM != QEXO_VERSION and UPDATE_FROM:
+    logging.info(f"开始运行自动更新迁移程序...来自{UPDATE_FROM}")
+    try:
+        elevator.elevator(UPDATE_FROM, QEXO_VERSION)
+    except Exception as e:
+        logging.error("自动更新迁移程序出错: " + str(e))
+    save_setting("UPDATE_FROM", QEXO_VERSION)
     save_setting("JUMP_UPDATE", "true")

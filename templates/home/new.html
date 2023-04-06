@@ -11,7 +11,7 @@
                     <div class="col-lg-6 col-7">
                         <h6 class="h2 text-white d-inline-block mb-0">新建文章:&nbsp;&nbsp;</h6>
                         <input type="text" name="filename" class="form-control col-lg-5
-                        d-inline-block rounded-pill" placeholder="文章名称"><a class="text-white">&nbsp;.md</a>
+                        d-inline-block rounded-pill" placeholder="文章名称">
                         <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
                             <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                                 <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i></a>
@@ -118,8 +118,8 @@
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
-    <link href="{{ cdnjs }}vditor/3.8.17/index.min.css" rel="stylesheet"/>
-    <script src="{{ cdnjs }}vditor/3.8.17/index.min.js"></script>
+    <link href="{{ cdnjs }}vditor/3.9.1/index.min.css" rel="stylesheet"/>
+    <script src="{{ cdnjs }}vditor/3.9.1/index.min.js"></script>
 
 
     <script>
@@ -141,19 +141,6 @@
             });
         }
 
-
-        function getTimeFormat() {
-            let date = new Date();
-            let month = date.getMonth() + 1 < 10 ? "0" + (date.getMonth() + 1) : date.getMonth()
-                + 1;
-            let currentDate = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
-            let hh = date.getHours() < 10 ? "0" + date.getHours() : date.getHours();
-            let mm = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
-            let ss = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
-            return date.getFullYear() + "-" + month + "-" + currentDate + " " + hh + ":" + mm + ":" + ss;
-            //返回格式：yyyy-MM-dd hh:mm:ss
-        }
-
         $.ajaxSetup({
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
         });
@@ -173,7 +160,7 @@
                     url: '/api/save_post/',
                     method: 'post',
                     data: {
-                        "file": $("input[name='filename']").val() + ".md",
+                        "file": $("input[name='filename']").val(),
                         "content": vditor.getValue(),
                         "front_matter": JSON.stringify(get_front_matter())
                     },
@@ -184,7 +171,9 @@
                             notyf.success(res.msg + '等待转跳...');
                             file_content = vditor.getValue();
                             setTimeout(window.location.href = "edit.html?file=" +
-                                encodeURIComponent($("input[name='filename']").val() + ".md"), 1000);
+                                encodeURIComponent(res.path)
+                                + "&postname=" +
+                                encodeURIComponent($("input[name='filename']").val()), 1000);
                         } else {
                             notyf.error(res.msg);
                         }
@@ -213,7 +202,7 @@
                     url: '/api/save_draft/',
                     method: 'post',
                     data: {
-                        "file": $("input[name='filename']").val() + ".md",
+                        "file": $("input[name='filename']").val(),
                         "content": vditor.getValue(),
                         "front_matter": JSON.stringify(get_front_matter())
                     },
@@ -223,7 +212,10 @@
                         if (res.status) {
                             notyf.success('草稿保存成功！等待转跳...');
                             file_content = vditor.getValue();
-                            setTimeout(window.location.href = "edit.html?file=" + encodeURIComponent($("input[name='filename']").val() + ".md"), 1000);
+                            setTimeout(window.location.href = "edit.html?file=" +
+                                encodeURIComponent(res.path)
+                                + "&postname=" +
+                                encodeURIComponent($("input[name='filename']").val()), 1000);
                         } else {
                             notyf.error(res.msg);
                         }
@@ -256,7 +248,7 @@
                 counter: {
                     enable: true
                 },
-                "cdn": "{{ cdn_prev }}vditor@3.8.17",
+                "cdn": "{{ cdn_prev }}vditor@3.9.0",
                 "mode": "wysiwyg",
                 "height": window.innerHeight * 0.75,
                 {% if file_content %}
@@ -270,7 +262,7 @@
                     "enable": false,
                 }, "preview": {
                     "theme": {
-                        "path": "{{ cdnjs }}vditor/3.8.17/css/content-theme"
+                        "path": "{{ cdnjs }}vditor/3.9.1/css/content-theme"
                     }
                 },
                 toolbar: [
@@ -378,7 +370,7 @@
                     "edit-mode",
                     "preview"
                 ],
-                "cdn": "{{ cdn_prev }}vditor@3.8.17",
+                "cdn": "{{ cdn_prev }}vditor@3.9.0",
                 "fullscreen": {
                     "index": 1050,
                 },
@@ -391,7 +383,7 @@
                 "preview": {
                     "mode": "both",
                     "theme": {
-                        "path": "{{ cdnjs }}vditor/3.8.17/css/content-theme"
+                        "path": "{{ cdnjs }}vditor/3.9.1/css/content-theme"
                     }
                 }, hint: {
                     emoji: {{ emoji|safe }}
@@ -616,7 +608,7 @@
                     return;
                 }
             }
-            categories.push([name]);
+            categories.push("{{ config.name }}" === "Hexo" ? [name] : name);
             show_categories();
         }
 
@@ -705,8 +697,8 @@
                     </div>`;
                     ifCategory = true;
                 } else {
-                    if (OrgSidebar[i]["search"] === "updated") {
-                        content = getTimeFormat();
+                    if (OrgSidebar[i]["search"] === "updated" || OrgSidebar[i]["search"] === "lastmod") {
+                        content = new Date().toUTCString();
                     } else if (front[OrgSidebar[i]["search"]] !== undefined) {
                         content = front[OrgSidebar[i]["search"]];
                     } else content = "";

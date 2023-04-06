@@ -4,6 +4,9 @@ import json
 import random
 import hexoweb.exceptions as exceptions
 import logging
+import urllib3
+
+urllib3.disable_warnings()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -61,8 +64,7 @@ ROOT_URLCONF = 'core.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
-        ,
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -86,52 +88,77 @@ try:
     print("获取本地配置文件成功, 使用本地数据库配置")
     DATABASES = configs.DATABASES
 except:
-    if not os.environ.get("MYSQL_NAME"):  # 使用MONGODB
-        print("使用环境变量中的MONGODB数据库")
-        for env in ["MONGODB_HOST", "MONGODB_PORT", "MONGODB_USER", "MONGODB_PASS", "MONGODB_DB"]:
+    errors = ""
+    if os.environ.get("MONGODB_HOST"):  # 使用MONGODB
+        print("使用环境变量中的MongoDB数据库")
+        for env in ["MONGODB_HOST", "MONGODB_PORT", "MONGODB_PASS"]:
             if env not in os.environ:
-                raise exceptions.InitError(f"\"{env}\"环境变量未设置")
+                if env == "MONGODB_USER" and "MONGODB_USERNAME" in os.environ:
+                    continue
+                if env == "MONGODB_PASS" and "MONGODB_PASSWORD" in os.environ:
+                    continue
+                errors += f"\"{env}\" "
         DATABASES = {
             'default': {
                 'ENGINE': 'djongo',
                 'ENFORCE_SCHEMA': False,
-                'LOGGING': {
-                    'version': 1,
-                },
                 'NAME': 'django',
                 'CLIENT': {
-                    'host': os.environ["MONGODB_HOST"],
-                    'port': int(os.environ["MONGODB_PORT"]),
-                    'username': os.environ["MONGODB_USER"],
-                    'password': os.environ["MONGODB_PASS"],
-                    'authSource': os.environ["MONGODB_DB"],
+                    'host': os.environ.get("MONGODB_HOST"),
+                    'port': int(os.environ.get("MONGODB_PORT")),
+                    'username': os.environ.get("MONGODB_USER") or os.environ["MONGODB_USERNAME"] or "root",
+                    'password': os.environ.get("MONGODB_PASS") or os.environ["MONGODB_PASSWORD"],
+                    'authSource': os.environ.get("MONGODB_DB") or "root",
                     'authMechanism': 'SCRAM-SHA-1'
                 }
             }
         }
+    elif os.environ.get("PG_HOST") or os.environ.get("POSTGRESQL_HOST"):  # 使用 PostgreSQL
+        print("使用环境变量中的PostgreSQL数据库")
+        for env in ["PG_HOST", "PG_PORT", "PG_PASS"]:
+            if (env not in os.environ) and (env.replace("PG_", "POSTGRESQL_") not in os.environ):  # 识别不同的格式
+                if env == "PG_USER" and "POSTGRESQL_USERNAME" in os.environ:
+                    continue
+                if env == "PG_PASS" and "POSTGRESQL_PASSWORD" in os.environ:
+                    continue
+                errors += f"\"{env}\" "
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': os.environ.get("PG_DB") or os.environ["POSTGRESQL_DB"] or "root",
+                'USER': os.environ.get("PG_USER") or os.environ["POSTGRESQL_USERNAME"] or "root",
+                'PASSWORD': os.environ.get("PG_PASS") or os.environ["POSTGRESQL_PASSWORD"],
+                'HOST': os.environ.get("PG_HOST") or os.environ["POSTGRESQL_HOST"],
+                'PORT': os.environ.get("PG_PORT") or os.environ["POSTGRESQL_PORT"],
+            }
+        }
     else:  # 使用MYSQL
-        print("使用环境变量中的MYSQL数据库")
-        for env in ["MYSQL_NAME", "MYSQL_HOST", "MYSQL_PORT", "MYSQL_USER", "MYSQL_PASSWORD"]:
+        print("使用环境变量中的MySQL数据库")
+        for env in ["MYSQL_HOST", "MYSQL_PORT", "MYSQL_PASSWORD"]:
             if env not in os.environ:
-                raise exceptions.InitError(f"\"{env}\"环境变量未设置")
+                if env == "MYSQL_PASSWORD" and "MYSQL_PASS" in os.environ:
+                    continue
+                errors += f"\"{env}\" "
         import pymysql
 
         pymysql.install_as_MySQLdb()
         DATABASES = {
             'default': {
                 'ENGINE': 'django.db.backends.mysql',
-                'NAME': os.environ.get('MYSQL_NAME'),
+                'NAME': os.environ.get('MYSQL_NAME') or os.environ.get('MYSQL_DB') or 'root',
                 'HOST': os.environ.get('MYSQL_HOST'),
                 'PORT': os.environ.get('MYSQL_PORT'),
-                'USER': os.environ.get('MYSQL_USER'),
-                'PASSWORD': os.environ.get('MYSQL_PASSWORD'),
+                'USER': os.environ.get('MYSQL_USER') or os.environ.get('MYSQL_USERNAME') or 'root',
+                'PASSWORD': os.environ.get('MYSQL_PASSWORD') or os.environ.get('MYSQL_PASS'),
                 'OPTIONS': {'ssl': {'ca': False}}
             }
         }
         if os.environ.get("PLANETSCALE"):
             DATABASES["default"]["ENGINE"] = "hexoweb.libs.django_psdb_engine"
+    if errors:
+        raise exceptions.InitError(f"\"{errors}\"环境变量未设置")
 
-        # Password validation
+# Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [

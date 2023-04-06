@@ -116,8 +116,8 @@
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
-    <link href="{{ cdnjs }}vditor/3.8.17/index.min.css" rel="stylesheet"/>
-    <script src="{{ cdnjs }}vditor/3.8.17/index.min.js"></script>
+    <link href="{{ cdnjs }}vditor/3.9.1/index.min.css" rel="stylesheet"/>
+    <script src="{{ cdnjs }}vditor/3.9.1/index.min.js"></script>
 
 
     <script>
@@ -138,22 +138,6 @@
                     "auto"
             });
         }
-
-
-
-
-        function getTimeFormat() {
-            let date = new Date();
-            let month = date.getMonth() + 1 < 10 ? "0" + (date.getMonth() + 1) : date.getMonth()
-                + 1;
-            let currentDate = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
-            let hh = date.getHours() < 10 ? "0" + date.getHours() : date.getHours();
-            let mm = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
-            let ss = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
-            return date.getFullYear() + "-" + month + "-" + currentDate + " " + hh + ":" + mm + ":" + ss;
-            //返回格式：yyyy-MM-dd hh:mm:ss
-        }
-
 
         function SaveChanges() {
             if (!_status) {
@@ -241,7 +225,7 @@
                 toolbarConfig: {
                     pin: true
                 },
-                "cdn": "{{ cdn_prev }}vditor@3.8.17",
+                "cdn": "{{ cdn_prev }}vditor@3.9.0",
                 "mode": "wysiwyg",
                 counter: {
                     enable: true
@@ -253,7 +237,7 @@
                 },
                 "preview": {
                     "theme": {
-                        "path": "{{ cdnjs }}vditor/3.8.17/css/content-theme"
+                        "path": "{{ cdnjs }}vditor/3.9.1/css/content-theme"
                     }
                 },
                 "debugger": false,
@@ -336,7 +320,7 @@
                 // _lutePath: "lib/vditor-3.7.3/src/js/lute/lute.min.js",
                 // 这个是自定义导航栏
                 toolbar,
-                "cdn": "{{ cdn_prev }}vditor@3.8.17",
+                "cdn": "{{ cdn_prev }}vditor@3.9.0",
                 "fullscreen": {
                     "index": 1050,
                 },
@@ -350,7 +334,7 @@
                 "preview": {
                     "mode": "both",
                     "theme": {
-                        "path": "{{ cdnjs }}vditor/3.8.17/css/content-theme"
+                        "path": "{{ cdnjs }}vditor/3.9.1/css/content-theme"
                     }
                 }, hint: {
                     emoji: {{ emoji|safe }}
@@ -527,8 +511,8 @@
                 OrgSidebar = [...Sidebar];
             }
             for (let i = 0; i < OrgSidebar.length; i++) {
-                if (OrgSidebar[i]["search"] === "updated") {
-                    content = getTimeFormat();
+                if (OrgSidebar[i]["search"] === "updated" || OrgSidebar[i]["search"] === "lastmod") {
+                    content = new Date().toUTCString();
                 } else if (front[OrgSidebar[i]["search"]] !== undefined) {
                     content = front[OrgSidebar[i]["search"]];
                 } else content = "";

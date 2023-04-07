@@ -1,7 +1,6 @@
 from .exceptions import NoSuchProviderError
-from .configs import configs
+from .configs import _all_configs as configs
 import logging
-import os
 
 
 class Provider(object):
@@ -192,6 +191,10 @@ from .providers import _all_providers
 
 def all_providers():
     return list(_all_providers.keys())
+
+
+def all_configs():
+    return configs.keys()
 
 
 def get_params(provider_name):

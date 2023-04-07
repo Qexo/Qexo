@@ -1,11 +1,14 @@
 import random
+import sys
+import uuid
 
+from io import StringIO
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-
+from hexoweb.libs.image import get_image_host
 from .functions import *
 
 

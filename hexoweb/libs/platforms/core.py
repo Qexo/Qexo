@@ -52,7 +52,8 @@ class Provider(object):
         try:
             for path_index in range(len(self.config["drafts"]["path"])):
                 drafts = self.get_tree(
-                    self.config["drafts"]["path"][path_index], self.config["drafts"]["depth"][path_index])
+                    self.config["drafts"]["path"][path_index], self.config["drafts"]["depth"][path_index],
+                    self.config["drafts"].get("excludes"))
                 for i in range(len(drafts)):
                     flag = False
                     for j in self.config["drafts"]["type"]:
@@ -82,7 +83,8 @@ class Provider(object):
         try:
             for path_index in range(len(self.config["posts"]["path"])):
                 posts = self.get_tree(
-                    self.config["posts"]["path"][path_index], self.config["posts"]["depth"][path_index])
+                    self.config["posts"]["path"][path_index], self.config["posts"]["depth"][path_index],
+                    self.config["posts"].get("excludes"))
                 for i in range(len(posts)):
                     flag = False
                     for j in self.config["posts"]["type"]:
@@ -117,7 +119,8 @@ class Provider(object):
         for path_index in range(len(self.config["pages"]["path"])):
             try:
                 posts = self.get_tree(
-                    self.config["pages"]["path"][path_index], self.config["pages"]["depth"][path_index], self.config["pages"]["excludes"])
+                    self.config["pages"]["path"][path_index], self.config["pages"]["depth"][path_index],
+                    self.config["pages"].get("excludes"))
                 for post in posts:
                     flag = False
                     for i in self.config["pages"]["type"]:
@@ -144,7 +147,8 @@ class Provider(object):
         for path_index in range(len(self.config["configs"]["path"])):
             try:
                 posts = self.get_tree(
-                    self.config["configs"]["path"][path_index], self.config["configs"]["depth"][path_index])
+                    self.config["configs"]["path"][path_index], self.config["configs"]["depth"][path_index],
+                    self.config["configs"].get("excludes"))
                 for post in posts:
                     flag = False
                     for i in self.config["configs"]["type"]:

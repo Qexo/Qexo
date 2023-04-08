@@ -2,31 +2,31 @@
 config = {
     "name": "Vuepress",
     "posts": {
-        "path": [""],
-        "depth": [-1],
+        "path": ["blogs", "posts", "articles", "archives"],
+        "depth": [-1, -1, -1, -1],
         "type": [".md"],
         "save_path": "${filename}.md",
         "scaffold": "",
         "excludes": [".vuepress"]
     },
-    "drafts": {   # No drafts in Vuepress
-        "path": [""],
+    "drafts": {  # No drafts in Vuepress
+        "path": [],
         "depth": [],
         "type": [],
-        "save_path": "",
+        "save_path": None,
         "scaffold": ""
     },
-    "pages": {  # Same as posts
+    "pages": {
         "path": [""],
         "depth": [-1],
         "type": [".md"],
         "save_path": "${filename}.md",
         "scaffold": "",
-        "excludes": [".vuepress"]
+        "excludes": [".vuepress", "blogs", "posts", "articles", "archives"]
     },
     "configs": {
-        "path": [".vuepress"],
-        "depth": [2],
-        "type": [".yml", ".yaml", ".toml", ".js", ".json", ".styl", ".html", ".vue"]
+        "path": [".github", ".vuepress", ""],
+        "depth": [3, 2, 1],
+        "type": [".yml", ".yaml", ".toml", ".js", ".ts", ".json", ".styl", ".html", ".vue"]
     }
 }

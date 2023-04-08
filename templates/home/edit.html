@@ -152,7 +152,7 @@
                 method: 'post',
                 data: {
                     "file": "{{ filename }}", "content": vditor.getValue(), "front_matter":
-                        JSON.stringify(get_front_matter()), "path": "{{ file }}"
+                        JSON.stringify(get_front_matter()), "path": "{{ fullname }}"
                 },
                 dataType: 'JSON',
                 success: function (res) {

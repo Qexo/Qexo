@@ -26,6 +26,6 @@ config = {
     "configs": {
         "path": [".github", ""],
         "depth": [3, 1],
-        "type": [".yml", ".yaml", ".config.ts", ".toml"]
+        "type": [".yml", ".yaml", ".config.ts", ".toml", ".json"]
     }
 }

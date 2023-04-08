@@ -450,7 +450,7 @@ def pages(request):
             context["front_matter"], context["file_content"] = get_post_details(
                 (Provider().get_content(file_path)))
             context["front_matter"] = json.dumps(context["front_matter"])
-            context['filename'] = file_path.split("/")[-2] + "/" + file_path.split("/")[-1]
+            context['filename'] = file_path.split("/")[-1]
             context["file_path"] = file_path
             context["emoji"] = get_setting("VDITOR_EMOJI")
             context["sidebar"] = get_setting("PAGE_SIDEBAR")

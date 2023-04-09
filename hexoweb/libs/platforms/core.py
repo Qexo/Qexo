@@ -1,7 +1,6 @@
 from .exceptions import NoSuchProviderError
-from .configs import configs
+from .configs import _all_configs as configs
 import logging
-import os
 
 
 class Provider(object):
@@ -50,10 +49,11 @@ class Provider(object):
         _posts = list()
         _drafts = list()
         names = list()
-        try:
-            for path_index in range(len(self.config["drafts"]["path"])):
+        for path_index in range(len(self.config["drafts"]["path"])):
+            try:
                 drafts = self.get_tree(
-                    self.config["drafts"]["path"][path_index], self.config["drafts"]["depth"][path_index])
+                    self.config["drafts"]["path"][path_index], self.config["drafts"]["depth"][path_index],
+                    self.config["drafts"].get("excludes"))
                 for i in range(len(drafts)):
                     flag = False
                     for j in self.config["drafts"]["type"]:
@@ -61,29 +61,30 @@ class Provider(object):
                             flag = j
                             break
                     if drafts[i]["type"] == "file" and flag:
-                        name = drafts[i]["path"].split(
-                            self.config["drafts"]["path"][path_index] if self.config["drafts"]["path"][path_index][-1] == "/" else
-                            self.config["drafts"]["path"][path_index] + "/")[1]
+                        if self.config["drafts"]["path"][path_index] == "":
+                            name = drafts[i]["path"]
+                        else:
+                            name = drafts[i]["path"].split(
+                                self.config["drafts"]["path"][path_index] if self.config["drafts"]["path"][path_index][-1] == "/" else
+                                self.config["drafts"]["path"][path_index] + "/")[1]
                         name = name[:-len(flag) - (1 if name[-1] == "/" else 0)]
                         if name.endswith("/"):
                             name = name[:-1]
                         _drafts.append({"name": name,
-                                        "fullname": drafts[i]["path"].split(
-                                            self.config["drafts"]["path"][path_index] if self.config["drafts"]["path"][path_index][
-                                                                                             -1] == "/" else self.config["drafts"]["path"][
-                                                                                                                 path_index] + "/")[1],
+                                        "fullname": name + flag,
                                         "path": drafts[i]["path"],
                                         "size": drafts[i]["size"],
                                         "status": False})
 
                         names.append(drafts[i]["path"].split(
                             self.config["drafts"]["path"][path_index])[1])
-        except Exception as e:
-            logging.error("读取草稿错误: {}，跳过".format(repr(e)))
-        try:
-            for path_index in range(len(self.config["posts"]["path"])):
+            except Exception as e:
+                logging.error("读取草稿目录 {} 错误: {}，跳过".format(self.config["drafts"]["path"][path_index], repr(e)))
+        for path_index in range(len(self.config["posts"]["path"])):
+            try:
                 posts = self.get_tree(
-                    self.config["posts"]["path"][path_index], self.config["posts"]["depth"][path_index])
+                    self.config["posts"]["path"][path_index], self.config["posts"]["depth"][path_index],
+                    self.config["posts"].get("excludes"))
                 for i in range(len(posts)):
                     flag = False
                     for j in self.config["posts"]["type"]:
@@ -91,24 +92,24 @@ class Provider(object):
                             flag = j
                             break
                     if posts[i]["type"] == "file" and flag:
-                        name = posts[i]["path"].split(
-                            self.config["posts"]["path"][path_index] if self.config["posts"]["path"][path_index][-1] == "/" else
-                            self.config["posts"]["path"][path_index] + "/")[1]
+                        if self.config["posts"]["path"][path_index] == "":
+                            name = posts[i]["path"]
+                        else:
+                            name = posts[i]["path"].split(
+                                self.config["posts"]["path"][path_index] if self.config["posts"]["path"][path_index][-1] == "/" else
+                                self.config["posts"]["path"][path_index] + "/")[1]
                         name = name[:-len(flag) - (1 if name[-1] == "/" else 0)]
                         if name.endswith("/"):
                             name = name[:-1]
                         _posts.append({"name": name,
-                                       "fullname": posts[i]["path"].split(
-                                           self.config["posts"]["path"][path_index] if self.config["posts"]["path"][path_index][
-                                                                                           -1] == "/" else self.config["posts"]["path"][
-                                                                                                               path_index] + "/")[1],
+                                       "fullname": name + flag,
                                        "path": posts[i]["path"],
                                        "size": posts[i]["size"],
                                        "status": True})
                         names.append(posts[i]["path"].split(
                             self.config["posts"]["path"][path_index])[1])
-        except Exception as e:
-            logging.error("读取已发布错误: {}，跳过".format(repr(e)))
+            except Exception as e:
+                logging.error("读取已发布目录 {} 错误: {}，跳过".format(self.config["posts"]["path"][path_index], repr(e)))
         posts = _posts + _drafts
         logging.info("读取文章列表成功")
         return posts
@@ -118,7 +119,8 @@ class Provider(object):
         for path_index in range(len(self.config["pages"]["path"])):
             try:
                 posts = self.get_tree(
-                    self.config["pages"]["path"][path_index], self.config["pages"]["depth"][path_index], self.config["pages"]["excludes"])
+                    self.config["pages"]["path"][path_index], self.config["pages"]["depth"][path_index],
+                    self.config["pages"].get("excludes"))
                 for post in posts:
                     flag = False
                     for i in self.config["pages"]["type"]:
@@ -126,9 +128,12 @@ class Provider(object):
                             flag = i
                             break
                     if post["type"] == "file" and flag:
-                        name = post["path"].split(
-                            self.config["pages"]["path"][path_index] if self.config["pages"]["path"][path_index][-1] == "/" else
-                            self.config["pages"]["path"][path_index] + "/")[1]
+                        if self.config["pages"]["path"][path_index] == "":
+                            name = post["path"]
+                        else:
+                            name = post["path"].split(
+                                self.config["pages"]["path"][path_index] if self.config["pages"]["path"][path_index][-1] == "/" else
+                                self.config["pages"]["path"][path_index] + "/")[1]
                         name = name[:-len(flag) - (1 if name[-1] == "/" else 0)]
                         if name.endswith("/"):
                             name = name[:-1]
@@ -136,7 +141,7 @@ class Provider(object):
                                         "path": post["path"],
                                         "size": post["size"]})
             except Exception as e:
-                logging.error("读取页面 {} 错误: {}，跳过".format(self.config["pages"]["path"][path_index], repr(e)))
+                logging.error("读取页面目录 {} 错误: {}，跳过".format(self.config["pages"]["path"][path_index], repr(e)))
         logging.info("读取页面列表成功")
         return results
 
@@ -145,7 +150,8 @@ class Provider(object):
         for path_index in range(len(self.config["configs"]["path"])):
             try:
                 posts = self.get_tree(
-                    self.config["configs"]["path"][path_index], self.config["configs"]["depth"][path_index])
+                    self.config["configs"]["path"][path_index], self.config["configs"]["depth"][path_index],
+                    self.config["configs"].get("excludes"))
                 for post in posts:
                     flag = False
                     for i in self.config["configs"]["type"]:
@@ -153,8 +159,9 @@ class Provider(object):
                             flag = True
                             break
                     if post["type"] == "file" and flag:
-                        results.append({"name": post["path"][len(self.config["configs"]["path"][path_index]) + (
-                            0 if self.config["configs"]["path"][path_index].endswith("/") else 1):],
+                        name = post["path"][len(self.config["configs"]["path"][path_index]) + (
+                            0 if self.config["configs"]["path"][path_index].endswith("/") else 1):]
+                        results.append({"name": name,
                                         "path": post["path"],
                                         "size": post["size"]})
             except Exception as e:
@@ -168,7 +175,10 @@ class Provider(object):
     def save_post(self, name, content, path=None, status=False):
         # status: True -> posts, False -> drafts
         # path 若无则保存至默认路径
-        draft_file = self.config["drafts"]["save_path"].replace("${filename}", name)
+        if self.config["drafts"]["save_path"]:
+            draft_file = self.config["drafts"]["save_path"].replace("${filename}", name)
+        else:
+            draft_file = None
         save_file = self.config["posts"]["save_path"].replace("${filename}", name)
         if path and (path not in [draft_file, save_file]):
             return [self.save(path, content, f"Save Post {name} by Qexo"), path]
@@ -179,6 +189,8 @@ class Provider(object):
                 logging.info(f"删除草稿{draft_file}失败, 可能无需删除草稿")
             return [self.save(save_file, content, f"Publish Post {save_file} by Qexo"), save_file]
         else:
+            if not draft_file:
+                raise Exception("当前配置不支持草稿")
             return [self.save(self.config["drafts"]["save_path"].replace("${filename}", name), content,
                               f"Save Post Draft {draft_file} by Qexo"), draft_file]
 
@@ -192,6 +204,10 @@ from .providers import _all_providers
 
 def all_providers():
     return list(_all_providers.keys())
+
+
+def all_configs():
+    return configs.keys()
 
 
 def get_params(provider_name):

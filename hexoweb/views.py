@@ -1,11 +1,21 @@
 # -*- encoding: utf-8 -*-
-from django.shortcuts import redirect, render
-from django.contrib.auth import logout
-from django import template
-from django.http import HttpResponse
-from django.template import loader
-from .api import *
+import uuid
 from math import ceil
+from urllib.parse import quote, unquote
+
+from django import template
+from django.contrib.auth import logout
+from django.http import HttpResponse
+from django.shortcuts import redirect, render
+from django.template import loader
+
+from hexoweb.libs.image import all_providers as all_image_providers
+from hexoweb.libs.image import get_params as get_image_params
+from hexoweb.libs.onepush import all_providers as onepush_providers
+from hexoweb.libs.onepush import get_notifier
+from hexoweb.libs.platforms import all_providers, get_params
+from hexoweb.libs.platforms import all_configs as platform_configs
+from .api import *
 
 
 def page_404(request, exception):
@@ -158,7 +168,7 @@ def init_view(request):
                     for provider in all_provider:
                         params = get_params(provider)
                         context["all_providers"][provider] = params
-                    context["all_platform_configs"] = platfom_configs
+                    context["all_platform_configs"] = platform_configs()
             except Exception as e:
                 logging.error("初始化用户名密码错误:" + repr(e))
                 msg = repr(e)
@@ -231,7 +241,7 @@ def init_view(request):
                         for provider in all_provider:
                             params = get_params(provider)
                             context["all_providers"][provider] = params
-                        context["all_platform_configs"] = platfom_configs
+                        context["all_platform_configs"] = platform_configs()
                 else:
                     del provider["params"]["_force"]
                     save_setting("PROVIDER", json.dumps(provider))
@@ -248,7 +258,7 @@ def init_view(request):
                 for provider in all_provider:
                     params = get_params(provider)
                     context["all_providers"][provider] = params
-                context["all_platform_configs"] = platfom_configs
+                context["all_platform_configs"] = platform_configs()
         if request.POST.get("step") == "5":
             project_id = request.POST.get("id")
             vercel_token = request.POST.get("token")
@@ -278,7 +288,7 @@ def init_view(request):
             for provider in all_provider:
                 params = get_params(provider)
                 context["all_providers"][provider] = params
-            context["all_platform_configs"] = platfom_configs
+            context["all_platform_configs"] = platform_configs()
     context["msg"] = msg
     context["step"] = step
     return render(request, "accounts/init.html", context)
@@ -440,7 +450,7 @@ def pages(request):
             context["front_matter"], context["file_content"] = get_post_details(
                 (Provider().get_content(file_path)))
             context["front_matter"] = json.dumps(context["front_matter"])
-            context['filename'] = file_path.split("/")[-2] + "/" + file_path.split("/")[-1]
+            context['filename'] = file_path.split("/")[-1]
             context["file_path"] = file_path
             context["emoji"] = get_setting("VDITOR_EMOJI")
             context["sidebar"] = get_setting("PAGE_SIDEBAR")
@@ -680,7 +690,7 @@ def pages(request):
                 context["ALL_CDN"] = json.loads(get_setting("ALL_CDN"))
                 # 更新通道
                 context["ALL_UPDATES"] = json.loads(get_setting("ALL_UPDATES"))
-                context["ALL_PLATFORM_CONFIGS"] = platfom_configs
+                context["ALL_PLATFORM_CONFIGS"] = platform_configs()
                 context["NOW_PLATFORM_CONFIG"] = Provider().config["name"]
             except Exception:
                 logging.error("配置获取错误, 转跳至配置更新页面")

@@ -1,5 +1,8 @@
 import random
+import uuid
+import sys
 
+from io import StringIO
 from django.http.response import HttpResponseForbidden
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -100,10 +103,7 @@ def delete(request):
             Provider().delete(file_path)
             context = {"msg": "OK!", "status": True}
             # Delete Caches
-            if ("_posts" in file_path) or ("_drafts" in file_path):
-                delete_posts_caches()
-            else:
-                delete_all_caches()
+            delete_all_caches()
         except Exception as error:
             context = {"msg": repr(error)}
     return JsonResponse(safe=False, data=context)

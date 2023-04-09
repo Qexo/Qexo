@@ -1,11 +1,14 @@
 import random
+import sys
+import uuid
 
+from io import StringIO
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-
+from hexoweb.libs.image import get_image_host
 from .functions import *
 
 
@@ -56,7 +59,7 @@ def set_hexo(request):
         logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
         return JsonResponse(safe=False, data={"msg": "子用户不支持此操作！", "status": False})
     try:
-        provider = unicodedata.normalize('NFKC', request.POST.get('provider'))
+        provider = unicodedata.normalize('NFC', request.POST.get('provider'))
         config = json.loads(provider)["params"]["config"]
         verify = {"status": -1}
         msg = ""
@@ -450,8 +453,8 @@ def do_update(request):
 def save(request):
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
-        file_path = unicodedata.normalize('NFKC', request.POST.get('file'))
-        content = unicodedata.normalize('NFKC', request.POST.get('content'))
+        file_path = unicodedata.normalize('NFC', request.POST.get('file'))
+        content = unicodedata.normalize('NFC', request.POST.get('content'))
         flag = False
         for i in Provider().config["configs"]["type"]:
             if file_path.endswith(i):
@@ -478,9 +481,9 @@ def save(request):
 def save_post(request):
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
-        file_name = unicodedata.normalize('NFKC', request.POST.get('file'))
-        content = unicodedata.normalize('NFKC', request.POST.get('content'))
-        front_matter = json.loads(unicodedata.normalize('NFKC', request.POST.get('front_matter')))
+        file_name = unicodedata.normalize('NFC', request.POST.get('file'))
+        content = unicodedata.normalize('NFC', request.POST.get('content'))
+        front_matter = json.loads(unicodedata.normalize('NFC', request.POST.get('front_matter')))
         excerpt = ""
         try:
             if get_setting("EXCERPT_POST") == "是":
@@ -509,9 +512,9 @@ def save_post(request):
 def save_page(request):
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
-        file_path = unicodedata.normalize('NFKC', request.POST.get('file'))
-        content = unicodedata.normalize('NFKC', request.POST.get('content'))
-        front_matter = json.loads(unicodedata.normalize('NFKC', request.POST.get('front_matter')))
+        file_path = unicodedata.normalize('NFC', request.POST.get('file'))
+        content = unicodedata.normalize('NFC', request.POST.get('content'))
+        front_matter = json.loads(unicodedata.normalize('NFC', request.POST.get('front_matter')))
         excerpt = ""
         commitchange = f"Update Page {file_path}"
         try:
@@ -539,9 +542,9 @@ def save_page(request):
 def new_page(request):
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
-        file_path = unicodedata.normalize('NFKC', request.POST.get('file'))
-        content = unicodedata.normalize('NFKC', request.POST.get('content'))
-        front_matter = json.loads(unicodedata.normalize('NFKC', request.POST.get('front_matter')))
+        file_path = unicodedata.normalize('NFC', request.POST.get('file'))
+        content = unicodedata.normalize('NFC', request.POST.get('content'))
+        front_matter = json.loads(unicodedata.normalize('NFC', request.POST.get('front_matter')))
         excerpt = ""
         try:
             if get_setting("EXCERPT_POST") == "是":
@@ -570,9 +573,9 @@ def new_page(request):
 def save_draft(request):
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
-        file_name = unicodedata.normalize('NFKC', request.POST.get('file'))
-        content = unicodedata.normalize('NFKC', request.POST.get('content'))
-        front_matter = json.loads(unicodedata.normalize('NFKC', request.POST.get('front_matter')))
+        file_name = unicodedata.normalize('NFC', request.POST.get('file'))
+        content = unicodedata.normalize('NFC', request.POST.get('content'))
+        front_matter = json.loads(unicodedata.normalize('NFC', request.POST.get('front_matter')))
         excerpt = ""
         try:
             # 创建/更新草稿
@@ -602,7 +605,7 @@ def save_draft(request):
 def delete(request):
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
-        file_path = unicodedata.normalize('NFKC', request.POST.get('file'))
+        file_path = unicodedata.normalize('NFC', request.POST.get('file'))
         if (not request.user.is_staff) and file_path[:4] in ["yaml", ".yml"]:
             logging.info(f"子用户{request.user.username}尝试删除{file_path}被拒绝")
             return JsonResponse(safe=False, data={"msg": "子用户不支持此操作！", "status": False})

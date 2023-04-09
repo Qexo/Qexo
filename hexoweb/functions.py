@@ -1,41 +1,31 @@
-import os
-import sys
-from io import StringIO
-import subprocess
-import unicodedata
-from core.qexoSettings import ALL_SETTINGS
-import requests
-from django.template.defaulttags import register
-from django.core.management import execute_from_command_line
-from core.qexoSettings import QEXO_VERSION
-from .models import Cache, SettingModel, FriendModel, NotificationModel, CustomModel, StatisticUV, StatisticPV, ImageModel, TalkModel
-import github
 import json
-import uuid
-from datetime import timezone, timedelta, date, datetime
-from time import strftime, localtime, time, sleep
-from hashlib import md5
-from urllib3 import disable_warnings
-from urllib.parse import quote, unquote
-from markdown import markdown
-from zlib import crc32 as zlib_crc32
-from urllib.parse import quote
-import tarfile
-import html2text as ht
-from hexoweb.libs.onepush import notify, get_notifier
-from hexoweb.libs.onepush import all_providers as onepush_providers
-from hexoweb.libs.platforms import get_provider, all_providers, get_params
-from hexoweb.libs.platforms.configs import all_configs as platfom_configs
-from hexoweb.libs.image import get_image_host
-from hexoweb.libs.image import get_params as get_image_params
-from hexoweb.libs.image import all_providers as all_image_providers
-from hexoweb.libs.elevator import elevator
-import yaml
+import logging
+import os
 import re
 import shutil
-from bs4 import BeautifulSoup
+import tarfile
+from datetime import timezone, timedelta, date, datetime
 from html import escape
-import logging
+from time import strftime, localtime, time, sleep
+from zlib import crc32 as zlib_crc32
+
+import github
+import html2text as ht
+import requests
+import unicodedata
+import yaml
+from bs4 import BeautifulSoup
+from django.core.management import execute_from_command_line
+from django.template.defaulttags import register
+from markdown import markdown
+from urllib3 import disable_warnings
+
+from core.qexoSettings import ALL_SETTINGS
+from core.qexoSettings import QEXO_VERSION
+from hexoweb.libs.elevator import elevator
+from hexoweb.libs.onepush import notify
+from hexoweb.libs.platforms import get_provider
+from .models import Cache, SettingModel, FriendModel, NotificationModel, CustomModel, StatisticUV, StatisticPV, ImageModel, TalkModel
 
 disable_warnings()
 
@@ -236,8 +226,8 @@ def delete_all_caches():
 
 
 def save_setting(name, content):
-    name = unicodedata.normalize('NFKC', name)
-    content = unicodedata.normalize('NFKC', content)
+    name = unicodedata.normalize('NFC', name)
+    content = unicodedata.normalize('NFC', content)
     obj = SettingModel.objects.filter(name=name)
     if obj.count() == 1:
         obj.delete()
@@ -256,8 +246,8 @@ def save_setting(name, content):
 
 
 def save_custom(name, content):
-    name = unicodedata.normalize('NFKC', name)
-    content = unicodedata.normalize('NFKC', content)
+    name = unicodedata.normalize('NFC', name)
+    content = unicodedata.normalize('NFC', content)
     obj = CustomModel.objects.filter(name=name)
     if obj.count() == 1:
         obj.delete()

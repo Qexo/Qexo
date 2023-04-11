@@ -512,7 +512,7 @@
             }
             for (let i = 0; i < OrgSidebar.length; i++) {
                 if (OrgSidebar[i]["search"] === "updated" || OrgSidebar[i]["search"] === "lastmod") {
-                    content = new Date().toUTCString();
+                    content = getRFC3339();
                 } else if (front[OrgSidebar[i]["search"]] !== undefined) {
                     content = front[OrgSidebar[i]["search"]];
                 } else content = "";

@@ -28,8 +28,6 @@
     }
 
     function excerpt_by_tianli(content, length, key) {
-        let loading = new KZ_Loading('生成摘要中中...');
-        loading.show();
         let excerpt = excerpt_by_local(content, length);
         let uri = "https://summary.tianli0.top/?content=" + encodeURIComponent(excerpt) + "&key="
             + encodeURIComponent(key);
@@ -51,20 +49,19 @@
             }
         }
         ajax.open("get", uri, false);
-        ajax.setRequestHeader("Content-Type", "application/json; charset=utf-8");
         ajax.onreadystatechange = function () {
             if (ajax.readyState === 4) {
                 let res = ajax.response;
                 if (ajax.status === 200) {
                     res = JSON.parse(res);
                     excerpt = res["summary"];
+                    notyf.success("摘要生成成功!");
                 } else {
                     notyf.error(res);
                 }
-                loading.destroy();
             }
         };
-        ajax.send(null);
+        ajax.send();
         console.log(excerpt);
         return excerpt;
     }

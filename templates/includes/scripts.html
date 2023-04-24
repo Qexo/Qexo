@@ -97,7 +97,7 @@
                     'fa-quote-left"></i></div><div class="col ml--2 text-sm mb-0"><div ' +
                     'class="d-flex justify-content-between align-items-center"><div><h4 ' +
                     'class="mb-0 text-sm">' + escapeString(notifications[i]["label"]) +
-                        '</h4></div><div ' +
+                    '</h4></div><div ' +
                     'class="text-right text-muted"><small>' + notifications[i]["time"] +
                     '</small></div></div><p class="text-sm mb-0">' +
                     notifications[i]["content"] + '</p></div></div></a>';
@@ -207,6 +207,16 @@
         var offsetMinute = Math.abs(offset % 60);
         var offsetSign = offset < 0 ? "+" : "-";
         return year + "-" + month + "-" + day + "T" + hour + ":" + minute + ":" + second + "." + millisecond + offsetSign + offsetHour + ":" + offsetMinute;
+    }
+
+
+    function sleepSync(ms) {
+        const endTime = Date.now() + ms;
+        while (1) {
+            if (Date.now() > endTime) {
+                return;
+            }
+        }
     }
 
     {% if error %}

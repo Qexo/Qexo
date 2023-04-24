@@ -20,7 +20,7 @@
                         </nav>
                     </div>
                     <div class="col-lg-6 col-5 text-right">
-                        <a href="/pages.html" class="btn btn-sm btn-neutral">页面列表</a>
+                        <a href="javascript:excerpt_post()" class="btn btn-sm btn-neutral">生成摘要</a>
                         <a href="javascript:SaveChanges()" class="btn btn-sm btn-neutral">保存</a>
                     </div>
                 </div>
@@ -145,6 +145,7 @@
             }
             var loading = new KZ_Loading('正在保存中...');
             _status = false;
+            if (excerpt_config.auto !== "关闭") excerpt_post();
             loading.show();
             $.ajax({
                 url: '/api/save_page/',
@@ -604,4 +605,5 @@
             $("#bottom-container").html(html);
         }
     </script>
+{% include "includes/editor-scripts.html" %}
 {% endblock javascripts %}

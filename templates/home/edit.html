@@ -20,6 +20,7 @@
                         </nav>
                     </div>
                     <div class="col-lg-6 col-5 text-right">
+                        <a href="javascript:excerpt_post()" class="btn btn-sm btn-neutral">生成摘要</a>
                         <a href="javascript:SaveDraft()" class="btn btn-sm btn-neutral">保存草稿</a>
                         <a href="javascript:Publish()" class="btn btn-sm btn-neutral">发布</a>
                     </div>
@@ -146,6 +147,7 @@
             }
             var loading = new KZ_Loading('正在保存中...');
             _status = false;
+            if (excerpt_config.auto !== "关闭") excerpt_post();
             loading.show();
             $.ajax({
                 url: '/api/save_post/',
@@ -159,12 +161,6 @@
                     loading.destroy();
                     if (res.status) {
                         notyf.success(res.msg);
-                        if (res.excerpt) {
-                            front_matter = get_front_matter();
-                            front_matter.excerpt = res.excerpt;
-                            OrgSidebar = [...Sidebar];
-                            showSidebar(true);
-                        }
                         file_content = vditor.getValue();
                         _status = true;
                     } else {
@@ -186,6 +182,7 @@
             }
             let loading = new KZ_Loading('草稿保存中...');
             _status = false;
+            if (excerpt_config.auto === "总是截取") excerpt_post();
             loading.show();
             $.ajax({
                 url: '/api/save_draft/',
@@ -199,12 +196,6 @@
                     loading.destroy();
                     if (res.status) {
                         notyf.success(res.msg);
-                        if (res.excerpt) {
-                            front_matter = get_front_matter();
-                            front_matter.excerpt = res.excerpt;
-                            OrgSidebar = [...Sidebar];
-                            showSidebar(true);
-                        }
                         file_content = vditor.getValue();
                         _status = true;
                     } else {
@@ -799,4 +790,6 @@
             $("#bottom-container").html(html);
         }
     </script>
+{% include "includes/editor-scripts.html" %}
 {% endblock javascripts %}
+

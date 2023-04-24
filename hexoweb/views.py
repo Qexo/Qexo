@@ -459,6 +459,7 @@ def pages(request):
                     context["img_bed"] = True
             except Exception:
                 logging.info("未检测到图床配置, 图床功能关闭")
+            context["AUTO_EXCERPT_CONFIG"] = get_setting("AUTO_EXCERPT_CONFIG")
         elif "edit_config" in load_template:
             file_path = request.GET.get("file")
             context["file_content"] = repr(Provider().get_content(file_path)).replace("<", "\\<").replace(">", "\\>").replace("!", "\\!")
@@ -479,6 +480,7 @@ def pages(request):
                     context["img_bed"] = True
             except Exception:
                 logging.info("未检测到图床配置, 图床功能关闭")
+            context["AUTO_EXCERPT_CONFIG"] = get_setting("AUTO_EXCERPT_CONFIG")
         elif "new_page" in load_template:
             context["emoji"] = get_setting("VDITOR_EMOJI")
             context["sidebar"] = get_setting("PAGE_SIDEBAR")
@@ -495,6 +497,7 @@ def pages(request):
                     context["img_bed"] = True
             except Exception:
                 logging.info("未检测到图床配置, 图床功能关闭")
+            context["AUTO_EXCERPT_CONFIG"] = get_setting("AUTO_EXCERPT_CONFIG")
         elif "new" in load_template:
             context["emoji"] = get_setting("VDITOR_EMOJI")
             context["sidebar"] = get_setting("POST_SIDEBAR")
@@ -512,6 +515,7 @@ def pages(request):
                     context["img_bed"] = True
             except Exception:
                 print("未检测到图床配置, 图床功能关闭")
+            context["AUTO_EXCERPT_CONFIG"] = get_setting("AUTO_EXCERPT_CONFIG")
         elif "posts" in load_template:
             search = request.GET.get("s")
             if search:
@@ -653,8 +657,6 @@ def pages(request):
                 context["LOGIN_RECAPTCHA_SERVER_TOKEN"] = get_setting("LOGIN_RECAPTCHA_SERVER_TOKEN")
                 context["LOGIN_RECAPTCHAV2_SITE_TOKEN"] = get_setting("LOGIN_RECAPTCHAV2_SITE_TOKEN")
                 context["LOGIN_RECAPTCHAV2_SERVER_TOKEN"] = get_setting("LOGIN_RECAPTCHAV2_SERVER_TOKEN")
-                context["EXCERPT_POST"] = get_setting("EXCERPT_POST")
-                context["EXCERPT_LENGTH"] = get_setting("EXCERPT_LENGTH")
                 # Get Provider Settings
                 context["PROVIDER"] = get_setting("PROVIDER")
                 all_provider = all_providers()
@@ -692,6 +694,10 @@ def pages(request):
                 context["ALL_UPDATES"] = json.loads(get_setting("ALL_UPDATES"))
                 context["ALL_PLATFORM_CONFIGS"] = platform_configs()
                 context["NOW_PLATFORM_CONFIG"] = Provider().config["name"]
+                # Get Auto Excerpt Settings
+                context["AUTO_EXCERPT_CONFIG"] = get_setting("AUTO_EXCERPT_CONFIG")
+                context["AUTO_EXCERPT_SAVE_KEY"] = json.loads(context["AUTO_EXCERPT_CONFIG"]).get("save_key", "excerpt")
+                context["AUTO_EXCERPT"] = json.loads(context["AUTO_EXCERPT_CONFIG"]).get("auto", "关闭")
             except Exception:
                 logging.error("配置获取错误, 转跳至配置更新页面")
                 return redirect("/update/")

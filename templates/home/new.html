@@ -22,6 +22,7 @@
                         </nav>
                     </div>
                     <div class="col-lg-6 col-5 text-right">
+                        <a href="javascript:excerpt_post()" class="btn btn-sm btn-neutral">生成摘要</a>
                         <a href="javascript:SaveDraft()" class="btn btn-sm btn-neutral">保存草稿</a>
                         <a href="javascript:SaveChanges()" class="btn btn-sm btn-neutral">发布</a>
                     </div>
@@ -155,6 +156,7 @@
                 }
                 let loading = new KZ_Loading('正在发布中...');
                 _status = false;
+                if (excerpt_config.auto !== "关闭") excerpt_post();
                 loading.show();
                 $.ajax({
                     url: '/api/save_post/',
@@ -197,6 +199,7 @@
                 }
                 var loading = new KZ_Loading('等待转跳...');
                 _status = false;
+                if (excerpt_config.auto === "总是截取") excerpt_post();
                 loading.show();
                 $.ajax({
                     url: '/api/save_draft/',
@@ -807,4 +810,5 @@
             $("#bottom-container").html(html);
         }
     </script>
+{% include "includes/editor-scripts.html" %}
 {% endblock javascripts %}

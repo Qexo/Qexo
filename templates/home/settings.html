@@ -283,7 +283,8 @@
                                                     class="form-control">
                                                 {% for config in ALL_PLATFORM_CONFIGS %}
                                                     <option value="{{ config }}"
-                                                            {% if NOW_PLATFORM_CONFIG == config %} selected{% endif %}
+                                                            {% if NOW_PLATFORM_CONFIG == config %}
+                                                            selected{% endif %}
                                                     >{{ config }}</option>
                                                 {% endfor %}
                                             </select>
@@ -372,32 +373,50 @@
                         </form>
                         <form id="excerpt-settings" onsubmit="return false;">
                             <hr class="my-4"/>
-                            <h6 class="heading-small text-muted mb-4">自动截取配置</h6>
+                            <h6 class="heading-small text-muted mb-4">文章截取配置</h6>
                             <div class="pl-lg-4">
                                 <div class="row">
                                     {% csrf_token %}
                                     <div class="col-lg-6">
-                                        <label class="form-control-label">保存时自动截取</label>
-                                        <select class="form-control" name="EXCERPT_POST"
-                                                id="excerpt-post">
-                                            <option{% if EXCERPT_POST == "是" %} selected
-                                            {% endif %}>是
-                                            </option>
-                                            <option{% if EXCERPT_POST != "是" %} selected
-                                            {% endif %}>否
-                                            </option>
-                                        </select>
-                                    </div>
-                                    <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">截取长度</label>
-                                            <input type="text" name="EXCERPT_LENGTH"
-                                                   class="form-control"
-                                                   placeholder="截取文字长度"
-                                                   value="{{ EXCERPT_LENGTH }}">
+                                            <label class="form-control-label">截取方法</label>
+                                            <select class="form-control" name="excerpt-type"
+                                                    id="excerpt-method-container"
+                                                    onchange="change_excerpt(this.value)">
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">自动截取</label>
+                                            <select class="form-control" name="auto-excerpt"
+                                                    id="auto-excerpt">
+                                                <option{% if AUTO_EXCERPT == "关闭" %} selected
+                                                {% endif %}>关闭
+                                                </option>
+                                                <option{% if AUTO_EXCERPT == "仅发布文章时" %}
+                                                    selected
+                                                {% endif %}>仅发布文章时
+                                                <option{% if AUTO_EXCERPT == "总是截取" %} selected
+                                                {% endif %}>总是截取
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">保存字段</label>
+                                            <input type="text" name="save_key"
+                                                   class="form-control"
+                                                   placeholder="一般为 excerpt"
+                                                   id="save-key"
+                                                   value="{{ AUTO_EXCERPT_SAVE_KEY }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="excerpt-container"></div>
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <input type="button" class="btn btn-primary" value="提交"
@@ -642,8 +661,7 @@
             let loading;
             if ($("#config-container").val() === "Hexo" && !force) {
                 loading = new KZ_Loading('正在校验并保存中...');
-            }
-            else {
+            } else {
                 loading = new KZ_Loading('正在保存中...');
             }
             loading.show();
@@ -902,10 +920,25 @@
         function set_excerpt() {
             let loading = new KZ_Loading('正在保存中...');
             loading.show();
+            let form = $('#excerpt-settings').serializeArray();
+            let params = {};
+            for (let i = 0; i < form.length; i++) {
+                params[form[i]["name"]] = form[i]["value"];
+            }
+            delete params["auto-excerpt"];
+            delete params["excerpt-type"];
+            delete params["csrfmiddlewaretoken"];
             $.ajax({
                 url: '/api/set_excerpt/',
                 method: 'post',
-                data: $('#excerpt-settings').serialize(),
+                data: {
+                    "excerpt": JSON.stringify({
+                        "method": $("#excerpt-method-container").val(),
+                        "auto": $("#auto-excerpt").val(),
+                        "save_key": $("#save-key").val(),
+                        "params": params
+                    })
+                },
                 dataType: "json",
                 success: function (res) {
                     loading.destroy();
@@ -1458,6 +1491,106 @@
             change_image_host("关闭");
         }
         $("#image-type").html(image_type_container);
+
+        const all_excerpt = {
+            "本地": {
+                "length": {"description": "摘要长度", "placeholder": "截取的长度"}
+            },
+            "TianliGPT": {
+                "key": {"description": "用户密钥", "placeholder": "在爱发电获得的用户密钥"},
+                "length": {"description": "发送长度", "placeholder": "发送到服务端的内容长度"}
+            }
+            /*
+            "ChatGPT": {
+
+            }
+            */
+        };
+        {% if AUTO_EXCERPT_CONFIG %}
+            var now_excerpt = {{ AUTO_EXCERPT_CONFIG | safe }};
+        {% else %}
+            var now_excerpt = "";
+        {% endif %}
+
+        function change_excerpt(provider) {
+            let params = all_excerpt[provider];
+            let t = 0;
+            let html = '';
+            if (provider === now_excerpt.method) {
+                for (let key in params) {
+                    if (t % 2 === 0) {  // first param
+                        html += `<div class="row">
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label class="form-control-label">` +
+                            params[key]["description"] +
+                            `</label>
+                                        <input type="text" name="` + key + `" class="form-control"
+                                               placeholder="` + params[key]["placeholder"] + `"
+                                               value="` + escapeString(now_excerpt["params"][key]) + `">
+                                    </div>
+                                </div>`
+                        t += 1;
+                    } else {
+                        html += `<div class="col-lg-6">
+                                <div class="form-group">
+                                    <label class="form-control-label">` + params[key]["description"] + `</label>
+                                    <input type="text" name="` + key + `" class="form-control"
+                                           placeholder="` + params[key]["placeholder"] + `"
+                                           value="` + escapeString(now_excerpt["params"][key])
+                            + `">
+                                </div>
+                            </div>
+                        </div>`
+                        t += 1;
+                    }
+                }
+            } else {
+                for (let key in params) {
+                    if (t % 2 === 0) {  // first param
+                        html += `<div class="row">
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label class="form-control-label">` + params[key]["description"] + `</label>
+                                        <input type="text" name="` + key + `" class="form-control"
+                                               placeholder="` + params[key]["placeholder"] + `"
+                                               value="">
+                                    </div>
+                                </div>`
+                        t += 1;
+                    } else {
+                        html += `<div class="col-lg-6">
+                                <div class="form-group">
+                                    <label class="form-control-label">` + params[key]["description"] + `</label>
+                                    <input type="text" name="` + key + `" class="form-control"
+                                           placeholder="` + params[key]["placeholder"] + `"
+                                           value="">
+                                </div>
+                            </div>
+                        </div>`
+                        t += 1;
+                    }
+                }
+            }
+            if (t % 2 === 1) {
+                html += '</div>';
+            }
+            $("#excerpt-container").html(html);
+        }
+
+        let excerpt_container = "";
+        for (let key in all_excerpt) {
+            if (now_excerpt["method"] === key) {
+                excerpt_container += `<option selected>` + key + `</option>`;
+                change_excerpt(key);
+            } else {
+                excerpt_container += `<option>` + key + `</option>`;
+            }
+        }
+        if (!now_excerpt["method"]) {
+            change_excerpt("本地");
+        }
+        $("#excerpt-method-container").html(excerpt_container);
 
     </script>
 {% endblock javascripts %}

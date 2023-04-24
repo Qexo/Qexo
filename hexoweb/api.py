@@ -869,10 +869,8 @@ def set_sidebar(request):
 @login_required(login_url="/login/")
 def set_excerpt(request):
     try:
-        enable = request.POST.get("EXCERPT_POST")
-        length = request.POST.get("EXCERPT_LENGTH")
-        save_setting("EXCERPT_POST", enable)
-        save_setting("EXCERPT_LENGTH", length)
+        excerpt = request.POST.get("excerpt")
+        save_setting("AUTO_EXCERPT_CONFIG", excerpt)
         context = {"msg": "修改成功！", "status": True}
     except Exception as error:
         logging.error(repr(error))

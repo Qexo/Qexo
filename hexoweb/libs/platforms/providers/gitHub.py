@@ -40,13 +40,13 @@ class Github(Provider):
                 results.append({
                     "name": file.name,
                     "size": file.size,
-                    "path": file.path,
+                    "path": file.path if not file.path.startswith(self.path) else file.path[len(self.path):],
                     "type": file.type
                 })
             if file.type == "dir":
                 results.append({
                     "name": file.name,
-                    "path": file.path,
+                    "path": file.path if not file.path.startswith(self.path) else file.path[len(self.path):],
                     "type": file.type
                 })
         logging.info("获取路径{}成功".format(path))

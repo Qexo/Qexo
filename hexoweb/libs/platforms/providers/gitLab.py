@@ -41,13 +41,13 @@ class Gitlab(Provider):
                 results.append({
                     "name": file["name"],
                     "size": 0,
-                    "path": file["path"],
+                    "path": file["path"] if not file["path"].startswith(self.path) else file["path"][len(self.path):],
                     "type": "file"
                 })
             if file["type"] == "tree":
                 results.append({
                     "name": file["name"],
-                    "path": file["path"],
+                    "path": file["path"] if not file["path"].startswith(self.path) else file["path"][len(self.path):],
                     "type": "dir"
                 })
         logging.info("获取路径{}成功".format(path))

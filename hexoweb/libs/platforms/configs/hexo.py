@@ -19,7 +19,7 @@ config = {
         "path": ["source"],
         "depth": [2],
         "type": ["index.md", "index.html", ".md", ".html"],
-        "save_path": "source/${filename}",
+        "save_path": "source/${filename}.md",
         "scaffold": "scaffolds/page.md",
         "excludes": ["_posts", "_drafts"]
     },

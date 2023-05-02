@@ -484,12 +484,7 @@ def save_post(request):
         file_name = unicodedata.normalize('NFC', request.POST.get('file'))
         content = unicodedata.normalize('NFC', request.POST.get('content'))
         front_matter = json.loads(unicodedata.normalize('NFC', request.POST.get('front_matter')))
-        excerpt = ""
         try:
-            if get_setting("EXCERPT_POST") == "是":
-                excerpt = excerpt_post(content, get_setting("EXCERPT_LENGTH"))
-                logging.info(f"截取文章{file_name}摘要: " + excerpt)
-                front_matter["excerpt"] = excerpt
             front_matter = "---\n{}---".format(yaml.dump(front_matter, allow_unicode=True))
             if not content.startswith("\n"):
                 front_matter += "\n"
@@ -498,8 +493,6 @@ def save_post(request):
                 context = {"msg": "保存成功并提交部署！", "status": True, "path": result[1]}
             else:
                 context = {"msg": "保存成功！", "status": True, "path": result[1]}
-            if excerpt:
-                context["excerpt"] = excerpt
             delete_all_caches()
         except Exception as error:
             logging.error(repr(error))
@@ -515,13 +508,8 @@ def save_page(request):
         file_path = unicodedata.normalize('NFC', request.POST.get('file'))
         content = unicodedata.normalize('NFC', request.POST.get('content'))
         front_matter = json.loads(unicodedata.normalize('NFC', request.POST.get('front_matter')))
-        excerpt = ""
         commitchange = f"Update Page {file_path}"
         try:
-            if get_setting("EXCERPT_POST") == "是":
-                excerpt = excerpt_post(content, get_setting("EXCERPT_LENGTH"))
-                logging.info(f"截取页面{file_path}摘要: " + excerpt)
-                front_matter["excerpt"] = excerpt
             front_matter = "---\n{}---".format(yaml.dump(front_matter, allow_unicode=True))
             if not content.startswith("\n"):
                 front_matter += "\n"
@@ -529,8 +517,6 @@ def save_page(request):
                 context = {"msg": "保存成功并提交部署！", "status": True}
             else:
                 context = {"msg": "保存成功！", "status": True}
-            if excerpt:
-                context["excerpt"] = excerpt
         except Exception as error:
             logging.error(repr(error))
             context = {"msg": repr(error), "status": False}
@@ -545,12 +531,7 @@ def new_page(request):
         file_path = unicodedata.normalize('NFC', request.POST.get('file'))
         content = unicodedata.normalize('NFC', request.POST.get('content'))
         front_matter = json.loads(unicodedata.normalize('NFC', request.POST.get('front_matter')))
-        excerpt = ""
         try:
-            if get_setting("EXCERPT_POST") == "是":
-                excerpt = excerpt_post(content, get_setting("EXCERPT_LENGTH"))
-                logging.info(f"截取页面{file_path}摘要: " + excerpt)
-                front_matter["excerpt"] = excerpt
             front_matter = "---\n{}---".format(yaml.dump(front_matter, allow_unicode=True))
             if not content.startswith("\n"):
                 front_matter += "\n"
@@ -559,8 +540,6 @@ def new_page(request):
                 context = {"msg": "保存成功并提交部署！", "status": True, "path": result[1]}
             else:
                 context = {"msg": "保存成功！", "status": True, "path": result[1]}
-            if excerpt:
-                context["excerpt"] = excerpt
             delete_all_caches()
         except Exception as error:
             logging.error(repr(error))
@@ -576,13 +555,8 @@ def save_draft(request):
         file_name = unicodedata.normalize('NFC', request.POST.get('file'))
         content = unicodedata.normalize('NFC', request.POST.get('content'))
         front_matter = json.loads(unicodedata.normalize('NFC', request.POST.get('front_matter')))
-        excerpt = ""
         try:
             # 创建/更新草稿
-            if get_setting("EXCERPT_POST") == "是":
-                excerpt = excerpt_post(content, get_setting("EXCERPT_LENGTH"))
-                logging.info(f"截取文章{file_name}摘要: " + excerpt)
-                front_matter["excerpt"] = excerpt
             front_matter = "---\n{}---".format(yaml.dump(front_matter, allow_unicode=True))
             if not content.startswith("\n"):
                 front_matter += "\n"
@@ -591,8 +565,6 @@ def save_draft(request):
                 context = {"msg": "保存草稿成功并提交部署！", "status": True, "path": result[1]}
             else:
                 context = {"msg": "保存草稿成功！", "status": True, "path": result[1]}
-            if excerpt:
-                context["excerpt"] = excerpt
             delete_all_caches()
         except Exception as error:
             logging.error(repr(error))
@@ -869,10 +841,8 @@ def set_sidebar(request):
 @login_required(login_url="/login/")
 def set_excerpt(request):
     try:
-        enable = request.POST.get("EXCERPT_POST")
-        length = request.POST.get("EXCERPT_LENGTH")
-        save_setting("EXCERPT_POST", enable)
-        save_setting("EXCERPT_LENGTH", length)
+        excerpt = request.POST.get("excerpt")
+        save_setting("AUTO_EXCERPT_CONFIG", excerpt)
         context = {"msg": "修改成功！", "status": True}
     except Exception as error:
         logging.error(repr(error))

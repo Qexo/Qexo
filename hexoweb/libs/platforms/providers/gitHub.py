@@ -33,19 +33,20 @@ class Github(Provider):
             }
         """
         results = list()
-        contents = self.repo.get_contents(self.path + path, self.branch)
+        path = self.path + path
+        contents = self.repo.get_contents(path[:-1] if path.endswith("/") else path, self.branch)
         for file in contents:
             if file.type == "file":
                 results.append({
                     "name": file.name,
                     "size": file.size,
-                    "path": file.path,
+                    "path": file.path if not file.path.startswith(self.path) else file.path[len(self.path):],
                     "type": file.type
                 })
             if file.type == "dir":
                 results.append({
                     "name": file.name,
-                    "path": file.path,
+                    "path": file.path if not file.path.startswith(self.path) else file.path[len(self.path):],
                     "type": file.type
                 })
         logging.info("获取路径{}成功".format(path))

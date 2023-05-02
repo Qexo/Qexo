@@ -106,30 +106,30 @@ except:
                 'CLIENT': {
                     'host': os.environ.get("MONGODB_HOST"),
                     'port': int(os.environ.get("MONGODB_PORT")),
-                    'username': os.environ.get("MONGODB_USER") or os.environ["MONGODB_USERNAME"] or "root",
-                    'password': os.environ.get("MONGODB_PASS") or os.environ["MONGODB_PASSWORD"],
+                    'username': os.environ.get("MONGODB_USER") or os.environ.get("MONGODB_USERNAME") or "root",
+                    'password': os.environ.get("MONGODB_PASS") or os.environ.get("MONGODB_PASSWORD"),
                     'authSource': os.environ.get("MONGODB_DB") or "root",
                     'authMechanism': 'SCRAM-SHA-1'
                 }
             }
         }
-    elif os.environ.get("PG_HOST") or os.environ.get("POSTGRESQL_HOST"):  # 使用 PostgreSQL
+    elif os.environ.get("PG_HOST") or os.environ.get("POSTGRES_HOST"):  # 使用 PostgreSQL
         print("使用环境变量中的PostgreSQL数据库")
-        for env in ["PG_HOST", "PG_PORT", "PG_PASS"]:
-            if (env not in os.environ) and (env.replace("PG_", "POSTGRESQL_") not in os.environ):  # 识别不同的格式
-                if env == "PG_USER" and "POSTGRESQL_USERNAME" in os.environ:
+        for env in ["PG_HOST", "PG_PASS"]:
+            if (env not in os.environ) and (env.replace("PG_", "POSTGRES_") not in os.environ):  # 识别不同的格式
+                if env == "PG_USER" and "POSTGRES_USERNAME" in os.environ:
                     continue
-                if env == "PG_PASS" and "POSTGRESQL_PASSWORD" in os.environ:
+                if env == "PG_PASS" and "POSTGRES_PASSWORD" in os.environ:
                     continue
                 errors += f"\"{env}\" "
         DATABASES = {
             'default': {
                 'ENGINE': 'django.db.backends.postgresql',
-                'NAME': os.environ.get("PG_DB") or os.environ["POSTGRESQL_DB"] or "root",
-                'USER': os.environ.get("PG_USER") or os.environ["POSTGRESQL_USERNAME"] or "root",
-                'PASSWORD': os.environ.get("PG_PASS") or os.environ["POSTGRESQL_PASSWORD"],
-                'HOST': os.environ.get("PG_HOST") or os.environ["POSTGRESQL_HOST"],
-                'PORT': os.environ.get("PG_PORT") or os.environ["POSTGRESQL_PORT"],
+                'NAME': os.environ.get("PG_DB") or os.environ.get("POSTGRES_DB") or os.environ.get("POSTGRES_DATABASE") or "root",
+                'USER': os.environ.get("PG_USER") or os.environ.get("POSTGRES_USERNAME") or os.environ.get("POSTGRES_USER") or "root",
+                'PASSWORD': os.environ.get("PG_PASS") or os.environ.get("POSTGRES_PASSWORD"),
+                'HOST': os.environ.get("PG_HOST") or os.environ.get("POSTGRES_HOST"),
+                'PORT': os.environ.get("PG_PORT") or os.environ.get("POSTGRES_PORT") or 5432,
             }
         }
     else:  # 使用MYSQL

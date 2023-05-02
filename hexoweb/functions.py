@@ -14,7 +14,6 @@ import html2text as ht
 import requests
 import unicodedata
 import yaml
-from bs4 import BeautifulSoup
 from django.core.management import execute_from_command_line
 from django.template.defaulttags import register
 from markdown import markdown
@@ -713,7 +712,7 @@ def get_post_details(article, safe=True):
         if not (article.startswith("---") or article.startswith(";;;")):
             article = ";;;\n" + article if ";;;" in article else "---\n" + article
         abbrlink = get_crc_by_time(str(time()), get_setting("ABBRLINK_ALG"), get_setting("ABBRLINK_REP"))
-        dateformat = strftime("%Y-%m-%d %H:%M:%S", localtime(time()))
+        dateformat = datetime.now(timezone.utc).astimezone().isoformat()
         front_matter = yaml.safe_load(
             re.search(r"---([\s\S]*?)---", article, flags=0).group()[3:-4].replace("{{ date }}", dateformat).replace("{{ abbrlink }}",
                                                                                                                      abbrlink).replace(
@@ -725,7 +724,7 @@ def get_post_details(article, safe=True):
         return {}, repr(article)
     for key in front_matter.keys():
         if type(front_matter.get(key)) in [datetime, date]:
-            front_matter[key] = front_matter[key].strftime("%Y-%m-%d %H:%M:%S")
+            front_matter[key] = front_matter[key].astimezone().isoformat()
     if safe:
         passage = repr(re.search(r"[;-][;-][;-]([\s\S]*)", article[3:], flags=0).group()[3:]).replace("<", "\\<").replace(">",
                                                                                                                           "\\>").replace(
@@ -897,17 +896,17 @@ def import_talks(ss):
         talk.save()
     return True
 
-
-def excerpt_post(content, length, mark=True):
-    if content is None:
-        content = ""
-    result, content = "", (markdown(content) if mark else content)
-    soup = BeautifulSoup(content, 'html.parser')
-    for dom in soup:
-        if dom.name and dom.name not in ["script", "style"]:
-            result += re.sub("{(.*?)}", '', dom.get_text()).replace("\n", " ")
-            result += "" if result.endswith(" ") else " "
-    return result[:int(length)] + "..." if (len(result) if result else 0) > int(length) else result
+#
+# def excerpt_post(content, length, mark=True):
+#     if content is None:
+#         content = ""
+#     result, content = "", (markdown(content) if mark else content)
+#     soup = BeautifulSoup(content, 'html.parser')
+#     for dom in soup:
+#         if dom.name and dom.name not in ["script", "style"]:
+#             result += re.sub("{(.*?)}", '', dom.get_text()).replace("\n", " ")
+#             result += "" if result.endswith(" ") else " "
+#     return result[:int(length)] + "..." if (len(result) if result else 0) > int(length) else result
 
 
 def edit_talk(_id, content):

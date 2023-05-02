@@ -1,7 +1,7 @@
 import json
 import random
 
-QEXO_VERSION = "2.7.0"
+QEXO_VERSION = "2.8.0"
 
 DEFAULT_EMOJI = {"微笑": "🙂", "撇嘴": "😦", "色": "😍", "发呆": "😍", "得意": "😎",
                  "流泪": "😭", "害羞": "😊", "闭嘴": "😷", "睡": "😴",
@@ -42,7 +42,7 @@ DEFAULT_UPDATES = [
 ALL_SETTINGS = [  # [名称, 默认值, 是否在尝试修复时重置, 简介]
     ["ABBRLINK_ALG", "crc16", False, "短链接算法"],
     ["ABBRLINK_REP", "dec", False, "短链接格式dec/hex"],
-    ["CDN_PREV", "https://unpkg.com/", True, "调用NPM的CDN前缀"],
+    ["CDN_PREV", "https://npm.onmicrosoft.cn/", True, "调用NPM的CDN前缀"],
     ["CDNJS", "https://cdn.staticfile.org/", True, "调用CDNJS的CDN前缀"],
     ["INIT", "2", False, "初始化标识"],
     ["QEXO_ICON", "https://unpkg.com/qexo-static@1.4.0/assets/img/brand/favicon.ico", False, "站点ICON"],
@@ -73,10 +73,11 @@ ALL_SETTINGS = [  # [名称, 默认值, 是否在尝试修复时重置, 简介]
      "[{\"search\":\"title\",\"name\":\"标题\",\"icon\":\"fas fa-heading\"},{\"search\":\"date\",\"name\":\"发布于\",\"icon\":\"fas fa-globe-americas\"},{\"search\":\"updated\",\"name\":\"更新于\",\"icon\":\"fas fa-calendar-alt\"}]",
      False, "页面侧边栏配置JSON"],
     ["TALK_SIDEBAR", "[]", False, "说说侧边栏配置JSON"],
-    ["EXCERPT_POST", "否", False, "是否开启在摘录为空时自动截取文章 是/否"],
-    ["EXCERPT_LENGTH", "200", False, "自动截取文章的长度"],
+    # ["EXCERPT_POST", "否", False, "是否开启在摘录为空时自动截取文章 是/否"],   # 弃用
+    # ["EXCERPT_LENGTH", "200", False, "自动截取文章的长度"],  # 弃用
     ["ALL_CDN", json.dumps(DEFAULT_CDN), True, "CDN列表"],
     ["ALL_UPDATES", json.dumps(DEFAULT_UPDATES), True, "更新源列表"],
     ["UPDATE_FROM", "false", False, "是否更新过"],
     ["JUMP_UPDATE", "false", False, "是否转跳到更新界面"],
+    ["AUTO_EXCERPT_CONFIG", "{}", False, "文章截取配置JSON"],
 ]

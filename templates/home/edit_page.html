@@ -20,7 +20,8 @@
                         </nav>
                     </div>
                     <div class="col-lg-6 col-5 text-right">
-                        <a href="/pages.html" class="btn btn-sm btn-neutral">页面列表</a>
+                        <a href="javascript:excerpt_post()"
+                           class="btn btn-sm btn-neutral">生成摘要</a>
                         <a href="javascript:SaveChanges()" class="btn btn-sm btn-neutral">保存</a>
                     </div>
                 </div>
@@ -144,40 +145,43 @@
                 return false;
             }
             var loading = new KZ_Loading('正在保存中...');
-            _status = false;
-            loading.show();
-            $.ajax({
-                url: '/api/save_page/',
-                method: 'post',
-                data: {
-                    "file": "{{ file_path }}", "content": vditor.getValue(), "front_matter":
-                        JSON.stringify(get_front_matter())
-                },
-                dataType: 'JSON',
-                success: function (res) {
-                    loading.destroy();
-                    if (res.status) {
-                        notyf.success(res.msg);
-                        if(res.excerpt){
-                            front_matter = get_front_matter();
-                            front_matter.excerpt = res.excerpt;
-                            OrgSidebar = [...Sidebar];
-                            showSidebar(true);
+            let nextstep = function () {
+                _status = false;
+                loading.show();
+                $.ajax({
+                    url: '/api/save_page/',
+                    method: 'post',
+                    data: {
+                        "file": "{{ file_path }}", "content": vditor.getValue(), "front_matter":
+                            JSON.stringify(get_front_matter())
+                    },
+                    dataType: 'JSON',
+                    success: function (res) {
+                        loading.destroy();
+                        if (res.status) {
+                            notyf.success(res.msg);
+                            if (res.excerpt) {
+                                front_matter = get_front_matter();
+                                front_matter.excerpt = res.excerpt;
+                                OrgSidebar = [...Sidebar];
+                                showSidebar(true);
+                            }
+                            _status = true;
+                            file_content = vditor.getValue();
+                        } else {
+                            notyf.error(res.msg);
+                            _status = true;
                         }
-                        _status = true;
-                        file_content = vditor.getValue();
-                    } else {
-                        notyf.error(res.msg);
+                    },
+                    error: function (res) {
+                        loading.destroy();
+                        notyf.error("网络错误！");
                         _status = true;
                     }
-                },
-                error: function (res) {
-                    loading.destroy();
-                    notyf.error("网络错误！");
-                    _status = true;
-                }
-            })
-
+                })
+            }
+            if (excerpt_config.auto !== "关闭") excerpt_post(nextstep);
+            else nextstep();
         }
 
         function fIsMobile() {
@@ -512,7 +516,7 @@
             }
             for (let i = 0; i < OrgSidebar.length; i++) {
                 if (OrgSidebar[i]["search"] === "updated" || OrgSidebar[i]["search"] === "lastmod") {
-                    content = new Date().toUTCString();
+                    content = getRFC3339();
                 } else if (front[OrgSidebar[i]["search"]] !== undefined) {
                     content = front[OrgSidebar[i]["search"]];
                 } else content = "";
@@ -588,8 +592,8 @@
                                     <div class="input-group">
                                         <input type="text" class="form-control" name="icon"
                                                placeholder="若有多级, 请使用JSON格式"  value="` +
-                    escapeString(typeof(front_matter[keys[i]]) === "object" ? JSON.stringify
-                (front_matter[keys[i]]) : front_matter[keys[i]]) + `">
+                    escapeString(typeof (front_matter[keys[i]]) === "object" ? JSON.stringify
+                    (front_matter[keys[i]]) : front_matter[keys[i]]) + `">
                                         <div class="input-group-append">
                                             <button class="btn" type="button"
                                                     style="border: 1px solid #dee2e6;border-radius: 0 .25rem .25rem 0"
@@ -604,4 +608,5 @@
             $("#bottom-container").html(html);
         }
     </script>
+    {% include "includes/editor-scripts.html" %}
 {% endblock javascripts %}

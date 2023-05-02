@@ -22,7 +22,8 @@
                         </nav>
                     </div>
                     <div class="col-lg-6 col-5 text-right">
-                        <a href="/pages.html" class="btn btn-sm btn-neutral">页面列表</a>
+                        <a href="javascript:excerpt_post()"
+                           class="btn btn-sm btn-neutral">生成摘要</a>
                         <a href="javascript:SaveChanges()" class="btn btn-sm btn-neutral">保存</a>
                     </div>
                 </div>
@@ -149,37 +150,40 @@
                     return false;
                 }
                 let loading = new KZ_Loading('正在保存中...');
-                _status = false;
-                loading.show();
-                $.ajax({
-                    url: '/api/new_page/',
-                    method: 'post',
-                    data: {
-                        "file": $("input[name='filename']").val(),
-                        "content": vditor.getValue(),
-                        "front_matter":
-                            JSON.stringify(get_front_matter())
-                    },
-                    dataType: 'JSON',
-                    success: function (res) {
-                        loading.destroy();
-                        if (res.status) {
-                            notyf.success(res.msg + "等待转跳...");
-                            file_content = vditor.getValue();
-                            setTimeout(window.location.href = "edit_page.html?file=" +
-                                encodeURIComponent(res.path), 1000);
-                        } else {
-                            notyf.error(res.msg);
+                let nextstep = function () {
+                    _status = false;
+                    loading.show();
+                    $.ajax({
+                        url: '/api/new_page/',
+                        method: 'post',
+                        data: {
+                            "file": $("input[name='filename']").val(),
+                            "content": vditor.getValue(),
+                            "front_matter":
+                                JSON.stringify(get_front_matter())
+                        },
+                        dataType: 'JSON',
+                        success: function (res) {
+                            loading.destroy();
+                            if (res.status) {
+                                notyf.success(res.msg + "等待转跳...");
+                                file_content = vditor.getValue();
+                                setTimeout(window.location.href = "edit_page.html?file=" +
+                                    encodeURIComponent(res.path), 1000);
+                            } else {
+                                notyf.error(res.msg);
+                            }
+                            _status = true;
+                        },
+                        error: function (res) {
+                            loading.destroy();
+                            notyf.error("网络错误！");
+                            _status = true;
                         }
-                        _status = true;
-                    },
-                    error: function (res) {
-                        loading.destroy();
-                        notyf.error("网络错误！");
-                        _status = true;
-                    }
-                })
-
+                    })
+                }
+                if (excerpt_config.auto !== "关闭") excerpt_post(nextstep);
+                else nextstep();
             }
         }
 
@@ -518,7 +522,7 @@
             }
             for (let i = 0; i < OrgSidebar.length; i++) {
                 if (OrgSidebar[i]["search"] === "updated" || OrgSidebar[i]["search"] === "lastmod") {
-                    content = new Date().toUTCString();
+                    content = getRFC3339();
                 } else if (front[OrgSidebar[i]["search"]] !== undefined) {
                     content = front[OrgSidebar[i]["search"]];
                 } else content = "";
@@ -611,4 +615,5 @@
         }
 
     </script>
+    {% include "includes/editor-scripts.html" %}
 {% endblock javascripts %}

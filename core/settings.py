@@ -115,7 +115,7 @@ except:
         }
     elif os.environ.get("PG_HOST") or os.environ.get("POSTGRES_HOST"):  # 使用 PostgreSQL
         print("使用环境变量中的PostgreSQL数据库")
-        for env in ["PG_HOST", "PG_PORT", "PG_PASS"]:
+        for env in ["PG_HOST", "PG_PASS"]:
             if (env not in os.environ) and (env.replace("PG_", "POSTGRES_") not in os.environ):  # 识别不同的格式
                 if env == "PG_USER" and "POSTGRES_USERNAME" in os.environ:
                     continue
@@ -129,7 +129,7 @@ except:
                 'USER': os.environ.get("PG_USER") or os.environ.get("POSTGRES_USERNAME") or "root",
                 'PASSWORD': os.environ.get("PG_PASS") or os.environ.get("POSTGRES_PASSWORD"),
                 'HOST': os.environ.get("PG_HOST") or os.environ.get("POSTGRES_HOST"),
-                'PORT': os.environ.get("PG_PORT") or os.environ.get("POSTGRES_PORT"),
+                'PORT': os.environ.get("PG_PORT") or os.environ.get("POSTGRES_PORT") or 5432,
             }
         }
     else:  # 使用MYSQL

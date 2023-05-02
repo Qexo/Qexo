@@ -20,7 +20,8 @@
                         </nav>
                     </div>
                     <div class="col-lg-6 col-5 text-right">
-                        <a href="javascript:excerpt_post()" class="btn btn-sm btn-neutral">生成摘要</a>
+                        <a href="javascript:excerpt_post()"
+                           class="btn btn-sm btn-neutral">生成摘要</a>
                         <a href="javascript:SaveDraft()" class="btn btn-sm btn-neutral">保存草稿</a>
                         <a href="javascript:Publish()" class="btn btn-sm btn-neutral">发布</a>
                     </div>
@@ -146,34 +147,37 @@
                 return false;
             }
             var loading = new KZ_Loading('正在保存中...');
-            _status = false;
-            if (excerpt_config.auto !== "关闭") excerpt_post();
-            loading.show();
-            $.ajax({
-                url: '/api/save_post/',
-                method: 'post',
-                data: {
-                    "file": "{{ filename }}", "content": vditor.getValue(), "front_matter":
-                        JSON.stringify(get_front_matter()), "path": "{{ fullname }}"
-                },
-                dataType: 'JSON',
-                success: function (res) {
-                    loading.destroy();
-                    if (res.status) {
-                        notyf.success(res.msg);
-                        file_content = vditor.getValue();
-                        _status = true;
-                    } else {
-                        notyf.error(res.msg);
+            let nextstep = function () {
+                _status = false;
+                loading.show();
+                $.ajax({
+                    url: '/api/save_post/',
+                    method: 'post',
+                    data: {
+                        "file": "{{ filename }}", "content": vditor.getValue(), "front_matter":
+                            JSON.stringify(get_front_matter()), "path": "{{ fullname }}"
+                    },
+                    dataType: 'JSON',
+                    success: function (res) {
+                        loading.destroy();
+                        if (res.status) {
+                            notyf.success(res.msg);
+                            file_content = vditor.getValue();
+                            _status = true;
+                        } else {
+                            notyf.error(res.msg);
+                            _status = true;
+                        }
+                    },
+                    error: function (res) {
+                        loading.destroy();
+                        notyf.error("网络错误！");
                         _status = true;
                     }
-                },
-                error: function (res) {
-                    loading.destroy();
-                    notyf.error("网络错误！");
-                    _status = true;
-                }
-            })
+                })
+            }
+            if (excerpt_config.auto !== "关闭") excerpt_post(nextstep);
+            else nextstep();
         }
 
         function SaveDraft() {
@@ -181,34 +185,38 @@
                 return false;
             }
             let loading = new KZ_Loading('草稿保存中...');
-            _status = false;
-            if (excerpt_config.auto === "总是截取") excerpt_post();
-            loading.show();
-            $.ajax({
-                url: '/api/save_draft/',
-                method: 'post',
-                data: {
-                    "file": "{{ filename }}", "content": vditor.getValue(), "front_matter":
-                        JSON.stringify(get_front_matter()), "path": "{{ file }}"
-                },
-                dataType: 'JSON',
-                success: function (res) {
-                    loading.destroy();
-                    if (res.status) {
-                        notyf.success(res.msg);
-                        file_content = vditor.getValue();
-                        _status = true;
-                    } else {
-                        notyf.error(res.msg);
+            let nextstep = function () {
+                loading.show();
+                _status = false;
+                $.ajax({
+                    url: '/api/save_draft/',
+                    method: 'post',
+                    data: {
+                        "file": "{{ filename }}", "content": vditor.getValue(), "front_matter":
+                            JSON.stringify(get_front_matter()), "path": "{{ file }}"
+                    },
+                    dataType: 'JSON',
+                    success: function (res) {
+                        loading.destroy();
+                        if (res.status) {
+                            notyf.success(res.msg);
+                            file_content = vditor.getValue();
+                            _status = true;
+                        } else {
+                            notyf.error(res.msg);
+                            _status = true;
+                        }
+                    },
+                    error: function (res) {
+                        loading.destroy();
+                        notyf.error("网络错误！");
                         _status = true;
                     }
-                },
-                error: function (res) {
-                    loading.destroy();
-                    notyf.error("网络错误！");
-                    _status = true;
-                }
-            })
+                })
+            }
+            if (excerpt_config.auto === "总是截取") excerpt_post(nextstep);
+            else nextstep();
+
         }
 
         function fIsMobile() {
@@ -790,6 +798,6 @@
             $("#bottom-container").html(html);
         }
     </script>
-{% include "includes/editor-scripts.html" %}
+    {% include "includes/editor-scripts.html" %}
 {% endblock javascripts %}
 

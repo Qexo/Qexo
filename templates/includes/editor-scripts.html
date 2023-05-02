@@ -1,20 +1,24 @@
 <script>
     const excerpt_config = {{ AUTO_EXCERPT_CONFIG | safe }};
 
-    function excerpt_post() {
+    function excerpt_post(nextstep = function () {
+    }) {
         let method = excerpt_config.method;
         let html = vditor.getHTML();
         let excerpt = "";
         if (method === "本地") {
             excerpt = excerpt_by_local(html, excerpt_config.params.length);
-        } else if (method === "TianliGPT") {
-            excerpt = excerpt_by_tianli(html, excerpt_config.params.length, excerpt_config.params
-                .key);
+            front_matter = get_front_matter();
+            front_matter[excerpt_config.save_key] = excerpt;
+            OrgSidebar = [...Sidebar];
+            showSidebar(true);
+            nextstep();
         }
-        front_matter = get_front_matter();
-        front_matter[excerpt_config.save_key] = excerpt;
-        OrgSidebar = [...Sidebar];
-        showSidebar(true);
+
+        if (method === "TianliGPT") {
+            excerpt_by_tianli(html, excerpt_config.params.length, excerpt_config.params
+                .key, nextstep);
+        }
     }
 
     function excerpt_by_local(content, length) {
@@ -27,42 +31,32 @@
         return excerpt.substring(0, length) + (content.length > length ? "..." : "");
     }
 
-    function excerpt_by_tianli(content, length, key) {
+    function excerpt_by_tianli(content, length, key, nextstep) {
         let excerpt = excerpt_by_local(content, length);
-        let uri = "https://summary.tianli0.top/?content=" + encodeURIComponent(excerpt) + "&key="
-            + encodeURIComponent(key);
-        let ajax;
-        try {
-            // Firefox, Opera 8.0+, Safari
-            ajax = new XMLHttpRequest();
-        } catch (e) {
-            // Internet Explorer
-            try {
-                ajax = new ActiveXObject("Msxml2.XMLHTTP");
-            } catch (e) {
-                try {
-                    ajax = new ActiveXObject("Microsoft.XMLHTTP");
-                } catch (e) {
-                    alert("糟糕,你的浏览器不能上传文件!");
-                    return false;
-                }
+        let loading = new KZ_Loading('摘要获取中...');
+        loading.show();
+        $.ajax({
+            url: "https://summary.tianli0.top/",
+            type: "GET",
+            dataType: "json",
+            data: {
+                "content": excerpt,
+                "key": key
+            },
+            success: function (data, status, xhr) {
+                loading.destroy();
+                excerpt = data["summary"];
+                front_matter = get_front_matter();
+                front_matter[excerpt_config.save_key] = excerpt;
+                OrgSidebar = [...Sidebar];
+                showSidebar(true);
+                nextstep();
+            },
+            error: function (data) {
+                loading.destroy();
+                notyf.error("摘要生成失败: " + data.responseText);
             }
-        }
-        ajax.open("get", uri, false);
-        ajax.onreadystatechange = function () {
-            if (ajax.readyState === 4) {
-                let res = ajax.response;
-                if (ajax.status === 200) {
-                    res = JSON.parse(res);
-                    excerpt = res["summary"];
-                    notyf.success("摘要生成成功!");
-                } else {
-                    notyf.error(res);
-                }
-            }
-        };
-        ajax.send();
-        console.log(excerpt);
+        });
         return excerpt;
     }
 </script>

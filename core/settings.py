@@ -106,8 +106,8 @@ except:
                 'CLIENT': {
                     'host': os.environ.get("MONGODB_HOST"),
                     'port': int(os.environ.get("MONGODB_PORT")),
-                    'username': os.environ.get("MONGODB_USER") or os.environ["MONGODB_USERNAME"] or "root",
-                    'password': os.environ.get("MONGODB_PASS") or os.environ["MONGODB_PASSWORD"],
+                    'username': os.environ.get("MONGODB_USER") or os.environ.get("MONGODB_USERNAME") or "root",
+                    'password': os.environ.get("MONGODB_PASS") or os.environ.get("MONGODB_PASSWORD"),
                     'authSource': os.environ.get("MONGODB_DB") or "root",
                     'authMechanism': 'SCRAM-SHA-1'
                 }

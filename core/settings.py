@@ -126,7 +126,7 @@ except:
             'default': {
                 'ENGINE': 'django.db.backends.postgresql',
                 'NAME': os.environ.get("PG_DB") or os.environ.get("POSTGRES_DB") or os.environ.get("POSTGRES_DATABASE") or "root",
-                'USER': os.environ.get("PG_USER") or os.environ.get("POSTGRES_USERNAME") or "root",
+                'USER': os.environ.get("PG_USER") or os.environ.get("POSTGRES_USERNAME") or os.environ.get("POSTGRES_USER") or "root",
                 'PASSWORD': os.environ.get("PG_PASS") or os.environ.get("POSTGRES_PASSWORD"),
                 'HOST': os.environ.get("PG_HOST") or os.environ.get("POSTGRES_HOST"),
                 'PORT': os.environ.get("PG_PORT") or os.environ.get("POSTGRES_PORT") or 5432,

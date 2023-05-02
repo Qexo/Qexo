@@ -33,7 +33,8 @@ class Github(Provider):
             }
         """
         results = list()
-        contents = self.repo.get_contents(self.path + path, self.branch)
+        path = self.path + path
+        contents = self.repo.get_contents(path[:-1] if path.endswith("/") else path, self.branch)
         for file in contents:
             if file.type == "file":
                 results.append({

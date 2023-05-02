@@ -540,6 +540,9 @@
         else if (typeof (front_matter["categories"]) === "string") categories = [front_matter["categories"]];
         else categories = [];
 
+        trimSpace(categories);
+        trimSpace(tags);
+
         function show_tags() {
             let html = "";
             for (let i = 0; i < tags.length; i++) {

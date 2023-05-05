@@ -79,5 +79,5 @@ ALL_SETTINGS = [  # [名称, 默认值, 是否在尝试修复时重置, 简介]
     ["ALL_UPDATES", json.dumps(DEFAULT_UPDATES), True, "更新源列表"],
     ["UPDATE_FROM", "false", False, "是否更新过"],
     ["JUMP_UPDATE", "false", False, "是否转跳到更新界面"],
-    ["AUTO_EXCERPT_CONFIG", "{}", False, "文章截取配置JSON"],
+    ["AUTO_EXCERPT_CONFIG", '{"method":"本地","auto":"关闭","save_key":"excerpt","params":{"save_key":"excerpt","length":"200"}}', False, "文章截取配置JSON"],
 ]

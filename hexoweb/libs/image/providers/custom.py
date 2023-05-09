@@ -61,4 +61,4 @@ class Custom(Provider):
                     data = data[path]
         else:
             data = response.text
-        return str(self.custom_url) + data
+        return str(self.custom_url) + str(data)

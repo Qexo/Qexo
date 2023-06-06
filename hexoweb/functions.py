@@ -709,26 +709,34 @@ def verify_provider(provider):
 
 
 def get_post_details(article, safe=True):
+    flag = False
+    if not (article.startswith("---") or article.startswith(";;;")):
+        flag = True
+        if ";;;" in article:
+            article = ";;;\n" + article
+        elif "---" in article:
+            article = "---\n" + article
+    abbrlink = get_crc_by_time(str(time()), get_setting("ABBRLINK_ALG"), get_setting("ABBRLINK_REP"))
+    dateformat = datetime.now(timezone.utc).astimezone().isoformat()
     try:
-        if not (article.startswith("---") or article.startswith(";;;")):
-            article = ";;;\n" + article if ";;;" in article else "---\n" + article
-        abbrlink = get_crc_by_time(str(time()), get_setting("ABBRLINK_ALG"), get_setting("ABBRLINK_REP"))
-        dateformat = datetime.now(timezone.utc).astimezone().isoformat()
-        front_matter = yaml.safe_load(
-            re.search(r"---([\s\S]*?)---", article, flags=0).group()[3:-4].replace("{{ date }}", dateformat).replace("{{ abbrlink }}",
-                                                                                                                     abbrlink).replace(
-                "{{ slug }}", abbrlink).replace("{", "").replace("}", "")) if article[:3] == "---" else json.loads("{{{}}}".format(
-            re.search(r";;;([\s\S]*?);;;", article, flags=0).group()[3:-4].replace("{{ date }}", dateformat).replace("{{ abbrlink }}",
-                                                                                                                     abbrlink).replace(
-                "{{ slug }}", abbrlink)))
-    except Exception:
-        return {}, repr(article)
-    if not front_matter:
-        front_matter = {}
-    else:
-        for key in front_matter.keys():
-            if type(front_matter.get(key)) in [datetime, date]:
-                front_matter[key] = front_matter[key].astimezone().isoformat()
+        if article[:3] == "---":
+            front_matter = re.search(r"---([\s\S]*?)---", article, flags=0).group()[3:-4]
+            front_matter = front_matter.replace("{{ date }}", dateformat).replace("{{ abbrlink }}", abbrlink).replace("{{ slug }}", abbrlink).replace("{", "").replace("}", "")
+            front_matter = yaml.safe_load(front_matter)
+        elif article[:3] == ";;;":
+            front_matter = json.loads("{{{}}}".format(
+                re.search(r";;;([\s\S]*?);;;", article, flags=0).group()[3:-4].replace("{{ date }}", dateformat).replace("{{ abbrlink }}",
+                                                                                                                         abbrlink).replace(
+                    "{{ slug }}", abbrlink)))
+        else:
+            front_matter = {}
+    except:
+        if flag:
+            article = article[3:]
+        return {}, repr(article).replace("<", "\\<").replace(">", "\\>").replace("!", "\\!") if safe else article
+    for key in front_matter.keys():
+        if type(front_matter.get(key)) in [datetime, date]:
+            front_matter[key] = front_matter[key].astimezone().isoformat()
     if safe:
         passage = repr(re.search(r"[;-][;-][;-]([\s\S]*)", article[3:], flags=0).group()[3:]).replace("<", "\\<").replace(">",
                                                                                                                           "\\>").replace(

@@ -734,6 +734,8 @@ def get_post_details(article, safe=True):
         if flag:
             article = article[3:]
         return {}, repr(article).replace("<", "\\<").replace(">", "\\>").replace("!", "\\!") if safe else article
+    if not front_matter:
+        front_matter = {}
     for key in front_matter.keys():
         if type(front_matter.get(key)) in [datetime, date]:
             front_matter[key] = front_matter[key].astimezone().isoformat()

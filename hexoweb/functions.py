@@ -730,21 +730,25 @@ def get_post_details(article, safe=True):
                     "{{ slug }}", abbrlink)))
         else:
             front_matter = {}
-    except:
+    except Exception:
         if flag:
             article = article[3:]
         return {}, repr(article).replace("<", "\\<").replace(">", "\\>").replace("!", "\\!") if safe else article
     if not front_matter:
         front_matter = {}
-    for key in front_matter.keys():
-        if type(front_matter.get(key)) in [datetime, date]:
-            front_matter[key] = front_matter[key].astimezone().isoformat()
-    if safe:
-        passage = repr(re.search(r"[;-][;-][;-]([\s\S]*)", article[3:], flags=0).group()[3:]).replace("<", "\\<").replace(">",
-                                                                                                                          "\\>").replace(
-            "!", "\\!")
+        if flag:
+            article = article[3:]
+        passage = repr(article).replace("<", "\\<").replace(">", "\\>").replace("!", "\\!") if safe else article
     else:
-        passage = re.search(r"[;-][;-][;-]([\s\S]*)", article[3:], flags=0).group()[3:]
+        for key in front_matter.keys():
+            if type(front_matter.get(key)) in [datetime, date]:
+                front_matter[key] = front_matter[key].astimezone().isoformat()
+        if safe:
+            passage = repr(re.search(r"[;-][;-][;-]([\s\S]*)", article[3:], flags=0).group()[3:]).replace("<", "\\<").replace(">",
+                                                                                                                              "\\>").replace(
+                "!", "\\!")
+        else:
+            passage = re.search(r"[;-][;-][;-]([\s\S]*)", article[3:], flags=0).group()[3:]
     return front_matter, passage
 
 

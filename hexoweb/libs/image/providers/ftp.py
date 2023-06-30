@@ -11,6 +11,7 @@ from datetime import date
 from ..core import Provider
 from ..replace import replace_path
 
+
 class Ftp(Provider):
     name = 'FTP协议'
     params = {
@@ -38,8 +39,8 @@ class Ftp(Provider):
         ftp.connect(self.host, int(self.port))
         ftp.login(self.user, self.password)
         now = date.today()
-        path = replace_path(self.path,file)
+        path = replace_path(self.path, file)
 
         bufsize = 1024
         ftp.storbinary('STOR ' + path, file, bufsize)
-        return replace_path(self.prev_url,file)
+        return replace_path(self.prev_url, file)

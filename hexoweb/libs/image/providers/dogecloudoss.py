@@ -58,8 +58,8 @@ class DogeCloudOss(Provider):
         now = date.today()
         photo_stream = file.read()
         file_md5 = md5(photo_stream).hexdigest()
-        path = replace_path(self.path,file)
-        
+        path = replace_path(self.path, file)
+
         res = self.dogecloud_api()
         if res['code'] != 200:
             raise Exception("Api failed: " + res['msg'])
@@ -76,4 +76,4 @@ class DogeCloudOss(Provider):
         bucket.put_object(Key=path, Body=photo_stream,
                           ContentType=file.content_type)
 
-        return replace_path(self.prev_url,file)
+        return replace_path(self.prev_url, file)

@@ -1,5 +1,4 @@
 Django==3.2.18
-PyMySQL==1.0.2
 boto3==1.26.94
 requests==2.28.2
 PyGithub==1.58.1

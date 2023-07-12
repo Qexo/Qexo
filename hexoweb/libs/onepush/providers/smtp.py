@@ -23,7 +23,7 @@ def _default_message_parser(
     # Send to yourself if `To` address not provided
     msg["To"] = To or user
 
-    msg.set_content(content)
+    msg.add_alternative(content, subtype='html')
     return msg
 
 

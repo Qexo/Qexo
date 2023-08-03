@@ -18,6 +18,10 @@
                             </ol>
                         </nav>
                     </div>
+                    <div class="col-lg-6 col-5 text-right">
+                        <a href="/" class="btn btn-sm btn-neutral">主页</a>
+                        <a href="/userscripts.html" class="btn btn-sm btn-neutral">云端命令</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -229,6 +233,28 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">登录页 reCaptchaV2
+                                                用户端密钥</label>
+                                            <input type="text" name="site-token-v2"
+                                                   class="form-control"
+                                                   placeholder="留空即关闭该功能"
+                                                   value="{{ LOGIN_RECAPTCHAV2_SITE_TOKEN }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">登录页 reCaptchaV2
+                                                服务器端密钥</label>
+                                            <input type="text" name="server-token-v2"
+                                                   class="form-control"
+                                                   placeholder="留空即关闭该功能"
+                                                   value="{{ LOGIN_RECAPTCHAV2_SERVER_TOKEN }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
                                         <input type="button" class="btn btn-primary" value="提交"
                                                onclick="submit_security_config()">
                                     </div>
@@ -237,7 +263,7 @@
                         </form>
                         <form id="hexo-settings" onsubmit="return false;">
                             <hr class="my-4"/>
-                            <h6 class="heading-small text-muted mb-4">Hexo配置</h6>
+                            <h6 class="heading-small text-muted mb-4">博客配置</h6>
                             <div class="pl-lg-4">
                                 {% csrf_token %}
                                 <div class="row">
@@ -250,12 +276,29 @@
                                             </select>
                                         </div>
                                     </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">使用配置</label>
+                                            <select name="config" id="config-container"
+                                                    class="form-control">
+                                                {% for config in ALL_PLATFORM_CONFIGS %}
+                                                    <option value="{{ config }}"
+                                                            {% if NOW_PLATFORM_CONFIG == config %}
+                                                            selected{% endif %}
+                                                    >{{ config }}</option>
+                                                {% endfor %}
+                                            </select>
+
+                                        </div>
+                                    </div>
                                 </div>
                                 <div id="hexo-settings-container"></div>
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <input type="button" class="btn btn-primary" value="提交"
-                                               onclick="set_hexo()">
+                                               onclick="set_hexo(false)">
+                                        <input type="button" class="btn btn-white" value="强制提交"
+                                               onclick="set_hexo(true)">
                                     </div>
                                 </div>
                             </div>
@@ -330,32 +373,50 @@
                         </form>
                         <form id="excerpt-settings" onsubmit="return false;">
                             <hr class="my-4"/>
-                            <h6 class="heading-small text-muted mb-4">自动截取配置</h6>
+                            <h6 class="heading-small text-muted mb-4">文章截取配置</h6>
                             <div class="pl-lg-4">
                                 <div class="row">
                                     {% csrf_token %}
                                     <div class="col-lg-6">
-                                        <label class="form-control-label">保存时自动截取</label>
-                                        <select class="form-control" name="EXCERPT_POST"
-                                                id="excerpt-post">
-                                            <option{% if EXCERPT_POST == "是" %} selected
-                                            {% endif %}>是
-                                            </option>
-                                            <option{% if EXCERPT_POST != "是" %} selected
-                                            {% endif %}>否
-                                            </option>
-                                        </select>
-                                    </div>
-                                    <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">截取长度</label>
-                                            <input type="text" name="EXCERPT_LENGTH"
-                                                   class="form-control"
-                                                   placeholder="截取文字长度"
-                                                   value="{{ EXCERPT_LENGTH }}">
+                                            <label class="form-control-label">截取方法</label>
+                                            <select class="form-control" name="excerpt-type"
+                                                    id="excerpt-method-container"
+                                                    onchange="change_excerpt(this.value)">
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">自动截取</label>
+                                            <select class="form-control" name="auto-excerpt"
+                                                    id="auto-excerpt">
+                                                <option{% if AUTO_EXCERPT == "关闭" %} selected
+                                                {% endif %}>关闭
+                                                </option>
+                                                <option{% if AUTO_EXCERPT == "仅发布文章时" %}
+                                                    selected
+                                                {% endif %}>仅发布文章时
+                                                <option{% if AUTO_EXCERPT == "总是截取" %} selected
+                                                {% endif %}>总是截取
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">保存字段</label>
+                                            <input type="text" name="save_key"
+                                                   class="form-control"
+                                                   placeholder="一般为 excerpt"
+                                                   id="save-key"
+                                                   value="{{ AUTO_EXCERPT_SAVE_KEY }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="excerpt-container"></div>
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <input type="button" class="btn btn-primary" value="提交"
@@ -534,8 +595,9 @@
                         <div class="col">
                             <label class="form-control-label">更新通道</label>
                             <select class="form-control" id="update-origin-branch">
-                                <option>master</option>
-                                <option>dev</option>
+                                {% for update in ALL_UPDATES %}
+                                    <option>{{ update.name }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                     </div>
@@ -595,8 +657,13 @@
             return url;
         }
 
-        function set_hexo() {
-            let loading = new KZ_Loading('正在校验并保存中...');
+        function set_hexo(force) {
+            let loading;
+            if ($("#config-container").val() === "Hexo" && !force) {
+                loading = new KZ_Loading('正在校验并保存中...');
+            } else {
+                loading = new KZ_Loading('正在保存中...');
+            }
             loading.show();
             let form = $('#hexo-settings').serializeArray();
             let params = {};
@@ -612,7 +679,8 @@
                     "provider": JSON.stringify({
                         "provider": $("#provider-container").val(),
                         "params": params
-                    })
+                    }),
+                    "force": !!force
                 },
                 dataType: "json",
                 success: function (res) {
@@ -621,7 +689,8 @@
                         notyf.success(res.msg);
                         now_provider = {
                             "provider": $("#provider-container").val(),
-                            "params": params
+                            "params": params,
+                            "force": !!force
                         };
                     } else {
                         notyf.error(res.msg);
@@ -851,10 +920,25 @@
         function set_excerpt() {
             let loading = new KZ_Loading('正在保存中...');
             loading.show();
+            let form = $('#excerpt-settings').serializeArray();
+            let params = {};
+            for (let i = 0; i < form.length; i++) {
+                params[form[i]["name"]] = form[i]["value"];
+            }
+            delete params["auto-excerpt"];
+            delete params["excerpt-type"];
+            delete params["csrfmiddlewaretoken"];
             $.ajax({
                 url: '/api/set_excerpt/',
                 method: 'post',
-                data: $('#excerpt-settings').serialize(),
+                data: {
+                    "excerpt": JSON.stringify({
+                        "method": $("#excerpt-method-container").val(),
+                        "auto": $("#auto-excerpt").val(),
+                        "save_key": $("#save-key").val(),
+                        "params": params
+                    })
+                },
                 dataType: "json",
                 success: function (res) {
                     loading.destroy();
@@ -1088,7 +1172,7 @@
                             `</label>
                                         <input type="text" name="` + key + `" class="form-control"
                                                placeholder="` + params[key]["placeholder"] + `"
-                                               value="` + EscapeString(now_provider["params"][key]) + `">
+                                               value="` + escapeString(now_provider["params"][key]) + `">
                                     </div>
                                 </div>`
                         t += 1;
@@ -1098,7 +1182,7 @@
                                     <label class="form-control-label">` + params[key]["description"] + `</label>
                                     <input type="text" name="` + key + `" class="form-control"
                                            placeholder="` + params[key]["placeholder"] + `"
-                                           value="` + EscapeString(now_provider["params"][key]) + `">
+                                           value="` + escapeString(now_provider["params"][key]) + `">
                                 </div>
                             </div>
                         </div>`
@@ -1165,73 +1249,82 @@
 
         function change_pusher(pusher) {
             let params = all_pushers[pusher];
+            if (typeof params !== "object") {
+                console.log("获取Pusher失败，显示Bark");
+                params = all_pushers["Bark"];
+            }
             let t = 0, tmp;
             let html = '';
             let required = params["required"];
             let optional = params["optional"];
             if (pusher === now_pusher["notifier"]) {
-                for (let i = 0; i < required.length; i++) {
-                    tmp = now_pusher["params"][required[i]] ?
-                        now_pusher["params"][required[i]] : "";
-                    if (t % 2 === 0) {  // first param
-                        html += `<div class="row">
+                if (typeof required === "object") {
+                    for (let i = 0; i < required.length; i++) {
+                        tmp = now_pusher["params"][required[i]] ?
+                            now_pusher["params"][required[i]] : "";
+                        if (t % 2 === 0) {  // first param
+                            html += `<div class="row">
                                 <div class="col-lg-6">
                                     <div class="form-group">
                                         <label class="form-control-label">` + required[i] + `(必填)
                                         </label>
                                         <input type="text" name="` + required[i] + `" class="form-control"
                                                placeholder="` + required[i] + `"
-                                               value="` + EscapeString(tmp) + `">
+                                               value="` + escapeString(tmp) + `">
                                     </div>
                                 </div>`
-                        t += 1;
-                    } else {
-                        html += `<div class="col-lg-6">
+                            t += 1;
+                        } else {
+                            html += `<div class="col-lg-6">
                                 <div class="form-group">
                                     <label class="form-control-label">` + required[i] + `(必填)</label>
                                     <input type="text" name="` + required[i] + `" class="form-control"
                                            placeholder="` + required[i] + `"
-                                           value="` + EscapeString(tmp) + `">
+                                           value="` + escapeString(tmp) + `">
                                 </div>
                             </div>
                         </div>`
-                        t += 1;
+                            t += 1;
+                        }
                     }
                 }
-                for (let i = 0; i < optional.length; i++) {
-                    tmp = now_pusher["params"][optional[i]] ?
-                        now_pusher["params"][optional[i]] : "";
-                    if (t % 2 === 0) {  // first param
-                        html += `<div class="row">
+                if (typeof optional === "object") {
+                    for (let i = 0; i < optional.length; i++) {
+                        tmp = now_pusher["params"][optional[i]] ?
+                            now_pusher["params"][optional[i]] : "";
+                        if (t % 2 === 0) {  // first param
+                            html += `<div class="row">
                                 <div class="col-lg-6">
                                     <div class="form-group">
                                         <label class="form-control-label">` + optional[i] + `</label>
                                         <input type="text" name="` + optional[i] + `" class="form-control"
                                                placeholder="` + optional[i] + `"
-                                               value="` + EscapeString(tmp) + `">
+                                               value="` + escapeString(tmp) + `">
                                     </div>
                                 </div>`
-                        t += 1;
-                    } else {
-                        html += `<div class="col-lg-6">
+                            t += 1;
+                        } else {
+                            html += `<div class="col-lg-6">
                                 <div class="form-group">
                                     <label class="form-control-label">` + optional[i] + `</label>
                                     <input type="text" name="` + optional[i] + `" class="form-control"
                                            placeholder="` + optional[i] + `"
-                                           value="` + EscapeString(tmp) + `">
+                                           value="` + escapeString(tmp) + `">
                                 </div>
                             </div>
                         </div>`
-                        t += 1;
+                            t += 1;
+                        }
                     }
                 }
                 if (t % 2 === 1) {
                     html += '</div>';
                 }
             } else {
-                for (let i = 0; i < required.length; i++) {
-                    if (t % 2 === 0) {  // first param
-                        html += `<div class="row">
+                if (typeof required === "object") {
+                    for (let i = 0; i < required.length; i++) {
+                        if (t % 2 === 0) {  // first param
+                            html += `<div class="row">
                                 <div class="col-lg-6">
                                     <div class="form-group">
                                         <label class="form-control-label">` + required[i] + `(必填)
@@ -1241,9 +1334,9 @@
                                                value="">
                                     </div>
                                 </div>`
-                        t += 1;
-                    } else {
-                        html += `<div class="col-lg-6">
+                            t += 1;
+                        } else {
+                            html += `<div class="col-lg-6">
                                 <div class="form-group">
                                     <label class="form-control-label">` + required[i] + `(必填)</label>
                                     <input type="text" name="` + required[i] + `" class="form-control"
@@ -1252,24 +1345,26 @@
                                 </div>
                             </div>
                         </div>`
-                        t += 1;
+                            t += 1;
+                        }
                     }
                 }
-                for (let i = 0; i < optional.length; i++) {
-                    if (t % 2 === 0) {  // first param
-                        html += `<div class="row">
+                if (typeof optional === "object") {
+                    for (let i = 0; i < optional.length; i++) {
+                        if (t % 2 === 0) {  // first param
+                            html += `<div class="row">
                                 <div class="col-lg-6">
                                     <div class="form-group">
                                         <label class="form-control-label">` + optional[i] +
-                            `</label>
+                                `</label>
                                         <input type="text" name="` + optional[i] + `" class="form-control"
                                                placeholder="` + optional[i] + `"
                                                value="">
                                     </div>
                                 </div>`
-                        t += 1;
-                    } else {
-                        html += `<div class="col-lg-6">
+                            t += 1;
+                        } else {
+                            html += `<div class="col-lg-6">
                                 <div class="form-group">
                                     <label class="form-control-label">` + optional[i] + `</label>
                                     <input type="text" name="` + optional[i] + `" class="form-control"
@@ -1278,7 +1373,8 @@
                                 </div>
                             </div>
                         </div>`
-                        t += 1;
+                            t += 1;
+                        }
                     }
                 }
                 if (t % 2 === 1) {
@@ -1298,7 +1394,7 @@
             }
         }
         if (!now_pusher["notifier"]) {
-            change_pusher("bark");
+            change_pusher("Bark");
         }
         $("#onepush-container").html(onepush_container);
 
@@ -1327,7 +1423,7 @@
                             `</label>
                                         <input type="text" name="` + key + `" class="form-control"
                                                placeholder="` + params[key]["placeholder"] + `"
-                                               value="` + EscapeString
+                                               value="` + escapeString
                             (now_image_host["params"][key]) + `">
                                     </div>
                                 </div>`
@@ -1338,7 +1434,7 @@
                                     <label class="form-control-label">` + params[key]["description"] + `</label>
                                     <input type="text" name="` + key + `" class="form-control"
                                            placeholder="` + params[key]["placeholder"] + `"
-                                           value="` + EscapeString(now_image_host["params"][key])
+                                           value="` + escapeString(now_image_host["params"][key])
                             + `">
                                 </div>
                             </div>
@@ -1395,6 +1491,106 @@
             change_image_host("关闭");
         }
         $("#image-type").html(image_type_container);
+
+        const all_excerpt = {
+            "本地": {
+                "length": {"description": "摘要长度", "placeholder": "截取的长度"}
+            },
+            "TianliGPT": {
+                "key": {"description": "用户密钥", "placeholder": "在爱发电获得的用户密钥"},
+                "length": {"description": "发送长度", "placeholder": "发送到服务端的内容长度"}
+            }
+            /*
+            "ChatGPT": {
+
+            }
+            */
+        };
+        {% if AUTO_EXCERPT_CONFIG %}
+            var now_excerpt = {{ AUTO_EXCERPT_CONFIG | safe }};
+        {% else %}
+            var now_excerpt = "";
+        {% endif %}
+
+        function change_excerpt(provider) {
+            let params = all_excerpt[provider];
+            let t = 0;
+            let html = '';
+            if (provider === now_excerpt.method) {
+                for (let key in params) {
+                    if (t % 2 === 0) {  // first param
+                        html += `<div class="row">
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label class="form-control-label">` +
+                            params[key]["description"] +
+                            `</label>
+                                        <input type="text" name="` + key + `" class="form-control"
+                                               placeholder="` + params[key]["placeholder"] + `"
+                                               value="` + escapeString(now_excerpt["params"][key]) + `">
+                                    </div>
+                                </div>`
+                        t += 1;
+                    } else {
+                        html += `<div class="col-lg-6">
+                                <div class="form-group">
+                                    <label class="form-control-label">` + params[key]["description"] + `</label>
+                                    <input type="text" name="` + key + `" class="form-control"
+                                           placeholder="` + params[key]["placeholder"] + `"
+                                           value="` + escapeString(now_excerpt["params"][key])
+                            + `">
+                                </div>
+                            </div>
+                        </div>`
+                        t += 1;
+                    }
+                }
+            } else {
+                for (let key in params) {
+                    if (t % 2 === 0) {  // first param
+                        html += `<div class="row">
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label class="form-control-label">` + params[key]["description"] + `</label>
+                                        <input type="text" name="` + key + `" class="form-control"
+                                               placeholder="` + params[key]["placeholder"] + `"
+                                               value="">
+                                    </div>
+                                </div>`
+                        t += 1;
+                    } else {
+                        html += `<div class="col-lg-6">
+                                <div class="form-group">
+                                    <label class="form-control-label">` + params[key]["description"] + `</label>
+                                    <input type="text" name="` + key + `" class="form-control"
+                                           placeholder="` + params[key]["placeholder"] + `"
+                                           value="">
+                                </div>
+                            </div>
+                        </div>`
+                        t += 1;
+                    }
+                }
+            }
+            if (t % 2 === 1) {
+                html += '</div>';
+            }
+            $("#excerpt-container").html(html);
+        }
+
+        let excerpt_container = "";
+        for (let key in all_excerpt) {
+            if (now_excerpt["method"] === key) {
+                excerpt_container += `<option selected>` + key + `</option>`;
+                change_excerpt(key);
+            } else {
+                excerpt_container += `<option>` + key + `</option>`;
+            }
+        }
+        if (!now_excerpt["method"]) {
+            change_excerpt("本地");
+        }
+        $("#excerpt-method-container").html(excerpt_container);
 
     </script>
 {% endblock javascripts %}

@@ -49,15 +49,21 @@
 {% block javascripts %}
 
 
-    <script src="{{ cdnjs }}ace/1.4.13/ace.js"></script>
-    <script src="{{ cdnjs }}ace/1.4.13/ext-language_tools.js"></script>
+    <script src="{{ cdnjs }}ace/1.15.0/ace.js"></script>
+    <script src="{{ cdnjs }}ace/1.15.0/ext-language_tools.js"></script>
+    <script src="{{ cdnjs }}ace/1.15.0/ext-modelist.js"></script>
     <script>
-        var _status=true;
+        var _status = true;
         var file_content = {{ file_content|safe }};
 
         editor = ace.edit("editor");
         editor.setTheme("ace/theme/tomorrow");
-        editor.getSession().setMode("ace/mode/yaml");
+
+        let modelist = ace.require("ace/ext/modelist");
+        let filePath = "blahblah/weee/some.js";
+        let mode = modelist.getModeForPath("{{ filename }}").mode;
+        editor.session.setMode(mode);
+
         editor.setFontSize(15);	//字体大小
         document.getElementById("editor").style.lineHeight = "25px";
         editor.setReadOnly(false);
@@ -79,13 +85,12 @@
         });
 
 
-
         function SaveChanges() {
-            if(!_status){
+            if (!_status) {
                 return false;
             }
             var loading = new KZ_Loading('正在保存中...');
-            _status=false;
+            _status = false;
             loading.show();
             $.ajax({
                 url: '/api/save/',
@@ -95,17 +100,17 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        notyf.success('保存成功！');
+                        notyf.success(res.msg);
                         file_content = editor.getValue();
                     } else {
                         notyf.error(res.msg);
                     }
-                    _status=true;
+                    _status = true;
                 },
                 error: function (res) {
                     loading.destroy();
                     notyf.error("网络错误！");
-                    _status=true;
+                    _status = true;
                 }
             })
         }

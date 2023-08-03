@@ -1,7 +1,8 @@
 import random
-from time import strftime, localtime
-from time import time
+import uuid
+import sys
 
+from io import StringIO
 from django.http.response import HttpResponseForbidden
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -36,17 +37,24 @@ def save_post(request):
     if request.method == "POST":
         file_name = request.POST.get('file')
         content = request.POST.get('content')
+        front_matter = json.loads(request.POST.get('front_matter'))
+        excerpt = ""
         try:
-            # 删除草稿
-            try:
-                Provider().delete("source/_drafts/" + file_name)
-            except Exception:
-                pass
-            # 创建/更新文章
-            Provider().save("source/_posts/" + file_name, content)
-            context = {"msg": "OK!", "status": True}
+            if get_setting("EXCERPT_POST") == "是":
+                excerpt = excerpt_post(content, get_setting("EXCERPT_LENGTH"))
+                logging.info(f"截取文章{file_name}摘要: " + excerpt)
+                front_matter["excerpt"] = excerpt
+            front_matter = "---\n{}---".format(yaml.dump(front_matter, allow_unicode=True))
+            if not content.startswith("\n"):
+                front_matter += "\n"
+            if Provider().save_post(file_name, front_matter + content, status=True):
+                context = {"msg": "保存成功并提交部署！", "status": True}
+            else:
+                context = {"msg": "保存成功！", "status": True}
+            if excerpt:
+                context["excerpt"] = excerpt
         except Exception as error:
-            print(repr(error))
+            logging.error(repr(error))
             context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -60,12 +68,25 @@ def save_draft(request):
     if request.method == "POST":
         file_name = request.POST.get('file')
         content = request.POST.get('content')
+        front_matter = json.loads(request.POST.get('front_matter'))
+        excerpt = ""
         try:
             # 创建/更新草稿
-            Provider().save("source/_drafts/" + file_name, content)
-            context = {"msg": "OK!", "status": True}
+            if get_setting("EXCERPT_POST") == "是":
+                excerpt = excerpt_post(content, get_setting("EXCERPT_LENGTH"))
+                logging.info(f"截取文章{file_name}摘要: " + excerpt)
+                front_matter["excerpt"] = excerpt
+            front_matter = "---\n{}---\n".format(yaml.dump(front_matter, allow_unicode=True))
+            if not content.startswith("\n"):
+                front_matter += "\n"
+            if Provider().save_post(file_name, front_matter + content, status=False):
+                context = {"msg": "保存草稿成功并提交部署！", "status": True}
+            else:
+                context = {"msg": "保存草稿成功！", "status": True}
+            if excerpt:
+                context["excerpt"] = excerpt
         except Exception as error:
-            print(repr(error))
+            logging.error(repr(error))
             context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -82,10 +103,7 @@ def delete(request):
             Provider().delete(file_path)
             context = {"msg": "OK!", "status": True}
             # Delete Caches
-            if ("_posts" in file_path) or ("_drafts" in file_path):
-                delete_posts_caches()
-            else:
-                delete_all_caches()
+            delete_all_caches()
         except Exception as error:
             context = {"msg": repr(error)}
     return JsonResponse(safe=False, data=context)
@@ -117,7 +135,7 @@ def create_webhook_config(request):
             Provider().create_hook(config)
             context = {"msg": "设置成功！", "status": True}
         except Exception as error:
-            print(repr(error))
+            logging.error(repr(error))
             context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -202,7 +220,7 @@ def auto_fix(request):
         msg = "尝试自动修复了 {} 个字段，请在稍后检查和修改配置".format(counter)
         context = {"msg": msg, "status": True}
     except Exception as e:
-        print(repr(e))
+        logging.error(repr(e))
         context = {"msg": repr(e), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -221,7 +239,7 @@ def friends(request):
         data.sort(key=lambda x: x["time"])
         context = {"data": data, "status": True}
     except Exception as e:
-        print(repr(e))
+        logging.error(repr(e))
         context = {"msg": repr(e), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -242,7 +260,7 @@ def add_friend(request):
         friend.save()
         context = {"msg": "添加成功！", "time": friend.time, "status": True}
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -262,7 +280,7 @@ def edit_friend(request):
         friend.save()
         context = {"msg": "修改成功！", "status": True}
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -277,7 +295,7 @@ def del_friend(request):
         friend.delete()
         context = {"msg": "删除成功！", "status": True}
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -295,19 +313,23 @@ def ask_friend(request):
         if typ == "v3":
             if verify:
                 captcha = requests.get(
-                    "https://recaptcha.net/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
+                    "https://recaptcha.google.cn/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
+                logging.info("reCaptchaV3结果: " + str(captcha))
                 if captcha["score"] <= 0.5:
-                    return {"msg": "人机验证失败！", "status": False}
+                    return JsonResponse(safe=False, data={"msg": "人机验证失败！", "status": False})
             else:
-                return {"msg": "人机验证失败！", "status": False}
+                logging.info("未收到人机验信息")
+                return JsonResponse(safe=False, data={"msg": "人机验证失败！", "status": False})
         if typ == "v2":
             if verify:
                 captcha = requests.get(
-                    "https://recaptcha.net/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
+                    "https://recaptcha.google.cn/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
+                logging.info("reCaptchaV2结果: " + str(captcha))
                 if not captcha["success"]:
-                    return {"msg": "人机验证失败！", "status": False}
+                    return JsonResponse(safe=False, data={"msg": "人机验证失败！", "status": False})
             else:
-                return {"msg": "人机验证失败！", "status": False}
+                logging.info("未收到人机验信息")
+                return JsonResponse(safe=False, data={"msg": "人机验证失败！", "status": False})
         # 通过验证
         friend = FriendModel()
         friend.name = request.POST.get("name")
@@ -318,11 +340,12 @@ def ask_friend(request):
         friend.status = False
         friend.save()
         CreateNotification("友链申请 " + friend.name,
-                           "站点名: {}\n链接: {}\n图片: {}\n简介: {}\n".format(friend.name, friend.url, friend.imageUrl,
-                                                                               friend.description), time())
+                           "站点名: {}<br>链接: {}<br>图片: {}<br>简介: {}<br>".format(escapeString(friend.name), escapeString(friend.url),
+                                                                                       escapeString(friend.imageUrl),
+                                                                                       escapeString(friend.description)), time())
         context = {"msg": "申请成功！", "time": friend.time, "status": True}
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -331,13 +354,32 @@ def ask_friend(request):
 @csrf_exempt
 def get_custom(request):
     try:
+        func_str = CustomModel.objects.get(
+            name=request.GET.get("key") if request.GET.get("key") else request.POST.get("key")).content
+        body = request.GET
+        body.update(request.POST)
+        body = dict(body)
+        # print(body)
+        for key in body.keys():
+            if len(body[key]) == 1:
+                body[key] = body[key][0]
+        locals().update(body)
+        old_stdout = sys.stdout
+        output = sys.stdout = StringIO()
+        try:
+            print(eval(func_str))
+        except Exception:
+            try:
+                exec(func_str)
+            except Exception:
+                print(func_str)
+        sys.stdout = old_stdout
         context = {
-            "data": CustomModel.objects.get(
-                name=request.GET.get("key") if request.GET.get("key") else request.POST.get("key")).content,
+            "data": output.getvalue(),
             "status": True
         }
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -351,7 +393,7 @@ def set_custom(request):
         save_custom(request.POST.get("name"), request.POST.get("content"))
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
-        print(repr(e))
+        logging.error(repr(e))
         context = {"msg": repr(e), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -365,7 +407,7 @@ def del_custom(request):
         CustomModel.objects.filter(name=request.POST.get("name")).delete()
         context = {"msg": "删除成功!", "status": True}
     except Exception as e:
-        print(repr(e))
+        logging.error(repr(e))
         context = {"msg": repr(e), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -379,7 +421,7 @@ def new_custom(request):
         save_custom(request.POST.get("name"), request.POST.get("content"))
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
-        print(repr(e))
+        logging.error(repr(e))
         context = {"msg": repr(e), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -392,7 +434,7 @@ def get_notifications(request):
     try:
         context = {"data": GetNotifications(), "status": True}
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -410,7 +452,7 @@ def status(request):
         last = get_setting("LAST_LOGIN")
         context = {"data": {"posts": str(posts_count), "last": last}, "status": True}
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -427,7 +469,7 @@ def statistic(request):
                 allow = True
                 break
         if not (allow and (t and get_setting("STATISTIC_ALLOW") == "是")):
-            print("域名未验证: " + url)
+            logging.error("域名未验证: " + url)
             return HttpResponseForbidden()
         if url[:7] == "http://":
             url = url[7:]
@@ -458,7 +500,7 @@ def statistic(request):
             site_pv.url = domain
             site_pv.number = 1
             site_pv.save()
-        print("登记页面PV: {} => {}".format(url, pv.number))
+        logging.info("登记页面PV: {} => {}".format(url, pv.number))
         ip = request.META['HTTP_X_FORWARDED_FOR'] if 'HTTP_X_FORWARDED_FOR' in request.META.keys() else request.META[
             'REMOTE_ADDR']
         uv = StatisticUV.objects.filter(ip=ip)
@@ -469,11 +511,11 @@ def statistic(request):
         uv = StatisticUV()
         uv.ip = ip
         uv.save()
-        print("登记用户UV: " + ip)
+        logging.info("登记用户UV: " + ip)
         return JsonResponse(safe=False, data={"site_pv": site_pv.number, "page_pv": pv.number, "site_uv": StatisticUV.objects.all().count(),
                                               "status": True})
     except Exception as e:
-        print(repr(e))
+        logging.error(repr(e))
         return JsonResponse(safe=False, data={"status": False, "error": repr(e)})
 
 
@@ -493,7 +535,7 @@ def waline(request):
                                                                                    comment["url"], comment["status"], comment["ua"])
             CreateNotification("Waline评论通知", msg, time())
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -510,7 +552,7 @@ def notifications(request):
         CreateNotification(title, content, time())
         return JsonResponse(safe=False, data={"msg": "添加成功！", "status": True})
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
         return JsonResponse(safe=False, data=context)
 
@@ -533,11 +575,17 @@ def get_talks(request):
         talks = []
         for i in all_talks:
             t = json.loads(i.like)
-            talks.append({"id": i.id.hex, "content": i.content, "time": i.time, "tags": json.loads(i.tags), "like": len(t),
-                          "liked": True if ip in t else False})
+            try:
+                values = json.loads(i.values)
+            except Exception:
+                i.values = "{}"
+                values = {}
+                i.save()
+            talks.append({"id": i.id.hex, "content": i.content, "time": i.time, "tags": json.loads(i.tags), "like": len(t) if t else 0,
+                          "liked": True if ip in t else False, "values": values})
         context = {"msg": "获取成功！", "status": True, "count": count, "data": talks}
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -555,16 +603,16 @@ def like_talk(request):
             t.remove(ip)
             talk.like = json.dumps(t)
             talk.save()
-            print(ip + "取消点赞: " + talk_id)
+            logging.info(ip + "取消点赞: " + talk_id)
             context = {"msg": "取消成功！", "action": False, "status": True}
         else:
             t.append(ip)
             talk.like = json.dumps(t)
             talk.save()
-            print(ip + "成功点赞: " + talk_id)
+            logging.info(ip + "成功点赞: " + talk_id)
             context = {"msg": "点赞成功！", "action": True, "status": True}
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -581,14 +629,19 @@ def save_talk(request):
             talk.content = request.POST.get("content")
             talk.tags = request.POST.get("tags")
             talk.time = request.POST.get("time")
+            talk.values = request.POST.get("values")
             talk.save()
             context["msg"] = "修改成功"
         else:
-            talk = TalkModel(content=request.POST.get("content"), tags=request.POST.get("tags"), time=str(int(time())), like="[]")
+            talk = TalkModel(content=request.POST.get("content"),
+                             tags=request.POST.get("tags"),
+                             time=str(int(time())),
+                             like="[]",
+                             values=request.POST.get("values"))
             talk.save()
             context["id"] = talk.id.hex
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -602,6 +655,6 @@ def del_talk(request):
         TalkModel.objects.get(id=uuid.UUID(hex=request.POST.get("id"))).delete()
         context = {"msg": "删除成功！", "status": True}
     except Exception as error:
-        print(repr(error))
+        logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)

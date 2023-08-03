@@ -11,7 +11,15 @@ body:
     attributes:
       label: Qexo 版本
       description: 您正在运行我们的程序的哪个版本？
-      placeholder: v1.5.3
+      placeholder: v2.4.3
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: 平台
+      description: 您使用的的数据库和部署平台
+      placeholder: MongoDB & Vercel
     validations:
       required: true
   - type: textarea

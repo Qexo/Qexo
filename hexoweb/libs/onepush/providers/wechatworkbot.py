@@ -8,7 +8,7 @@ from ..core import Provider
 
 
 class WechatWorkBot(Provider):
-    name = 'wechatworkbot'
+    name = '企业微信机器人'
     base_url = 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key={}'
     site_url = 'https://work.weixin.qq.com/api/doc/90000/90136/91770'
 
@@ -26,11 +26,11 @@ class WechatWorkBot(Provider):
     def _prepare_data(self,
                       title: str = None,
                       content: str = None,
-                      markdown: str = "false",
+                      markdown: bool = False,
                       **kwargs):
         message = self.process_message(title, content)
         msgtype = 'text'
-        if markdown == "true":
+        if markdown:
             msgtype = 'markdown'
 
         self.data = {'msgtype': msgtype, msgtype: {'content': message}}

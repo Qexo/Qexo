@@ -25,6 +25,7 @@ urlpatterns = [
     path('api/save_post/', save_post, name='save_post'),
     path('api/save_page/', save_page, name='save_page'),
     path('api/save_draft/', save_draft, name='save_draft'),
+    path('api/new_page/', new_page, name='new_page'),
     path('api/delete/', delete, name='delete'),
     path('api/upload/', upload_img, name='upload'),
     path('api/delete_img/', delete_img, name='delete_img'),
@@ -61,6 +62,7 @@ urlpatterns = [
     path('api/set_cdn/', set_cdn, name='set_cdn'),
     path('api/save_talk/', save_talk, name='save_talk'),
     path('api/del_talk/', del_talk, name='del_talk'),
+    path('api/run_online_script/', run_online_script, name='run_online_script'),
 
     path('pub/save/', pub.save, name='pub_save'),
     path('pub/save_post/', pub.save_post, name='pub_save_post'),

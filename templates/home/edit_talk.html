@@ -20,6 +20,8 @@
                         </nav>
                     </div>
                     <div class="col-lg-6 col-5 text-right">
+                        <a href="javascript:query_delete()" class="btn btn-sm btn-neutral"
+                           {% if not id %}hidden{% endif %} id="delete-button">删除</a>
                         <a href="javascript:Publish()" class="btn btn-sm btn-neutral">发布</a>
                     </div>
                 </div>
@@ -35,9 +37,13 @@
                 <div id="weditor"></div>
             </div>
             <div class="card col-md-3 ml-md-4">
+                <a class="text-right position-absolute col-11 mt-3" style="cursor: pointer;
+                color: #172b4d"
+                   href="javascript:editSide()"><i class="fas
+                   fa-pen"></i></a>
+                <h3 class="mt-3">说说参数</h3>
+                <hr class="my-2"/>
                 <div id="sidebar-container">
-                    <h3 class="mt-3">说说参数</h3>
-                    <hr class="my-2"/>
                     <div class="form-group">
                         <label class="form-control-label"><i class="fas fa-globe-americas"></i>
                             更新于</label>
@@ -64,11 +70,97 @@
                         </div>
                         <div id="tag-container"></div>
                     </div>
+                    <div id="custom-sidebar"></div>
                 </div>
             </div>
         </div>
-        {% include "includes/footer.html" %}
+        <style>
+            @media (min-width: 768px) {
+                #bottom-bar {
+                    flex: 0 0 93.666667%;
+                    max-width: 93.666667%;
+                }
+            }
+        </style>
+        <div class="row">
+            <div class="card ml-md-4 col-md-11" id="bottom-bar">
+                <div class="col-12">
+                    <input type="button" class="btn btn-sm float-right mt-3"
+                           value="添加"
+                           style="border: 1px solid #dee2e6;border-radius: .25rem;"
+                           onclick="addBottomItem()">
+                    <h2 class="mt-3"><i class="fas fa-cogs"></i> 自定义参数</h2>
+                    <hr class="my-2"/>
+                    <div id="bottom-container">
+                    </div>
+                    <br>
+                </div>
+            </div>
+        </div>
 
+        <div class="modal fade" id="sidebarEditModal" tabindex="-1"
+             aria-labelledby="sidebarModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="sidebarEditModalLabel">编辑侧边栏</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="side-form" onsubmit="return false;">
+                            <div class="form-row">
+                                <div class="col-2">
+                                    <label class="form-control-label">字段名</label>
+                                </div>
+                                <div class="col-4">
+                                    <label class="form-control-label">描述</label>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-control-label">图标</label>
+                                </div>
+                            </div>
+                            <div id="side-form-container"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消
+                        </button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal"
+                                onclick="applySide()">确定
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">提示</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        确认要删除这条说说吗？此操作不可撤回
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消
+                        </button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal"
+                                onclick="delete_talk()">确定
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% include "includes/footer.html" %}
     </div>
 
 {% endblock content %}
@@ -82,23 +174,11 @@
         var title = "{{ title }}", tags = {{ tags|safe }}, _status = true, id = "{{ id }}";
         var file_content = {{ content|safe }};
         var height = window.innerHeight * 0.75;
+        var values = {{ values|safe }};
 
         $.ajaxSetup({
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
         });
-
-
-        function getTimeFormat() {
-            let date = new Date();
-            let month = date.getMonth() + 1 < 10 ? "0" + (date.getMonth() + 1) : date.getMonth()
-                + 1;
-            let currentDate = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
-            let hh = date.getHours() < 10 ? "0" + date.getHours() : date.getHours();
-            let mm = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
-            let ss = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
-            return date.getFullYear() + "-" + month + "-" + currentDate + " " + hh + ":" + mm + ":" + ss;
-            //返回格式：yyyy-MM-dd hh:mm:ss
-        }
 
 
         function Publish() {
@@ -108,12 +188,14 @@
             let loading = new KZ_Loading('正在保存中...');
             _status = false;
             loading.show();
+            save_bottom();
             $.ajax({
                 url: '/api/save_talk/',
                 method: 'post',
                 data: {
                     "content": editor.getHtml(), "tags": JSON.stringify(tags), "id": id, "time":
-                        (Number(new Date($("#time").val())) / 1000).toString()
+                        (Number(new Date($("#time").val())) / 1000).toString(),
+                    "values": JSON.stringify(values)
                 },
                 dataType: 'JSON',
                 success: function (res) {
@@ -122,6 +204,7 @@
                         notyf.success(res.msg);
                         if (res.id) {
                             id = res.id;
+                            $("#delete-button").removeAttr("hidden");
                         }
                         file_content = editor.getHtml();
                         _status = true;
@@ -289,5 +372,257 @@
         });
 
         $("#time").val(getTimeFormat());
+
+        // 底栏自定义字段
+        function show_bottom() {
+            let html = "";
+            let keys = Object.keys(values);
+            html = `<div class="form-row">
+                        <div class="col-2">
+                            <label class="form-control-label">标头</label>
+                        </div>
+                        <div class="col-4">
+                            <label class="form-control-label">内容</label>
+                        </div>
+                    </div>`
+            let sidebar_items = [];
+            for (let j = 0; j < OrgSidebar.length; j++) {
+                sidebar_items.push(OrgSidebar[j].name);
+            }
+            for (let i = 0; i < keys.length; i++) {
+                if (sidebar_items.includes(keys[i])) {
+                    keys.splice(i, 1);
+                }
+            }
+            if (keys.length === 0) {
+                $("#bottom-container").html("暂无其他参数");
+                return;
+            }
+            for (let i = 0; i < keys.length; i++) {
+                html += `<form class="form-row" id="bottom-row-` + i + `">
+                                <div class="col-2">
+                                    <input type="text" class="form-control" name="search"
+                                           placeholder="字段名" value="` + escapeString(keys[i]) + `">
+                                </div>
+                                <div class="col-10">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" name="icon"
+                                               placeholder="内容"  value="` + values[keys[i]] + `">
+                                        <div class="input-group-append">
+                                            <button class="btn" type="button"
+                                                    style="border: 1px solid #dee2e6;border-radius: 0 .25rem .25rem 0"
+                                                    onclick="delBottomItem(` + i + `)">
+                                                -
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>`;
+            }
+            $("#bottom-container").html(html);
+        }
+
+        function delBottomItem(i) {
+            save_bottom();
+            let keys = Object.keys(values);
+            delete values[keys[i]];
+            show_bottom();
+        }
+
+        function addBottomItem() {
+            save_bottom();
+            if (values[""] !== "") values[""] = "";
+            show_bottom();
+        }
+
+        function save_bottom() {
+            let tmp;
+            let keys = Object.keys(values);
+            values = {};
+            for (let i = 0; i < keys.length; i++) {
+                tmp = $("#bottom-row-" + i).serializeArray();
+                if (tmp[0] !== undefined) {
+                    values[tmp[0].value] = tmp[1].value;
+                }
+            }
+            for (let i = 0; i < OrgSidebar.length; i++) {
+                values[OrgSidebar[i].name] = $("#sidebar-item-" + OrgSidebar[i]["name"]).val();
+            }
+        }
+
+
+        var OrgSidebar = {{ sidebar|safe }};
+        var Sidebar = [...OrgSidebar];
+
+        function editSide() {
+            Sidebar = [...OrgSidebar];  // 拷贝数组
+            showEditSide();
+            $('#sidebarEditModal').modal('show');
+        }
+
+        function showEditSide() {
+            let html = "";
+            if (!Sidebar.length) {
+                Sidebar = [{"name": "", "desp": "", "icon": ""}];
+            }
+            for (let i = 0; i < Sidebar.length; i++) {
+                html += `<form class="form-row" id="side-row-` + i + `">
+                                <div class="col-2">
+                                    <input type="text" class="form-control" name="name"
+                                           placeholder="识别代号" value="${Sidebar[i].name}">
+                                </div>
+                                <div class="col-4">
+                                    <input type="text" class="form-control" name="desp"
+                                           placeholder="描述标题" value="${Sidebar[i].desp}">
+                                </div>
+                                <div class="col-6">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" name="icon"
+                                               placeholder="使用的图标"  value="` + Sidebar[i].icon + `">
+                                        <div class="input-group-append">
+                                            <button class="btn" type="button"
+                                                    style="border: 1px solid #dee2e6"
+                                                    onclick="newSideItem(` + (i + 1).toString() + `)">
+                                                +
+                                            </button>
+                                            <button class="btn" type="button"
+                                                    style="border: 1px solid #dee2e6;border-radius: 0 .25rem .25rem 0"
+                                                    onclick="delSideItem(` + i + `)">
+                                                -
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>`;
+            }
+            $("#side-form-container").html(html);
+        }
+
+        function newSideItem(i) {
+            saveSideItems();
+            Sidebar.splice(i, 0, {"name": "", "desp": "", "icon": ""});
+            showEditSide();
+        }
+
+        function saveSideItems() {
+            let tmp;
+            for (let i = 0; i < Sidebar.length; i++) {
+                tmp = $("#side-row-" + i).serializeArray();
+                for (let j = 0; j < tmp.length; j++) {
+                    Sidebar[i][tmp[j].name] = tmp[j].value;
+                }
+            }
+            return Sidebar;
+        }
+
+        function delSideItem(i) {
+            saveSideItems();
+            Sidebar.splice(i, 1);
+            showEditSide();
+        }
+
+        function getTimeFormat(){
+            let time = new Date();
+            let year = time.getFullYear();
+            let month = time.getMonth() + 1;
+            let day = time.getDate();
+            let hour = time.getHours();
+            let minute = time.getMinutes();
+            let second = time.getSeconds();
+            return year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second;
+        }
+
+        function applySide() {
+            saveSideItems();
+            for (let i = 0; i < Sidebar.length; i++) {
+                if (Sidebar[i].name === "") {
+                    Sidebar.splice(i, 1);
+                    i--;
+                }
+            }
+            let loading = new KZ_Loading('边栏保存中...');
+            loading.show();
+            $.ajax({
+                url: '/api/set_sidebar/',
+                method: 'post',
+                data: {
+                    "type": "talk", "content": JSON.stringify(Sidebar)
+                },
+                dataType: 'JSON',
+                success: function (res) {
+                    loading.destroy();
+                    if (res.status) {
+                        notyf.success('保存成功！');
+                        showSidebar();
+                    } else {
+                        notyf.error('保存失败！');
+                    }
+                },
+                error: function (res) {
+                    loading.destroy();
+                    notyf.error("网络错误！");
+                }
+            })
+        }
+
+        function showSidebar(first = false) {
+            let html = "", content;
+            if (!first) {
+                save_bottom();
+            }
+            OrgSidebar = [...Sidebar];
+            for (let i = 0; i < OrgSidebar.length; i++) {
+                console.log(values);
+                console.log(OrgSidebar[i]["name"]);
+                console.log(values[OrgSidebar[i]["name"]]);
+                if (values[OrgSidebar[i]["name"]] !== undefined) {
+                    content = values[OrgSidebar[i]["name"]];
+                } else content = "";
+                content = escapeString(content);
+                html += `<div class="form-group">
+                        <label class="form-control-label"><i class="` + OrgSidebar[i]["icon"]
+                    + `"></i> ` + OrgSidebar[i]["name"] + `</label>
+                        <input type="text" name="title"
+                               class="form-control"
+                               placeholder="` + OrgSidebar[i]["name"] + `"
+                               id="sidebar-item-` + OrgSidebar[i]["name"] + `"
+                               value="` + content + `"></div>`;
+                //delete values[OrgSidebar[i]["name"]];
+            }
+            $("#custom-sidebar").html(html);
+            show_bottom();
+            set_weditor_size();
+        }
+
+        function query_delete() {
+            $("#deleteModal").modal("show");
+        }
+
+        function delete_talk() {
+            let loading = new KZ_Loading('正在删除中...');
+            loading.show();
+            $.ajax({
+                url: '/api/del_talk/',
+                method: 'post',
+                data: {"id": id},
+                dataType: 'JSON',
+                success: function (res) {
+                    loading.destroy();
+                    if (res.status) {
+                        notyf.success('删除成功！');
+                        window.location.href = "/talks.html";
+                    } else {
+                        notyf.error(res.msg);
+                    }
+                },
+                error: function (res) {
+                    loading.destroy();
+                    notyf.error("网络错误！");
+                }
+            })
+        }
+
+        show_bottom();
+        showSidebar(first = true);
     </script>
 {% endblock javascripts %}

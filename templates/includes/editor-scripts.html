@@ -1,0 +1,62 @@
+<script>
+    const excerpt_config = {{ AUTO_EXCERPT_CONFIG | safe }};
+
+    function excerpt_post(nextstep = function () {
+    }) {
+        let method = excerpt_config.method;
+        let html = vditor.getHTML();
+        let excerpt = "";
+        if (method === "本地") {
+            excerpt = excerpt_by_local(html, excerpt_config.params.length);
+            front_matter = get_front_matter();
+            front_matter[excerpt_config.save_key] = excerpt;
+            OrgSidebar = [...Sidebar];
+            showSidebar(true);
+            nextstep();
+        }
+
+        if (method === "TianliGPT") {
+            excerpt_by_tianli(html, excerpt_config.params.length, excerpt_config.params
+                .key, nextstep);
+        }
+    }
+
+    function excerpt_by_local(content, length) {
+        let excerpt = content.replace(/<img[^>]*>/g, "");
+        excerpt = excerpt.replace(/<iframe[^>]*>/g, "");
+        excerpt = excerpt.replace(/<script[^>]*>/g, "");
+        excerpt = excerpt.replace(/<style[^>]*>/g, "");
+        excerpt = excerpt.replace(/<[^>]*>/g, "");
+        excerpt = excerpt.replace(/\n/g, " ");
+        return excerpt.substring(0, length) + (content.length > length ? "..." : "");
+    }
+
+    function excerpt_by_tianli(content, length, key, nextstep) {
+        let excerpt = excerpt_by_local(content, length);
+        let loading = new KZ_Loading('摘要获取中...');
+        loading.show();
+        $.ajax({
+            url: "https://summary.tianli0.top/",
+            type: "GET",
+            dataType: "json",
+            data: {
+                "content": excerpt,
+                "key": key
+            },
+            success: function (data, status, xhr) {
+                loading.destroy();
+                excerpt = data["summary"];
+                front_matter = get_front_matter();
+                front_matter[excerpt_config.save_key] = excerpt;
+                OrgSidebar = [...Sidebar];
+                showSidebar(true);
+                nextstep();
+            },
+            error: function (data) {
+                loading.destroy();
+                notyf.error("摘要生成失败: " + data.responseText);
+            }
+        });
+        return excerpt;
+    }
+</script>

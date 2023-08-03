@@ -8,13 +8,13 @@ from ..core import Provider
 
 
 class PushPlus(Provider):
-    name = 'pushplus'
+    name = 'PushPlus'
     base_url = 'https://www.pushplus.plus/send'
     site_url = 'https://www.pushplus.plus/doc'
 
     _params = {
         'required': ['token', 'content'],
-        'optional': ['title', 'topic', 'markdown']
+        'optional': ['title', 'topic', 'markdown', 'channel', 'webhook', 'callbackUrl']
     }
 
     def _prepare_url(self, **kwargs):
@@ -26,14 +26,20 @@ class PushPlus(Provider):
                       token: str = None,
                       title: str = None,
                       topic: str = None,
-                      markdown: str = "false",
+                      markdown: bool = False,
+                      channel: str = None,
+                      webhook: str = None,
+                      callbackUrl: str = None,
                       **kwargs):
         self.data = {
             'token': token,
             'title': title,
             'content': content,
-            'template': 'markdown' if markdown == "true" else 'html',
-            'topic': topic
+            'template': 'markdown' if markdown else 'html',
+            'topic': topic,
+            'channel': channel,
+            'webhook': webhook,
+            'callbackUrl': callbackUrl
         }
         return self.data
 

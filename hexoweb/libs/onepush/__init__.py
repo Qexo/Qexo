@@ -1,6 +1,6 @@
 """
-@Project   : onepush for qexo
-@Author    : y1ndan & abudu
+@Project   : onepush
+@Author    : y1ndan
 @Blog      : https://www.yindan.me
 """
 

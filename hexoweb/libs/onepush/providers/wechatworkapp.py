@@ -8,7 +8,7 @@ from ..core import Provider
 
 
 class WechatWorkApp(Provider):
-    name = 'wechatworkapp'
+    name = '企业微信应用'
     base_url = 'https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={}'
     site_url = 'https://work.weixin.qq.com/api/doc/90000/90135/90236'
 
@@ -31,11 +31,11 @@ class WechatWorkApp(Provider):
                       title: str = None,
                       content: str = None,
                       touser: str = '@all',
-                      markdown: str = "false",
+                      markdown: bool = False,
                       **kwargs):
         message = self.process_message(title, content)
         msgtype = 'text'
-        if markdown == "true":
+        if markdown:
             msgtype = 'markdown'
 
         self.data = {

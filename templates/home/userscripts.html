@@ -1,0 +1,335 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} {% if search %}搜索命令: {{ search }}{% else %}云端命令
+{% endif %} {% endblock title %}
+
+{% block content %}
+
+    <div class="header bg-primary pb-6">
+        <div class="container-fluid">
+            <div class="header-body">
+                <div class="row align-items-center py-4">
+                    <div class="col-lg-6 col-7">
+                        <h6 class="h2 text-white d-inline-block mb-0">云端命令</h6>
+                        <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
+                            <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+                                <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i></a>
+                                </li>
+                                <li class="breadcrumb-item active" aria-current="page">命令库</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page content -->
+    <div class="container-fluid mt--6">
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header border-0">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h3 class="mb-0">{% if search %}搜索命令: {{ search }}{% else %}
+                                    全部命令{% endif %}
+                                    (<span id="post-number">{{ post_number }}</span>条)</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table align-items-center table-flush">
+                            <thead class="thead-light">
+                            <tr>
+                                <th scope="col">名称</th>
+                                <th scope="col">作者</th>
+                                <th scope="col">简介</th>
+                                <th scope="col">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody id="posts-list">
+                            </tbody>
+                        </table>
+                        <div class="card-footer py-4">
+                            <ul class="pagination justify-content-end mb-0">
+                                <li class="page-item" id="prev-page">
+                                    <a class="page-link"
+                                       href="javascript:prev_page()">
+                                        <i class="fas fa-angle-left"></i>
+                                        <span class="sr-only">上一页</span>
+                                    </a>
+                                </li>
+                                {% for i in page_number|get_range %}
+                                    <li class="page-item" id="page-{{ i }}">
+                                        <a class="page-link"
+                                           href="javascript:change_page({{ i }})">{{ i }}</a>
+                                    </li>
+                                {% endfor %}
+
+                                <li class="page-item" id="next-page">
+                                    <a class="page-link"
+                                       href="javascript:next_page()">
+                                        <i class="fas fa-angle-right"></i>
+                                        <span class="sr-only">下一页</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="runModal" tabindex="-1" aria-labelledby="runModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="runModalLabel">提示</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" id="runContainer">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消
+                        </button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal"
+                                onclick="run_script()">确定
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="resultModal" tabindex="-1" aria-labelledby="resultModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="resultModalLabel">运行结果</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" id="result-container">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">关闭
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% include "includes/footer.html" %}
+
+    </div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE -->
+{% block javascripts %}
+
+    <script>
+        var posts = {{ all_posts|safe }};
+        var _page = 1;
+
+        function scrollToTop() {
+            let timer = null;
+            cancelAnimationFrame(timer);
+            timer = requestAnimationFrame(function fn() {
+                let oTop = document.body.scrollTop || document.documentElement.scrollTop;
+                if (oTop > 0) {
+                    document.body.scrollTop = document.documentElement.scrollTop = oTop - 30;
+                    timer = requestAnimationFrame(fn);
+                } else {
+                    cancelAnimationFrame(timer);
+                }
+            });
+        }
+
+        function change_page(page) {
+            scrollToTop();
+            let page_posts;
+            if (posts.length > page * 15 + 1) {
+                page_posts = posts.slice(15 * (page - 1), page * 15);
+            } else {
+                page_posts = posts.slice(15 * (page - 1));
+            }
+            let list = "";
+            for (let i = 0; i < page_posts.length; i++) {
+                list += "<tr><th scope=\"row\">" + page_posts[i]["name"] + "</th><td>" +
+                    page_posts[i]["author"] + "</td><td>" + page_posts[i]["description"] +
+                    "</td><td><a href=\"javascript:show_run('" + page_posts[i]["path"] + "')\">" +
+                    "<i class=\"fa fa-external-link-alt\"></i></a></td></tr>";
+            }
+            $("#page-" + _page).removeClass("active");
+            $("#page-" + page).addClass("active");
+            $("#posts-list").html(list);
+            _page = page;
+            if (page <= 1) {
+                $("#prev-page").addClass("disabled");
+            } else {
+                $("#prev-page").removeClass("disabled");
+            }
+            if (page >={{ page_number }}) {
+                $("#next-page").addClass("disabled");
+            } else {
+                $("#next-page").removeClass("disabled");
+            }
+        }
+
+        function prev_page() {
+            if (_page > 1) {
+                change_page(_page - 1);
+            } else {
+                notyf.error("已是第一页");
+            }
+        }
+
+        function next_page() {
+            if (_page <{{ page_number }}) {
+                change_page(_page + 1);
+            } else {
+                notyf.error("已是最后一页");
+            }
+        }
+
+        change_page(1);
+
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        function KZ_Loading(config) {
+            if (this instanceof KZ_Loading) {
+                const domTemplate = '<div class="modal fade kz-loading" data-kzid="@@KZ_Loadin_ID@@" backdrop="static" keyboard="false"><div style="width: 200px;height:20px; z-index: 20000; position: absolute; text-align: center; left: 50%; top: 50%;margin-left:-100px;margin-top:-10px"><div class="progress progress-striped active" style="margin-bottom: 0;"><div class="progress-bar" style="width: 100%;"></div></div><h5>@@KZ_Loading_Text@@</h5></div></div>';
+                this.config = {
+                    content: 'loading...',
+                    time: 0,
+                };
+                if (config != null) {
+                    if (typeof config === 'string') {
+                        this.config = Object.assign(this.config, {
+                            content: config
+                        });
+                    } else if (typeof config === 'object') {
+                        this.config = Object.assign(this.config, config);
+                    }
+                }
+                this.id = new Date().getTime().toString();
+                this.state = 'hide';
+
+                /*显示 */
+                this.show = function () {
+                    $('.kz-loading[data-kzid=' + this.id + ']').modal({
+                        backdrop: 'static',
+                        keyboard: false
+                    });
+                    this.state = 'show';
+                    if (this.config.time > 0) {
+                        var that = this;
+                        setTimeout(function () {
+                            that.hide();
+                        }, this.config.time);
+                    }
+                };
+                /*隐藏 */
+                this.hide = function (callback) {
+                    $('.kz-loading[data-kzid=' + this.id + ']').modal('hide');
+                    this.state = 'hide';
+                    if (callback) {
+                        callback();
+                    }
+                };
+                /*销毁dom */
+                this.destroy = function () {
+                    var that = this;
+                    this.hide(function () {
+                        var node = $('.kz-loading[data-kzid=' + that.id + ']');
+                        node.next().remove();
+                        node.remove();
+                        that.show = function () {
+                            throw new Error('对象已销毁！');
+                        };
+                        that.hide = function () {
+                        };
+                        that.destroy = function () {
+                        };
+                    });
+                }
+
+                var domHtml = domTemplate.replace('@@KZ_Loadin_ID@@', this.id).replace('@@KZ_Loading_Text@@', this.config.content);
+                $('body').append(domHtml);
+            } else {
+                return new KZ_Loading(config);
+            }
+        }
+
+        function show_run(path) {
+            let html = "";
+            //$("#script-description").text(description);
+            let argv = [];
+            for (let i = 0; i <= posts.length; i++) {
+                if (posts[i]["path"] === path) {
+                    argv = posts[i]["argv"];
+                    break;
+                }
+            }
+            if (argv) {
+                html = "请输入参数:";
+                for (let i = 0; i < argv.length; i++) {
+                    html += `<row><div class="form-group">
+                                        <input type="text" name="argv-${argv[i]["name"]}"
+                                        class="form-control"
+                                               placeholder="${argv[i]["placeholder"]}">
+                                    </div></row>`;
+                }
+            }
+            html += "确认要执行 <a id='script-path'>" + path + "</a> 吗？此操作不可中止";
+            $("#runContainer").html(html);
+            $("#runModal").modal("show");
+        }
+
+        function run_script() {
+            let loading = new KZ_Loading('正在运行中...');
+            let file = $("#script-path").text();
+            let argv = [];
+            for (let i = 0; i <= posts.length; i++) {
+                if (posts[i]["path"] === file) {
+                    argv = posts[i]["argv"];
+                    break;
+                }
+            }
+            let data = {};
+            if (argv) {
+                for (let i = 0; i < argv.length; i++) {
+                    data[argv[i]["name"]] = $(`input[name=argv-${argv[i]["name"]}]`).val();
+                }
+            }
+            loading.show();
+            $.ajax({
+                url: '/api/run_online_script/',
+                method: 'post',
+                data: {"path": file, "argv": JSON.stringify(data)},
+                dataType: 'JSON',
+                success: function (res) {
+                    loading.destroy();
+                    if (res.status) {
+                        notyf.success(res.msg);
+                        $("#result-container").html(res.data.replaceAll("\n", "<br>"));
+                        $("#resultModal").modal("show");
+                    } else {
+                        notyf.error(res.msg);
+                    }
+                },
+                error: function (res) {
+                    loading.destroy();
+                    notyf.error("网络错误！");
+                }
+            })
+        }
+
+
+    </script>
+{% endblock javascripts %}

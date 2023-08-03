@@ -102,8 +102,9 @@
                                     <p class="mt-3 mb-0 text-sm">
                                         <span class="text mr-2"><i
                                                 class="fa fa-arrow-up"></i></span>
-                                        <span class="text-nowrap">检测到更新 <a href="{{ newer_link }}"
-                                                                           target="_blank">
+                                        <span class="text-nowrap">检测到更新 <a
+                                                href="{{ newer_link }}"
+                                                target="_blank">
                                         {{ newer }}</a></span>
                                     </p>
                                 {% endif %}
@@ -181,8 +182,8 @@
                                         {% endif %}
                                     </td>
                                     <td>
-                                        <a href="/edit.html?file={{ post.fullname }}"><i class="fa
-                                        fa-edit mr-3"></i></a>
+                                        <a href="/edit.html?file={{ post.path }}&postname={{ post.quotename }}">
+                                            <i class="fa fa-edit mr-3"></i></a>
                                     </td>
                                 </tr>
                             {% endfor %}

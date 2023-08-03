@@ -35,7 +35,12 @@
                     <div class="card-header border-0">
                         <div class="row align-items-center">
                             <div class="col">
-                                <h3 class="mb-0">全部配置 (<a id="count">{{ settings_number }}</a>项)
+                                <h3 class="mb-0">
+                                    {% if search %}
+                                        搜索配置: {{ search }} (<a id="count">{{ settings_number }}</a>项)
+                                    {% else %}
+                                        全部配置 (<a id="count">{{ settings_number }}</a>项)
+                                    {% endif %}
                                 </h3>
                             </div>
                         </div>
@@ -155,7 +160,7 @@
                      content_show + "</td>";
                 list += "<td><a href=\"javascript:query_edit('" + page_posts[i]["name"] + "', " +
                     "'" + page_posts[i]["content"].replaceAll("\"", "&quot;") + "')\">" +
-                    "<i class=\"fa fa-edit mr-2\"></i></a>" + "<a href=\"javascript:query_delete('" +
+                    "<i class=\"fa fa-edit mr-2\"></i></a>|&nbsp;&nbsp;" + "<a href=\"javascript:query_delete('" +
                     page_posts[i]["name"] + "')\"><i class=\"fa fa-trash-alt " +
                     "mr-2\"></i></a></td></tr>";
             }

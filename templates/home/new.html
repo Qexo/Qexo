@@ -11,7 +11,7 @@
                     <div class="col-lg-6 col-7">
                         <h6 class="h2 text-white d-inline-block mb-0">新建文章:&nbsp;&nbsp;</h6>
                         <input type="text" name="filename" class="form-control col-lg-5
-                        d-inline-block rounded-pill" placeholder="文章名称"><a class="text-white">&nbsp;.md</a>
+                        d-inline-block rounded-pill" placeholder="文章名称">
                         <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
                             <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
                                 <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i></a>
@@ -22,6 +22,8 @@
                         </nav>
                     </div>
                     <div class="col-lg-6 col-5 text-right">
+                        <a href="javascript:excerpt_post()"
+                           class="btn btn-sm btn-neutral">生成摘要</a>
                         <a href="javascript:SaveDraft()" class="btn btn-sm btn-neutral">保存草稿</a>
                         <a href="javascript:SaveChanges()" class="btn btn-sm btn-neutral">发布</a>
                     </div>
@@ -118,8 +120,8 @@
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
-    <link href="{{ cdnjs }}vditor/3.8.17/index.min.css" rel="stylesheet"/>
-    <script src="{{ cdnjs }}vditor/3.8.17/index.min.js"></script>
+    <link href="{{ cdnjs }}vditor/3.9.1/index.min.css" rel="stylesheet"/>
+    <script src="{{ cdnjs }}vditor/3.9.1/index.min.js"></script>
 
 
     <script>
@@ -141,20 +143,6 @@
             });
         }
 
-
-
-        function getTimeFormat() {
-            let date = new Date();
-            let month = date.getMonth() + 1 < 10 ? "0" + (date.getMonth() + 1) : date.getMonth()
-                + 1;
-            let currentDate = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
-            let hh = date.getHours() < 10 ? "0" + date.getHours() : date.getHours();
-            let mm = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
-            let ss = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
-            return date.getFullYear() + "-" + month + "-" + currentDate + " " + hh + ":" + mm + ":" + ss;
-            //返回格式：yyyy-MM-dd hh:mm:ss
-        }
-
         $.ajaxSetup({
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
         });
@@ -168,35 +156,41 @@
                     return false;
                 }
                 let loading = new KZ_Loading('正在发布中...');
-                _status = false;
-                loading.show();
-                $.ajax({
-                    url: '/api/save_post/',
-                    method: 'post',
-                    data: {
-                        "file": $("input[name='filename']").val() + ".md",
-                        "content": vditor.getValue(),
-                        "front_matter": JSON.stringify(get_front_matter())
-                    },
-                    dataType: 'JSON',
-                    success: function (res) {
-                        loading.destroy();
-                        if (res.status) {
-                            notyf.success('发布成功！等待转跳...');
-                            file_content = vditor.getValue();
-                            setTimeout(window.location.href = "edit.html?file=" +
-                                encodeURIComponent($("input[name='filename']").val() + ".md"), 1000);
-                        } else {
-                            notyf.error(res.msg);
+                let nextstep = function () {
+                    _status = false;
+                    loading.show();
+                    $.ajax({
+                        url: '/api/save_post/',
+                        method: 'post',
+                        data: {
+                            "file": $("input[name='filename']").val(),
+                            "content": vditor.getValue(),
+                            "front_matter": JSON.stringify(get_front_matter())
+                        },
+                        dataType: 'JSON',
+                        success: function (res) {
+                            loading.destroy();
+                            if (res.status) {
+                                notyf.success(res.msg + '等待转跳...');
+                                file_content = vditor.getValue();
+                                setTimeout(window.location.href = "edit.html?file=" +
+                                    encodeURIComponent(res.path)
+                                    + "&postname=" +
+                                    encodeURIComponent($("input[name='filename']").val()), 1000);
+                            } else {
+                                notyf.error(res.msg);
+                            }
+                            _status = true;
+                        },
+                        error: function (res) {
+                            loading.destroy();
+                            notyf.error("网络错误！");
+                            _status = true;
                         }
-                        _status = true;
-                    },
-                    error: function (res) {
-                        loading.destroy();
-                        notyf.error("网络错误！");
-                        _status = true;
-                    }
-                })
+                    })
+                }
+                if (excerpt_config.auto !== "关闭") excerpt_post(nextstep);
+                else nextstep();
             }
         }
 
@@ -207,35 +201,42 @@
                 if (!_status) {
                     return false;
                 }
-                var loading = new KZ_Loading('草稿保存中...');
-                _status = false;
-                loading.show();
-                $.ajax({
-                    url: '/api/save_draft/',
-                    method: 'post',
-                    data: {
-                        "file": $("input[name='filename']").val() + ".md",
-                        "content": vditor.getValue(),
-                        "front_matter": JSON.stringify(get_front_matter())
-                    },
-                    dataType: 'JSON',
-                    success: function (res) {
-                        loading.destroy();
-                        if (res.status) {
-                            notyf.success('草稿保存成功！等待转跳...');
-                            file_content = vditor.getValue();
-                            setTimeout(window.location.href = "edit.html?file=" + encodeURIComponent($("input[name='filename']").val() + ".md"), 1000);
-                        } else {
-                            notyf.error(res.msg);
+                var loading = new KZ_Loading('等待转跳...');
+                let nextstep = function () {
+                    _status = false;
+                    loading.show();
+                    $.ajax({
+                        url: '/api/save_draft/',
+                        method: 'post',
+                        data: {
+                            "file": $("input[name='filename']").val(),
+                            "content": vditor.getValue(),
+                            "front_matter": JSON.stringify(get_front_matter())
+                        },
+                        dataType: 'JSON',
+                        success: function (res) {
+                            loading.destroy();
+                            if (res.status) {
+                                notyf.success('草稿保存成功！等待转跳...');
+                                file_content = vditor.getValue();
+                                setTimeout(window.location.href = "edit.html?file=" +
+                                    encodeURIComponent(res.path)
+                                    + "&postname=" +
+                                    encodeURIComponent($("input[name='filename']").val()), 1000);
+                            } else {
+                                notyf.error(res.msg);
+                            }
+                            _status = true;
+                        },
+                        error: function (res) {
+                            loading.destroy();
+                            notyf.error("网络错误！");
+                            _status = true;
                         }
-                        _status = true;
-                    },
-                    error: function (res) {
-                        loading.destroy();
-                        notyf.error("网络错误！");
-                        _status = true;
-                    }
-                })
+                    })
+                }
+                if (excerpt_config.auto === "总是截取") excerpt_post(nextstep);
+                else nextstep();
             }
         }
 
@@ -257,8 +258,8 @@
                 counter: {
                     enable: true
                 },
-                "cdn": "{{ cdn_prev }}vditor@3.8.17",
-                "mode": "ir",
+                "cdn": "{{ cdn_prev }}vditor@3.9.0",
+                "mode": "wysiwyg",
                 "height": window.innerHeight * 0.75,
                 {% if file_content %}
                     "value": {{ file_content|safe }},
@@ -271,7 +272,7 @@
                     "enable": false,
                 }, "preview": {
                     "theme": {
-                        "path": "{{ cdnjs }}vditor/3.8.17/css/content-theme"
+                        "path": "{{ cdnjs }}vditor/3.9.1/css/content-theme"
                     }
                 },
                 toolbar: [
@@ -379,7 +380,7 @@
                     "edit-mode",
                     "preview"
                 ],
-                "cdn": "{{ cdn_prev }}vditor@3.8.17",
+                "cdn": "{{ cdn_prev }}vditor@3.9.0",
                 "fullscreen": {
                     "index": 1050,
                 },
@@ -392,7 +393,7 @@
                 "preview": {
                     "mode": "both",
                     "theme": {
-                        "path": "{{ cdnjs }}vditor/3.8.17/css/content-theme"
+                        "path": "{{ cdnjs }}vditor/3.9.1/css/content-theme"
                     }
                 }, hint: {
                     emoji: {{ emoji|safe }}
@@ -558,6 +559,9 @@
         else if (typeof (front_matter["categories"]) === "string") categories = [front_matter["categories"]];
         else categories = [];
 
+        trimSpace(categories);
+        trimSpace(tags);
+
         function show_tags() {
             let html = "";
             for (let i = 0; i < tags.length; i++) {
@@ -572,6 +576,9 @@
         }
 
         function add_tag(name) {
+            if (!name) {
+                return;
+            }
             if (tags.includes(name)) {
                 notyf.error("标签已存在! ");
             } else {
@@ -596,28 +603,35 @@
                 html += `<span class="px-1 py-0.5 text-xs select-none
                             d-inline-block  rounded-pill mr-1 mb-0.5"
                             style="color: rgb(255, 255, 255); background-color: rgb(52, 152, 219);
-                            " onclick="del_category(this.innerText);">` + categories[i] + `</span>`;
+                            " onclick="del_category(this.innerText);">` + ((typeof categories[i]
+                        === "object") ? categories[i][0] : categories[i]) +
+                    `</span>`;
             }
             $("#category-container").html(html);
             set_vditor_size();
         }
 
         function add_category(name) {
-            if (categories.includes(name)) {
-                notyf.error("分类已存在! ");
-            } else {
-                categories.push(name);
-                show_categories();
+            if (!name) {
+                return;
             }
+            for (let i = 0; i < categories.length; i++) {
+                if (String(typeof (categories[i]) === "object" ? categories[i][0] : categories[i]) === name) {
+                    notyf.error("分类已存在! ");
+                    return;
+                }
+            }
+            categories.push("{{ config.name }}" === "Hexo" ? [name] : name);
+            show_categories();
         }
 
         function del_category(name) {
             for (let i = 0; i < categories.length; i++) {
-                if (String(categories[i]) === String(name)) {
+                if (String(typeof (categories[i]) === "object" ? categories[i][0] : categories[i]) === String(name)) {
                     categories.splice(i, 1);
                 }
             }
-            $("#category").val(String(name));
+            $("#qexo-category").val(String(name));
             show_categories();
         }
 
@@ -696,8 +710,8 @@
                     </div>`;
                     ifCategory = true;
                 } else {
-                    if (OrgSidebar[i]["search"] === "updated") {
-                        content = getTimeFormat();
+                    if (OrgSidebar[i]["search"] === "updated" || OrgSidebar[i]["search"] === "lastmod") {
+                        content = getRFC3339();
                     } else if (front[OrgSidebar[i]["search"]] !== undefined) {
                         content = front[OrgSidebar[i]["search"]];
                     } else content = "";
@@ -783,14 +797,14 @@
                 html += `<form class="form-row" id="bottom-row-` + i + `">
                                 <div class="col-2">
                                     <input type="text" class="form-control" name="search"
-                                           placeholder="冒号前的内容" value="` + EscapeString(keys[i]) +
+                                           placeholder="冒号前的内容" value="` + escapeString(keys[i]) +
                     `">
                                 </div>
                                 <div class="col-10">
                                     <div class="input-group">
                                         <input type="text" class="form-control" name="icon"
                                                placeholder="若有多级, 请使用JSON格式"  value="` +
-                    EscapeString(typeof (front_matter[keys[i]]) === "object" ? JSON.stringify
+                    escapeString(typeof (front_matter[keys[i]]) === "object" ? JSON.stringify
                     (front_matter[keys[i]]) : front_matter[keys[i]]) + `">
                                         <div class="input-group-append">
                                             <button class="btn" type="button"
@@ -806,4 +820,5 @@
             $("#bottom-container").html(html);
         }
     </script>
+    {% include "includes/editor-scripts.html" %}
 {% endblock javascripts %}

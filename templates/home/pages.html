@@ -36,7 +36,8 @@
                         <div class="row align-items-center">
                             <div class="col">
                                 <h3 class="mb-0">{% if search %}搜索页面: {{ search }}{% else %}
-                                    全部页面{% endif %} ({{ post_number }}个)</h3>
+                                    全部页面{% endif %} (<a id="post-number">{{ post_number }}</a>个)
+                                </h3>
                             </div>
                         </div>
                     </div>
@@ -147,8 +148,8 @@
                     (page_posts[i]["size"] / 1000).toFixed(2) + " KB</td><td><a href=\"/edit_page" +
                     ".html?file=" + encodeURIComponent(page_posts[i]["path"]) + "\"><i class=\"fa" +
                     " fa-edit " +
-                    "mr-2\"></i></a><a href=\"javascript:query_delete('source/" +
-                    page_posts[i]["name"] + "')\"><i class=\"fa fa-trash-alt " +
+                    "mr-2\"></i></a>|&nbsp;&nbsp;<a href=\"javascript:query_delete('" +
+                    page_posts[i]["path"] + "')\"><i class=\"fa fa-trash-alt " +
                     "mr-2\"></i></a></td></tr>";
             }
             $("#page-" + _page).removeClass("active");
@@ -189,71 +190,6 @@
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
         });
 
-        function KZ_Loading(config) {
-            if (this instanceof KZ_Loading) {
-                const domTemplate = '<div class="modal fade kz-loading" data-kzid="@@KZ_Loadin_ID@@" backdrop="static" keyboard="false"><div style="width: 200px;height:20px; z-index: 20000; position: absolute; text-align: center; left: 50%; top: 50%;margin-left:-100px;margin-top:-10px"><div class="progress progress-striped active" style="margin-bottom: 0;"><div class="progress-bar" style="width: 100%;"></div></div><h5>@@KZ_Loading_Text@@</h5></div></div>';
-                this.config = {
-                    content: 'loading...',
-                    time: 0,
-                };
-                if (config != null) {
-                    if (typeof config === 'string') {
-                        this.config = Object.assign(this.config, {
-                            content: config
-                        });
-                    } else if (typeof config === 'object') {
-                        this.config = Object.assign(this.config, config);
-                    }
-                }
-                this.id = new Date().getTime().toString();
-                this.state = 'hide';
-
-                /*显示 */
-                this.show = function () {
-                    $('.kz-loading[data-kzid=' + this.id + ']').modal({
-                        backdrop: 'static',
-                        keyboard: false
-                    });
-                    this.state = 'show';
-                    if (this.config.time > 0) {
-                        var that = this;
-                        setTimeout(function () {
-                            that.hide();
-                        }, this.config.time);
-                    }
-                };
-                /*隐藏 */
-                this.hide = function (callback) {
-                    $('.kz-loading[data-kzid=' + this.id + ']').modal('hide');
-                    this.state = 'hide';
-                    if (callback) {
-                        callback();
-                    }
-                };
-                /*销毁dom */
-                this.destroy = function () {
-                    var that = this;
-                    this.hide(function () {
-                        var node = $('.kz-loading[data-kzid=' + that.id + ']');
-                        node.next().remove();
-                        node.remove();
-                        that.show = function () {
-                            throw new Error('对象已销毁！');
-                        };
-                        that.hide = function () {
-                        };
-                        that.destroy = function () {
-                        };
-                    });
-                }
-
-                var domHtml = domTemplate.replace('@@KZ_Loadin_ID@@', this.id).replace('@@KZ_Loading_Text@@', this.config.content);
-                $('body').append(domHtml);
-            } else {
-                return new KZ_Loading(config);
-            }
-        }
-
         function query_delete(name) {
             $("#delfile").text(name);
             $("#deleteModal").modal("show");
@@ -273,7 +209,7 @@
                     if (res.status) {
                         notyf.success('删除成功！');
                         for (let i = 0; i < posts.length; i++) {
-                            if (posts[i]["fullname"] === file) {
+                            if (posts[i]["path"] === file) {
                                posts.splice(i, 1);
                                $("#post-number").html(posts.length);
                                break;

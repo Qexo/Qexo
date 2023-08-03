@@ -8,7 +8,7 @@ from ..core import Provider
 
 
 class Custom(Provider):
-    name = 'custom'
+    name = '自定义'
 
     _params = {'required': ['url'], 'optional': ['method', 'datatype', 'data']}
 

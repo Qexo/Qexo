@@ -8,7 +8,7 @@ from ..core import Provider
 
 
 class Telegram(Provider):
-    name = 'telegram'
+    name = 'Telegram'
     base_url = 'https://{}/bot{}/sendMessage'
     site_url = 'https://core.telegram.org/bots'
 

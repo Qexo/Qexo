@@ -1,24 +1,9 @@
 import json
 import random
 
-QEXO_VERSION = "2.1.0"
+QEXO_VERSION = "2.8.1"
 
-ALL_SETTINGS = [  # [名称, 默认值, 是否在尝试修复时重置, 简介]
-    ["ABBRLINK_ALG", "crc16", False, "短链接算法"],
-    ["ABBRLINK_REP", "dec", False, "短链接格式dec/hex"],
-    ["CDN_PREV", "https://unpkg.com/", True, "调用NPM的CDN前缀"],
-    ["CDNJS", "https://cdn.staticfile.org/", True, "调用CDNJS的CDN前缀"],
-    ["INIT", "2", False, "初始化标识"],
-    ["QEXO_ICON",
-     "https://unpkg.com/qexo-static@1.4.0/assets/img/brand/favicon.ico",
-     False, "站点ICON"],
-    ["QEXO_LOGO",
-     "https://unpkg.com/qexo-static@1.4.0/assets/img/brand/qexo.png",
-     False, "站点LOGO"],
-    ["QEXO_NAME", "Hexo管理面板", False, "站点名"],
-    ["QEXO_SPLIT", "-", False, "站点分隔符"],
-    ["VDITOR_EMOJI",
-     json.dumps({"微笑": "🙂", "撇嘴": "😦", "色": "😍", "发呆": "😍", "得意": "😎",
+DEFAULT_EMOJI = {"微笑": "🙂", "撇嘴": "😦", "色": "😍", "发呆": "😍", "得意": "😎",
                  "流泪": "😭", "害羞": "😊", "闭嘴": "😷", "睡": "😴",
                  "大哭 ": "😡", "尴尬": "😡", "发怒": "😛", "调皮": "😀", "呲牙": "😯",
                  "惊讶": "🙁", "难过": "😎", "酷": "😨", "冷汗": "😱", "抓狂": "😵", "吐 ": "😋",
@@ -36,9 +21,36 @@ ALL_SETTINGS = [  # [名称, 默认值, 是否在尝试修复时重置, 简介]
                  "胜利": "✌", "抱拳": "✊", "勾引": "✌", "拳头": "✊", "差劲": "✌", "爱你": "✌",
                  "NO": "✌", "OK": "🙂", "嘿哈": "🙂", "捂脸": "🙂", "奸笑": "🙂", "机智": "🙂",
                  "皱眉": "🙂", "耶": "🙂", "吃瓜": "🙂", "加油": "🙂", "汗": "🙂", "天啊": "👌",
-                 "社会社会": "🙂", "旺柴": "🙂", "好的": "🙂", "哇": "🙂"}), True, "自定义表情"],
-    ["WEBHOOK_APIKEY", ''.join(random.choice("qwertyuiopasdfghjklzxcvbnm1234567890")
-                               for x in range(12)), False, "API密钥"],
+                 "社会社会": "🙂", "旺柴": "🙂", "好的": "🙂", "哇": "🙂"}
+
+DEFAULT_CDN = [
+    {"name": "Cloudflare", "url": "https://cdnjs.cloudflare.com/ajax/libs/"},
+    {"name": "Loli", "url": "https://cdnjs.loli.net/ajax/libs/"},
+    {"name": "七牛云", "url": "https://cdn.staticfile.org/"},
+    {"name": "75CDN", "url": "https://lib.baomitu.com/"},
+    {"name": "BootCDN", "url": "https://cdn.bootcdn.net/ajax/libs/"},
+    # {"name": "重庆邮电大学", "url": "https://mirrors.cqupt.edu.cn/cdnjs/ajax/libs/"},  # 更新不及时
+    {"name": "南方科技大学", "url": "https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/"},
+    {"name": "渺软公益 CDN", "url": "https://cdnjs.onmicrosoft.cn/ajax/libs/"}
+]
+
+DEFAULT_UPDATES = [
+    {"name": "master", "url": "https://github.com/Qexo/Qexo/tarball/master/"},
+    {"name": "dev", "url": "https://github.com/Qexo/Qexo/tarball/dev/"}
+]
+
+ALL_SETTINGS = [  # [名称, 默认值, 是否在尝试修复时重置, 简介]
+    ["ABBRLINK_ALG", "crc16", False, "短链接算法"],
+    ["ABBRLINK_REP", "dec", False, "短链接格式dec/hex"],
+    ["CDN_PREV", "https://npm.onmicrosoft.cn/", True, "调用NPM的CDN前缀"],
+    ["CDNJS", "https://cdn.staticfile.org/", True, "调用CDNJS的CDN前缀"],
+    ["INIT", "2", False, "初始化标识"],
+    ["QEXO_ICON", "https://unpkg.com/qexo-static@1.4.0/assets/img/brand/favicon.ico", False, "站点ICON"],
+    ["QEXO_LOGO", "https://unpkg.com/qexo-static@1.4.0/assets/img/brand/qexo.png", False, "站点LOGO"],
+    ["QEXO_NAME", "博客管理面板", False, "站点名"],
+    ["QEXO_SPLIT", "-", False, "站点分隔符"],
+    ["VDITOR_EMOJI", json.dumps(DEFAULT_EMOJI), True, "自定义表情"],
+    ["WEBHOOK_APIKEY", ''.join(random.choice("qwertyuiopasdfghjklzxcvbnm1234567890") for x in range(12)), False, "API密钥"],
     ["VERCEL_TOKEN", "", False, "Vercel密钥"],
     ["PROJECT_ID", "", False, "Qexo项目ID"],
     ["ALLOW_FRIEND", "否", False, "是否允许友链申请 是/否"],
@@ -52,21 +64,20 @@ ALL_SETTINGS = [  # [名称, 默认值, 是否在尝试修复时重置, 简介]
     ["RECAPTCHA_TOKEN", "", False, "用于友链reCaptcha服务器端密钥"],
     ["LOGIN_RECAPTCHA_SITE_TOKEN", "", False, "用于登录验证的reCaptchaV3网站密钥"],
     ["LOGIN_RECAPTCHA_SERVER_TOKEN", "", False, "用于登录验证的reCaptchaV3服务端密钥"],
+    ["LOGIN_RECAPTCHAV2_SITE_TOKEN", "", False, "用于登录验证的reCaptchaV2网站密钥"],
+    ["LOGIN_RECAPTCHAV2_SERVER_TOKEN", "", False, "用于登录验证的reCaptchaV2服务端密钥"],
     ["POST_SIDEBAR",
      "[{\"search\":\"title\",\"name\":\"标题\",\"icon\":\"fas fa-heading\"},{\"search\":\"abbrlink\",\"name\":\"缩写\",\"icon\":\"fas fa-id-card\"},{\"search\":\"date\",\"name\":\"发布于\",\"icon\":\"fas fa-globe-americas\"},{\"search\":\"updated\",\"name\":\"更新于\",\"icon\":\"fas fa-calendar-alt\"},{\"search\":\"tags\",\"name\":\"标签\",\"icon\":\"fas fa-tags\"},{\"search\":\"categories\",\"name\":\"分类\",\"icon\":\"fas fa-folder-open\"}]",
      False, "文章侧边栏配置JSON"],
     ["PAGE_SIDEBAR",
      "[{\"search\":\"title\",\"name\":\"标题\",\"icon\":\"fas fa-heading\"},{\"search\":\"date\",\"name\":\"发布于\",\"icon\":\"fas fa-globe-americas\"},{\"search\":\"updated\",\"name\":\"更新于\",\"icon\":\"fas fa-calendar-alt\"}]",
      False, "页面侧边栏配置JSON"],
-    ["EXCERPT_POST", "否", False, "是否开启在摘录为空时自动截取文章 是/否"],
-    ["EXCERPT_LENGTH", "200", False, "自动截取文章的长度"]
-]
-
-ALL_CDN = [
-    {"name": "Cloudflare", "url": "https://cdnjs.cloudflare.com/ajax/libs/"},
-    {"name": "Loli", "url": "https://cdnjs.loli.net/ajax/libs/"},
-    {"name": "七牛云", "url": "https://cdn.staticfile.org/"},
-    {"name": "75CDN", "url": "https://lib.baomitu.com/"},
-    # {"name": "重庆邮电大学", "url": "https://mirrors.cqupt.edu.cn/cdnjs/ajax/libs/"},
-    {"name": "南方科技大学", "url": "https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/"}
+    ["TALK_SIDEBAR", "[]", False, "说说侧边栏配置JSON"],
+    # ["EXCERPT_POST", "否", False, "是否开启在摘录为空时自动截取文章 是/否"],   # 弃用
+    # ["EXCERPT_LENGTH", "200", False, "自动截取文章的长度"],  # 弃用
+    ["ALL_CDN", json.dumps(DEFAULT_CDN), True, "CDN列表"],
+    ["ALL_UPDATES", json.dumps(DEFAULT_UPDATES), True, "更新源列表"],
+    ["UPDATE_FROM", "false", False, "是否更新过"],
+    ["JUMP_UPDATE", "false", False, "是否转跳到更新界面"],
+    ["AUTO_EXCERPT_CONFIG", '{"method":"本地","auto":"关闭","save_key":"excerpt","params":{"save_key":"excerpt","length":"200"}}', False, "文章截取配置JSON"],
 ]

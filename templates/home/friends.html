@@ -195,7 +195,7 @@
                     "</td><td>" +
                     description +
                     "</td><td><a href=\"javascript:query_edit('" + page_posts[i]["time"] + "')\">" +
-                    "<i class=\"fa fa-edit mr-2\"></i></a>" + "<a href=\"javascript:query_delete" +
+                    "<i class=\"fa fa-edit mr-2\"></i></a>|&nbsp;&nbsp;" + "<a href=\"javascript:query_delete" +
                     "(`" + page_posts[i]["name"] + "`,'" +
                     page_posts[i]["time"] + "')\"><i class=\"fa fa-trash-alt " +
                     "mr-2\"></i></a></td></tr>";
@@ -303,7 +303,7 @@
         }
 
         function query_delete(name, time) {
-            let html = "确认要删除链接 " + name + " 吗？该操作不可回退";
+            let html = "确认要删除链接 " + escapeString(name) + " 吗？该操作不可回退";
             $("#query-modal-body").html(html);
             $("#queryLabel").html("提示");
             let footer = "<button type=\"button\" class=\"btn btn-secondary\" " +

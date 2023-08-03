@@ -1,11 +1,21 @@
 # -*- encoding: utf-8 -*-
-from django.shortcuts import redirect, render
-from django.contrib.auth import logout
-from django import template
-from django.http import HttpResponse
-from django.template import loader
-from .api import *
+import uuid
 from math import ceil
+from urllib.parse import quote, unquote
+
+from django import template
+from django.contrib.auth import logout
+from django.http import HttpResponse
+from django.shortcuts import redirect, render
+from django.template import loader
+
+from hexoweb.libs.image import all_providers as all_image_providers
+from hexoweb.libs.image import get_params as get_image_params
+from hexoweb.libs.onepush import all_providers as onepush_providers
+from hexoweb.libs.onepush import get_notifier
+from hexoweb.libs.platforms import all_providers, get_params
+from hexoweb.libs.platforms import all_configs as platform_configs
+from .api import *
 
 
 def page_404(request, exception):
@@ -24,10 +34,10 @@ def page_500(request):
 def login_view(request):
     try:
         if int(get_setting("INIT")) <= 5:
-            print("未完成初始化配置, 转跳到初始化页面")
+            logging.info("未完成初始化配置, 转跳到初始化页面")
             return redirect("/init/")
     except Exception:
-        print("未检测到初始化配置, 转跳到初始化页面")
+        logging.info("未检测到初始化配置, 转跳到初始化页面")
         return redirect("/init/")
     if request.user.is_authenticated:
         if not request.GET.get("next"):
@@ -37,19 +47,26 @@ def login_view(request):
     context = get_custom_config()
     site_token = get_setting("LOGIN_RECAPTCHA_SITE_TOKEN")
     server_token = get_setting("LOGIN_RECAPTCHA_SERVER_TOKEN")
+    site_token_v2 = get_setting("LOGIN_RECAPTCHAV2_SITE_TOKEN")
+    server_token_v2 = get_setting("LOGIN_RECAPTCHAV2_SERVER_TOKEN")
     if site_token and server_token:
         context["site_token"] = site_token
+    if site_token_v2 and server_token_v2 and not context.get("site_token"):
+        context["site_token_v2"] = site_token_v2
     return render(request, "accounts/login.html", context)
 
 
 @login_required(login_url="/login/")
 def update_view(request):
+    if not request.user.is_staff:
+        logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+        return page_403(request, "您没有权限访问此页面")
     try:
         if int(get_setting("INIT")) <= 5:
-            print("未完成初始化配置, 转跳到初始化页面")
+            logging.info("未完成初始化配置, 转跳到初始化页面")
             return redirect("/init/")
     except Exception:
-        print("未检测到初始化配置, 转跳到初始化页面")
+        logging.info("未检测到初始化配置, 转跳到初始化页面")
         return redirect("/init/")
     if request.method == 'POST':
         for setting in request.POST.keys():
@@ -87,7 +104,7 @@ def update_view(request):
 
             context["counter"] += 1
     if not context["counter"]:
-        save_setting("UPDATE_FROM", "false")
+        save_setting("JUMP_UPDATE", "false")
         return redirect("/")
     return render(request, "accounts/update.html", context)
 
@@ -100,11 +117,15 @@ def init_view(request):
     if not step:
         save_setting("INIT", "1")
         step = "1"
+    provider = False
+    if step == "2" and User.objects.all():
+        step = "3"
+        save_setting("INIT", "3")
     if request.method == "POST":
         if request.POST.get("step") == "1":
             fix_all()
             save_setting("INIT", "2")
-            step = "2"
+            step = "2" if not User.objects.all() else "3"
         if request.POST.get("step") == "2":
             username = request.POST.get("username")
             password = request.POST.get("password")
@@ -140,24 +161,36 @@ def init_view(request):
                     User.objects.create_superuser(username=username, password=password)
                     save_setting("INIT", "3")
                     step = "3"
+                    context["PROVIDER"] = get_setting("PROVIDER")
+                    # Get Provider Settings
+                    all_provider = all_providers()
+                    context["all_providers"] = dict()
+                    for provider in all_provider:
+                        params = get_params(provider)
+                        context["all_providers"][provider] = params
+                    context["all_platform_configs"] = platform_configs()
             except Exception as e:
-                print("初始化用户名密码错误:" + repr(e))
+                logging.error("初始化用户名密码错误:" + repr(e))
                 msg = repr(e)
                 context["username"] = username
                 context["password"] = password
                 context["repassword"] = repassword
         if request.POST.get("step") == "3":
-            provider = False
             try:
                 provider = {
                     "provider": request.POST.get("provider"),
                     "params": dict(request.POST)
                 }
-                del provider["params"]["provider"]
-                del provider["params"]["step"]
-                del provider["params"]["csrfmiddlewaretoken"]
+                if "provider" in provider["params"]:
+                    del provider["params"]["provider"]
+                if "step" in provider["params"]:
+                    del provider["params"]["step"]
+                if "csrfmiddlewaretoken" in provider["params"]:
+                    del provider["params"]["csrfmiddlewaretoken"]
                 for key in provider["params"].keys():
                     provider["params"][key] = provider["params"][key][0]
+                if provider["params"]["config"] != "Hexo":
+                    provider["params"]["_force"] = True
                 if provider["params"].get("_force") is None:
                     verify = verify_provider(provider)
                     if verify["status"] and verify["status"] != -1:
@@ -168,7 +201,7 @@ def init_view(request):
                     else:
                         msg = ""
                         if verify["status"] == -1:
-                            msg = "远程连接错误!请检查Token"
+                            msg = "远程连接错误!请检查Token或分支是否正确"
                         else:
                             if verify["hexo"]:
                                 msg += "检测到Hexo版本: " + verify["hexo"]
@@ -208,6 +241,7 @@ def init_view(request):
                         for provider in all_provider:
                             params = get_params(provider)
                             context["all_providers"][provider] = params
+                        context["all_platform_configs"] = platform_configs()
                 else:
                     del provider["params"]["_force"]
                     save_setting("PROVIDER", json.dumps(provider))
@@ -216,7 +250,7 @@ def init_view(request):
                     save_setting("INIT", step)
             except Exception as e:
                 msg = repr(e)
-                print("初始化Provider错误:" + repr(e))
+                logging.error("初始化Provider错误:" + repr(e))
                 context["PROVIDER"] = json.dumps(get_setting("PROVIDER") if not provider else provider)
                 # Get Provider Settings
                 all_provider = all_providers()
@@ -224,6 +258,7 @@ def init_view(request):
                 for provider in all_provider:
                     params = get_params(provider)
                     context["all_providers"][provider] = params
+                context["all_platform_configs"] = platform_configs()
         if request.POST.get("step") == "5":
             project_id = request.POST.get("id")
             vercel_token = request.POST.get("token")
@@ -234,7 +269,7 @@ def init_view(request):
                 save_setting("INIT", "6")
                 step = "6"
             except Exception as e:
-                print("初始化Vercel配置错误:" + repr(e))
+                logging.error("初始化Vercel配置错误:" + repr(e))
                 context["project_id"] = project_id
                 context["vercel_token"] = vercel_token
                 msg = "校验错误"
@@ -242,7 +277,7 @@ def init_view(request):
             user = User.objects.all()[0]
             context["username"] = user.username
     elif int(step) >= 6:
-        print("已完成初始化, 转跳至首页")
+        logging.info("已完成初始化, 转跳至首页")
         return redirect("/")
     else:
         if int(step) == 3:
@@ -253,6 +288,7 @@ def init_view(request):
             for provider in all_provider:
                 params = get_params(provider)
                 context["all_providers"][provider] = params
+            context["all_platform_configs"] = platform_configs()
     context["msg"] = msg
     context["step"] = step
     return render(request, "accounts/init.html", context)
@@ -260,17 +296,20 @@ def init_view(request):
 
 def logout_view(request):
     logout(request)
-    print("注销成功")
+    logging.info("注销成功")
     return redirect('/login/?next=/')
 
 
 @login_required(login_url='/login/')
 def migrate_view(request):
+    if not request.user.is_staff:
+        logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+        return page_403(request, "您没有权限访问此页面")
     try:
         if int(get_setting("INIT")) <= 5:
             return redirect("/init/")
     except Exception:
-        print("未检测到初始化配置, 转跳到初始化页面")
+        logging.info("未检测到初始化配置, 转跳到初始化页面")
         return redirect("/init/")
     context = {}
     if request.method == "POST":
@@ -315,7 +354,7 @@ def migrate_view(request):
                 import_talks(json.loads(request.POST.get("data")))
                 context["msg"] = "说说迁移完成！"
         except Exception as error:
-            print(request.POST.get("type") + "错误: " + repr(error))
+            logging.error(request.POST.get("type") + "错误: " + repr(error))
             context["msg"] = request.POST.get("type") + "错误: " + repr(error)
         return JsonResponse(safe=False, data=context)
     else:
@@ -328,17 +367,17 @@ def migrate_view(request):
 def index(request):
     try:
         if int(get_setting("INIT")) <= 5:
-            print("初始化未完成, 转跳到初始化页面")
+            logging.info("初始化未完成, 转跳到初始化页面")
             return redirect("/init/")
     except Exception:
-        print("未检测到初始化配置, 转跳到初始化页面")
+        logging.info("未检测到初始化配置, 转跳到初始化页面")
         return redirect("/init/")
     try:
-        if get_setting("UPDATE_FROM") != "false":
-            print("检测到更新配置, 转跳至配置更新页面")
+        if get_setting("JUMP_UPDATE") != "false":
+            logging.info("检测到更新配置, 转跳至配置更新页面")
             return redirect("/update/")
     except Exception:
-        print("检测配置更新失败, 转跳至更新页面")
+        logging.info("检测配置更新失败, 转跳至更新页面")
         return redirect("/update/")
     context = {'segment': 'index'}
     context.update(get_custom_config())
@@ -354,7 +393,8 @@ def index(request):
                        "date": strftime("%Y-%m-%d", localtime(float(i.date)))})
     context["posts"] = posts[0:5]
     for item in range(len(context["posts"])):
-        context["posts"][item]["fullname"] = quote(context["posts"][item]["fullname"])
+        context["posts"][item]["quotename"] = quote(context["posts"][item]["name"])
+        context["posts"][item]["path"] = quote(context["posts"][item]["path"])
     context["images"] = images[::-1][0:5]
     context = dict(context, **get_latest_version())
     context["version"] = QEXO_VERSION
@@ -370,17 +410,17 @@ def pages(request):
     context = dict()
     try:
         if int(get_setting("INIT")) <= 5:
-            print("初始化未完成, 转跳到初始化页面")
+            logging.info("初始化未完成, 转跳到初始化页面")
             return redirect("/init/")
     except Exception:
-        print("未检测到初始化配置, 转跳到初始化页面")
+        logging.info("未检测到初始化配置, 转跳到初始化页面")
         return redirect("/init/")
     try:
-        if get_setting("UPDATE_FROM") != "false":
-            print("检测到更新配置, 转跳至配置更新页面")
+        if get_setting("JUMP_UPDATE") != "false":
+            logging.info("检测到更新配置, 转跳至配置更新页面")
             return redirect("/update/")
     except Exception:
-        print("检测配置更新失败, 转跳至更新页面")
+        logging.info("检测配置更新失败, 转跳至更新页面")
         return redirect("/update/")
     try:
         context.update(get_custom_config())
@@ -392,22 +432,25 @@ def pages(request):
             talk_id = request.GET.get("id")
             context["content"] = repr("")
             context["tags"] = "[]"
+            context["values"] = "{}"
+            context["sidebar"] = get_setting("TALK_SIDEBAR")
             if talk_id:
                 Talk = TalkModel.objects.get(id=uuid.UUID(hex=talk_id))
                 context["content"] = repr(Talk.content)
                 context["tags"] = Talk.tags
                 context["id"] = talk_id
+                context["values"] = Talk.values
             try:
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
             except Exception:
-                print("未检测到图床配置, 图床功能关闭")
+                logging.info("未检测到图床配置, 图床功能关闭")
         elif "edit_page" in load_template:
             file_path = request.GET.get("file")
             context["front_matter"], context["file_content"] = get_post_details(
                 (Provider().get_content(file_path)))
             context["front_matter"] = json.dumps(context["front_matter"])
-            context['filename'] = file_path.split("/")[-2] + "/" + file_path.split("/")[-1]
+            context['filename'] = file_path.split("/")[-1]
             context["file_path"] = file_path
             context["emoji"] = get_setting("VDITOR_EMOJI")
             context["sidebar"] = get_setting("PAGE_SIDEBAR")
@@ -415,7 +458,8 @@ def pages(request):
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
             except Exception:
-                print("未检测到图床配置, 图床功能关闭")
+                logging.info("未检测到图床配置, 图床功能关闭")
+            context["AUTO_EXCERPT_CONFIG"] = get_setting("AUTO_EXCERPT_CONFIG")
         elif "edit_config" in load_template:
             file_path = request.GET.get("file")
             context["file_content"] = repr(Provider().get_content(file_path)).replace("<", "\\<").replace(">", "\\>").replace("!", "\\!")
@@ -424,47 +468,54 @@ def pages(request):
         elif "edit" in load_template:
             file_path = request.GET.get("file")
             context["front_matter"], context["file_content"] = get_post_details(
-                (get_post(file_path)))
+                (Provider().get_content(file_path)))
             context["front_matter"] = json.dumps(context["front_matter"])
-            context['filename'] = file_path.split("/")[-1]
+            context['filename'] = request.GET.get("postname")
             context['fullname'] = file_path
             context["emoji"] = get_setting("VDITOR_EMOJI")
             context["sidebar"] = get_setting("POST_SIDEBAR")
+            context["config"] = Provider().config
             try:
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
             except Exception:
-                print("未检测到图床配置, 图床功能关闭")
+                logging.info("未检测到图床配置, 图床功能关闭")
+            context["AUTO_EXCERPT_CONFIG"] = get_setting("AUTO_EXCERPT_CONFIG")
         elif "new_page" in load_template:
             context["emoji"] = get_setting("VDITOR_EMOJI")
             context["sidebar"] = get_setting("PAGE_SIDEBAR")
             try:
                 context["front_matter"], context["file_content"] = get_post_details(
-                    (Provider().get_content("scaffolds/page.md")))
+                    (Provider().get_scaffold("pages")))
                 context["front_matter"] = json.dumps(context["front_matter"])
             except Exception as error:
-                print("获取页面模板失败, 错误信息: " + repr(error))
-                context["error"] = repr(error)
+                logging.error("获取页面模板失败, 错误信息: " + repr(error))
+                # context["error"] = repr(error)
+                context["front_matter"], context["file_content"] = {}, ""
             try:
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
             except Exception:
-                print("未检测到图床配置, 图床功能关闭")
+                logging.info("未检测到图床配置, 图床功能关闭")
+            context["AUTO_EXCERPT_CONFIG"] = get_setting("AUTO_EXCERPT_CONFIG")
         elif "new" in load_template:
             context["emoji"] = get_setting("VDITOR_EMOJI")
             context["sidebar"] = get_setting("POST_SIDEBAR")
+            context["config"] = Provider().config
             try:
                 context["front_matter"], context["file_content"] = get_post_details(
-                    (Provider().get_content("scaffolds/post.md")))
+                    (Provider().get_scaffold("posts")))
                 context["front_matter"] = json.dumps(context["front_matter"])
             except Exception as error:
-                print("获取文章模板失败, 错误信息: " + repr(error))
-                context["error"] = repr(error)
+                logging.error("获取文章模板失败, 错误信息: " + repr(error))
+                # context["error"] = repr(error)
+                context["front_matter"], context["file_content"] = {}, ""
             try:
                 if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
                     context["img_bed"] = True
             except Exception:
                 print("未检测到图床配置, 图床功能关闭")
+            context["AUTO_EXCERPT_CONFIG"] = get_setting("AUTO_EXCERPT_CONFIG")
         elif "posts" in load_template:
             search = request.GET.get("s")
             if search:
@@ -497,11 +548,14 @@ def pages(request):
                     posts = json.loads(cache.first().content)
                 else:
                     posts = update_pages_cache(search)
-            context["posts"] = posts
+            context["posts"] = json.dumps(posts)
             context["post_number"] = len(posts)
             context["page_number"] = ceil(context["post_number"] / 15)
             context["search"] = search
         elif "configs" in load_template:
+            if not request.user.is_staff:
+                logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+                return page_403(request, "您没有权限访问此页面")
             search = request.GET.get("s")
             if search:
                 cache = Cache.objects.filter(name="configs." + search)
@@ -515,7 +569,7 @@ def pages(request):
                     posts = json.loads(cache.first().content)
                 else:
                     posts = update_configs_cache(search)
-            context["posts"] = posts
+            context["posts"] = json.dumps(posts)
             context["post_number"] = len(posts)
             context["page_number"] = ceil(context["post_number"] / 15)
             context["search"] = search
@@ -525,20 +579,22 @@ def pages(request):
             if search:
                 talks = TalkModel.objects.filter(content__contains=search)
                 for i in talks:
+                    t = json.loads(i.like)
                     posts.append({"content": excerpt_post(i.content, 20, mark=False),
                                   "tags": ', '.join(json.loads(i.tags)),
                                   "time": strftime("%Y-%m-%d %H:%M:%S", localtime(int(i.time))),
-                                  "like": len(json.loads(i.like)),
+                                  "like": len(t) if t else 0,
                                   "id": i.id.hex})
             else:
                 talks = TalkModel.objects.all()
                 for i in talks:
+                    t = json.loads(i.like)
                     posts.append({"content": excerpt_post(i.content, 20, mark=False),
                                   "tags": ', '.join(json.loads(i.tags)),
                                   "time": strftime("%Y-%m-%d %H:%M:%S", localtime(int(i.time))),
-                                  "like": len(json.loads(i.like)),
+                                  "like": len(t) if t else 0,
                                   "id": i.id.hex})
-            context["posts"] = sorted(posts, key=lambda x: x["time"], reverse=True)
+            context["posts"] = json.dumps(sorted(posts, key=lambda x: x["time"], reverse=True))
             context["post_number"] = len(posts)
             context["page_number"] = ceil(context["post_number"] / 15)
             context["search"] = search
@@ -559,7 +615,7 @@ def pages(request):
                                   "date": strftime("%Y-%m-%d %H:%M:%S",
                                                    localtime(float(i.date))),
                                   "time": i.date})
-            context["posts"] = posts[::-1]
+            context["posts"] = json.dumps(posts[::-1])
             context["post_number"] = len(posts)
             context["page_number"] = ceil(context["post_number"] / 15)
             context["search"] = search
@@ -569,15 +625,15 @@ def pages(request):
             if search:
                 friends = FriendModel.objects.filter(name__contains=search)
                 for i in friends:
-                    posts.append({"name": i.name, "url": i.url, "image": i.imageUrl,
-                                  "description": i.description,
+                    posts.append({"name": escapeString(i.name), "url": escapeString(i.url), "image": escapeString(i.imageUrl),
+                                  "description": escapeString(i.description),
                                   "time": i.time,
                                   "status": i.status})
             else:
                 images = FriendModel.objects.all()
                 for i in images:
-                    posts.append({"name": i.name, "url": i.url, "image": i.imageUrl,
-                                  "description": i.description,
+                    posts.append({"name": escapeString(i.name), "url": escapeString(i.url), "image": escapeString(i.imageUrl),
+                                  "description": escapeString(i.description),
                                   "time": i.time,
                                   "status": i.status})
             posts.sort(key=lambda x: x["time"])
@@ -586,6 +642,9 @@ def pages(request):
             context["page_number"] = ceil(context["post_number"] / 15)
             context["search"] = search
         elif 'settings' in load_template:
+            if not request.user.is_staff:
+                logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+                return page_403(request, "您没有权限访问此页面")
             try:
                 context['ABBRLINK_ALG'] = get_setting("ABBRLINK_ALG")
                 context['ABBRLINK_REP'] = get_setting("ABBRLINK_REP")
@@ -596,8 +655,8 @@ def pages(request):
                 context["RECAPTCHA_TOKEN"] = get_setting("RECAPTCHA_TOKEN")
                 context["LOGIN_RECAPTCHA_SITE_TOKEN"] = get_setting("LOGIN_RECAPTCHA_SITE_TOKEN")
                 context["LOGIN_RECAPTCHA_SERVER_TOKEN"] = get_setting("LOGIN_RECAPTCHA_SERVER_TOKEN")
-                context["EXCERPT_POST"] = get_setting("EXCERPT_POST")
-                context["EXCERPT_LENGTH"] = get_setting("EXCERPT_LENGTH")
+                context["LOGIN_RECAPTCHAV2_SITE_TOKEN"] = get_setting("LOGIN_RECAPTCHAV2_SITE_TOKEN")
+                context["LOGIN_RECAPTCHAV2_SERVER_TOKEN"] = get_setting("LOGIN_RECAPTCHAV2_SERVER_TOKEN")
                 # Get Provider Settings
                 context["PROVIDER"] = get_setting("PROVIDER")
                 all_provider = all_providers()
@@ -630,13 +689,29 @@ def pages(request):
                     params = get_image_params(provider)
                     context["all_image_hosts"][provider] = params
                 # CDNs
-                context["ALL_CDN"] = ALL_CDN
+                context["ALL_CDN"] = json.loads(get_setting("ALL_CDN"))
+                # 更新通道
+                context["ALL_UPDATES"] = json.loads(get_setting("ALL_UPDATES"))
+                context["ALL_PLATFORM_CONFIGS"] = platform_configs()
+                context["NOW_PLATFORM_CONFIG"] = Provider().config["name"]
+                # Get Auto Excerpt Settings
+                context["AUTO_EXCERPT_CONFIG"] = get_setting("AUTO_EXCERPT_CONFIG")
+                context["AUTO_EXCERPT_SAVE_KEY"] = json.loads(context["AUTO_EXCERPT_CONFIG"]).get("save_key", "excerpt")
+                context["AUTO_EXCERPT"] = json.loads(context["AUTO_EXCERPT_CONFIG"]).get("auto", "关闭")
             except Exception:
-                print("配置获取错误, 转跳至配置更新页面")
+                logging.error("配置获取错误, 转跳至配置更新页面")
                 return redirect("/update/")
         elif 'advanced' in load_template:
+            if not request.user.is_staff:
+                logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+                return page_403(request, "您没有权限访问此页面")
             try:
-                all_settings = SettingModel.objects.all()
+                search = request.GET.get("s")
+                if search:
+                    all_settings = SettingModel.objects.filter(name__contains=search.upper())
+                    context["search"] = search
+                else:
+                    all_settings = SettingModel.objects.all()
                 context["settings"] = list()
                 for setting in all_settings:
                     context["settings"].append({"name": setting.name, "content": setting.content})
@@ -644,9 +719,12 @@ def pages(request):
                 context["settings_number"] = len(context["settings"])
                 context["page_number"] = ceil(context["settings_number"] / 15)
             except Exception as e:
-                print("高级设置获取错误: " + repr(e))
+                logging.error("高级设置获取错误: " + repr(e))
                 context["error"] = repr(e)
         elif 'custom' in load_template:
+            if not request.user.is_staff:
+                logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+                return page_403(request, "您没有权限访问此页面")
             try:
                 search = request.GET.get("s")
                 all_values = CustomModel.objects.all()
@@ -660,19 +738,40 @@ def pages(request):
                 context["settings_number"] = len(context["settings"])
                 context["page_number"] = ceil(context["settings_number"] / 15)
             except Exception as e:
-                print("自定义字段获取错误: " + repr(e))
+                logging.error("自定义字段获取错误: " + repr(e))
                 context["error"] = repr(e)
+        elif "userscripts" in load_template:
+            if not request.user.is_staff:
+                logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+                return page_403(request, "您没有权限访问此页面")
+            try:
+                search = request.GET.get("s")
+                scripts = requests.get("https://raw.githubusercontent.com/Qexo/Scripts/main/index.json").json()
+                context["posts"] = list()
+                for script in scripts:
+                    if (not search) or (search.upper() in script["name"].upper()) or (search.upper() in script["author"].upper()):
+                        context["posts"].append(script)
+                if search:
+                    context["search"] = search
+                context["post_number"] = len(context["posts"])
+                context["page_number"] = ceil(context["post_number"] / 15)
+                context["all_posts"] = json.dumps(context["posts"])
+                context["posts"] = json.dumps(context["posts"])
+            except Exception as e:
+                logging.error("获取错误: " + repr(e))
+                context["error"] = repr(e)
+
         save_setting("LAST_LOGIN", str(int(time())))
         html_template = loader.get_template('home/' + load_template)
         return HttpResponse(html_template.render(context, request))
 
     except template.TemplateDoesNotExist as e:
-        print("页面不存在: " + repr(e))
+        logging.error("页面不存在: " + repr(e))
         html_template = loader.get_template('home/page-404.html')
         return HttpResponse(html_template.render(context, request))
 
     except Exception as error:
-        print("服务端错误: " + repr(error))
+        logging.error("服务端错误: " + repr(error))
         html_template = loader.get_template('home/page-500.html')
         context["error"] = error
         return HttpResponse(html_template.render(context, request))

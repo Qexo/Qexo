@@ -12,20 +12,23 @@
                         <h6 class="mb-0">修改配置</h6>
                     </div>
                     <div class="card-body">
-                        <button type="button" class="btn btn-primary" onclick="query_webhook()">
+                        <button type="button" class="btn bg-gradient-success" onclick="query_webhook()">
                             一键设置WEBHOOK
                         </button>
-                        <button class="btn btn-danger" onclick="location.href='/advanced.html'">
+                        <button class="btn bg-gradient-danger" onclick="location.href='/advanced.html'">
                             高级设置
                         </button>
-                        <button class="btn btn-info" onclick="location.href='/userscripts.html'">
+                        <button class="btn bg-gradient-info" onclick="location.href='/userscripts.html'">
                             云端命令库
                         </button>
-                        <button type="button" class="btn btn-warning" onclick="query_purge()">
+                        <button type="button" class="btn bg-gradient-warning" onclick="query_purge()">
                             清除缓存
                         </button>
-                        <button type="button" class="btn btn-danger" onclick="query_update()">
+                        <button type="button" class="btn bg-gradient-danger" onclick="query_update()">
                             一键更新
+                        </button>
+                        <button type="button" class="btn bg-gradient-primary" onclick="location.href='/migrate/'">
+                            迁移
                         </button>
                         <form id="apikey-settings" onsubmit="return false;">
                             <hr class="my-4"/>

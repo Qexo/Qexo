@@ -214,7 +214,7 @@
             </div>
             <div class="col-lg-5">
                 <div class="card z-index-2 h-100">
-                    <div class="card-header pb-0 pt-3 bg-transparent">
+                    <div class="card-header pb-0 pt-3 bg-transparent table-responsive">
                         <h6 class="text-capitalize">最近文章</h6>
                         <table class="table align-items-center">
                             <tbody>
@@ -381,7 +381,7 @@
         <div class="row mt-4">
             <div class="col-lg-7 mb-lg-0 mb-4">
                 <div class="card z-index-2 h-100">
-                    <div class="card-header pb-0 pt-3 bg-transparent">
+                    <div class="card-header pb-0 pt-3 bg-transparent table-responsive">
                         <h6 class="text-capitalize">随机文章<a href="javascript:randPosts()"> <i
                                 class="fa-solid fa-rotate"></i></a></h6>
                         <table class="table align-items-center">
@@ -638,7 +638,8 @@
                     letter = "font-awesome ";
                 }
                 temp = temp.replace("@@icon@@", "fa-solid fa-" + letter);
-                temp = temp.replace("@@title@@", excerpt_by_local(post[i].name, 25));
+                temp = temp.replace("@@title@@", excerpt_by_local(post[i].name, Math.floor(window
+                    .innerWidth/30)));
                 temp = temp.replace("@@status@@", post[i].status);
                 temp = temp.replace("@@path@@", post[i].path);
                 temp = temp.replace("@@quotename@@", post[i].quotename);

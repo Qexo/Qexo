@@ -1,207 +1,197 @@
 {% extends 'layouts/base.html' %}
 
-{% block title %} {% if search %}搜索链接:{{ search }}{% else %}全部链接{% endif %} {% endblock title %}
+{% block title %} {% if search %}搜索友链: {{ search }}{% else %}友情链接
+{% endif %} {% endblock title %}
 
 {% block content %}
-
-    <div class="header bg-primary pb-6">
-        <div class="container-fluid">
-            <div class="header-body">
-                <div class="row align-items-center py-4">
-                    <div class="col-lg-6 col-7">
-                        <h6 class="h2 text-white d-inline-block mb-0">友情链接</h6>
-                        <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
-                            <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
-                                <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i></a>
-                                </li>
-                                <li class="breadcrumb-item active" aria-current="page">链接</li>
-                            </ol>
-                        </nav>
-                    </div>
-                    <div class="col-lg-6 col-5 text-right">
-                        <a href="javascript:query_new()" class="btn btn-sm btn-neutral">新增</a>
-                        <a href="javascript:query_clean()" class="btn btn-sm btn-neutral">删除隐藏</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Page content -->
-    <div class="container-fluid mt--6">
+    <div class="container-fluid py-4">
         <div class="row">
-            <div class="col">
-                <div class="card">
-                    <div class="card-header border-0">
-                        <div class="row align-items-center">
-                            <div class="col">
-                                <h3 class="mb-0">{% if search %}搜索链接: {{ search }}{% else %}
-                                    全部链接{% endif %}(<a id="count">{{ post_number }}</a>条)</h3>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="table-responsive">
-                        <!-- Projects table -->
-                        <table class="table align-items-center table-flush">
-                            <thead class="thead-light">
-                            <tr>
-                                <th scope="col">名称</th>
-                                <th scope="col">链接</th>
-                                <th scope="col">图片</th>
-                                <th scope="col">状态</th>
-                                <th scope="col">描述</th>
-                                <th scope="col">操作</th>
-                            </tr>
-                            </thead>
-                            <tbody id="posts-list">
-                            </tbody>
-                        </table>
-                        <div class="card-footer py-4">
-                            <ul class="pagination justify-content-end mb-0">
-                                <li class="page-item" id="prev-page">
-                                    <a class="page-link"
-                                       href="javascript:prev_page()">
-                                        <i class="fas fa-angle-left"></i>
-                                        <span class="sr-only">上一页</span>
-                                    </a>
-                                </li>
-                                {% for i in page_number|get_range %}
-                                    <li class="page-item" id="page-{{ i }}">
-                                        <a class="page-link"
-                                           href="javascript:change_page({{ i }})">{{ i }}</a>
-                                    </li>
-                                {% endfor %}
+            <div class="col-12">
+                <div class="card mb-4">
+                    <div class="card-header pb-0">
+                        <h6>{% if search %}搜索友链: {{ search }}{% else %}
+                            友情链接{% endif %}
+                            (<span id="post-number">{{ post_number }}</span>个)
+                            <a href="javascript:query_new()" class="text-primary text-lg">
+                                <i class="fa-solid fa-user-plus"></i>
+                            </a>
+                        </h6>
 
-                                <li class="page-item" id="next-page">
-                                    <a class="page-link"
-                                       href="javascript:next_page()">
-                                        <i class="fas fa-angle-right"></i>
-                                        <span class="sr-only">Next</span>
-                                    </a>
-                                </li>
-                            </ul>
+                    </div>
+                    <div class="card-body px-0 pt-0 pb-2">
+                        <div class="table-responsive p-0">
+                            <table class="table align-items-center mb-0">
+                                <thead>
+                                <tr>
+                                    <th class="text-secondary text-xxs font-weight-bolder opacity-7">
+                                        <span class="px-1 text-secondary">名称</span>
+                                    </th>
+                                    <th class="text-secondary text-xxs font-weight-bolder opacity-7">
+                                        <span class="text-secondary">链接</span>
+                                    </th>
+                                    <th class="text-center text-secondary text-xxs
+                                    font-weight-bolder opacity-7">
+                                        <span class="text-secondary">图片</span>
+                                    </th>
+                                    <th class="text-center text-secondary text-xxs font-weight-bolder opacity-7">
+                                        <span class="text-secondary">状态</span>
+                                    </th>
+                                    <th class="text-secondary text-xxs font-weight-bolder opacity-7">
+                                        <span class="text-secondary">描述</span>
+                                    </th>
+                                    <th class="text-secondary text-xxs font-weight-bolder opacity-7">
+                                        <span class="text-secondary">操作</span>
+                                    </th>
+                                </tr>
+                                </thead>
+                                <tbody id="posts-list">
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel"
-             aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">提示</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        确认要删除链接: <a id="delfile"></a> 吗？此操作不可撤回
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消
-                        </button>
-                        <button type="button" class="btn btn-primary" data-dismiss="modal"
-                                onclick="delete_file()">确定
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="modal fade" id="query" tabindex="-1" aria-labelledby="queryLabel"
-             aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="queryLabel"></h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body" id="query-modal-body">
-                    </div>
-                    <div class="modal-footer" id="query-modal-footer">
+                    <div class="card-footer py-4">
+                        <ul class="pagination justify-content-end mb-0">
+                            <li class="page-item" id="prev-page">
+                                <a class="page-link"
+                                   href="javascript:prev_page()">
+                                    <i class="fas fa-angle-left"></i>
+                                    <span class="sr-only">上一页</span>
+                                </a>
+                            </li>
+                            {% for i in page_number|get_range %}
+                                <li class="page-item" id="page-{{ i }}">
+                                    <a class="page-link"
+                                       href="javascript:change_page({{ i }})">{{ i }}</a>
+                                </li>
+                            {% endfor %}
+
+                            <li class="page-item" id="next-page">
+                                <a class="page-link"
+                                   href="javascript:next_page()">
+                                    <i class="fas fa-angle-right"></i>
+                                    <span class="sr-only">下一页</span>
+                                </a>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
         </div>
+
         {% include "includes/footer.html" %}
 
     </div>
-
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-white">
+                <div class="modal-header" style="border: none;">
+                    <h5 class="modal-title fs-5" id="exampleModalLabel">提示</h5>
+                    <button type="button" data-bs-dismiss="modal"
+                            aria-label="Close" style="box-sizing: content-box;width: 1em;height:
+                            1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem;
+                            opacity: .5;background: none">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    确认要删除 <a id="delfile"></a> 吗？此操作不可撤回
+                </div>
+                <div class="modal-footer" style="border: none;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="delete_file()"
+                            data-bs-dismiss="modal">确定
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="query" tabindex="-1" aria-labelledby="queryLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-white">
+                <div class="modal-header" style="border: none;">
+                    <h5 class="modal-title fs-5" id="queryLabel"></h5>
+                    <button type="button" data-bs-dismiss="modal"
+                            aria-label="Close" style="box-sizing: content-box;width: 1em;height:
+                            1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem;
+                            opacity: .5;background: none">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="query-modal-body">
+                </div>
+                <div class="modal-footer" style="border: none;" id="query-modal-footer">
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock content %}
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
 
-
     <script>
-        var del_file = "";
         var posts = {{ posts|safe }};
         var _page = 1;
-
-        function scrollToTop() {
-            let timer = null;
-            cancelAnimationFrame(timer);
-            timer = requestAnimationFrame(function fn() {
-                let oTop = document.body.scrollTop || document.documentElement.scrollTop;
-                if (oTop > 0) {
-                    document.body.scrollTop = document.documentElement.scrollTop = oTop - 30;
-                    timer = requestAnimationFrame(fn);
-                } else {
-                    cancelAnimationFrame(timer);
-                }
-            });
-        }
-
-        var compare = function (x, y) {
-            if (x["time"] < y["time"]) {
-                return -1;
-            } else if (x["time"] > y["time"]) {
-                return 1;
-            } else {
-                return 0;
-            }
-        }
+        var del_file;
 
         function change_page(page) {
             scrollToTop();
+            let color = checkIfDark() ? "text-white" : "text-dark";
+            let post_temp = `<tr>
+                                <td>
+                                    <div class="d-flex px-4 py-1">
+                                        <h6 class="mb-0 text-sm">@@name@@</h6>
+
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="@@url@@" target="_blank"><i class="fas fa-link text-primary"></i></a>
+                                    <span class="text-xs font-weight-bold opacity-8
+                                    ${color}">@@url@@</span>
+                                </td>
+                                 <td class="text-center">
+                                    <a href="@@image@@" target="_blank"><i class="fa fa-external-link-alt text-primary"></i></a>
+                                </td>
+                                <td class="align-middle text-center text-sm">
+                                    @@status@@
+                                </td>
+                                 <td>
+                                    <span class="text-xs font-weight-bold opacity-8
+                                    ${color}">@@description@@</span>
+                                </td>
+                                <td class="align-middle">
+                                    <a href="javascript:query_edit('@@time@@')"><i class="fa fa-edit
+                                    text-primary text-xxs"></i></a>
+                                    |
+                                    <a href="javascript:query_delete('@@name@@','@@time@@')"><i
+                                    class="fa fa-trash-alt me-2 text-primary text-xxs"></i></a>
+                                </td>
+                            </tr>`;
             let page_posts;
-            if (posts.length) {
-                if (posts.length > page * 15 + 1) {
-                    page_posts = posts.slice(15 * (page - 1), page * 15);
-                } else {
-                    page_posts = posts.slice(15 * (page - 1));
-                }
+            if (posts.length > page * 15 + 1) {
+                page_posts = posts.slice(15 * (page - 1), page * 15);
             } else {
-                page_posts = [];
+                page_posts = posts.slice(15 * (page - 1));
             }
             let list = "";
             for (let i = 0; i < page_posts.length; i++) {
-                let description = page_posts[i]["description"], post_status = "隐藏";
-                if (description) {
-                    if (description.length > 13) {
-                        description = description.slice(0, 10) + "...";
-                    }
-                }
-                if (page_posts[i]["status"]) post_status = "显示";
-                list += "<tr><td scope=\"row\">" + page_posts[i]["name"] + "</td><td>" + "<a " +
-                    "href=\"" +
-                    page_posts[i]["url"] + "\" target=\"_blank\"><i class=\"fas " +
-                    "fa-link\"></i></a> " +
-                    page_posts[i]["url"] + "</td><td>" + "<a href=\"" +
-                    page_posts[i]["image"] + "\" target=\"_blank\"><i " +
-                    "class=\"fa fa-external-link-alt\"></i></a></td><td>" + post_status +
-                    "</td><td>" +
-                    description +
-                    "</td><td><a href=\"javascript:query_edit('" + page_posts[i]["time"] + "')\">" +
-                    "<i class=\"fa fa-edit mr-2\"></i></a>|&nbsp;&nbsp;" + "<a href=\"javascript:query_delete" +
-                    "(`" + page_posts[i]["name"] + "`,'" +
-                    page_posts[i]["time"] + "')\"><i class=\"fa fa-trash-alt " +
-                    "mr-2\"></i></a></td></tr>";
+                let status = page_posts[i].status ? `<span class="badge badge-sm
+                bg-gradient-success">显示</span>` : `<span class="badge badge-sm
+                bg-gradient-secondary">隐藏</span>`;
+                list += post_temp.replaceAll("@@name@@", excerpt_by_local(page_posts[i].name, 20))
+                    .replaceAll("@@url@@", page_posts[i].url)
+                    .replaceAll("@@image@@", page_posts[i].image)
+                    .replaceAll("@@description@@", excerpt_by_local(page_posts[i].description, 35))
+                    .replaceAll("@@status@@", status)
+                    .replaceAll("@@time@@", page_posts[i].time);
             }
             $("#page-" + _page).removeClass("active");
+            $("#page-" + _page).children().removeClass("text-white");
             $("#page-" + page).addClass("active");
+            $("#page-" + page).children().addClass("text-white");
             $("#posts-list").html(list);
             _page = page;
             if (page <= 1) {
@@ -233,112 +223,39 @@
         }
 
         change_page(1);
+
         $.ajaxSetup({
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
         });
 
-        function KZ_Loading(config) {
-            if (this instanceof KZ_Loading) {
-                const domTemplate = '<div class="modal fade kz-loading" data-kzid="@@KZ_Loadin_ID@@" backdrop="static" keyboard="false"><div style="width: 200px;height:20px; z-index: 20000; position: absolute; text-align: center; left: 50%; top: 50%;margin-left:-100px;margin-top:-10px"><div class="progress progress-striped active" style="margin-bottom: 0;"><div class="progress-bar" style="width: 100%;"></div></div><h5>@@KZ_Loading_Text@@</h5></div></div>';
-                this.config = {
-                    content: 'loading...',
-                    time: 0,
-                };
-                if (config != null) {
-                    if (typeof config === 'string') {
-                        this.config = Object.assign(this.config, {
-                            content: config
-                        });
-                    } else if (typeof config === 'object') {
-                        this.config = Object.assign(this.config, config);
-                    }
-                }
-                this.id = new Date().getTime().toString();
-                this.state = 'hide';
-
-                /*显示 */
-                this.show = function () {
-                    $('.kz-loading[data-kzid=' + this.id + ']').modal({
-                        backdrop: 'static',
-                        keyboard: false
-                    });
-                    this.state = 'show';
-                    if (this.config.time > 0) {
-                        var that = this;
-                        setTimeout(function () {
-                            that.hide();
-                        }, this.config.time);
-                    }
-                };
-                /*隐藏 */
-                this.hide = function (callback) {
-                    $('.kz-loading[data-kzid=' + this.id + ']').modal('hide');
-                    this.state = 'hide';
-                    if (callback) {
-                        callback();
-                    }
-                };
-                /*销毁dom */
-                this.destroy = function () {
-                    var that = this;
-                    this.hide(function () {
-                        var node = $('.kz-loading[data-kzid=' + that.id + ']');
-                        node.next().remove();
-                        node.remove();
-                        that.show = function () {
-                            throw new Error('对象已销毁！');
-                        };
-                        that.hide = function () {
-                        };
-                        that.destroy = function () {
-                        };
-                    });
-                }
-
-                var domHtml = domTemplate.replace('@@KZ_Loadin_ID@@', this.id).replace('@@KZ_Loading_Text@@', this.config.content);
-                $('body').append(domHtml);
-            } else {
-                return new KZ_Loading(config);
-            }
-        }
 
         function query_delete(name, time) {
-            let html = "确认要删除链接 " + escapeString(name) + " 吗？该操作不可回退";
-            $("#query-modal-body").html(html);
-            $("#queryLabel").html("提示");
-            let footer = "<button type=\"button\" class=\"btn btn-secondary\" " +
-                "data-dismiss=\"modal\">取消</button><button type=\"button\" class=\"btn " +
-                "btn-primary\" data-dismiss=\"modal\" onclick=\"del_friend('" + time +
-                "')\">确定</button>"
-            $("#query-modal-footer").html(footer);
-            $("#query").modal("show");
+            del_file = time;
+            $("#delfile").text(name);
+            $("#deleteModal").modal("show");
         }
 
-        function del_friend(time) {
+
+        function delete_file() {
             let loading = new KZ_Loading('正在删除中...');
             loading.show();
             $.ajax({
                 url: '/api/del_friend/',
                 method: 'post',
-                data: {"time": time},
+                data: {"time": del_file},
                 dataType: 'JSON',
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
                         notyf.success('删除成功！');
-                        if (posts.length > 1) {
-                            for (let i = 0; i < posts.length; i++) {
-                                if (posts[i]['time'] === time) {
-                                    posts.splice(i, 1);
-                                    change_page(_page);
-                                    break;
-                                }
+                        for (let i = 0; i < posts.length; i++) {
+                            if (posts[i]["time"] === del_file) {
+                                posts.splice(i, 1);
+                                $("#post-number").html(posts.length);
+                                break;
                             }
-                        } else {
-                            posts = [];
-                            change_page(_page);
                         }
-                        $("#count").html(posts.length);
+                        change_page(_page);
                     } else {
                         notyf.error(res.msg);
                     }
@@ -350,8 +267,19 @@
             })
         }
 
+        function excerpt_by_local(content, length) {
+            let excerpt = content.replace(/<img[^>]*>/g, "");
+            excerpt = excerpt.replace(/<iframe[^>]*>/g, "");
+            excerpt = excerpt.replace(/<script[^>]*>/g, "");
+            excerpt = excerpt.replace(/<style[^>]*>/g, "");
+            excerpt = excerpt.replace(/<[^>]*>/g, "");
+            excerpt = excerpt.replace(/\n/g, " ");
+            return excerpt.substring(0, length) + (content.length > length ? "..." : "");
+        }
+
         function query_edit(time) {
             let name, url, image, description, index, status;
+            let color = checkIfDark() ? "bg-gradient-dark text-white" : "bg-white text-dark";
             for (let i = 0; i < posts.length; i++) {
                 if (posts[i]["time"] == time) {
                     name = posts[i]["name"];
@@ -363,21 +291,32 @@
                     break;
                 }
             }
-            let html = "<div class=\"col\"><label " +
-                "class=\"form-control-label\">名称</label><input type=\"text\" " +
-                "name=\"name\" id=\"edit-name\" value=\"" + name + "\"" +
-                "class=\"form-control\"></div>" + "<div class=\"col\"><label " +
-                "class=\"form-control-label\">链接</label><input type=\"text\" " +
-                "name=\"url\" id=\"edit-url\" value=\"" + url + "\"" +
-                "class=\"form-control\"></div>" + "<div class=\"col\"><label " +
-                "class=\"form-control-label\">图片链接</label><input type=\"text\" " +
-                "name=\"image\" id=\"edit-image\" value=\"" + image + "\"" +
-                "class=\"form-control\"></div>" + "<div class=\"col\"><label " +
-                "class=\"form-control-label\">描述</label><input type=\"text\" " +
-                "name=\"description\" id=\"edit-description\" value=\"" + description + "\"" +
-                "class=\"form-control\"></div>" + "<div class=\"col\"><label " +
-                "class=\"form-control-label\">状态</label><select class=\"form-control\" " +
-                "id=\"edit-status\">";
+            let html = `<div class="form-group"><label class="form-control-label">名称</label><input type="text"
+                                                                                                 name="name"
+                                                                                                 id="edit-name"
+                                                                                                 value="${name}"
+                                                                                                 class="form-control ${color}">
+                        </div>
+                        <div class="form-group"><label class="form-control-label">链接</label><input type="text"
+                                                                                                 name="url"
+                                                                                                 id="edit-url"
+                                                                                                 value="${url}"
+                                                                                                 class="form-control ${color}">
+                        </div>
+                        <div class="form-group"><label class="form-control-label">图片链接</label><input type="text"
+                                                                                                     name="image"
+                                                                                                     id="edit-image"
+                                                                                                     value="${image}"
+                                                                                                     class="form-control ${color}">
+                        </div>
+                        <div class="form-group"><label class="form-control-label">描述</label><input type="text"
+                                                                                                 name="description"
+                                                                                                 id="edit-description"
+                                                                                                 value="${description}"
+                                                                                                 class="form-control ${color}">
+                        </div>
+                        <div class="form-group"><label class="form-control-label">状态</label><select
+                                class="form-control ${color}" id="edit-status">`;
             if (status) {
                 html += "<option selected>显示</option><option>隐藏</option></select></div>";
             } else {
@@ -386,8 +325,8 @@
             $("#query-modal-body").html(html);
             $("#queryLabel").html("编辑友链");
             let footer = "<button type=\"button\" class=\"btn btn-secondary\" " +
-                "data-dismiss=\"modal\">取消</button><button type=\"button\" class=\"btn " +
-                "btn-primary\" data-dismiss=\"modal\" onclick=\"edit_friend(" + index + ")" +
+                "data-bs-dismiss=\"modal\">取消</button><button type=\"button\" class=\"btn " +
+                "btn-primary\" data-bs-dismiss=\"modal\" onclick=\"edit_friend(" + index + ")" +
                 "\">确定</button>";
             $("#query-modal-footer").html(footer);
             $("#query").modal("show");
@@ -434,26 +373,34 @@
 
 
         function query_new() {
-            let html = "<div class=\"col\"><label " +
-                "class=\"form-control-label\">名称</label><input type=\"text\" " +
-                "name=\"name\" id=\"edit-name\" " +
-                "class=\"form-control\"></div>" + "<div class=\"col\"><label " +
-                "class=\"form-control-label\">链接</label><input type=\"text\" " +
-                "name=\"url\" id=\"edit-url\" " +
-                "class=\"form-control\"></div>" + "<div class=\"col\"><label " +
-                "class=\"form-control-label\">图片链接</label><input type=\"text\" " +
-                "name=\"image\" id=\"edit-image\" " +
-                "class=\"form-control\"></div>" + "<div class=\"col\"><label " +
-                "class=\"form-control-label\">描述</label><input type=\"text\" " +
-                "name=\"description\" id=\"edit-description\" " +
-                "class=\"form-control\"></div>" + "<div class=\"col\"><label " +
-                "class=\"form-control-label\">状态</label><select class=\"form-control\" " +
-                "id=\"edit-status\"><option selected>显示</option><option>隐藏</option></select></div>";
+            let color = checkIfDark() ? "bg-gradient-dark text-white" : "bg-white text-dark";
+            let html = `<div class="form-group"><label class="form-control-label">名称</label><input type="text"
+                                                                                                 name="name"
+                                                                                                 id="edit-name"
+                                                                                                 class="form-control ${color}">
+                        </div>
+                        <div class="form-group"><label class="form-control-label">链接</label><input type="text"
+                                                                                                 name="url"
+                                                                                                 id="edit-url"
+                                                                                                 class="form-control ${color}">
+                        </div>
+                        <div class="form-group"><label class="form-control-label">图片链接</label><input type="text"
+                                                                                                     name="image"
+                                                                                                     id="edit-image"
+                                                                                                     class="form-control ${color}">
+                        </div>
+                        <div class="form-group"><label class="form-control-label">描述</label><input type="text"
+                                                                                                 name="description"
+                                                                                                 id="edit-description"
+                                                                                                 class="form-control ${color}">
+                        </div>
+                        <div class="form-group"><label class="form-control-label">状态</label><select
+                                class="form-control ${color}" id="edit-status"><option>显示</option><option>隐藏</option></select></div>`;
             $("#query-modal-body").html(html);
             $("#queryLabel").html("新增友链");
             let footer = "<button type=\"button\" class=\"btn btn-secondary\" " +
-                "data-dismiss=\"modal\">取消</button><button type=\"button\" class=\"btn " +
-                "btn-primary\" data-dismiss=\"modal\" onclick=\"new_friend()\">确定</button>"
+                "data-bs-dismiss=\"modal\">取消</button><button type=\"button\" class=\"btn " +
+                "btn-primary\" data-bs-dismiss=\"modal\" onclick=\"new_friend()\">确定</button>"
             $("#query-modal-footer").html(footer);
             $("#query").modal("show");
         }
@@ -506,8 +453,8 @@
             $("#query-modal-body").html(html);
             $("#queryLabel").html("提示");
             let footer = "<button type=\"button\" class=\"btn btn-secondary\" " +
-                "data-dismiss=\"modal\">取消</button><button type=\"button\" class=\"btn " +
-                "btn-primary\" data-dismiss=\"modal\" onclick=\"clean_friend()\">确定</button>"
+                "data-bs-dismiss=\"modal\">取消</button><button type=\"button\" class=\"btn " +
+                "btn-primary\" data-bs-dismiss=\"modal\" onclick=\"clean_friend()\">确定</button>"
             $("#query-modal-footer").html(footer);
             $("#query").modal("show");
         }
@@ -535,6 +482,7 @@
                 }
             })
         }
+
 
     </script>
 {% endblock javascripts %}

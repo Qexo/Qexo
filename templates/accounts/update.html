@@ -8,14 +8,14 @@
 {% block content %}
 
     <!-- Page content -->
-    <div class="container mt--8 pb-5">
+    <div class="container" style="margin-top: -8rem!important;padding-bottom: 3rem!important;">
         <div class="row justify-content-center">
             <div class="col-lg-5 col-md-5">
-                <div class="card bg-secondary shadow border-0">
-                    <div class="card-body">
-                        <div class="text-center text-muted mb-4">
-                            <h2>更新配置</h2>
-                        </div>
+                <div class="card z-index-0">
+                    <div class="card-header text-center pt-5">
+                        <h4>更新配置</h4>
+                    </div>
+                    <div class="card-body px-lg-5 py-lg-5">
                         <form method="POST">
                             {% csrf_token %}
                             {% for setting in settings %}
@@ -34,7 +34,6 @@
             </div>
         </div>
     </div>
-    </div>
 
 {% endblock content %}
 
@@ -43,23 +42,7 @@
 
     <script>
         {% if msg %}
-            notyf.error("{{ msg }}";
+            notyf.error("{{ msg }}");
         {% endif %}
-        function skip() {
-            let temp = document.createElement("form");
-            temp.action = "";
-            temp.method = "post";
-            temp.hidden = true;
-            let opt = document.createElement("textarea");
-            opt.name = "csrfmiddlewaretoken";
-            opt.value = "{{ csrf_token }}";
-            temp.appendChild(opt);
-            opt = document.createElement("textarea");
-            opt.name = "step";
-            opt.value = "{{ step }}";
-            temp.appendChild(opt);
-            document.body.appendChild(temp);
-            temp.submit();
-        }
     </script>
 {% endblock javascripts %}

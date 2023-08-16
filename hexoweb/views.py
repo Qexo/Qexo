@@ -19,16 +19,16 @@ from .api import *
 
 
 def page_404(request, exception):
-    return render(request, 'home/page-404.html', {"cdn_prev": "https://unpkg.com/", "cdnjs": "https://cdn.staticfile.org/"})
+    return render(request, 'home/page-404.html', {"cdn_prev": "https://unpkg.com/"})
 
 
 def page_403(request, exception):
-    return render(request, 'home/page-403.html', {"cdn_prev": "https://unpkg.com/", "cdnjs": "https://cdn.staticfile.org/"})
+    return render(request, 'home/page-403.html', {"cdn_prev": "https://unpkg.com/"})
 
 
 def page_500(request):
     return render(request, 'home/page-500.html',
-                  {"error": "程序遇到了错误！", "cdn_prev": "https://unpkg.com/", "cdnjs": "https://cdn.staticfile.org/"})
+                  {"error": "程序遇到了错误！", "cdn_prev": "https://unpkg.com/"})
 
 
 def login_view(request):
@@ -125,7 +125,18 @@ def init_view(request):
         if request.POST.get("step") == "1":
             fix_all()
             save_setting("INIT", "2")
-            step = "2" if not User.objects.all() else "3"
+            if not User.objects.all():
+                step = "2"
+            else:
+                step = "3"
+                context["PROVIDER"] = get_setting("PROVIDER")
+                # Get Provider Settings
+                all_provider = all_providers()
+                context["all_providers"] = dict()
+                for provider in all_provider:
+                    params = get_params(provider)
+                    context["all_providers"][provider] = params
+                context["all_platform_configs"] = platform_configs()
         if request.POST.get("step") == "2":
             username = request.POST.get("username")
             password = request.POST.get("password")
@@ -324,6 +335,7 @@ def migrate_view(request):
                 exports["uv"] = export_uv()
                 exports["pv"] = export_pv()
                 exports["talks"] = export_talks()
+                exports["posts"] = export_posts()
                 html_template = loader.get_template('layouts/json.html')
                 response = HttpResponse(html_template.render({"data": json.dumps(exports)}, request))
                 response['Content-Type'] = 'application/octet-stream'
@@ -353,6 +365,9 @@ def migrate_view(request):
             elif request.POST.get("type") == "import_talks":
                 import_talks(json.loads(request.POST.get("data")))
                 context["msg"] = "说说迁移完成！"
+            elif request.POST.get("type") == "import_posts":
+                import_posts(json.loads(request.POST.get("data")))
+                context["msg"] = "文章索引迁移完成！"
         except Exception as error:
             logging.error(request.POST.get("type") + "错误: " + repr(error))
             context["msg"] = request.POST.get("type") + "错误: " + repr(error)
@@ -386,20 +401,37 @@ def index(request):
         posts = json.loads(cache.first().content)
     else:
         posts = update_posts_cache()
-    _images = ImageModel.objects.all()
+    _images = ImageModel.objects.all().order_by("-date")
     images = list()
     for i in _images:
-        images.append({"name": i.name, "size": int(i.size), "url": i.url,
-                       "date": strftime("%Y-%m-%d", localtime(float(i.date)))})
-    context["posts"] = posts[0:5]
-    for item in range(len(context["posts"])):
-        context["posts"][item]["quotename"] = quote(context["posts"][item]["name"])
-        context["posts"][item]["path"] = quote(context["posts"][item]["path"])
-    context["images"] = images[::-1][0:5]
+        images.append({
+            "name": i.name,
+            "size": convert_to_kb_mb_gb(int(i.size)),
+            "url": i.url,
+            "date": strftime("%Y-%m-%d", localtime(float(i.date)))
+        })
+    for item in range(len(posts)):
+        posts[item]["quotename"] = quote(posts[item]["name"])
+        posts[item]["path"] = quote(posts[item]["path"])
+        posts[item]["status"] = "已发布" if posts[item]["status"] else "草稿"
+    context["posts"] = json.dumps(posts)
+    context["images"] = images
     context = dict(context, **get_latest_version())
     context["version"] = QEXO_VERSION
     context["post_number"] = str(len(posts))
     context["images_number"] = str(len(images))
+    context["breadcrumb"] = "Dashboard"
+    context["breadcrumb_cn"] = "控制台"
+    _recent_posts = PostModel.objects.all().order_by("-date")
+    context["recent_posts"] = list()
+    for i in _recent_posts:
+        context["recent_posts"].append({
+            "title": i.title,
+            "path": escape(i.path),
+            "date": i.date,
+            "status": "已发布" if i.status == 1 else "草稿",
+            "filename": escape(i.filename)
+        })
     save_setting("LAST_LOGIN", str(int(time())))
     html_template = loader.get_template('home/index.html')
     return HttpResponse(html_template.render(context, request))
@@ -429,6 +461,8 @@ def pages(request):
         if "index" in load_template:
             return index(request)
         elif "edit_talk" in load_template:
+            context["breadcrumb"] = "TalkEditor"
+            context["breadcrumb_cn"] = "编辑说说"
             talk_id = request.GET.get("id")
             context["content"] = repr("")
             context["tags"] = "[]"
@@ -446,6 +480,7 @@ def pages(request):
             except Exception:
                 logging.info("未检测到图床配置, 图床功能关闭")
         elif "edit_page" in load_template:
+            context["breadcrumb"] = "PageEditor"
             file_path = request.GET.get("file")
             context["front_matter"], context["file_content"] = get_post_details(
                 (Provider().get_content(file_path)))
@@ -460,17 +495,22 @@ def pages(request):
             except Exception:
                 logging.info("未检测到图床配置, 图床功能关闭")
             context["AUTO_EXCERPT_CONFIG"] = get_setting("AUTO_EXCERPT_CONFIG")
+            context["breadcrumb_cn"] = "编辑页面: " + context['filename']
         elif "edit_config" in load_template:
+            context["breadcrumb"] = "ConfigEditor"
             file_path = request.GET.get("file")
             context["file_content"] = repr(Provider().get_content(file_path)).replace("<", "\\<").replace(">", "\\>").replace("!", "\\!")
             context["filepath"] = file_path
             context['filename'] = file_path.split("/")[-1]
+            context["breadcrumb_cn"] = "编辑配置: " + context['filename']
         elif "edit" in load_template:
+            context["breadcrumb"] = "PostEditor"
             file_path = request.GET.get("file")
             context["front_matter"], context["file_content"] = get_post_details(
                 (Provider().get_content(file_path)))
             context["front_matter"] = json.dumps(context["front_matter"])
             context['filename'] = request.GET.get("postname")
+            context["breadcrumb_cn"] = "编辑文章: " + context['filename']
             context['fullname'] = file_path
             context["emoji"] = get_setting("VDITOR_EMOJI")
             context["sidebar"] = get_setting("POST_SIDEBAR")
@@ -482,6 +522,8 @@ def pages(request):
                 logging.info("未检测到图床配置, 图床功能关闭")
             context["AUTO_EXCERPT_CONFIG"] = get_setting("AUTO_EXCERPT_CONFIG")
         elif "new_page" in load_template:
+            context["breadcrumb"] = "NewPage"
+            context["breadcrumb_cn"] = "新建页面"
             context["emoji"] = get_setting("VDITOR_EMOJI")
             context["sidebar"] = get_setting("PAGE_SIDEBAR")
             try:
@@ -499,6 +541,8 @@ def pages(request):
                 logging.info("未检测到图床配置, 图床功能关闭")
             context["AUTO_EXCERPT_CONFIG"] = get_setting("AUTO_EXCERPT_CONFIG")
         elif "new" in load_template:
+            context["breadcrumb"] = "NewPost"
+            context["breadcrumb_cn"] = "新建文章"
             context["emoji"] = get_setting("VDITOR_EMOJI")
             context["sidebar"] = get_setting("POST_SIDEBAR")
             context["config"] = Provider().config
@@ -517,6 +561,8 @@ def pages(request):
                 print("未检测到图床配置, 图床功能关闭")
             context["AUTO_EXCERPT_CONFIG"] = get_setting("AUTO_EXCERPT_CONFIG")
         elif "posts" in load_template:
+            context["breadcrumb"] = "Posts"
+            context["breadcrumb_cn"] = "文章列表"
             search = request.GET.get("s")
             if search:
                 cache = Cache.objects.filter(name="posts." + search)
@@ -530,11 +576,15 @@ def pages(request):
                     posts = json.loads(cache.first().content)
                 else:
                     posts = update_posts_cache(search)
+            for item in range(len(posts)):
+                posts[item]["size"] = convert_to_kb_mb_gb(posts[item]["size"])
             context["all_posts"] = json.dumps(posts)
             context["post_number"] = len(posts)
             context["page_number"] = ceil(context["post_number"] / 15)
             context["search"] = search
         elif "pages" in load_template:
+            context["breadcrumb"] = "Pages"
+            context["breadcrumb_cn"] = "页面列表"
             search = request.GET.get("s")
             if search:
                 cache = Cache.objects.filter(name="pages." + search)
@@ -548,11 +598,15 @@ def pages(request):
                     posts = json.loads(cache.first().content)
                 else:
                     posts = update_pages_cache(search)
+            for item in range(len(posts)):
+                posts[item]["size"] = convert_to_kb_mb_gb(posts[item]["size"])
             context["posts"] = json.dumps(posts)
             context["post_number"] = len(posts)
             context["page_number"] = ceil(context["post_number"] / 15)
             context["search"] = search
         elif "configs" in load_template:
+            context["breadcrumb"] = "Configs"
+            context["breadcrumb_cn"] = "配置列表"
             if not request.user.is_staff:
                 logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
                 return page_403(request, "您没有权限访问此页面")
@@ -569,11 +623,15 @@ def pages(request):
                     posts = json.loads(cache.first().content)
                 else:
                     posts = update_configs_cache(search)
+            for item in range(len(posts)):
+                posts[item]["size"] = convert_to_kb_mb_gb(posts[item]["size"])
             context["posts"] = json.dumps(posts)
             context["post_number"] = len(posts)
             context["page_number"] = ceil(context["post_number"] / 15)
             context["search"] = search
         elif "talks" in load_template:
+            context["breadcrumb"] = "Talks"
+            context["breadcrumb_cn"] = "说说列表"
             search = request.GET.get("s")
             posts = []
             if search:
@@ -599,27 +657,33 @@ def pages(request):
             context["page_number"] = ceil(context["post_number"] / 15)
             context["search"] = search
         elif "images" in load_template:
+            context["breadcrumb"] = "Gallery"
+            context["breadcrumb_cn"] = "图片列表"
             search = request.GET.get("s")
             posts = []
             if search:
                 images = ImageModel.objects.filter(name__contains=search)
                 for i in images:
-                    posts.append({"name": i.name, "size": int(i.size), "url": i.url,
+                    posts.append({"name": i.name, "size": int(i.size), "url": escape(i.url),
                                   "date": strftime("%Y-%m-%d %H:%M:%S",
                                                    localtime(float(i.date))),
                                   "time": i.date})
             else:
                 images = ImageModel.objects.all()
                 for i in images:
-                    posts.append({"name": i.name, "size": int(i.size), "url": i.url,
+                    posts.append({"name": i.name, "size": int(i.size), "url": escape(i.url),
                                   "date": strftime("%Y-%m-%d %H:%M:%S",
                                                    localtime(float(i.date))),
                                   "time": i.date})
+            for item in range(len(posts)):
+                posts[item]["size"] = convert_to_kb_mb_gb(posts[item]["size"])
             context["posts"] = json.dumps(posts[::-1])
             context["post_number"] = len(posts)
             context["page_number"] = ceil(context["post_number"] / 15)
             context["search"] = search
         elif "friends" in load_template:
+            context["breadcrumb"] = "Friends"
+            context["breadcrumb_cn"] = "友情链接"
             search = request.GET.get("s")
             posts = []
             if search:
@@ -642,6 +706,8 @@ def pages(request):
             context["page_number"] = ceil(context["post_number"] / 15)
             context["search"] = search
         elif 'settings' in load_template:
+            context["breadcrumb"] = "Settings"
+            context["breadcrumb_cn"] = "设置"
             if not request.user.is_staff:
                 logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
                 return page_403(request, "您没有权限访问此页面")
@@ -689,7 +755,7 @@ def pages(request):
                     params = get_image_params(provider)
                     context["all_image_hosts"][provider] = params
                 # CDNs
-                context["ALL_CDN"] = json.loads(get_setting("ALL_CDN"))
+                context["ALL_CDN"] = json.loads(get_setting("ALL_CDN_PREV"))
                 # 更新通道
                 context["ALL_UPDATES"] = json.loads(get_setting("ALL_UPDATES"))
                 context["ALL_PLATFORM_CONFIGS"] = platform_configs()
@@ -702,6 +768,8 @@ def pages(request):
                 logging.error("配置获取错误, 转跳至配置更新页面")
                 return redirect("/update/")
         elif 'advanced' in load_template:
+            context["breadcrumb"] = "Advanced"
+            context["breadcrumb_cn"] = "高级设置"
             if not request.user.is_staff:
                 logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
                 return page_403(request, "您没有权限访问此页面")
@@ -722,6 +790,8 @@ def pages(request):
                 logging.error("高级设置获取错误: " + repr(e))
                 context["error"] = repr(e)
         elif 'custom' in load_template:
+            context["breadcrumb"] = "Custom"
+            context["breadcrumb_cn"] = "自定义字段"
             if not request.user.is_staff:
                 logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
                 return page_403(request, "您没有权限访问此页面")
@@ -741,6 +811,8 @@ def pages(request):
                 logging.error("自定义字段获取错误: " + repr(e))
                 context["error"] = repr(e)
         elif "userscripts" in load_template:
+            context["breadcrumb"] = "Scripts"
+            context["breadcrumb_cn"] = "在线函数库"
             if not request.user.is_staff:
                 logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
                 return page_403(request, "您没有权限访问此页面")

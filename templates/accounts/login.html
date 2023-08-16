@@ -4,44 +4,33 @@
 
 <!-- Specific CSS goes HERE -->
 {% block stylesheets %}
-    <style>
-        .grecaptcha-badge {
-            display: none
-        }
-    </style>
 {% endblock stylesheets %}
 
 {% block content %}
 
     <!-- Page content -->
-    <div class="container mt--8 pb-5">
+    <div class="container" style="margin-top: -8rem!important;padding-bottom: 3rem!important;">
         <div class="row justify-content-center">
-            <div class="col-lg-5 col-md-7">
-                <div class="card bg-secondary shadow border-0">
-                    <div class="card-header bg-transparent">
-                        <div class="text-muted text-center mt-3">
-                            <h1>{{ QEXO_NAME }}</h1>
-                        </div>
+            <div class="col-lg-5 col-md-7 mx-auto">
+                <div class="card z-index-0">
+                    <div class="card-header text-center pt-5">
+                        <h4>{{ QEXO_NAME }}</h4>
                     </div>
                     <div class="card-body px-lg-5 py-lg-5">
                         <form method="POST" id="login-form">
                             {% csrf_token %}
-                            <div class="form-group mb-3">
+                            <div class="form-group">
                                 <div class="input-group input-group-alternative">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text"><i
-                                                class="ni ni-hat-3"></i></span>
-                                    </div>
+                                    <span class="input-group-text"><i
+                                            class="ni ni-hat-3"></i></span>
                                     <input type="text" name="username" class="form-control"
                                            placeholder="用户名">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <div class="input-group input-group-alternative">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text"><i
-                                                class="ni ni-lock-circle-open"></i></span>
-                                    </div>
+                                    <span class="input-group-text"><i
+                                            class="ni ni-lock-circle-open"></i></span>
                                     <input type="password" name="password" class="form-control"
                                            placeholder="密码">
                                 </div>
@@ -91,55 +80,55 @@
                 grecaptcha.ready(function () {
                 grecaptcha.execute('{{ site_token }}', {action: 'submit'}).then(function (token) {
             {% endif %}
-            {% if site_token_v2 %}
+        {% if site_token_v2 %}
             let token = grecaptcha.getResponse();
-                if (!token) {
-                    notyf.error("请完成验证! ");
-                    $("#submit-button").html("<button onclick=\"submit()\" class=\"btn " +
-                        "btn-primary my-4\">登录</button>");
-                    return false;
-                }
-            {% endif %}
-            $.ajax({
-                url: '/api/auth/',
-                method: 'post',
-                data: {
-                    "username": $("input[name='username']").val(),
-                    "password": $("input[name='password']").val(),
-                    {% if site_token or site_token_v2 %}
-                        "verify": token,
-                    {% endif %}
+            if (!token) {
+                notyf.error("请完成验证! ");
+                $("#submit-button").html("<button onclick=\"submit()\" class=\"btn " +
+                    "btn-primary my-4\">登录</button>");
+                return false;
+            }
+        {% endif %}
+        $.ajax({
+            url: '/api/auth/',
+            method: 'post',
+            data: {
+                "username": $("input[name='username']").val(),
+                "password": $("input[name='password']").val(),
+                {% if site_token or site_token_v2 %}
+                    "verify": token,
+                {% endif %}
+                {% if site_token_v2 %}
+                    "type": "v2",
+                {% endif %}
+                {% if site_token %}
+                    "type": "v3",
+                {% endif %}
+            },
+            dataType: "json",
+            success: function (res) {
+                if (res.status) {
+                    notyf.success(res.msg);
+                    setTimeout(window.location = get_direct_link(), 1000);
+                } else {
+                    notyf.error(res.msg);
                     {% if site_token_v2 %}
-                        "type": "v2",
+                        grecaptcha.reset();
                     {% endif %}
-                    {% if site_token %}
-                            "type": "v3",
-                    {% endif %}
-                },
-                dataType: "json",
-                success: function (res) {
-                    if (res.status) {
-                        notyf.success(res.msg);
-                        setTimeout(window.location = get_direct_link(), 1000);
-                    } else {
-                        notyf.error(res.msg);
-                        {% if site_token_v2 %}
-                            grecaptcha.reset();
-                        {% endif %}
-                        $("#submit-button").html("<button onclick=\"submit()\" class=\"btn " +
-                            "btn-primary my-4\">登录</button>");
-                    }
-                },
-                error: function (res) {
-                    notyf.error("网络错误！");
                     $("#submit-button").html("<button onclick=\"submit()\" class=\"btn " +
                         "btn-primary my-4\">登录</button>");
                 }
-            })
-            {% if site_token %}
-                });
-                });
-            {% endif %}
+            },
+            error: function (res) {
+                notyf.error("网络错误！");
+                $("#submit-button").html("<button onclick=\"submit()\" class=\"btn " +
+                    "btn-primary my-4\">登录</button>");
+            }
+        })
+        {% if site_token %}
+            });
+            });
+        {% endif %}
         }
 
         document.onkeydown = function (e) {

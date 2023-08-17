@@ -986,12 +986,15 @@ def escapeString(_str):
 def mark_post(path, front_matter, status, filename):
     p = PostModel.objects.filter(path=path)
     if p:
-        p.first().title = front_matter["title"]
-        p.first().status = status
-        p.first().front_matter = json.dumps(front_matter)
-        p.first().date = time()
-        p.first().filename = filename
-        p.first().save()
+        p.first().delete()
+        PostModel.objects.create(
+            title=front_matter["title"],
+            path=path,
+            status=status,
+            front_matter=json.dumps(front_matter),
+            date=time(),
+            filename=filename
+        )
         logging.info(f"更新文章详情索引：{path}")
     else:
         PostModel.objects.create(

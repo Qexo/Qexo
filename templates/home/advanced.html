@@ -475,10 +475,11 @@
                                     ${color}">@@content@@</span>
                                 </td>
                                 <td class="align-middle">
-                                    <a href="javascript:query_edit('@@name@@', '@@content@@')">
+                                    <a href="javascript:query_edit('@@fullname@@',
+                                    '@@fullcontent@@')">
                                     <i class="fa fa-edit text-primary text-xxs"></i></a>
                                     |
-                                    <a href="javascript:query_delete('@@name@@')">
+                                    <a href="javascript:query_delete('@@fullname@@')">
                                     <i class="fa fa-trash-alt me-2 text-primary text-xxs"></i></a>
                                 </td>
                             </tr>`;
@@ -491,7 +492,9 @@
             let list = "";
             for (let i = 0; i < page_posts.length; i++) {
                 list += post_temp.replaceAll("@@name@@", excerpt_by_local(page_posts[i].name, 20))
-                    .replaceAll("@@content@@", excerpt_by_local(page_posts[i].content, 120));
+                    .replaceAll("@@content@@", excerpt_by_local(page_posts[i].content, 120))
+                    .replaceAll("@@fullcontent@@", encodeURIComponent(page_posts[i].content))
+                    .replaceAll("@@fullname@@", encodeURIComponent(page_posts[i].name));
             }
             $("#page-" + _page).removeClass("active");
             $("#page-" + _page).children().removeClass("text-white");

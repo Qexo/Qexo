@@ -155,7 +155,8 @@
                                     @@status@@
                                 </td>
                                 <td class="align-middle">
-                                    <a href="/edit.html?file=@@path@@&amp;postname=@@name@@"><i class="fa fa-edit
+                                    <a href="/edit.html?file=@@path@@&amp;postname=@@fullname@@"><i
+                                    class="fa fa-edit
                                     text-primary text-xxs"></i></a> |
                                     <a href="javascript:query_rename('@@path@@')"><i class="fa-solid fa-file
                                     me-2 text-primary text-xxs"></i></a>| <a
@@ -177,7 +178,8 @@
                 list += post_temp.replaceAll("@@name@@", excerpt_by_local(page_posts[i].name, 50))
                     .replaceAll("@@size@@", page_posts[i].size)
                     .replaceAll("@@status@@", status)
-                    .replaceAll("@@path@@", encodeURIComponent(page_posts[i].path));
+                    .replaceAll("@@path@@", encodeURIComponent(page_posts[i].path))
+                    .replaceAll("@@fullname@@", encodeURIComponent(page_posts[i].name));
             }
             $("#page-" + _page).removeClass("active");
             $("#page-" + _page).children().removeClass("text-white");

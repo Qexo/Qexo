@@ -19,14 +19,16 @@ class S3(Provider):
         'access_key': {'description': '应用秘钥', 'placeholder': 'S3 应用程序的 Access Key'},
         'bucket': {'description': '储存桶名', 'placeholder': 'S3 Bucket 名称'},
         'endpoint_url': {'description': '边缘节点', 'placeholder': 'S3 Endpoint'},
+        'region_name': {'description': '地区', 'placeholder': 'S3 Endpoint 区域'},
         'path': {'description': '保存路径', 'placeholder': '文件上传后保存的路径 包含文件名'},
         'prev_url': {'description': '自定义域名', 'placeholder': '最终返回的链接为自定义域名/保存路径'}
     }
 
-    def __init__(self, key_id, access_key, endpoint_url, bucket, path, prev_url):
+    def __init__(self, key_id, access_key, endpoint_url, region_name, bucket, path, prev_url):
         self.key_id = key_id
         self.access_key = access_key
         self.endpoint_url = endpoint_url
+        self.region_name = region_name
         self.bucket = bucket
         self.path = path
         self.prev_url = prev_url
@@ -40,6 +42,7 @@ class S3(Provider):
             aws_access_key_id=self.key_id,
             aws_secret_access_key=self.access_key,
             endpoint_url=self.endpoint_url,
+            region_name=self.region_name,
             verify=False,
         )
         bucket = s3.Bucket(self.bucket)

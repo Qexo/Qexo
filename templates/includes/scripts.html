@@ -67,21 +67,24 @@
             /*销毁dom */
             this.destroy = function () {
                 var that = this;
-                this.hide(function () {
-                    var node = $('#loaderModal-' + this.id);
-                    node.next().remove();
-                    node.remove();
-                    that.show = function () {
-                        throw new Error('对象已销毁！');
-                    };
-                    that.hide = function () {
-                    };
-                    that.destroy = function () {
-                    };
-                });
+                this.hide();
+                setTimeout(function () {
+                    that.hide(function () {
+                        var node = $('#loaderModal-' + that.id);
+                        node.next().remove();
+                        node.remove();
+                        that.show = function () {
+                            throw new Error('对象已销毁！');
+                        };
+                        that.hide = function () {
+                        };
+                        that.destroy = function () {
+                        };
+                    });
+                }, 300);
             }
 
-            var domHtml = domTemplate.replace('@@KZ_Loadin_ID@@', this.id).replace('@@KZ_Loading_Text@@', this.config.content);
+            var domHtml = domTemplate.replaceAll('@@KZ_Loadin_ID@@', this.id).replaceAll('@@KZ_Loading_Text@@', this.config.content);
             $('body').append(domHtml);
         } else {
             return new KZ_Loading(config);
@@ -252,7 +255,7 @@
         document.body.scrollIntoView();
     }
 
-    function checkIfDark(){
+    function checkIfDark() {
         let classList = $("body").attr("class");
         if (classList.indexOf("dark-version") !== -1) {
             return true;

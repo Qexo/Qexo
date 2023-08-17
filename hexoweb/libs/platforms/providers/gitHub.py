@@ -52,7 +52,7 @@ class Github(Provider):
         logging.info("获取路径{}成功".format(path))
         return {"path": path, "data": results}
 
-    def save(self, file, content, commitchange="Update by Qexo"):
+    def save(self, file, content, commitchange="Update by Qexo", autobuild=True):
         try:
             self.repo.update_file(self.path + file, commitchange, content,
                                   self.repo.get_contents(self.path + file, ref=self.branch).sha, branch=self.branch)
@@ -62,7 +62,7 @@ class Github(Provider):
             logging.info("新建文件{}成功".format(file))
         return False  # 返回False表示没有进行自动部署
 
-    def delete(self, path, commitchange="Delete by Qexo"):
+    def delete(self, path, commitchange="Delete by Qexo", autobuild=True):
         file = self.repo.get_contents(self.path + path, ref=self.branch)
         if not isinstance(file, list):
             self.repo.delete_file(self.path + path, commitchange, file.sha, branch=self.branch)

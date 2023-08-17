@@ -586,12 +586,40 @@ def delete(request):
         if (not request.user.is_staff) and file_path[:4] in ["yaml", ".yml"]:
             logging.info(f"子用户{request.user.username}尝试删除{file_path}被拒绝")
             return JsonResponse(safe=False, data={"msg": "子用户不支持此操作！", "status": False})
-        commitchange = f"Delete {file_path}"
+        commitchange = f"Delete {file_path} by Qexo"
         try:
             if Provider().delete(file_path, commitchange):
                 context = {"msg": "删除成功并提交部署！", "status": True}
             else:
                 context = {"msg": "删除成功！", "status": True}
+            # Delete Caches
+            delete_all_caches()
+            try:
+                PostModel.objects.filter(path=file_path).delete()
+            except:
+                pass
+        except Exception as error:
+            logging.error(repr(error))
+            context = {"msg": repr(error)}
+    return JsonResponse(safe=False, data=context)
+
+
+# 重命名文件 api/rename
+@login_required(login_url="/login/")
+def rename(request):
+    context = dict(msg="Error!", status=False)
+    if request.method == "POST":
+        file_path = unicodedata.normalize('NFC', request.POST.get('file'))
+        new_path = unicodedata.normalize('NFC', request.POST.get('new'))
+        if (not request.user.is_staff) and file_path[:4] in ["yaml", ".yml"]:
+            logging.info(f"子用户{request.user.username}尝试重命名{file_path}被拒绝")
+            return JsonResponse(safe=False, data={"msg": "子用户不支持此操作！", "status": False})
+        commitchange = f"Rename {file_path} by Qexo"
+        try:
+            if Provider().rename(file_path, new_path, commitchange):
+                context = {"msg": "重命名成功并提交部署！", "status": True}
+            else:
+                context = {"msg": "重命名成功！", "status": True}
             # Delete Caches
             delete_all_caches()
             try:

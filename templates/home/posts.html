@@ -78,7 +78,7 @@
         <div class="modal-dialog">
             <div class="modal-content bg-white">
                 <div class="modal-header" style="border: none;">
-                    <h5 class="modal-title fs-5" id="exampleModalLabel">提示</h5>
+                    <h5 class="modal-title fs-5" id="deleteModalLabel">提示</h5>
                     <button type="button" data-bs-dismiss="modal"
                             aria-label="Close" style="box-sizing: content-box;width: 1em;height:
                             1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem;
@@ -90,8 +90,40 @@
                     确认要删除 <a id="delfile"></a> 吗？此操作不可撤回
                 </div>
                 <div class="modal-footer" style="border: none;">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-primary" onclick="delete_file()" data-bs-dismiss="modal">确定</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="delete_file()"
+                            data-bs-dismiss="modal">确定
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="renameModal" tabindex="-1" aria-labelledby="renameModalLabel"
+         aria-hidden="false">
+        <div class="modal-dialog">
+            <div class="modal-content bg-white">
+                <div class="modal-header" style="border: none;">
+                    <h5 class="modal-title fs-5" id="renameModalLabel">重命名</h5>
+                    <button type="button" data-bs-dismiss="modal"
+                            aria-label="Close" style="box-sizing: content-box;width: 1em;height:
+                            1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem;
+                            opacity: .5;background: none">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group"><label class="form-control-label">新名称</label><input
+                            type="text" name="name" id="edit-name" value=""
+                            class="form-control bg-white text-dark">
+                    </div>
+                </div>
+                <div class="modal-footer" style="border: none;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="rename_file()"
+                            data-bs-dismiss="modal">确定
+                    </button>
                 </div>
             </div>
         </div>
@@ -104,10 +136,11 @@
     <script>
         var posts = {{ all_posts|safe }};
         var _page = 1;
+        var operate_post;
 
         function change_page(page) {
             scrollToTop();
-            let color = checkIfDark()?"text-white":"text-dark";
+            let color = checkIfDark() ? "text-white" : "text-dark";
             let post_temp = `<tr>
                                 <td>
                                     <div class="d-flex px-4 py-1">
@@ -123,9 +156,10 @@
                                 </td>
                                 <td class="align-middle">
                                     <a href="/edit.html?file=@@path@@&amp;postname=@@name@@"><i class="fa fa-edit
-                                    text-primary text-xxs"></i></a>
-                                    |
-                                    <a href="javascript:query_delete('@@path@@')"><i class="fa
+                                    text-primary text-xxs"></i></a> |
+                                    <a href="javascript:query_rename('@@path@@')"><i class="fa-solid fa-file
+                                    me-2 text-primary text-xxs"></i></a>| <a
+                                    href="javascript:query_delete('@@path@@')"><i class="fa
                                     fa-trash-alt me-2 text-primary text-xxs"></i></a>
                                 </td>
                             </tr>`;
@@ -191,6 +225,13 @@
             $("#deleteModal").modal("show");
         }
 
+        function query_rename(name) {
+            operate_post = name;
+            $("#renameModalLabel").text("重命名: " + name);
+            $("#edit-name").val(name);
+            $("#renameModal").modal("show");
+        }
+
         function delete_file() {
             let loading = new KZ_Loading('正在删除中...');
             let file = $("#delfile").text();
@@ -212,6 +253,31 @@
                             }
                         }
                         change_page(_page);
+                    } else {
+                        notyf.error(res.msg);
+                    }
+                },
+                error: function (res) {
+                    loading.destroy();
+                    notyf.error("网络错误！");
+                }
+            })
+        }
+
+        function rename_file() {
+            let loading = new KZ_Loading('正在重命名中...');
+            let new_name= $("#edit-name").val();
+            loading.show();
+            $.ajax({
+                url: '/api/rename/',
+                method: 'post',
+                data: {"new": new_name, "file": operate_post},
+                dataType: 'JSON',
+                success: function (res) {
+                    loading.destroy();
+                    if (res.status) {
+                        notyf.success('操作成功！');
+                        location.reload();
                     } else {
                         notyf.error(res.msg);
                     }

@@ -496,7 +496,7 @@ def save_post(request):
                 context = {"msg": "保存成功并提交部署！", "status": True, "path": result[1]}
             else:
                 context = {"msg": "保存成功！", "status": True, "path": result[1]}
-            mark_post(request.POST.get("path"), front_matter, True, file_name)
+            mark_post(result[1], front_matter, True, file_name)
             delete_all_caches()
         except Exception as error:
             logging.error(repr(error))

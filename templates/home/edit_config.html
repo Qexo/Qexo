@@ -4,36 +4,12 @@
 
 {% block content %}
 
-    <div class="header bg-primary pb-6">
-        <div class="container-fluid">
-            <div class="header-body">
-                <div class="row align-items-center py-4">
-                    <div class="col-lg-6 col-7">
-                        <h6 class="h2 text-white d-inline-block mb-0">正在编辑: {{ filepath }}</h6>
-                        <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
-                            <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
-                                <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i></a>
-                                </li>
-                                <li class="breadcrumb-item"><a href="/configs.html">配置</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">编辑</li>
-                            </ol>
-                        </nav>
-                    </div>
-                    <div class="col-lg-6 col-5 text-right">
-                        <a href="/configs.html" class="btn btn-sm btn-neutral">配置列表</a>
-                        <a href="javascript:SaveChanges()" class="btn btn-sm btn-neutral">保存</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Page content -->
-    <div class="container-fluid mt--6">
+    <div class="container-fluid">
         <div class="row">
             <div class="col">
                 <div class="card">
-                    <div id="editor" class="ace_editor" style="height: 36rem;
+                    <div id="editor" class="ace_editor" style="height: 41rem;
                     min-height:inherit;border-radius: 0.375rem;"></div>
                 </div>
             </div>
@@ -49,15 +25,20 @@
 {% block javascripts %}
 
 
-    <script src="{{ cdnjs }}ace/1.15.0/ace.js"></script>
-    <script src="{{ cdnjs }}ace/1.15.0/ext-language_tools.js"></script>
-    <script src="{{ cdnjs }}ace/1.15.0/ext-modelist.js"></script>
+    <script src="{{ cdn_prev }}qexo-static@2.2.3/qexo/ace/ace.js"></script>
+    <script src="{{ cdn_prev }}qexo-static@2.2.3/qexo/ace/ext-language_tools.js"></script>
+    <script src="{{ cdn_prev }}qexo-static@2.2.3/qexo/ace/ext-modelist.js"></script>
     <script>
         var _status = true;
         var file_content = {{ file_content|safe }};
 
         editor = ace.edit("editor");
-        editor.setTheme("ace/theme/tomorrow");
+
+        if (checkIfDark()) {
+            editor.setTheme("ace/theme/one_dark");
+        } else {
+            editor.setTheme("ace/theme/tomorrow");
+        }
 
         let modelist = ace.require("ace/ext/modelist");
         let filePath = "blahblah/weee/some.js";
@@ -79,13 +60,14 @@
         editor.getSession().setUseWorker(false);
         editor.getSession().setUseWrapMode(true);
         editor.getSession().setUseSoftTabs(true);
-        editor.session.setValue(file_content);
+        editor.setValue(file_content);
+        editor.gotoLine(1);
         $.ajaxSetup({
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
         });
 
 
-        function SaveChanges() {
+        function Publish() {
             if (!_status) {
                 return false;
             }
@@ -118,7 +100,7 @@
         document.onkeydown = function () {
             // 判断 Ctrl+S
             if (event.ctrlKey === true && event.keyCode === 83) {
-                SaveChanges();
+                Publish();
                 event.preventDefault();
             }
         }

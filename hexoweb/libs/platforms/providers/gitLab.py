@@ -53,7 +53,7 @@ class Gitlab(Provider):
         logging.info("获取路径{}成功".format(path))
         return {"path": path, "data": results}
 
-    def save(self, file, content, commitchange="Update by Qexo"):
+    def save(self, file, content, commitchange="Update by Qexo", autobuild=True):
         try:
             f = self.repo.files.create({'file_path': self.path + file,
                           'branch': self.branch,
@@ -67,7 +67,7 @@ class Gitlab(Provider):
             logging.info("保存文件{}成功".format(file))
         return False
 
-    def delete(self, path, commitchange="Delete by Qexo"):
+    def delete(self, path, commitchange="Delete by Qexo", autobuild=True):
         try:
             file = self.repo.files.get(file_path=self.path + path, ref=self.branch)
             file.delete(commit_message=commitchange, branch=self.branch)

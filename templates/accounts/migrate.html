@@ -4,28 +4,18 @@
 
 <!-- Specific CSS goes HERE -->
 {% block stylesheets %}
-    <style>
-        .notyf__toast {
-            max-width: 24em !important;
-        }
-
-        .notyf__ripple {
-            height: 60em !important;
-            width: 60em !important;
-        }
-    </style>
 {% endblock stylesheets %}
 
 {% block content %}
 
     <!-- Page content -->
-    <div class="container mt--8 pb-5">
+    <div class="container" style="margin-top: -8rem!important;padding-bottom: 3rem!important;">
         <div class="row justify-content-center">
             <div class="col-lg-5 col-md-5">
-                <div class="card bg-secondary shadow border-0">
+                <div class="card z-index-0">
                     <div class="card-body">
                         <div class="text-center text-muted mb-4">
-                            <h1>迁移配置</h1>
+                            <h4>迁移配置</h4>
                         </div>
                         <hr/>
                         <div class="row text-center">
@@ -45,7 +35,7 @@
                     <div class="col-6">
                         <a href="/" class="text-light"><small>主页</small></a>
                     </div>
-                    <div class="col-6 text-right">
+                    <div class="col-6 text-end">
                         <a target="_blank"
                            href="https://github.com/Qexo/Qexo/wiki"
                            class="text-light"><small>帮助</small></a>
@@ -57,11 +47,14 @@
     <div class="modal fade" id="query" tabindex="-2" aria-labelledby="queryLabel"
          aria-hidden="true">
         <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
+            <div class="modal-content bg-white">
+                <div class="modal-header" style="border: none;">
                     <h5 class="modal-title" id="queryLabel">导入</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+                    <button type="button" data-bs-dismiss="modal"
+                            aria-label="Close" style="box-sizing: content-box;width: 1em;height:
+                            1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem;
+                            opacity: .5;background: none">
+                        <span aria-hidden="true">×</span>
                     </button>
                 </div>
                 <div class="modal-body" id="query-modal-body">
@@ -76,7 +69,7 @@
                         </div>
                     </form>
                 </div>
-                <div class="modal-footer" id="query-modal-footer">
+                <div class="modal-footer" id="query-modal-footer" style="border: none;">
                     <button class="btn btn-primary" onclick="import_qexo()">确定</button>
                 </div>
             </div>
@@ -84,17 +77,20 @@
     </div>
     <div class="modal fade" id="query2" tabindex="-1">
         <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
+            <div class="modal-content bg-white">
+                <div class="modal-header" style="border: none;">
                     <h5 class="modal-title" id="queryLabel2">警告</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+                    <button type="button" data-bs-dismiss="modal"
+                            aria-label="Close" style="box-sizing: content-box;width: 1em;height:
+                            1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem;
+                            opacity: .5;background: none">
+                        <span aria-hidden="true">×</span>
                     </button>
                 </div>
                 <div class="modal-body" id="query-modal2-body">
                     导入后, 您将会丢失现有的全部信息
                 </div>
-                <div class="modal-footer" id="query-modal2-footer">
+                <div class="modal-footer" id="query-modal2-footer" style="border: none;">
                     <button class="btn btn-primary" onclick="final_import_qexo()">仍然继续</button>
                 </div>
             </div>
@@ -102,16 +98,19 @@
     </div>
     <div class="modal fade" id="query3" tabindex="-1">
         <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
+            <div class="modal-content bg-white">
+                <div class="modal-header" style="border: none;">
                     <h5 class="modal-title" id="queryLabel3">结果</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+                    <button type="button" data-bs-dismiss="modal"
+                            aria-label="Close" style="box-sizing: content-box;width: 1em;height:
+                            1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem;
+                            opacity: .5;background: none">
+                        <span aria-hidden="true">×</span>
                     </button>
                 </div>
                 <div class="modal-body text-center" id="query-modal3-body">
                 </div>
-                <div class="modal-footer" id="query-modal3-footer">
+                <div class="modal-footer" id="query-modal3-footer" style="border: none;">
                 </div>
             </div>
         </div>
@@ -167,11 +166,12 @@
                     import_type("import_custom", data["custom"]),
                     import_type("import_uv", data["uv"]),
                     import_type("import_talks", data["talks"]),
-                    import_type("import_pv", data["pv"]),).then(
+                    import_type("import_pv", data["pv"]),
+                    import_type("import_posts", data["posts"])).then(
                     function () {
                         let html = $("#query-modal3-body").html();
                         html += "全部迁移完成!";
-                        $("#query-modal3-footer").html(`<button class="btn btn-primary" data-dismiss="modal">完成</button>`);
+                        $("#query-modal3-footer").html(`<button class="btn btn-primary" data-bs-dismiss="modal">完成</button>`);
                         $("#query-modal3-body").html(html);
                     })
 
@@ -198,7 +198,7 @@
                         let html = $("#query-modal3-body").html();
                         html += _type + " 错误...跳过<br>";
                         $("#query-modal3-body").html(html);
-                        $("#query-modal3-footer").html(`<button class="btn btn-primary" data-dismiss="modal">完成</button>`);
+                        $("#query-modal3-footer").html(`<button class="btn btn-primary" data-bs-dismiss="modal">完成</button>`);
                     }
                 }
             })

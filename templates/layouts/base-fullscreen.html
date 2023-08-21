@@ -27,28 +27,25 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700">
     <!-- Icons -->
     <link rel="stylesheet"
-          href="{{ cdnjs }}argon-dashboard-react/1.2.0/assets/plugins/nucleo/css/nucleo.css"
+          href="{{ cdn_prev }}@creative-tim-official/argon-dashboard@2.0.4/assets/css/nucleo-icons.css"
           type="text/css">
     <link rel="stylesheet"
-          href="{{ cdnjs }}font-awesome/6.1.1/css/all.min.css"
+          href="{{ cdn_prev }}@creative-tim-official/argon-dashboard@2.0.4/assets/css/nucleo-svg.css"
+          type="text/css">
+
+    <link rel="stylesheet"
+          href="{{ cdn_prev }}@fortawesome/fontawesome-free@6.4.2/css/all.min.css"
           type="text/css">
     <!-- Argon CSS -->
-    <link rel="stylesheet" href="{{ cdnjs }}argon-dashboard-django/1.0.2/css/argon.min.css"
+    <link rel="stylesheet"
+          href="{{ cdn_prev }}qexo-static@2.2.3/qexo/argon/argon-dashboard.css"
           type="text/css">
     <link rel="stylesheet"
-          href="{{ cdnjs }}notyf/3.2.0/notyf.min.css"
+          href="{{ cdn_prev }}notyf@3.10.0/notyf.min.css"
           type="text/css">
     <!-- Specific CSS goes HERE -->
     {% block stylesheets %}
         <style>
-            .notyf__toast {
-                max-width: 24em !important;
-            }
-
-            .notyf__ripple {
-                height: 60em !important;
-                width: 60em !important;
-            }
         </style>
     {% endblock stylesheets %}
 
@@ -60,7 +57,7 @@
 
 
     <!-- Header -->
-    <div class="header bg-gradient-primary py-7 py-lg-8">
+    <div class="header bg-gradient-primary py-7 py-lg-8" style="position: relative">
         <div class="separator separator-bottom separator-skew zindex-100">
             <svg x="0" y="0" viewBox="0 0 2560 100" preserveAspectRatio="none" version="1.1"
                  xmlns="http://www.w3.org/2000/svg">
@@ -77,8 +74,6 @@
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}{% endblock javascripts %}
-
-<script src="{{ cdnjs }}argon-dashboard-django/1.0.2/js/argon.min.js"></script>
 
 </body>
 

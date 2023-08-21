@@ -1,109 +1,113 @@
-<nav class="sidenav navbar navbar-vertical  fixed-left  navbar-expand-xs navbar-light bg-white" id="sidenav-main">
-  <div class="scrollbar-inner">
-    <!-- Brand -->
-    <div class="sidenav-header  align-items-center">
-      <a class="navbar-brand" href="/">
-        <img src="{{ QEXO_LOGO }}"
-             class="navbar-brand-img"
-             style="max-height: 2.9rem">
-      </a>
+<aside class="sidenav bg-white navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-4 "
+       id="sidenav-main" style="z-index: 99">
+    <div class="sidenav-header">
+        <i class="fas fa-times p-3 cursor-pointer text-secondary opacity-5 position-absolute end-0 top-0 d-none d-xl-none"
+           aria-hidden="true" id="iconSidenav"></i>
+        <a class="navbar-brand m-0" href="/" target="_blank" style="text-align: center;">
+            <img src="{{ QEXO_LOGO }}" class="navbar-brand-img h-100" alt="main_logo" id="logo"
+                 style="max-height: 2.9rem">
+            <img src="{{ QEXO_LOGO_DARK }}" class="navbar-brand-img h-100"
+                 alt="main_logo" id="logo-dark"
+                 style="max-height: 2.9rem;display: none">
+        </a>
     </div>
-
-    <div class="navbar-inner">
-      <!-- Collapse -->
-      <div class="collapse navbar-collapse" id="sidenav-collapse-main">
-        <!-- Nav items -->
+    <hr class="horizontal dark mt-0">
+    <div class="collapse navbar-collapse  w-auto" id="sidenav-collapse-main"
+         style="height: calc(100vh - 330px);">
         <ul class="navbar-nav">
-          <li class="nav-item">
-            <a class="nav-link {% if 'index' in segment %} active {% endif %}" href="/">
-              <i class="ni ni-tv-2 text-primary"></i>
-              <span class="nav-link-text">主页</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link {% if 'posts' in segment %} active {% endif %}" href="/posts.html">
-              <i class="ni ni-single-copy-04 text-orange"></i>
-              <span class="nav-link-text">文章</span>
-            </a>
-          </li>
-        <li class="nav-item">
-            <a class="nav-link {% if 'pages' in segment %} active {% endif %}" href="/pages.html">
-              <i class="ni ni-app text-purple"></i>
-              <span class="nav-link-text">页面</span>
-            </a>
-          </li>
-        {% if request.user.is_staff %}
-          <li class="nav-item">
-            <a class="nav-link {% if 'configs' in segment %} active {% endif %}" href="/configs.html">
-              <i class="ni ni-settings-gear-65 text-primary"></i>
-              <span class="nav-link-text">配置</span>
-            </a>
-          </li>
-        {% endif %}
-          <li class="nav-item">
-            <a class="nav-link {% if 'images' in segment %} active {% endif %}" href="/images.html">
-              <i class="ni ni-image text-info"></i>
-              <span class="nav-link-text">图片</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link {% if 'friends' in segment %} active {% endif %}" href="/friends.html">
-              <i class="ni ni-badge text-orange"></i>
-              <span class="nav-link-text">友链</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link {% if 'talks' in segment %} active {% endif %}" href="/talks.html">
-              <i class="ni ni-chat-round text-purple"></i>
-              <span class="nav-link-text">说说</span>
-            </a>
-          </li>
-        {% if request.user.is_staff %}
-          <li class="nav-item">
-            <a class="nav-link {% if 'custom' in segment %} active {% endif %}" href="/custom.html">
-              <i class="ni ni-archive-2 text-primary"></i>
-              <span class="nav-link-text">自定</span>
-            </a>
-          </li>
-        {% endif %}
+            <li class="nav-item">
+                <a class="nav-link {% if 'index' in segment %} active {% endif %}" href="/">
+                    <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="ni ni-tv-2 text-primary text-sm opacity-10"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">主页</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if 'posts' in segment %} active {% endif %}"
+                   href="/posts.html">
+                    <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="ni ni-single-copy-04 text-warning text-sm opacity-10"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">文章</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if 'pages' in segment %} active {% endif %}"
+                   href="/pages.html">
+                    <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="ni ni-app text-primary text-sm opacity-10"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">页面</span>
+                </a>
+            </li>
+            {% if request.user.is_staff %}
+                <li class="nav-item">
+                    <a class="nav-link {% if 'configs' in segment %} active {% endif %}"
+                       href="/configs.html">
+                        <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                            <i class="ni ni-settings-gear-65 text-danger text-sm opacity-10"></i>
+                        </div>
+                        <span class="nav-link-text ms-1">配置</span>
+                    </a>
+                </li>
+            {% endif %}
+            <li class="nav-item">
+                <a class="nav-link {% if 'images' in segment %} active {% endif %}"
+                   href="/images.html">
+                    <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="ni ni-image text-info text-sm opacity-10"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">图片</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if 'friends' in segment %} active {% endif %}"
+                   href="/friends.html">
+                    <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="ni ni-badge text-warning text-sm opacity-10"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">友链</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if 'talks' in segment %} active {% endif %}"
+                   href="/talks.html">
+                    <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="ni ni-chat-round text-primary text-sm opacity-10"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">说说</span>
+                </a>
+            </li>
+            {% if request.user.is_staff %}
+                <li class="nav-item">
+                    <a class="nav-link {% if 'custom' in segment %} active {% endif %}"
+                       href="/custom.html">
+                        <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                            <i class="ni ni-archive-2 text-danger text-sm opacity-10"></i>
+                        </div>
+                        <span class="nav-link-text ms-1">自定</span>
+                    </a>
+                </li>
+            {% endif %}
         </ul>
-        <!-- Divider -->
-        <hr class="my-3">
-        <!-- Heading -->
-        <h6 class="navbar-heading p-0 text-muted">
-          <span class="docs-normal">资源</span>
-        </h6>
-        <!-- Navigation -->
-        <ul class="navbar-nav mb-md-3">
-
-          <li class="nav-item">
-            <a class="nav-link"
-               target="_blank"
-               href="https://hexo.io/themes/">
-              <i class="ni ni-bag-17 text-warning"></i>
-              <span class="nav-link-text">主题</span>
-            </a>
-          </li>
-
-          <li class="nav-item">
-            <a class="nav-link"
-               target="_blank"
-               href="https://hexo.io/plugins/">
-              <i class="ni ni-settings text-primary"></i>
-              <span class="nav-link-text">插件</span>
-            </a>
-          </li>
-
-          <li class="nav-item">
-            <a class="nav-link"
-               target="_blank"
-               href="https://www.github.com/am-abudu/Qexo">
-              <i class="ni ni-send text-info"></i>
-              <span class="nav-link-text">文档</span>
-            </a>
-          </li>
-        </ul>
-      </div>
     </div>
-  </div>
-</nav>
+    <div class="sidenav-footer mx-3 ">
+        <div class="card card-plain shadow-none" id="sidenavCard">
+            <img class="w-50 mx-auto"
+                 src="{{ cdn_prev }}@creative-tim-official/argon-dashboard@2.0.4/assets/img/illustrations/icon-documentation.svg"
+                 alt="sidebar_illustration">
+            <div class="card-body text-center p-3 w-100 pt-0">
+                <div class="docs-info">
+                    <h6 class="mb-0">需要帮助?</h6>
+                    <p class="text-xs font-weight-bold mb-0">点击这里查找文档</p>
+                </div>
+            </div>
+        </div>
+        <a href="https://www.creative-tim.com/learning-lab/bootstrap/license/argon-dashboard"
+           target="_blank" class="btn btn-dark btn-sm w-100 mb-3"
+           style="display:none">Documentation</a>
+        <a href="https://www.oplog.cn/qexo"
+           target="_blank" class="btn btn-sm w-100 mb-0 bg-gradient-primary">文档</a>
+    </div>
+</aside>

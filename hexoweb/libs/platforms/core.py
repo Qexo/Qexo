@@ -15,10 +15,10 @@ class Provider(object):
     def get_path(self, path):
         ...
 
-    def save(self, file, content):
+    def save(self, file, content, commitchange="Update by Qexo", autobuild=True):
         ...
 
-    def delete(self, path):
+    def delete(self, path, commitchange="Delete by Qexo", autobuild=True):
         ...
 
     def build(self):
@@ -172,7 +172,7 @@ class Provider(object):
     def get_scaffold(self, scaffold_type):
         return self.get_content(self.config[scaffold_type]["scaffold"])
 
-    def save_post(self, name, content, path=None, status=False):
+    def save_post(self, name, content, path=None, status=False, autobuild=True):
         # status: True -> posts, False -> drafts
         # path 若无则保存至默认路径
         if self.config["drafts"]["save_path"]:
@@ -181,22 +181,28 @@ class Provider(object):
             draft_file = None
         save_file = self.config["posts"]["save_path"].replace("${filename}", name)
         if path and (path not in [draft_file, save_file]):
-            return [self.save(path, content, f"Save Post {name} by Qexo"), path]
+            return [self.save(path, content, f"Save Post {name} by Qexo", autobuild), path]
         if status:
             try:
-                self.delete(draft_file, f"Delete Post Draft {draft_file} by Qexo")
+                self.delete(draft_file, f"Delete Post Draft {draft_file} by Qexo", False)
             except:
                 logging.info(f"删除草稿{draft_file}失败, 可能无需删除草稿")
-            return [self.save(save_file, content, f"Publish Post {save_file} by Qexo"), save_file]
+            return [self.save(save_file, content, f"Publish Post {save_file} by Qexo", autobuild), save_file]
         else:
             if not draft_file:
                 raise Exception("当前配置不支持草稿")
             return [self.save(self.config["drafts"]["save_path"].replace("${filename}", name), content,
-                              f"Save Post Draft {draft_file} by Qexo"), draft_file]
+                              f"Save Post Draft {draft_file} by Qexo", autobuild), draft_file]
 
-    def save_page(self, name, content):
+    def save_page(self, name, content, autobuild=True):
         path = self.config["pages"]["save_path"].replace("${filename}", name)
-        return [self.save(path, content, f"Update Page {name} by Qexo"), path]
+        return [self.save(path, content, f"Update Page {name} by Qexo", autobuild), path]
+
+    def rename(self, old, new, autobuild=True):
+        if old == new:
+            return False
+        self.save(new, self.get_content(old), f"Rename {old} to {new} by Qexo", False)
+        return self.delete(old, f"Rename {old} to {new} by Qexo", autobuild)
 
 
 from .providers import _all_providers

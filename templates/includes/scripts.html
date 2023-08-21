@@ -1,9 +1,13 @@
-<script src="{{ cdnjs }}jquery/3.4.1/jquery.min.js"></script>
-<script src="{{ cdnjs }}twitter-bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
-<script src="{{ cdnjs }}js-cookie/2.2.0/js.cookie.min.js"></script>
-<script src="{{ cdnjs }}jquery.scrollbar/0.2.11/jquery.scrollbar.min.js"></script>
-<script src="{{ cdnjs }}jquery-scroll-lock/3.1.3/jquery-scrollLock.min.js"></script>
-<script src="{{ cdnjs }}notyf/3.2.0/notyf.min.js"></script>
+<script src="{{ cdn_prev }}jquery@3.7.0/dist/jquery.min.js"></script>
+<script src="{{ cdn_prev }}notyf@3.10.0/notyf.min.js"></script>
+
+<script src="{{ cdn_prev }}@creative-tim-official/argon-dashboard@2.0.4/assets/js/core/popper.min.js"></script>
+<script src="{{ cdn_prev }}bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ cdn_prev }}@creative-tim-official/argon-dashboard@2.0.4/assets/js/plugins/perfect-scrollbar.min.js"></script>
+<script src="{{ cdn_prev }}@creative-tim-official/argon-dashboard@2.0.4/assets/js/plugins/smooth-scrollbar.min.js"></script>
+<script src="{{ cdn_prev }}@creative-tim-official/argon-dashboard@2.0.4/assets/js/plugins/chartjs.min.js"></script>
+<script src="{{ cdn_prev }}qexo-static@2.2.3/qexo/argon/argon-dashboard.js"></script>
+<script src="{{ cdn_prev }}github-buttons@2.27.0/dist/buttons.min.js"></script>
 <script>
     $.ajaxSetup({data: {csrfmiddlewaretoken: '{{ csrf_token }}'}});
 
@@ -13,9 +17,20 @@
 
     function KZ_Loading(config) {
         if (this instanceof KZ_Loading) {
-            const domTemplate = '<div class="modal kz-loading" data-kzid="@@KZ_Loadin_ID@@" backdrop="static" keyboard="false"><div style="width: 200px;height:20px; z-index: 20000; position: absolute; text-align: center; left: 50%; top: 50%;margin-left:-100px;margin-top:-10px"><div class="progress progress-striped active" style="margin-bottom: 0;"><div class="progress-bar" style="width: 100%;"></div></div><h5>@@KZ_Loading_Text@@</h5></div></div>';
+            const domTemplate = `
+            <div class="modal fade" id="loaderModal-@@KZ_Loadin_ID@@" tabindex="-1" aria-labelledby="loaderModalLabel-@@KZ_Loadin_ID@@"
+                 aria-hidden="true" data-bs-keyboard="false" data-bs-backdrop="static">
+                <div class="modal-dialog">
+                </div>
+                    <div style="width: 200px;height:20px; z-index: 20000; position: absolute; text-align: center; left: 50%; top: 50%;margin-left:-100px;margin-top:-10px">
+                        <div class="progress progress-striped active" style="margin-bottom: 0;">
+                            <div class="progress-bar" style="width: 100%;"></div>
+                        </div>
+                        <h5 style="font-size: .8125rem;margin-bottom: .5rem;font-family: inherit;font-weight: 600;line-height: 1.5;color: #32325d;">@@KZ_Loading_Text@@</h5>
+                    </div>
+            </div>`
             this.config = {
-                content: 'loading...',
+                content: '正在加载中...',
                 time: 0,
             };
             if (config != null) {
@@ -32,10 +47,7 @@
 
             /*显示 */
             this.show = function () {
-                $('.kz-loading[data-kzid=' + this.id + ']').modal({
-                    backdrop: 'static',
-                    keyboard: false
-                });
+                $('#loaderModal-' + this.id).modal("show");
                 this.state = 'show';
                 if (this.config.time > 0) {
                     var that = this;
@@ -46,7 +58,7 @@
             };
             /*隐藏 */
             this.hide = function (callback) {
-                $('.kz-loading[data-kzid=' + this.id + ']').modal('hide');
+                $('#loaderModal-' + this.id).modal("hide");
                 this.state = 'hide';
                 if (callback) {
                     callback();
@@ -55,55 +67,68 @@
             /*销毁dom */
             this.destroy = function () {
                 var that = this;
-                this.hide(function () {
-                    var node = $('.kz-loading[data-kzid=' + that.id + ']');
-                    node.next().remove();
-                    node.remove();
-                    that.show = function () {
-                        throw new Error('对象已销毁！');
-                    };
-                    that.hide = function () {
-                    };
-                    that.destroy = function () {
-                    };
-                });
+                this.hide();
+                setTimeout(function () {
+                    that.hide(function () {
+                        var node = $('#loaderModal-' + that.id);
+                        node.next().remove();
+                        node.remove();
+                        that.show = function () {
+                            throw new Error('对象已销毁！');
+                        };
+                        that.hide = function () {
+                        };
+                        that.destroy = function () {
+                        };
+                    });
+                }, 300);
             }
 
-            var domHtml = domTemplate.replace('@@KZ_Loadin_ID@@', this.id).replace('@@KZ_Loading_Text@@', this.config.content);
+            var domHtml = domTemplate.replaceAll('@@KZ_Loadin_ID@@', this.id).replaceAll('@@KZ_Loading_Text@@', this.config.content);
             $('body').append(domHtml);
         } else {
             return new KZ_Loading(config);
         }
     }
 
+    var notificationTemp = `<a class="dropdown-item border-radius-md" href="@@herf@@" style="white-space: inherit;">
+                                <div class="d-flex py-1">
+                                    <div class="avatar avatar-sm me-3 my-auto" style="color: #172b4d;">
+                                      @@fore@@
+                                    </div>
+                                    <div class="d-flex flex-column justify-content-center">
+                                        <span class="text-sm font-weight-normal mb-1">
+                                        <span class="font-weight-bold">@@label@@</span><br>
+                                            @@content@@
+                                        </span>
+                                        <p class="text-xs text-secondary mb-0">
+                                            <i class="fa fa-clock me-1"></i>
+                                            @@time@@
+                                        </p>
+                                    </div>
+                                </div>
+                            </a>`
+
     function showNotifications() {
         if (!notifications.length) {
-            $("#notification-board").html('<div class="list-group list-group-flush"><ul ' +
-                'href="#!" class="list-group-item list-group-item-action"><div class="row ' +
-                'align-items-center"><div class="col-auto"><i class="fas ' +
-                'fa-check"></i></div><div class="col ml--2 text-sm mb-0"><div class="d-flex ' +
-                'justify-content-between align-items-center"><div><h4 class="mb-0 ' +
-                'text-sm">消息</h4></div></div><p class="text-sm ' +
-                'mb-0">你当前没有消息哟~</p></div></div></ul></div>');
+            $("#notification-board").html(notificationTemp.replace('<span class="font-weight-bold">@@lebel@@<br></span><br>', '').replace("@@herf@@", "#")
+                .replace('@@content@@', '你当前没有消息哟~').replace('@@time@@', 'Now').replace('@@fore@@',
+                    '<i class="fas fa-check"></i>').replace("@@label@@", "提示"));
             $("#msg-point").css({"background": "inherit"});
         } else {
-            let html = '<div class="px-3 py-3"><h6 class="text-sm text-muted m-0">你有 ' +
+            let html = '<div class="px-3 py-1"><h6 class="text-sm text-muted m-0">你有 ' +
                 '<strong class="text-primary">' + notifications.length + '</strong> 则消息' +
                 '</h6></div><div class="list-group list-group-flush">';
             for (let i = 0; i < notifications.length; i++) {
-                html += '<a href="javascript:delNotification(\'' + notifications[i]["timestamp"]
-                    + '\')" ' + 'class="list-group-item list-group-item-action"><div ' +
-                    'class="row align-items-center"><div class="col-auto"><i class="fas ' +
-                    'fa-quote-left"></i></div><div class="col ml--2 text-sm mb-0"><div ' +
-                    'class="d-flex justify-content-between align-items-center"><div><h4 ' +
-                    'class="mb-0 text-sm">' + escapeString(notifications[i]["label"]) +
-                    '</h4></div><div ' +
-                    'class="text-right text-muted"><small>' + notifications[i]["time"] +
-                    '</small></div></div><p class="text-sm mb-0">' +
-                    notifications[i]["content"] + '</p></div></div></a>';
+                html += notificationTemp.replace('@@herf@@', "javascript:delNotification('"
+                    + notifications[i]["timestamp"] + "')")
+                    .replace('@@content@@', notifications[i]["content"])
+                    .replace('@@time@@', notifications[i]["time"])
+                    .replace('@@fore@@', `<i class="fas fa-quote-left"></i>`)
+                    .replace("@@label@@", notifications[i]["label"]);
             }
-            html += '<div class="px-3 py-3"><h6 class="text-sm text-primary m-0 text-right" ' +
-                'style="cursor: pointer" onclick="clearNotification()">清除全部' +
+            html += '<div class="px-3 py-1"><h6 class="text-sm text-primary m-0" ' +
+                'style="cursor: pointer;text-align: right;" onclick="clearNotification()">清除全部' +
                 '</h6></div>'
             $("#notification-board").html(html + '</div>');
             $("#msg-point").css({
@@ -122,14 +147,10 @@
                 notifications = data["data"];
                 showNotifications();
             } else {
-                $("#notification-board").html('<div class="list-group list-group-flush"><ul ' +
-                    'href="#!" class="list-group-item list-group-item-action"><div class="row ' +
-                    'align-items-center"><div class="col-auto"><i class="fas ' +
-                    'fa-exclamation-triangle"></i></div><div class="col ml--2 text-sm mb-0"><div ' +
-                    'class="d-flex ' +
-                    'justify-content-between align-items-center"><div><h4 class="mb-0 ' +
-                    'text-sm">消息</h4></div></div><p class="text-sm ' +
-                    'mb-0">获取失败咯~</p></div></div></ul></div>');
+                $("#notification-board").html(notificationTemp.replace('@@lebel@@', '提示')
+                    .replace("@@herf@@", "#").replace('@@content@@', '消息加载失败咯').replace
+                    ('@@time@@', 'Error')
+                    .replace('@@fore@@', '<i class="fa-solid fa-blender"></i>'));
             }
         }
     })
@@ -228,6 +249,18 @@
             }
         }
         return array;
+    }
+
+    function scrollToTop() {
+        document.body.scrollIntoView();
+    }
+
+    function checkIfDark() {
+        let classList = $("body").attr("class");
+        if (classList.indexOf("dark-version") !== -1) {
+            return true;
+        }
+        return false;
     }
 
     {% if error %}

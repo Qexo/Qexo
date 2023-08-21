@@ -3,59 +3,33 @@
 {% block title %} 设置 {% endblock title %}
 
 {% block content %}
-
-    <div class="header bg-primary pb-6">
-        <div class="container-fluid">
-            <div class="header-body">
-                <div class="row align-items-center py-4">
-                    <div class="col-lg-6 col-7">
-                        <h6 class="h2 text-white d-inline-block mb-0">设置中心</h6>
-                        <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
-                            <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
-                                <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i></a>
-                                </li>
-                                <li class="breadcrumb-item active">设置</li>
-                            </ol>
-                        </nav>
-                    </div>
-                    <div class="col-lg-6 col-5 text-right">
-                        <a href="/" class="btn btn-sm btn-neutral">主页</a>
-                        <a href="/userscripts.html" class="btn btn-sm btn-neutral">云端命令</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
     <!-- Page content -->
-    <div class="container-fluid mt--6">
+    <div class="container-fluid py-4">
         <div class="row">
-            <div class="col">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="row align-items-center">
-                            <div class="col-8">
-                                <h3 class="mb-0">修改配置</h3>
-                            </div>
-                        </div>
+            <div class="col-12">
+                <div class="card mb-4">
+                    <div class="card-header pb-0">
+                        <h6 class="mb-0">修改配置</h6>
                     </div>
                     <div class="card-body">
-                        <div class="row">
-                            <div class="pl-lg-4">
-                                <input type="button" class="btn btn-primary" value="一键设置WEBHOOK"
-                                       onclick="query_webhook()">
-                            </div>
-                            <div class="pl-lg-4">
-                                <a class="btn btn-danger" href="/advanced.html">高级设置</a>
-                            </div>
-                            <div class="pl-lg-4">
-                                <input type="button" class="btn btn-warning" value="清除缓存"
-                                       onclick="query_purge()">
-                            </div>
-                            <div class="pl-lg-4">
-                                <input type="button" class="btn btn-danger" value="一键更新"
-                                       onclick="query_update()">
-                            </div>
-                        </div>
+                        <button type="button" class="btn bg-gradient-success" onclick="query_webhook()">
+                            一键设置WEBHOOK
+                        </button>
+                        <button class="btn bg-gradient-danger" onclick="location.href='/advanced.html'">
+                            高级设置
+                        </button>
+                        <button class="btn bg-gradient-info" onclick="location.href='/userscripts.html'">
+                            云端命令库
+                        </button>
+                        <button type="button" class="btn bg-gradient-warning" onclick="query_purge()">
+                            清除缓存
+                        </button>
+                        <button type="button" class="btn bg-gradient-danger" onclick="query_update()">
+                            一键更新
+                        </button>
+                        <button type="button" class="btn bg-gradient-primary" onclick="location.href='/migrate/'">
+                            迁移
+                        </button>
                         <form id="apikey-settings" onsubmit="return false;">
                             <hr class="my-4"/>
                             <h6 class="heading-small text-muted mb-4">API配置</h6>
@@ -462,7 +436,7 @@
                                             <select class="form-control" name="CDNJS"
                                                     id="cdnjs">
                                                 {% for cdn in ALL_CDN %}
-                                                    <option{% if cdn.url == cdnjs %}
+                                                    <option{% if cdn.url == cdn_prev %}
                                                         selected{% endif %} value="{{ cdn.url }}"
                                                     >{{ cdn.name }}</option>
                                                 {% endfor %}
@@ -507,7 +481,7 @@
                                             <label class="form-control-label">站点 LOGO</label>
                                             <input type="text" name="logo"
                                                    class="form-control"
-                                                   placeholder="默认为 brand 下的 Qexo.png"
+                                                   placeholder="默认为 images 下的 qexo.png"
                                                    value="{{ QEXO_LOGO }}">
                                         </div>
                                     </div>
@@ -516,8 +490,19 @@
                                             <label class="form-control-label">站点 ICON</label>
                                             <input type="text" name="icon"
                                                    class="form-control"
-                                                   placeholder="默认为 brand 下的 favicon.ico"
+                                                   placeholder="默认为 images 下的 icon.png"
                                                    value="{{ QEXO_ICON }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">暗色 LOGO</label>
+                                            <input type="text" name="logo-dark"
+                                                   class="form-control"
+                                                   placeholder="默认为 images 下的 qexo-dark.png"
+                                                   value="{{ QEXO_LOGO_DARK }}">
                                         </div>
                                     </div>
                                 </div>
@@ -538,20 +523,23 @@
         <div class="modal fade" id="queryModal" tabindex="-1" aria-labelledby="queryModalLabel"
              aria-hidden="true">
             <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
+                <div class="modal-content bg-white">
+                    <div class="modal-header" style="border: none;">
                         <h5 class="modal-title" id="queryModalLabel">提示</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
+                        <button type="button" data-bs-dismiss="modal"
+                                aria-label="Close" style="box-sizing: content-box;width: 1em;height:
+                            1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem;
+                            opacity: .5;background: none">
+                            <span aria-hidden="true">×</span>
                         </button>
                     </div>
                     <div class="modal-body">
                         <a id="question"></a>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消
+                    <div class="modal-footer" style="border: none;">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消
                         </button>
-                        <button type="button" class="btn btn-primary" data-dismiss="modal"
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
                                 onclick="purge()">确定
                         </button>
                     </div>
@@ -561,20 +549,23 @@
         <div class="modal fade" id="queryWebhook" tabindex="-1" aria-labelledby="queryWebhookLabel"
              aria-hidden="true">
             <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
+                <div class="modal-content bg-white">
+                    <div class="modal-header" style="border: none;">
                         <h5 class="modal-title" id="queryWebhookLabel">提示</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
+                        <button type="button" data-bs-dismiss="modal"
+                                aria-label="Close" style="box-sizing: content-box;width: 1em;height:
+                            1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem;
+                            opacity: .5;background: none">
+                            <span aria-hidden="true">×</span>
                         </button>
                     </div>
                     <div class="modal-body">
                         确定要自动创建Webhook事件吗？这会清除您原仓库的所有Webhook事件
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消
+                    <div class="modal-footer" style="border: none;">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消
                         </button>
-                        <button type="button" class="btn btn-primary" data-dismiss="modal"
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
                                 onclick="create_webhook()">确定
                         </button>
                     </div>
@@ -584,11 +575,14 @@
         <div class="modal fade" id="queryUpdate" tabindex="-1" aria-labelledby="queryUpdateLabel"
              aria-hidden="true">
             <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
+                <div class="modal-content bg-white">
+                    <div class="modal-header" style="border: none;">
                         <h5 class="modal-title" id="queryWebhookLabel">更新</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
+                        <button type="button" data-bs-dismiss="modal"
+                                aria-label="Close" style="box-sizing: content-box;width: 1em;height:
+                            1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem;
+                            opacity: .5;background: none">
+                            <span aria-hidden="true">×</span>
                         </button>
                     </div>
                     <div class="modal-body">
@@ -601,10 +595,10 @@
                             </select>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消
+                    <div class="modal-footer" style="border: none;">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消
                         </button>
-                        <button type="button" class="btn btn-primary" data-dismiss="modal"
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
                                 onclick="do_update()">确定
                         </button>
                     </div>
@@ -616,20 +610,23 @@
              aria-labelledby="queryResetCustLabel"
              aria-hidden="true">
             <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
+                <div class="modal-content bg-white">
+                    <div class="modal-header" style="border: none;">
                         <h5 class="modal-title" id="queryResetCustLabel">提示</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
+                        <button type="button" data-bs-dismiss="modal"
+                                aria-label="Close" style="box-sizing: content-box;width: 1em;height:
+                            1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem;
+                            opacity: .5;background: none">
+                            <span aria-hidden="true">×</span>
                         </button>
                     </div>
                     <div class="modal-body">
                         确定要重置自定义配置吗？该操作不可回退
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消
+                    <div class="modal-footer" style="border: none;">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消
                         </button>
-                        <button type="button" class="btn btn-primary" data-dismiss="modal"
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
                                 onclick="reset_cust_config()">确定
                         </button>
                     </div>
@@ -895,11 +892,12 @@
                 url: '/api/set_cust/',
                 method: 'post',
                 data: {
-                    csrfmiddlewaretoken: '{{ csrf_token }}', 'logo': 'https://cdn.jsdelivr' +
-                        '.net/npm/qexo-static@1.4.0/assets/img/brand/qexo.png', 'icon':
-                        'https://cdn.jsdelivr' +
-                        '.net/npm/qexo-static@1.4.0/assets/img/brand/favicon.ico',
-                    'name': 'Hexo管理面板', 'split': ' - '
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                    'logo': 'https://unpkg.com/qexo-static@2.2.3/qexo/images/qexo.png',
+                    'icon': 'https://unpkg.com/qexo-static@2.2.3/qexo/images/icon.png',
+                    'logo-dark': 'https://unpkg.com/qexo-static@2.2.3/qexo/images/qexo-dark.png',
+                    'name': 'Hexo管理面板',
+                    'split': ' - '
                 },
                 dataType: "json",
                 success: function (res) {

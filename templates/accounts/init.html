@@ -19,33 +19,33 @@
 {% block content %}
 
     <!-- Page content -->
-    <div class="container mt--8 pb-5">
+    <div class="container" style="margin-top: -8rem!important;padding-bottom: 3rem!important;">
         <div class="row justify-content-center">
             {% if step == "4" or step == "2" or step == "3" %}
                 <div class="col-lg-8 col-md-5">
             {% else %}
                 <div class="col-lg-5 col-md-5">
             {% endif %}
-            <div class="card bg-secondary shadow border-0">
+            <div class="card z-index-0">
                 <div class="card-body">
                     <div class="text-center text-muted mb-4">
                         {% if step == "1" %}
-                            <h2>欢迎！请点击开始以继续初始化</h2>
+                            <h4>欢迎！请点击开始以继续初始化</h4>
                         {% endif %}
                         {% if step == "2" %}
-                            <h3>用户配置</h3>
+                            <h5>用户配置</h5>
                         {% endif %}
                         {% if step == "3" %}
-                            <h2>博客配置</h2>
+                            <h4>博客配置</h4>
                         {% endif %}
                         {% if step == "4" %}
-                            <h3>图床配置</h3>
+                            <h5>图床配置</h5>
                         {% endif %}
                         {% if step == "5" %}
-                            <h3>Vercel 配置</h3>
+                            <h5>Vercel 配置</h5>
                         {% endif %}
                         {% if step == "6" %}
-                            <h3>恭喜您初始化完毕</h3>
+                            <h5>恭喜您初始化完毕</h5>
                         {% endif %}
                     </div>
                     {% if step == "6" %}
@@ -168,10 +168,10 @@
     <div class="modal fade" id="queryModal" tabindex="-1" aria-labelledby="queryModalLabel"
          aria-hidden="true">
         <div class="modal-dialog">
-            <div class="modal-content">
+            <div class="modal-content bg-white">
                 <div class="modal-header">
                     <h5 class="modal-title" id="queryModalLabel">提示</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -219,10 +219,10 @@
                 function query_force() {
                     $("#question").html("确定要强制提交吗？");
                     $("#query-footer").html(
-                        `<button type="button" class="btn btn-secondary" data-dismiss="modal"
+                        `<button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
                                 onclick="force_submit()">确定
                         </button>
-                        <button type="button" class="btn btn-primary" data-dismiss="modal">取消
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">取消
                         </button>`
                     );
                     $("#queryModal").modal("show");

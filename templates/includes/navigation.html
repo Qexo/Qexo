@@ -1,154 +1,172 @@
-<nav class="navbar navbar-top navbar-expand navbar-dark bg-primary border-bottom">
-    <div class="container-fluid">
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <!-- Search form -->
-            {% if 'page' in segment %}
-                <form class="navbar-search navbar-search-light form-inline mr-sm-3"
-                      id="navbar-search-main" action="/pages.html" method="get">
-            {% elif 'images' in segment %}
-                <form class="navbar-search navbar-search-light form-inline mr-sm-3"
-                      id="navbar-search-main" action="/images.html" method="get">
-            {% elif 'configs' in segment %}
-                <form class="navbar-search navbar-search-light form-inline mr-sm-3"
-                      id="navbar-search-main" action="/configs.html" method="get">
-            {% elif 'friends' in segment %}
-                <form class="navbar-search navbar-search-light form-inline mr-sm-3"
-                      id="navbar-search-main" action="/friends.html" method="get">
-            {% elif 'custom' in segment %}
-                <form class="navbar-search navbar-search-light form-inline mr-sm-3"
-                      id="navbar-search-main" action="/custom.html" method="get">
-            {% elif 'talks' in segment %}
-                <form class="navbar-search navbar-search-light form-inline mr-sm-3"
-                      id="navbar-search-main" action="/talks.html" method="get">
-            {% elif 'userscripts' in segment %}
-                <form class="navbar-search navbar-search-light form-inline mr-sm-3"
-                      id="navbar-search-main" action="/userscripts.html" method="get">
-            {% elif 'advanced' in segment %}
-                <form class="navbar-search navbar-search-light form-inline mr-sm-3"
-                      id="navbar-search-main" action="/advanced.html" method="get">
-            {% else %}
-                <form class="navbar-search navbar-search-light form-inline mr-sm-3"
-                      id="navbar-search-main" action="/posts.html" method="get">
-            {% endif %}
-
-            <div class="form-group mb-0">
-                <div class="input-group input-group-alternative input-group-merge">
-                    <div class="input-group-prepend">
-                        <span class="input-group-text"><i class="fas fa-search"></i></span>
-                    </div>
-                    {% if 'page' in segment %}
-                        <input class="form-control" placeholder="搜索页面..." type="text" name="s">
-                    {% elif 'images' in segment %}
-                        <input class="form-control" placeholder="搜索图片..." type="text" name="s">
-                    {% elif 'configs' in segment %}
-                        <input class="form-control" placeholder="搜索配置..." type="text" name="s">
-                    {% elif 'friends' in segment %}
-                        <input class="form-control" placeholder="搜索友链..." type="text" name="s">
-                    {% elif 'custom' in segment %}
-                        <input class="form-control" placeholder="搜索字段..." type="text" name="s">
-                    {% elif 'talks' in segment %}
-                        <input class="form-control" placeholder="搜索说说..." type="text" name="s">
-                    {% elif 'userscripts' in segment %}
-                        <input class="form-control" placeholder="搜索命令..." type="text" name="s">
-                    {% elif 'advanced' in segment %}
-                        <input class="form-control" placeholder="搜索高级..." type="text" name="s">
-                    {% else %}
-                        <input class="form-control" placeholder="搜索文章..." type="text" name="s">
+<nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl "
+     id="navbarBlur" data-scroll="false">
+    <div class="container-fluid py-1 px-3">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0 me-sm-6 me-5">
+                <li class="breadcrumb-item text-sm"><a class="opacity-5 text-white"
+                                                       href="javascript:;">Pages</a></li>
+                <li class="breadcrumb-item text-sm text-white active" aria-current="page">
+                    {{ breadcrumb }}
+                </li>
+            </ol>
+            <h6 class="font-weight-bolder text-white mb-0">{{ breadcrumb_cn }}</h6>
+            {% if 'edit' in segment or 'new' in segment %}
+                <div class="nav-item d-flex align-items-center">
+                    {% if 'talk' not in segment and 'config' not in segment and 'page' not in segment %}
+                        <a href="javascript:SaveDraft()" class="nav-link text-white p-0 pe-3"
+                           style="font-size: 1.1rem;">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                        </a>
+                    {% endif %}
+                    <a href="javascript:Publish()" class="nav-link text-white p-0 pe-3"
+                       style="font-size: 1.1rem;">
+                        <i class="fa-solid fa-upload"></i>
+                    </a>
+                    {% if 'talk' not in segment and 'config' not in segment %}
+                        <a href="javascript:excerpt_post()" class="nav-link text-white p-0 pe-3"
+                           style="font-size: 1.1rem;">
+                            <i class="fa-solid fa-scissors"></i>
+                        </a>
                     {% endif %}
                 </div>
-            </div>
-            <button type="button" class="close" data-action="search-close"
-                    data-target="#navbar-search-main" aria-label="Close">
-                <span aria-hidden="true">×</span>
-            </button>
-            </form>
-            <!-- Navbar links -->
-            <ul class="navbar-nav align-items-center  ml-md-auto ">
-                <li class="nav-item d-xl-none">
-                    <!-- Sidenav toggler -->
-                    <div class="pr-3 sidenav-toggler sidenav-toggler-dark"
-                         data-target="#sidenav-main" data-action="sidenav-pin">
-                        <div class="sidenav-toggler-inner">
-                            <i class="sidenav-toggler-line"></i>
-                            <i class="sidenav-toggler-line"></i>
-                            <i class="sidenav-toggler-line"></i>
-                        </div>
-                    </div>
-                </li>
-                <li class="nav-item d-sm-none">
-                    <a class="nav-link" href="#" data-action="search-show"
-                       data-target="#navbar-search-main">
-                        <i class="fas fa-search"></i>
-                    </a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link" href="#" role="button" data-toggle="dropdown"
-                       aria-haspopup="true" aria-expanded="false">
-                        <i class="ni ni-bell-55"></i>
-                        <div id="msg-point" style=""></div>
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-xl  dropdown-menu-right  py-0
-                    overflow-hidden" id="notification-board">
-                        <div class="list-group list-group-flush">
-                            <ul href="#!" class="list-group-item list-group-item-action">
-                                <div class="row align-items-center">
-                                    <div class="col-auto">
-                                        <i class="fas fa-comment"></i>
-                                    </div>
-                                    <div class="col ml--2">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <h4 class="mb-0 text-sm">消息</h4>
-                                            </div>
-                                        </div>
-                                        <p class="text-sm mb-0">正在获取消息中...</p>
-                                    </div>
-                                </div>
-                            </ul>
-                        </div>
-                    </div>
-                </li>
-                {% if request.user.is_staff %}
-                <li class="nav-item">
-                    <a class="nav-link" href="/settings.html">
-                        <i class="ni ni-settings"></i>
-                    </a>
-                </li>
+            {% endif %}
+        </nav>
+        <div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar">
+            <div class="ms-md-auto pe-md-3 d-flex align-items-center">
+                {% if 'new' in segment %}
+                    <input type="text" name="filename" class="form-control rounded-pill me-3"
+                           placeholder="{% if 'page' in segment %}页面{% else %}文章{% endif %}名称">
                 {% endif %}
-            </ul>
-            <ul class="navbar-nav align-items-center  ml-auto ml-md-0 ">
-                <li class="nav-item dropdown">
-                    <a class="nav-link pr-0" href="#" role="button" data-toggle="dropdown"
+                {% if 'page' in segment %}
+                    <form id="navbar-search-main" class="input-group" action="/pages.html"
+                          method="get">
+                {% elif 'images' in segment %}
+                    <form id="navbar-search-main" class="input-group" action="/images.html"
+                          method="get">
+                {% elif 'configs' in segment %}
+                    <form id="navbar-search-main" class="input-group" action="/configs.html"
+                          method="get">
+                {% elif 'friends' in segment %}
+                    <form id="navbar-search-main" class="input-group" action="/friends.html"
+                          method="get">
+                {% elif 'custom' in segment %}
+                    <form id="navbar-search-main" class="input-group" action="/custom.html"
+                          method="get">
+                {% elif 'talks' in segment %}
+                    <form id="navbar-search-main" class="input-group" action="/talks.html"
+                          method="get">
+                {% elif 'userscripts' in segment %}
+                    <form id="navbar-search-main" class="input-group" action="/userscripts.html"
+                          method="get">
+                {% elif 'advanced' in segment %}
+                    <form id="navbar-search-main" class="input-group" action="/advanced.html"
+                          method="get">
+                {% else %}
+                    <form id="navbar-search-main" class="input-group" action="/posts.html"
+                          method="get">
+                {% endif %}
+                <span class="input-group-text text-body"><i class="fas fa-search"
+                                                            aria-hidden="true"></i></span>
+                {% if 'page' in segment %}
+                    <input class="form-control" placeholder="搜索页面..." type="text" name="s">
+                {% elif 'images' in segment %}
+                    <input class="form-control" placeholder="搜索图片..." type="text" name="s">
+                {% elif 'configs' in segment %}
+                    <input class="form-control" placeholder="搜索配置..." type="text" name="s">
+                {% elif 'friends' in segment %}
+                    <input class="form-control" placeholder="搜索友链..." type="text" name="s">
+                {% elif 'custom' in segment %}
+                    <input class="form-control" placeholder="搜索字段..." type="text" name="s">
+                {% elif 'talks' in segment %}
+                    <input class="form-control" placeholder="搜索说说..." type="text" name="s">
+                {% elif 'userscripts' in segment %}
+                    <input class="form-control" placeholder="搜索命令..." type="text" name="s">
+                {% elif 'advanced' in segment %}
+                    <input class="form-control" placeholder="搜索设置..." type="text" name="s">
+                {% else %}
+                    <input class="form-control" placeholder="搜索文章..." type="text" name="s">
+                {% endif %}
+                </form>
+            </div>
+            <ul class="navbar-nav  justify-content-end">
+                <li class="nav-item dropdown d-flex align-items-center">
+                    <a href="#" class="nav-link text-white p-0" role="button"
+                       data-bs-toggle="dropdown"
                        aria-haspopup="true" aria-expanded="false">
-                        <div class="media align-items-center">
-                            <div class="media-body  ml-2  d-lg-block">
-                <span class="mb-0 text-sm  font-weight-bold">
-                  {{ request.user.username }}
-                </span>
+                        <div class="nav-link text-white font-weight-bold px-0">
+                            <div class="media-body  ms-2  d-lg-block">
+                                <i class="fa fa-user me-sm-1"></i>
+                                <span class="d-sm-inline d-none">{{ request.user.username }}</span>
                             </div>
                         </div>
                     </a>
-                    <div class="dropdown-menu  dropdown-menu-right ">
+                    <ul class="dropdown-menu  dropdown-menu-end  px-2 py-3 me-sm-n4"
+                        aria-labelledby="dropdownMenuButton">
                         <div class="dropdown-header noti-title">
-                            <h6 class="text-overflow m-0">欢迎</h6>
+                            <a class="font-weight-bold">欢迎</a>
                         </div>
-                        {% if request.user.is_staff %}
                         <a href="/settings.html" class="dropdown-item">
                             <i class="ni ni-single-02"></i>
                             <span>设置</span>
                         </a>
-                        {% endif %}
-                        <a target="_blank" href="https://www.oplog.cn/qexo"
-                           class="dropdown-item">
+
+                        <a target="_blank" href="https://www.oplog.cn/qexo" class="dropdown-item">
                             <i class="ni ni-support-16"></i>
                             <span>支持</span>
                         </a>
                         <div class="dropdown-divider"></div>
-                        <a href="{% url 'logout' %}" class="dropdown-item">
+                        <a href="/logout/" class="dropdown-item">
                             <i class="ni ni-user-run text-red"></i>
                             <span>注销</span>
                         </a>
-                    </div>
+                    </ul>
+                </li>
+                <li class="nav-item d-xl-none ps-3 d-flex align-items-center">
+                    <a href="javascript:;" class="nav-link text-white p-0" id="iconNavbarSidenav">
+                        <div class="sidenav-toggler-inner">
+                            <i class="sidenav-toggler-line bg-white"></i>
+                            <i class="sidenav-toggler-line bg-white"></i>
+                            <i class="sidenav-toggler-line bg-white"></i>
+                        </div>
+                    </a>
+                </li>
+                <li class="nav-item px-3 d-flex align-items-center">
+                    <a href="/settings.html" class="nav-link text-white p-0">
+                        <i class="fa fa-cog cursor-pointer"></i>
+                    </a>
+                </li>
+                <li class="nav-item dropdown pe-2 d-flex align-items-center">
+                    <a href="#" class="nav-link text-white p-0" role="button"
+                       data-bs-toggle="dropdown"
+                       aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-bell cursor-pointer"></i>
+                        <div id="msg-point" style=""></div>
+                    </a>
+                    <style>
+                        @media (min-width: 992px) {
+                            #notification-board {
+                                width: 350px;
+                            }
+                        }
+                    </style>
+                    <ul class="dropdown-menu  dropdown-menu-end  px-2 py-3 me-sm-n4"
+                        aria-labelledby="dropdownMenuButton" id="notification-board">
+                        <li class="mb-2">
+                            <a class="dropdown-item border-radius-md" href="#">
+                                <div class="d-flex py-1">
+                                    <div class="avatar avatar-sm me-3 my-auto"
+                                         style="color: #172b4d;">
+                                        <i class="fa-solid fa-cloud"></i>
+                                    </div>
+                                    <div class="d-flex flex-column justify-content-center">
+                                        <span class="text-sm mb-1">
+                                            消息获取中...
+                                        </span>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
                 </li>
             </ul>
         </div>

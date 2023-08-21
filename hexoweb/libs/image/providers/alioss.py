@@ -10,6 +10,7 @@ from time import time
 from hashlib import md5
 
 from ..core import Provider
+from ..replace import replace_path
 
 
 class AliOss(Provider):
@@ -32,12 +33,9 @@ class AliOss(Provider):
         self.prev_url = prev_url
 
     def upload(self, file):
-        now = date.today()
         photo_stream = file.read()
-        file_md5 = md5(photo_stream).hexdigest()
-        path = self.path.replace("{year}", str(now.year)).replace("{month}", str(now.month)).replace("{day}", str(now.day)).replace(
-            "{filename}", file.name[0:-len(file.name.split(".")[-1]) - 1]).replace("{extName}", file.name.split(".")[-1]).replace("{md5}",
-                                                                                                                                  file_md5)
+        path = replace_path(self.path, file)
+
         # 处理路径开头斜杠
         path = path[1:] if path.startswith("/") else path
 
@@ -49,6 +47,4 @@ class AliOss(Provider):
 
         bucket.put_object(path, photo_stream, headers={"Content-Type": file.content_type})
 
-        return self.prev_url.replace("{year}", str(now.year)).replace("{month}", str(now.month)).replace("{day}", str(now.day)).replace(
-            "{filename}", file.name[0:-len(file.name.split(".")[-1]) - 1]).replace("{extName}", file.name.split(".")[-1]).replace(
-            "{md5}", file_md5)
+        return replace_path(self.prev_url, file)

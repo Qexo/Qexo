@@ -104,6 +104,7 @@ def set_hexo(request):
             save_setting("PROVIDER", provider)
             update_provider()
             delete_all_caches()
+            del_post_mark()
             context = {"msg": msg + "\n保存配置成功!", "status": True}
         else:
             context = {"msg": msg + "\n配置校验失败", "status": False}
@@ -233,8 +234,8 @@ def set_cdn(request):
         logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
         return JsonResponse(safe=False, data={"msg": "子用户不支持此操作！", "status": False})
     try:
-        cdnjs = request.POST.get("cdn")
-        save_setting("CDNJS", cdnjs)
+        cdn_prev = request.POST.get("cdn")
+        save_setting("CDN_PREV", cdn_prev)
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
         logging.error(repr(e))
@@ -253,10 +254,12 @@ def set_cust(request):
         split_word = request.POST.get("split")
         logo = request.POST.get("logo")
         icon = request.POST.get("icon")
+        logo_dark = request.POST.get("logo-dark")
         save_setting("QEXO_NAME", site_name)
         save_setting("QEXO_SPLIT", split_word)
         save_setting("QEXO_LOGO", logo)
         save_setting("QEXO_ICON", icon)
+        save_setting("QEXO_LOGO_DARK", logo_dark)
         context = {"msg": "保存成功!", "status": True}
     except Exception as e:
         logging.error(repr(e))
@@ -485,14 +488,15 @@ def save_post(request):
         content = unicodedata.normalize('NFC', request.POST.get('content'))
         front_matter = json.loads(unicodedata.normalize('NFC', request.POST.get('front_matter')))
         try:
-            front_matter = "---\n{}---".format(yaml.dump(front_matter, allow_unicode=True))
+            _front_matter = "---\n{}---".format(yaml.dump(front_matter, allow_unicode=True))
             if not content.startswith("\n"):
-                front_matter += "\n"
-            result = Provider().save_post(file_name, front_matter + content, path=request.POST.get("path"), status=True)
+                _front_matter += "\n"
+            result = Provider().save_post(file_name, _front_matter + content, path=request.POST.get("path"), status=True)
             if result[0]:
                 context = {"msg": "保存成功并提交部署！", "status": True, "path": result[1]}
             else:
                 context = {"msg": "保存成功！", "status": True, "path": result[1]}
+            mark_post(result[1], front_matter, True, file_name)
             delete_all_caches()
         except Exception as error:
             logging.error(repr(error))
@@ -557,14 +561,15 @@ def save_draft(request):
         front_matter = json.loads(unicodedata.normalize('NFC', request.POST.get('front_matter')))
         try:
             # 创建/更新草稿
-            front_matter = "---\n{}---".format(yaml.dump(front_matter, allow_unicode=True))
+            _front_matter = "---\n{}---".format(yaml.dump(front_matter, allow_unicode=True))
             if not content.startswith("\n"):
-                front_matter += "\n"
-            result = Provider().save_post(file_name, front_matter + content, path=request.POST.get("path"), status=False)
+                _front_matter += "\n"
+            result = Provider().save_post(file_name, _front_matter + content, path=request.POST.get("path"), status=False)
             if result[0]:
                 context = {"msg": "保存草稿成功并提交部署！", "status": True, "path": result[1]}
             else:
                 context = {"msg": "保存草稿成功！", "status": True, "path": result[1]}
+            mark_post(request.POST.get("path"), front_matter, False, file_name)
             delete_all_caches()
         except Exception as error:
             logging.error(repr(error))
@@ -581,7 +586,7 @@ def delete(request):
         if (not request.user.is_staff) and file_path[:4] in ["yaml", ".yml"]:
             logging.info(f"子用户{request.user.username}尝试删除{file_path}被拒绝")
             return JsonResponse(safe=False, data={"msg": "子用户不支持此操作！", "status": False})
-        commitchange = f"Delete {file_path}"
+        commitchange = f"Delete {file_path} by Qexo"
         try:
             if Provider().delete(file_path, commitchange):
                 context = {"msg": "删除成功并提交部署！", "status": True}
@@ -589,6 +594,38 @@ def delete(request):
                 context = {"msg": "删除成功！", "status": True}
             # Delete Caches
             delete_all_caches()
+            try:
+                PostModel.objects.filter(path=file_path).delete()
+            except:
+                pass
+        except Exception as error:
+            logging.error(repr(error))
+            context = {"msg": repr(error)}
+    return JsonResponse(safe=False, data=context)
+
+
+# 重命名文件 api/rename
+@login_required(login_url="/login/")
+def rename(request):
+    context = dict(msg="Error!", status=False)
+    if request.method == "POST":
+        file_path = unicodedata.normalize('NFC', request.POST.get('file'))
+        new_path = unicodedata.normalize('NFC', request.POST.get('new'))
+        if (not request.user.is_staff) and file_path[:4] in ["yaml", ".yml"]:
+            logging.info(f"子用户{request.user.username}尝试重命名{file_path}被拒绝")
+            return JsonResponse(safe=False, data={"msg": "子用户不支持此操作！", "status": False})
+        commitchange = f"Rename {file_path} by Qexo"
+        try:
+            if Provider().rename(file_path, new_path, commitchange):
+                context = {"msg": "重命名成功并提交部署！", "status": True}
+            else:
+                context = {"msg": "重命名成功！", "status": True}
+            # Delete Caches
+            delete_all_caches()
+            try:
+                PostModel.objects.filter(path=file_path).delete()
+            except:
+                pass
         except Exception as error:
             logging.error(repr(error))
             context = {"msg": repr(error)}

@@ -2,73 +2,42 @@
 
 {% block title %} 编辑文章: {{ filename }} {% endblock title %}
 
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}
+    <link href="{{ cdn_prev }}qexo-static@2.2.3/qexo/vditor/index.css" rel="stylesheet"/>
+{% endblock stylesheets %}
+
 {% block content %}
 
-    <div class="header bg-primary pb-6">
-        <div class="container-fluid">
-            <div class="header-body">
-                <div class="row align-items-center py-4">
-                    <div class="col-lg-6 col-7">
-                        <h6 class="h2 text-white d-inline-block mb-0">正在编辑: {{ filename }}</h6>
-                        <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
-                            <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
-                                <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i></a>
-                                </li>
-                                <li class="breadcrumb-item"><a href="/posts.html">文章</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">编辑</li>
-                            </ol>
-                        </nav>
-                    </div>
-                    <div class="col-lg-6 col-5 text-right">
-                        <a href="javascript:excerpt_post()"
-                           class="btn btn-sm btn-neutral">生成摘要</a>
-                        <a href="javascript:SaveDraft()" class="btn btn-sm btn-neutral">保存草稿</a>
-                        <a href="javascript:Publish()" class="btn btn-sm btn-neutral">发布</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Page content -->
-    <div class="container-fluid mt--6">
+    <div class="container-fluid">
         <div class="row">
-            <div class="card col-md-8 px-0 ml-md-4" id="vditor-container">
+            <div class="card col-md-8 px-0 ms-md-4" id="vditor-container">
                 <div id="vditor"></div>
             </div>
-            <div class="card col-md-3 ml-md-4">
-                <a class="text-right position-absolute col-11 mt-3" style="cursor: pointer;
+            <div class="card col-md-3 ms-md-4">
+                <a class="text-end position-absolute col-11 mt-3" style="cursor: pointer;
                 color: #172b4d"
                    href="javascript:editSide()"><i class="fas
                    fa-pen"></i></a>
-                <h3 class="mt-3">文章参数</h3>
+                <h5 class="mt-3">文章参数</h5>
                 <hr class="my-2"/>
                 <div id="sidebar-container"></div>
             </div>
         </div>
-        <style>
-            @media (min-width: 768px) {
-                #bottom-bar {
-                    flex: 0 0 93.666667%;
-                    max-width: 93.666667%;
-                }
-            }
-        </style>
-        <div class="row">
-            <div class="card ml-md-4 col-md-11" id="bottom-bar">
+        <div class="row py-4">
+            <div class="card ms-md-4 col-md-11" id="bottom-bar">
                 <div class="col-12">
-                    <input type="button" class="btn btn-sm float-right mt-3"
+                    <input type="button" class="btn btn-sm float-end mt-3"
                            value="添加"
                            style="border: 1px solid #dee2e6;border-radius: .25rem;"
                            onclick="addBottomItem()">
-                    <h2 class="mt-3"><i class="fas fa-cogs"></i> 其他参数</h2>
+                    <h5 class="mt-3"><i class="fas fa-cogs"></i> 其他参数</h5>
                     <hr class="my-2"/>
                     <div id="bottom-container">
-
                     </div>
                     <br>
                 </div>
-
             </div>
         </div>
 
@@ -76,16 +45,19 @@
              aria-labelledby="sidebarModalLabel"
              aria-hidden="true">
             <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
+                <div class="modal-content bg-white">
+                    <div class="modal-header" style="border: none;">
                         <h5 class="modal-title" id="sidebarEditModalLabel">编辑侧边栏</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
+                        <button type="button" data-bs-dismiss="modal"
+                                aria-label="Close" style="box-sizing: content-box;width: 1em;height:
+                            1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem;
+                            opacity: .5;background: none">
+                            <span aria-hidden="true">×</span>
                         </button>
                     </div>
                     <div class="modal-body">
                         <div id="side-form" onsubmit="return false;">
-                            <div class="form-row">
+                            <div class="row">
                                 <div class="col-2">
                                     <label class="form-control-label">搜索项</label>
                                 </div>
@@ -99,10 +71,10 @@
                             <div id="side-form-container"></div>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消
+                    <div class="modal-footer" style="border: none;">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消
                         </button>
-                        <button type="button" class="btn btn-primary" data-dismiss="modal"
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
                                 onclick="applySide()">确定
                         </button>
                     </div>
@@ -118,10 +90,7 @@
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
-    <link href="{{ cdnjs }}vditor/3.9.1/index.min.css" rel="stylesheet"/>
-    <script src="{{ cdnjs }}vditor/3.9.1/index.min.js"></script>
-
-
+    <script src="{{ cdn_prev }}vditor@3.9.4/dist/index.min.js"></script>
     <script>
         var _status = true, front_matter = {{ front_matter|safe }}, categories, tags;
         var file_content = "";
@@ -139,6 +108,9 @@
                 "height": height + "px", "width":
                     "auto"
             });
+            if (checkIfDark()) {
+                vditor.setTheme('dark', 'dark', 'native');
+            }
         }
 
 
@@ -193,7 +165,7 @@
                     method: 'post',
                     data: {
                         "file": "{{ filename }}", "content": vditor.getValue(), "front_matter":
-                            JSON.stringify(get_front_matter()), "path": "{{ file }}"
+                            JSON.stringify(get_front_matter()), "path": "{{ fullname }}"
                     },
                     dataType: 'JSON',
                     success: function (res) {
@@ -267,7 +239,7 @@
                 counter: {
                     enable: true
                 },
-                "cdn": "{{ cdn_prev }}vditor@3.9.0",
+                "cdn": "{{ cdn_prev }}vditor@3.9.4",
                 "mode": "wysiwyg",
                 "height": window.innerHeight * 0.75,
                 "value": {{ file_content|safe }},
@@ -280,7 +252,7 @@
                 },
                 "preview": {
                     "theme": {
-                        "path": "{{ cdnjs }}vditor/3.9.1/css/content-theme"
+                        "path": "{{ cdn_prev }}vditor@3.9.4/dist/css/content-theme"
                     }
                 },
                 toolbar: [
@@ -360,7 +332,7 @@
                 // _lutePath: "lib/vditor-3.7.3/src/js/lute/lute.min.js",
                 // 这个是自定义导航栏
                 toolbar,
-                "cdn": "{{ cdn_prev }}vditor@3.9.0",
+                "cdn": "{{ cdn_prev }}vditor@3.9.4",
                 "fullscreen": {
                     "index": 1050,
                 },
@@ -374,7 +346,7 @@
                 "preview": {
                     "mode": "both",
                     "theme": {
-                        "path": "{{ cdnjs }}vditor/3.9.1/css/content-theme"
+                        "path": "{{ cdn_prev }}vditor@3.9.4/dist/css/content-theme"
                     }
                 },
                 hint: {
@@ -435,32 +407,29 @@
             if (!Sidebar.length) {
                 Sidebar = [{"search": "", "name": "", "icon": ""}];
             }
+            let color = checkIfDark() ? "bg-gradient-dark text-white" : "bg-white text-dark";
             for (let i = 0; i < Sidebar.length; i++) {
-                html += `<form class="form-row" id="side-row-` + i + `">
+                html += `<form class="row" id="side-row-${i}">
                                 <div class="col-2">
-                                    <input type="text" class="form-control" name="search"
-                                           placeholder="冒号前的内容" value="` + Sidebar[i].search + `">
+                                    <input type="text" class="form-control ${color}" name="search"
+                                           placeholder="冒号前的内容" value="${Sidebar[i].search}">
                                 </div>
                                 <div class="col-4">
-                                    <input type="text" class="form-control" name="name"
-                                           placeholder="描述标题" value="` + Sidebar[i].name + `">
+                                    <input type="text" class="form-control ${color}" name="name"
+                                           placeholder="描述标题" value="${Sidebar[i].name}">
                                 </div>
                                 <div class="col-6">
                                     <div class="input-group">
-                                        <input type="text" class="form-control" name="icon"
-                                               placeholder="使用的图标"  value="` + Sidebar[i].icon + `">
-                                        <div class="input-group-append">
-                                            <button class="btn" type="button"
-                                                    style="border: 1px solid #dee2e6"
-                                                    onclick="newSideItem(` + (i + 1).toString() + `)">
-                                                +
-                                            </button>
-                                            <button class="btn" type="button"
-                                                    style="border: 1px solid #dee2e6;border-radius: 0 .25rem .25rem 0"
-                                                    onclick="delSideItem(` + i + `)">
-                                                -
-                                            </button>
-                                        </div>
+                                        <input type="text" class="form-control ${color}" name="icon"
+                                               placeholder="使用的图标"  value="${Sidebar[i].icon}">
+                                        <button class="btn mb-0 childButton" type="button"
+                                                onclick="newSideItem(${(i + 1).toString()})">
+                                            +
+                                        </button>
+                                        <button class="btn mb-0 childButton" type="button"
+                                                onclick="delSideItem(${i})">
+                                            -
+                                        </button>
                                     </div>
                                 </div>
                             </form>`;
@@ -546,8 +515,8 @@
         function show_tags() {
             let html = "";
             for (let i = 0; i < tags.length; i++) {
-                html += `<span class="px-1 py-0.5 text-xs select-none
-                            d-inline-block  rounded-pill mr-1 mb-0.5"
+                html += `<span class="px-1 py-0-5 text-xs select-none
+                            d-inline-block  rounded-pill me-1 mb-0.5"
                             style="color: rgb(255, 255, 255); background-color: rgb(52, 152, 219);"
                             onclick="del_tag(this.innerText);">` + tags[i]
                     + `</span>`;
@@ -581,8 +550,8 @@
         function show_categories() {
             let html = "";
             for (let i = 0; i < categories.length; i++) {
-                html += `<span class="px-1 py-0.5 text-xs select-none
-                            d-inline-block  rounded-pill mr-1 mb-0.5"
+                html += `<span class="px-1 py-0-5 text-xs select-none
+                            d-inline-block  rounded-pill me-1 mb-0.5"
                             style="color: rgb(255, 255, 255); background-color: rgb(52, 152, 219);
                             " onclick="del_category(this.innerText);">` + ((typeof categories[i]
                         === "object") ? categories[i][0] : categories[i]) +
@@ -651,41 +620,22 @@
             for (let i = 0; i < OrgSidebar.length; i++) {
                 if (OrgSidebar[i]["search"] === "tags") {
                     html += `<div class="form-group">
-                        <label class="form-control-label"><i class="` + OrgSidebar[i]["icon"]
-                        + `"></i> ` + OrgSidebar[i]["name"] + `</label>
-                        <div class="input-group">
-                            <input type="text" name="qexo-tag"
-                                   class="form-control"
-                                   placeholder="添加标签"
-                                   id="qexo-tag">
-                            <div class="input-group-append">
-                                <button class="btn" type="button"
-                                        style="border: 1px solid #dee2e6;border-radius: 0 .25rem .25rem 0;"
-                                        onclick="add_tag($('#qexo-tag').val());$('#qexo-tag').val
-                                        ('')">+
-                                </button>
-                            </div>
+                        <label class="form-control-label"><i class="${OrgSidebar[i]["icon"]}"></i>${OrgSidebar[i]["name"]}</label>
+                        <div class="input-group mb-0">
+                          <input type="text" class="form-control" placeholder="添加标签" name="qexo-tag" id="qexo-tag">
+                          <button class="btn mb-0 childButton" type="button" onclick="add_tag($('#qexo-tag')
+                          .val());$('#qexo-tag').val('')">+</button>
                         </div>
                         <div id="tag-container"></div>
                     </div>`;
                     ifTag = true;
                 } else if (OrgSidebar[i]["search"] === "categories") {
                     html += `<div class="form-group">
-                        <label class="form-control-label"><i class="` + OrgSidebar[i]["icon"]
-                        + `"></i> ` + OrgSidebar[i]["name"] + `</label>
-                        <div class="input-group">
-                            <input type="text" name="qexo-category"
-                                   class="form-control"
-                                   placeholder="添加分类"
-                                   id="qexo-category">
-                            <div class="input-group-append">
-                                <button class="btn" type="button"
-                                        style="border: 1px solid #dee2e6;border-radius: 0 .25rem .25rem 0;"
-                                        onclick="add_category($('#qexo-category').val());$
-                                        ('#qexo-ategory').val('')">
-                                    +
-                                </button>
-                            </div>
+                        <label class="form-control-label"><i class="${OrgSidebar[i]["icon"]}"></i>${OrgSidebar[i]["name"]}</label>
+                        <div class="input-group mb-0">
+                          <input type="text" class="form-control" placeholder="添加分类" name="qexo-category" id="qexo-category">
+                          <button class="btn mb-0 childButton" type="button" onclick="add_category($
+                          ('#qexo-category').val());$('#qexo-category').val('')">+</button>
                         </div>
                         <div id="category-container"></div>
                     </div>`;
@@ -766,7 +716,7 @@
                 $("#bottom-container").html("暂无其他参数");
                 return;
             }
-            html = `<div class="form-row">
+            html = `<div class="row">
                         <div class="col-2">
                             <label class="form-control-label">标头</label>
                         </div>
@@ -775,11 +725,10 @@
                         </div>
                     </div>`
             for (let i = 0; i < keys.length; i++) {
-                html += `<form class="form-row" id="bottom-row-` + i + `">
+                html += `<form class="row" id="bottom-row-${i}">
                                 <div class="col-2">
                                     <input type="text" class="form-control" name="search"
-                                           placeholder="冒号前的内容" value="` + escapeString(keys[i]) +
-                    `">
+                                           placeholder="冒号前的内容" value="${escapeString(keys[i])}">
                                 </div>
                                 <div class="col-10">
                                     <div class="input-group">
@@ -787,13 +736,11 @@
                                                placeholder="若有多级, 请使用JSON格式"  value="` +
                     escapeString(typeof (front_matter[keys[i]]) === "object" ? JSON.stringify
                     (front_matter[keys[i]]) : front_matter[keys[i]]) + `">
-                                        <div class="input-group-append">
-                                            <button class="btn" type="button"
-                                                    style="border: 1px solid #dee2e6;border-radius: 0 .25rem .25rem 0"
-                                                    onclick="delBottomItem(` + i + `)">
+
+                                            <button class="btn mb-0 childButton" type="button"
+                                                    onclick="delBottomItem(${i})">
                                                 -
                                             </button>
-                                        </div>
                                     </div>
                                 </div>
                             </form>`;

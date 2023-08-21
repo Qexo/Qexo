@@ -8,37 +8,37 @@
 {% block content %}
 
     <!-- Page content -->
-    <div class="container mt--8 pb-5">
-      <div class="row justify-content-center">
-        <div class="col-lg-5 col-md-7">
-          <div class="card bg-secondary shadow border-0">
-            <div class="card-header bg-transparent pb-5">
+    <div class="container" style="margin-top: -8rem!important;padding-bottom: 3rem!important;">
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-5">
+                <div class="card z-index-0">
+                    <div class="card-header bg-transparent pb-5">
 
-              <div class="text-muted text-center mt-2 mb-3">
-                错误! Error 403
-              </div>
+                        <div class="text-muted text-center mt-2 mb-3">
+                            错误! Error 403
+                        </div>
 
-              <div class="text-center mb-4">
-                验证错误 - 请确认是否拥有权限
-              </div>
+                        <div class="text-center mb-4">
+                            验证错误 - 请确认是否拥有权限
+                        </div>
 
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-6">
+                        <a href="/" class="text-light"><small>主页</small></a>
+                    </div>
+                    <div class="col-6 text-end">
+                        <a target="_blank"
+                           href="https://github.com/Qexo/Qexo/wiki"
+                           class="text-light"><small>帮助</small></a>
+                    </div>
+                </div>
             </div>
-          </div>
-          <div class="row mt-3">
-            <div class="col-6">
-              <a href="/" class="text-light"><small>主页</small></a>
-            </div>          
-            <div class="col-6 text-right">
-              <a target="_blank" 
-                 href="https://github.com/Qexo/Qexo/wiki"
-                 class="text-light"><small>帮助</small></a>
-            </div>
-          </div>
         </div>
-      </div>
     </div>
 
 {% endblock content %}
 
-<!-- Specific JS goes HERE --> 
+<!-- Specific JS goes HERE -->
 {% block javascripts %}{% endblock javascripts %}

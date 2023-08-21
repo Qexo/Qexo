@@ -9,6 +9,7 @@ from time import time
 from datetime import date
 
 from ..core import Provider
+from ..replace import replace_path
 
 
 class Ftp(Provider):
@@ -38,13 +39,8 @@ class Ftp(Provider):
         ftp.connect(self.host, int(self.port))
         ftp.login(self.user, self.password)
         now = date.today()
-        path = self.path.replace("{year}", str(now.year)).replace("{month}", str(now.month)).replace("{day}",
-                                                                                                     str(now.day)) \
-            .replace("{filename}", file.name[0:-len(file.name.split(".")[-1]) - 1]).replace("{time}", str(time())) \
-            .replace("{extName}", file.name.split(".")[-1])
+        path = replace_path(self.path, file)
+
         bufsize = 1024
         ftp.storbinary('STOR ' + path, file, bufsize)
-        return self.prev_url.replace("{year}", str(now.year)).replace("{month}", str(now.month)).replace("{day}",
-                                                                                                         str(now.day)) \
-            .replace("{filename}", file.name[0:-len(file.name.split(".")[-1]) - 1]).replace("{time}", str(time())) \
-            .replace("{extName}", file.name.split(".")[-1])
+        return replace_path(self.prev_url, file)

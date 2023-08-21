@@ -6,226 +6,524 @@
 {% block stylesheets %}{% endblock stylesheets %}
 
 {% block content %}
-
-    <!-- Header -->
-    <div class="header bg-primary pb-6">
-        <div class="container-fluid">
-            <div class="header-body">
-                <div class="row align-items-center py-4">
-                    <div class="col-lg-6 col-7">
-                        <h6 class="h2 text-white d-inline-block mb-0">Dashboard</h6>
-                        <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
-                            <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
-                                <li class="breadcrumb-item"><a href="#"><i class="fas fa-home"></i></a>
-                                </li>
-                                <li class="breadcrumb-item"><a href="#">控制台</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">主页</li>
-                            </ol>
-                        </nav>
-                    </div>
-                    <div class="col-lg-6 col-5 text-right">
-                        <a href="/new.html" class="btn btn-sm btn-neutral">新文章</a>
-                        <a href="/images.html" class="btn btn-sm btn-neutral">图片</a>
+    <div class="container-fluid py-4">
+        <div class="row">
+            <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+                <div class="card">
+                    <div class="card-body p-3">
+                        <div class="row">
+                            <div class="col-8">
+                                <div class="numbers">
+                                    <p class="text-sm mb-0 text-uppercase font-weight-bold">
+                                        总文章</p>
+                                    <h5 class="font-weight-bolder">
+                                        {{ post_number }}
+                                    </h5>
+                                    <p class="mt-3 mb-0 text-sm">
+                                        <span class="text me-2"><i class="fa fa-archive"></i></span>
+                                        <span class="text-nowrap">今天你写文章了吗</span>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-4 text-end">
+                                <div class="icon icon-shape bg-gradient-warning shadow-primary
+                                text-center rounded-circle">
+                                    <i class="ni ni-chart-pie-35 text-lg opacity-10"
+                                       aria-hidden="true"></i>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <!-- Card stats -->
-                <div class="row">
-                    <div class="col-xl-3 col-md-6">
-                        <div class="card card-stats">
-                            <!-- Card body -->
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col">
-                                        <h5 class="card-title text-uppercase text-muted mb-0">
-                                            总文章</h5>
-                                        <span class="h2 font-weight-bold mb-0">{{ post_number }}</span>
-                                    </div>
-                                    <div class="col-auto">
-                                        <div class="icon icon-shape bg-gradient-orange text-white rounded-circle shadow">
-                                            <i class="ni ni-chart-pie-35"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                                <p class="mt-3 mb-0 text-sm">
-                                    <span class="text mr-2"><i class="fa fa-archive"></i></span>
-                                    <span class="text-nowrap">今天你写文章了吗</span>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-3 col-md-6">
-                        <div class="card card-stats">
-                            <!-- Card body -->
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col">
-                                        <h5 class="card-title text-uppercase text-muted mb-0">
-                                            总图片</h5>
-                                        <span class="h2 font-weight-bold mb-0">{{ images_number }}</span>
-                                    </div>
-                                    <div class="col-auto">
-                                        <div class="icon icon-shape bg-gradient-red text-white rounded-circle shadow">
-                                            <i class="ni ni-active-40"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                                <p class="mt-3 mb-0 text-sm">
-                                    <span class="text mr-2"><i class="fa fa-images"></i></span>
-                                    <span class="text-nowrap">尝试图片管理</span>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-3 col-md-6">
-                        <div class="card card-stats">
-                            <!-- Card body -->
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col">
-                                        <h5 class="card-title text-uppercase text-muted mb-0">
-                                            当前版本</h5>
-                                        <span class="h2 font-weight-bold mb-0">{{ version }}</span>
-                                    </div>
-                                    <div class="col-auto">
-                                        <div class="icon icon-shape bg-gradient-green text-white rounded-circle shadow">
-                                            <i class="ni ni-money-coins"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                                {% if not hasNew %}
+            </div>
+            <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+                <div class="card">
+                    <div class="card-body p-3">
+                        <div class="row">
+                            <div class="col-8">
+                                <div class="numbers">
+                                    <p class="text-sm mb-0 text-uppercase font-weight-bold">
+                                        总图片</p>
+                                    <h5 class="font-weight-bolder">
+                                        {{ images_number }}
+                                    </h5>
                                     <p class="mt-3 mb-0 text-sm">
-                                        <span class="text mr-2"><i
-                                                class="fa fa-arrow-up"></i></span>
-                                        <span class="text-nowrap">是最新版哦</span>
+                                        <span class="text me-2"><i class="fa fa-images"></i></span>
+                                        <span class="text-nowrap">尝试图片管理</span>
                                     </p>
-                                {% else %}
-                                    <p class="mt-3 mb-0 text-sm">
-                                        <span class="text mr-2"><i
-                                                class="fa fa-arrow-up"></i></span>
-                                        <span class="text-nowrap">检测到更新 <a
-                                                href="{{ newer_link }}"
-                                                target="_blank">
-                                        {{ newer }}</a></span>
-                                    </p>
-                                {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-4 text-end">
+                                <div class="icon icon-shape bg-gradient-danger shadow-danger text-center rounded-circle">
+                                    <i class="ni ni-world text-lg opacity-10"
+                                       aria-hidden="true"></i>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-3 col-md-6">
-                        <div class="card card-stats">
-                            <!-- Card body -->
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col">
-                                        <h5 class="card-title text-uppercase text-muted mb-0">
-                                            Github</h5>
-                                        <span class="h2 font-weight-bold mb-0">Qexo</span>
-                                    </div>
-                                    <div class="col-auto">
-                                        <div class="icon icon-shape bg-gradient-info text-white rounded-circle shadow">
-                                            <i class="ni ni-chart-bar-32"></i>
-                                        </div>
-                                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+                <div class="card">
+                    <div class="card-body p-3">
+                        <div class="row">
+                            <div class="col-8">
+                                <div class="numbers">
+                                    <p class="text-sm mb-0 text-uppercase font-weight-bold">
+                                        当前版本</p>
+                                    <h5 class="font-weight-bolder">
+                                        {{ version }}
+                                    </h5>
+                                    {% if not hasNew %}
+                                        <p class="mt-3 mb-0 text-sm">
+                                            <span class="text me-2"><i
+                                                    class="fa fa-arrow-up"></i></span>
+                                            <span class="text-nowrap">是最新版哦</span>
+                                        </p>
+                                    {% else %}
+                                        <p class="mt-3 mb-0 text-sm">
+                                            <span class="text me-2"><i
+                                                    class="fa fa-arrow-up"></i></span>
+                                            <span class="text-nowrap">检测到更新
+                                                <a href="{{ newer_link }}" target="_blank"
+                                                   class="text-primary">{{ newer }}</a>
+                                            </span>
+                                        </p>
+                                    {% endif %}
                                 </div>
-                                <p class="mt-3 mb-0 text-sm">
-                                    <span class="text mr-2"><i class="fab fa-github-alt"></i></span>
-                                    <span class="text-nowrap">支持作者</span>
-                                </p>
+                            </div>
+                            <div class="col-4 text-end">
+                                <div class="icon icon-shape bg-gradient-success shadow-success text-center rounded-circle">
+                                    <i class="ni ni-paper-diploma text-lg opacity-10"
+                                       aria-hidden="true"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-sm-6">
+                <div class="card">
+                    <div class="card-body p-3">
+                        <div class="row">
+                            <div class="col-8">
+                                <div class="numbers">
+                                    <p class="text-sm mb-0 text-uppercase font-weight-bold">
+                                        Github</p>
+                                    <h5 class="font-weight-bolder">
+                                        Qexo
+                                    </h5>
+                                    <p class="mt-3 mb-0 text-sm">
+                                        <span class="text me-2"><i
+                                                class="fab fa-github-alt"></i></span>
+                                        <span class="text-nowrap">支持作者</span>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-4 text-end">
+                                <div class="icon icon-shape bg-gradient-info shadow-warning
+                                text-center rounded-circle">
+                                    <i class="ni ni-chart-bar-32 text-lg opacity-10"
+                                       aria-hidden="true"></i>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Page content -->
-    <div class="container-fluid mt--6">
-        <div class="row">
-            <div class="col-xl-8">
-                <div class="card">
-                    <div class="card-header border-0">
-                        <div class="row align-items-center">
-                            <div class="col">
-                                <h3 class="mb-0">文章列表</h3>
-                            </div>
-                            <div class="col text-right">
-                                <a href="/posts.html" class="btn btn-sm btn-primary">全部</a>
-                            </div>
-                        </div>
+        <div class="row mt-4">
+            <div class="col-lg-7 mb-lg-0 mb-4">
+                <div class="card z-index-2 h-80">
+                    <div class="card-header pb-0 pt-3 bg-transparent">
+                        <h6 class="text-capitalize">现在要做点什么？</h6>
                     </div>
-                    <div class="table-responsive">
-                        <!-- Projects table -->
-                        <table class="table align-items-center table-flush">
-                            <thead class="thead-light">
-                            <tr>
-                                <th scope="col">文章名</th>
-                                <th scope="col">大小</th>
-                                <th scope="col">发布状态</th>
-                                <th scope="col">编辑</th>
-                            </tr>
-                            </thead>
+                    <div class="card-body p-3">
+                        <ul class="list-group">
+                            <li class="list-group-item border-0 d-flex justify-content-between ps-0 mb-2 border-radius-lg">
+                                <div class="d-flex align-items-center">
+                                    <div class="icon icon-shape icon-sm me-3 bg-gradient-dark shadow text-center">
+                                        <i class="ni ni-mobile-button text-white opacity-10"></i>
+                                    </div>
+                                    <div class="d-flex flex-column">
+                                        <h6 class="mb-1 text-dark text-sm">新文章</h6>
+                                        <span class="text-xs">写下你的<span
+                                                class="font-weight-bold">新构思</span></span>
+                                    </div>
+                                </div>
+                                <div class="d-flex">
+                                    <a class="btn btn-link btn-icon-only btn-rounded btn-sm
+                                    text-dark icon-move-right my-auto" href="/new.html">
+                                        <i class="ni ni-bold-right" aria-hidden="true"></i></a>
+                                </div>
+                            </li>
+                            <li class="list-group-item border-0 d-flex justify-content-between ps-0 mb-2 border-radius-lg">
+                                <div class="d-flex align-items-center">
+                                    <div class="icon icon-shape icon-sm me-3 bg-gradient-dark shadow text-center">
+                                        <i class="ni ni-tag text-white opacity-10"></i>
+                                    </div>
+                                    <div class="d-flex flex-column">
+                                        <h6 class="mb-1 text-dark text-sm">新页面</h6>
+                                        <span class="text-xs">创建你的<span
+                                                class="font-weight-bold">新页面</span></span>
+                                    </div>
+                                </div>
+                                <div class="d-flex">
+                                    <a class="btn btn-link btn-icon-only btn-rounded btn-sm
+                                    text-dark icon-move-right my-auto" href="/new_page.html">
+                                        <i class="ni ni-bold-right" aria-hidden="true"></i></a>
+                                </div>
+                            </li>
+                            <li class="list-group-item border-0 d-flex justify-content-between ps-0 mb-2 border-radius-lg">
+                                <div class="d-flex align-items-center">
+                                    <div class="icon icon-shape icon-sm me-3 bg-gradient-dark shadow text-center">
+                                        <i class="ni ni-box-2 text-white opacity-10"></i>
+                                    </div>
+                                    <div class="d-flex flex-column">
+                                        <h6 class="mb-1 text-dark text-sm">新友链</h6>
+                                        <span class="text-xs">添加你的<span
+                                                class="font-weight-bold">新朋友</span></span>
+                                    </div>
+                                </div>
+                                <div class="d-flex">
+                                    <a class="btn btn-link btn-icon-only btn-rounded btn-sm
+                                    text-dark icon-move-right my-auto" href="/friends.html">
+                                        <i class="ni ni-bold-right" aria-hidden="true"></i></a>
+                                </div>
+                            </li>
+                            <li class="list-group-item border-0 d-flex justify-content-between ps-0 border-radius-lg">
+                                <div class="d-flex align-items-center">
+                                    <div class="icon icon-shape icon-sm me-3 bg-gradient-dark shadow text-center">
+                                        <i class="ni ni-satisfied text-white opacity-10"></i>
+                                    </div>
+                                    <div class="d-flex flex-column">
+                                        <h6 class="mb-1 text-dark text-sm">新说说</h6>
+                                        <span class="text-xs">分享你的<span
+                                                class="font-weight-bold">新想法</span></span>
+                                    </div>
+                                </div>
+                                <div class="d-flex">
+                                    <a class="btn btn-link btn-icon-only btn-rounded btn-sm
+                                    text-dark icon-move-right my-auto" href="/edit_talk.html">
+                                        <i class="ni ni-bold-right" aria-hidden="true"></i></a>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="card z-index-2 h-100">
+                    <div class="card-header pb-0 pt-3 bg-transparent table-responsive">
+                        <h6 class="text-capitalize">最近文章</h6>
+                        <table class="table align-items-center">
                             <tbody>
-                            {% for post in posts %}
+                            <tr>
+                                {% if recent_posts.0 %}
+                                    <td class="w-30">
+                                        <div class="d-flex px-2 py-1 align-items-center">
+                                            <div class="me-1">
+                                                <i class="file-icon fs-4"
+                                                   filename="{{ recent_posts.0.title }}"></i>
+                                            </div>
+                                            <div class="ms-4">
+                                                <p class="text-xs font-weight-bold mb-0">文章名</p>
+                                                <h6 class="text-sm mb-0">
+                                                    {{ recent_posts.0.title | excerpt:15 }}</h6>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-center">
+                                            <p class="text-xs font-weight-bold mb-0">状态</p>
+                                            <h6 class="text-sm mb-0">{{ recent_posts.0.status }}</h6>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-center">
+                                            <p class="text-xs font-weight-bold mb-0">操作</p>
+                                            <a href="/edit.html?file={{ recent_posts.0.path | urlencoder }}&postname={{ recent_posts.0.filename | urlencoder }}">
+                                                <i class="fa fa-edit me-3"></i></a>
+                                        </div>
+                                    </td>
+                                    </tr>
+                                {% endif %}
+                            {% if recent_posts.1 %}
                                 <tr>
-                                    <th scope="row">
-                                        {{ post.name }}
-                                    </th>
-                                    <td>
-                                        {{ post.size | div:1000 }} KB
+                                    <td class="w-30">
+                                        <div class="d-flex px-2 py-1 align-items-center">
+                                            <div class="me-1">
+                                                <i class="file-icon fs-4"
+                                                   filename="{{ recent_posts.1.title }}"></i>
+                                            </div>
+                                            <div class="ms-4">
+                                                <p class="text-xs font-weight-bold mb-0">文章名</p>
+                                                <h6 class="text-sm mb-0">
+                                                    {{ recent_posts.1.title | excerpt:15 }}</h6>
+                                            </div>
+                                        </div>
                                     </td>
                                     <td>
-                                        {% if post.status %}
-                                            已发布
-                                        {% else %}
-                                            草稿
-                                        {% endif %}
+                                        <div class="text-center">
+                                            <p class="text-xs font-weight-bold mb-0">状态</p>
+                                            <h6 class="text-sm mb-0">{{ recent_posts.1.status }}</h6>
+                                        </div>
                                     </td>
                                     <td>
-                                        <a href="/edit.html?file={{ post.path }}&postname={{ post.quotename }}">
-                                            <i class="fa fa-edit mr-3"></i></a>
+                                        <div class="text-center">
+                                            <p class="text-xs font-weight-bold mb-0">操作</p>
+                                            <a href="/edit.html?file={{ recent_posts.1.path | urlencoder }}&postname={{ recent_posts.1.filename | urlencoder }}">
+                                                <i class="fa fa-edit me-3"></i></a>
+                                        </div>
                                     </td>
                                 </tr>
-                            {% endfor %}
+                            {% endif %}
+                            {% if recent_posts.2 %}
+                                <tr>
+                                    <td class="w-30">
+                                        <div class="d-flex px-2 py-1 align-items-center">
+                                            <div class="me-1">
+                                                <i class="file-icon fs-4"
+                                                   filename="{{ recent_posts.2.title }}"></i>
+                                            </div>
+                                            <div class="ms-4">
+                                                <h6 class="text-sm mb-0">
+                                                    <p class="text-xs font-weight-bold mb-0">
+                                                        文章名</p>
+                                                    {{ recent_posts.2.title | excerpt:15 }}</h6>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-center">
+                                            <p class="text-xs font-weight-bold mb-0">状态</p>
+                                            <h6 class="text-sm mb-0">{{ recent_posts.2.status }}</h6>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-center">
+                                            <p class="text-xs font-weight-bold mb-0">操作</p>
+                                            <a href="/edit.html?file={{ recent_posts.2.path | urlencoder }}&postname={{ recent_posts.2.filename | urlencoder }}">
+                                                <i class="fa fa-edit me-3"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                            {% if recent_posts.3 %}
+                                <tr>
+                                    <td class="w-30">
+                                        <div class="d-flex px-2 py-1 align-items-center">
+                                            <div class="me-1">
+                                                <i class="file-icon fs-4"
+                                                   filename="{{ recent_posts.3.title }}"></i>
+                                            </div>
+                                            <div class="ms-4">
+                                                <h6 class="text-sm mb-0">
+                                                    <p class="text-xs font-weight-bold mb-0">
+                                                        文章名</p>
+                                                    {{ recent_posts.3.title | excerpt:15 }}</h6>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-center">
+                                            <p class="text-xs font-weight-bold mb-0">状态</p>
+                                            <h6 class="text-sm mb-0">{{ recent_posts.3.status }}</h6>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-center">
+                                            <p class="text-xs font-weight-bold mb-0">操作</p>
+                                            <a href="/edit.html?file={{ recent_posts.3.path | urlencoder }}&postname={{ recent_posts.3.filename | urlencoder }}">
+                                                <i class="fa fa-edit me-3"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                            {% if recent_posts.4 %}
+                                <tr>
+                                    <td class="w-30">
+                                        <div class="d-flex px-2 py-1 align-items-center">
+                                            <div class="me-1">
+                                                <i class="file-icon fs-4"
+                                                   filename="{{ recent_posts.4.title }}"></i>
+                                            </div>
+                                            <div class="ms-4">
+                                                <h6 class="text-sm mb-0">
+                                                    <p class="text-xs font-weight-bold mb-0">
+                                                        文章名</p>
+                                                    {{ recent_posts.4.title | excerpt:15 }}</h6>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-center">
+                                            <h6 class="text-sm mb-0">
+                                                <p class="text-xs font-weight-bold mb-0">状态</p>
+                                                {{ recent_posts.4.status }}</h6>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-center">
+                                            <p class="text-xs font-weight-bold mb-0">操作</p>
+                                            <a href="/edit.html?file={{ recent_posts.4.path | urlencoder }}&postname={{ recent_posts.4.filename | urlencoder }}">
+                                                <i class="fa fa-edit me-3"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endif %}
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
-            <div class="col-xl-4">
-                <div class="card">
-                    <div class="card-header border-0">
-                        <div class="row align-items-center">
-                            <div class="col">
-                                <h3 class="mb-0">图片管理</h3>
-                            </div>
-                            <div class="col text-right">
-                                <a href="/images.html" class="btn btn-sm btn-primary">全部</a>
-                            </div>
-                        </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col-lg-7 mb-lg-0 mb-4">
+                <div class="card z-index-2 h-100">
+                    <div class="card-header pb-0 pt-3 bg-transparent table-responsive">
+                        <h6 class="text-capitalize">随机文章<a href="javascript:randPosts()"> <i
+                                class="fa-solid fa-rotate"></i></a></h6>
+                        <table class="table align-items-center">
+                            <tbody id="rand-posts">
+
+                            </tbody>
+                        </table>
                     </div>
-                    <div class="table-responsive">
-                        <!-- Projects table -->
-                        <table class="table align-items-center table-flush">
-                            <thead class="thead-light">
-                            <tr>
-                                <th scope="col">图片名</th>
-                                <th scope="col">日期</th>
-                            </tr>
-                            </thead>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="card z-index-2 h-100">
+                    <div class="card-header pb-0 pt-3 bg-transparent table-responsive">
+                        <h6 class="text-capitalize">最近图片</h6>
+                        <table class="table align-items-center">
                             <tbody>
-                            {% for image in images %}
-                                <tr>
-                                    <th scope="row">
-                                        {{ image.name }} <a href="{{ image.url }}"
-                                                            target="_blank"><i
-                                            class="fa fa-external-link-alt"></i></a>
-                                    </th>
+                            <tr>
+                                {% if images.0 %}
+                                    <td class="w-30">
+                                        <div class="d-flex px-2 py-1 align-items-center">
+                                            <div class="me-1">
+                                                <i class="file-icon fs-4"
+                                                   filename="{{ images.0.name }}"></i>
+                                            </div>
+                                            <div class="ms-4">
+                                                <p class="text-xs font-weight-bold mb-0">图片名</p>
+                                                <h6 class="text-sm mb-0">
+                                                    {{ images.0.name | excerpt:15 }}</h6>
+                                            </div>
+                                        </div>
+                                    </td>
                                     <td>
-                                        {{ image.date }}
+                                        <div class="text-center">
+                                            <p class="text-xs font-weight-bold mb-0">大小</p>
+                                            <h6 class="text-sm mb-0">{{ images.0.size }}</h6>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-center">
+                                            <p class="text-xs font-weight-bold mb-0">操作</p>
+                                            <a href="{{ images.0.url | urlencoder }}"
+                                               target="_blank">
+                                                <i class="fa fa-external-link-alt me-3"></i></a>
+                                        </div>
+                                    </td>
+                                    </tr>
+                                {% endif %}
+                            {% if images.1 %}
+                                <tr>
+                                    <td class="w-30">
+                                        <div class="d-flex px-2 py-1 align-items-center">
+                                            <div class="me-1">
+                                                <i class="file-icon fs-4"
+                                                   filename="{{ images.1.name }}"></i>
+                                            </div>
+                                            <div class="ms-4">
+                                                <p class="text-xs font-weight-bold mb-0">图片名</p>
+                                                <h6 class="text-sm mb-0">
+                                                    {{ images.1.name | excerpt:15 }}</h6>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-center">
+                                            <p class="text-xs font-weight-bold mb-0">大小</p>
+                                            <h6 class="text-sm mb-0">{{ images.1.size }}</h6>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-center">
+                                            <p class="text-xs font-weight-bold mb-0">操作</p>
+                                            <a href="{{ images.1.url | urlencoder }}"
+                                               target="_blank">
+                                                <i class="fa fa-external-link-alt me-3"></i></a>
+                                        </div>
                                     </td>
                                 </tr>
-                            {% endfor %}
+                            {% endif %}
+                            {% if images.2 %}
+                                <tr>
+                                    <td class="w-30">
+                                        <div class="d-flex px-2 py-1 align-items-center">
+                                            <div class="me-1">
+                                                <i class="file-icon fs-4"
+                                                   filename="{{ images.2.name }}"></i>
+                                            </div>
+                                            <div class="ms-4">
+                                                <h6 class="text-sm mb-0">
+                                                    <p class="text-xs font-weight-bold mb-0">
+                                                        图片名</p>
+                                                    {{ images.2.name | excerpt:15 }}</h6>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-center">
+                                            <p class="text-xs font-weight-bold mb-0">大小</p>
+                                            <h6 class="text-sm mb-0">{{ images.2.size }}</h6>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-center">
+                                            <p class="text-xs font-weight-bold mb-0">操作</p>
+                                            <a href="{{ images.2.url | urlencoder }}"
+                                               target="_blank">
+                                                <i class="fa fa-external-link-alt me-3"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                            {% if images.3 %}
+                                <tr>
+                                    <td class="w-30">
+                                        <div class="d-flex px-2 py-1 align-items-center">
+                                            <div class="me-1">
+                                                <i class="file-icon fs-4"
+                                                   filename="{{ images.3.name }}"></i>
+                                            </div>
+                                            <div class="ms-4">
+                                                <h6 class="text-sm mb-0">
+                                                    <p class="text-xs font-weight-bold mb-0">
+                                                        图片名</p>
+                                                    {{ images.3.name | excerpt:15 }}</h6>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-center">
+                                            <p class="text-xs font-weight-bold mb-0">大小</p>
+                                            <h6 class="text-sm mb-0">{{ images.3.size }}</h6>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-center">
+                                            <p class="text-xs font-weight-bold mb-0">操作</p>
+                                            <a href="{{ images.3.url | urlencoder }}"
+                                               target="_blank">
+                                                <i class="fa fa-external-link-alt me-3"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endif %}
                             </tbody>
                         </table>
                     </div>
@@ -233,11 +531,134 @@
             </div>
         </div>
         {% include "includes/footer.html" %}
-
     </div>
 
 {% endblock content %}
-
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
+    <script>
+        var recent_post_icon = $('.file-icon');
+        for (let i = 0; i < recent_post_icon.length; i++) {
+            let letter = getLetter($(recent_post_icon[i]).attr("filename"));
+            if (letter === "*") {
+                letter = "font-awesome "
+            }
+            $(recent_post_icon[i]).addClass(["fa-solid", "fa-" + letter]);
+        }
+
+
+        // from: https://www.cnblogs.com/cangqinglang/p/8992575.html
+        function pySegSort(arr, empty) {
+            if (!String.prototype.localeCompare)
+                return null;
+
+            var letters = "*abcdefghjklmnopqrstwxyz".split('');
+            var zh = "阿八嚓哒妸发旮哈讥咔垃痳拏噢妑七呥扨它穵夕丫帀".split('');
+
+            var segs = [];
+            var curr;
+            $.each(letters, function (i) {
+                curr = {letter: this, data: []};
+                $.each(arr, function () {
+                    if ((!zh[i - 1] || zh[i - 1].localeCompare(this, "zh") <= 0) && this.localeCompare(zh[i], "zh") == -1) {
+                        curr.data.push(this);
+                    }
+                });
+                if (empty || curr.data.length) {
+                    segs.push(curr);
+                    curr.data.sort(function (a, b) {
+                        return a.localeCompare(b, "zh");
+                    });
+                }
+            });
+            return segs;
+        }
+
+        function randLetter() {
+            let str = "a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,0,1,2,3,4,5,6,7,8,9";
+            let arr = str.split(",");
+            return arr[Math.floor(Math.random() * 26)];
+        }
+
+        function getLetter(str) {
+            str = str.trim()
+            if (str[0].toLowerCase() >= 'a' && str[0].toLowerCase() <= 'z')
+                return str[0].toLowerCase();
+            let arr = [str[0]];
+            return pySegSort(arr)[0].letter[0].toLowerCase();
+        }
+
+        function getRandomArrayValue(arr, num) {
+            var sData = arr.slice(0), i = arr.length, min = i - num, item, index;
+            while (i-- > min) {
+                index = Math.floor((i + 1) * Math.random());
+                item = sData[index];
+                sData[index] = sData[i];
+                sData[i] = item;
+            }
+            return sData.slice(min);
+        }
+
+        var posts = {{ posts|safe }};
+        var post_temp = `<tr>
+                            <td class="w-30">
+                                <div class="d-flex px-2 py-1 align-items-center">
+                                    <div class="me-1">
+                                        <i class="fs-4 @@icon@@"></i>
+                                    </div>
+                                    <div class="ms-4">
+                                        <p class="text-xs font-weight-bold mb-0">文章名</p>
+                                        <h6 class="text-sm mb-0">
+                                            @@title@@</h6>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="text-center">
+                                    <p class="text-xs font-weight-bold mb-0">状态</p>
+                                    <h6 class="text-sm mb-0">@@status@@</h6>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="text-center">
+                                    <p class="text-xs font-weight-bold mb-0">操作</p>
+                                    <a href="/edit.html?file=@@path@@&postname=@@quotename@@">
+                                        <i class="fa fa-edit"></i></a>
+                                </div>
+                            </td>
+                        </tr>`;
+
+        function randPosts() {
+            let html = "";
+            let post = getRandomArrayValue(posts, 4)
+            for (let i = 0; i < post.length; i++) {
+                let temp = post_temp;
+                let letter = getLetter(post[i].name);
+                if (letter === "*") {
+                    letter = "font-awesome ";
+                }
+                temp = temp.replace("@@icon@@", "fa-solid fa-" + letter);
+                temp = temp.replace("@@title@@", excerpt_by_local(post[i].name, Math.floor(window
+                    .innerWidth/30)));
+                temp = temp.replace("@@status@@", post[i].status);
+                temp = temp.replace("@@path@@", post[i].path);
+                temp = temp.replace("@@quotename@@", post[i].quotename);
+                html += temp;
+            }
+            $("#rand-posts").html(html);
+        }
+
+        function excerpt_by_local(content, length) {
+            let excerpt = content.replace(/<img[^>]*>/g, "");
+            excerpt = excerpt.replace(/<iframe[^>]*>/g, "");
+            excerpt = excerpt.replace(/<script[^>]*>/g, "");
+            excerpt = excerpt.replace(/<style[^>]*>/g, "");
+            excerpt = excerpt.replace(/<[^>]*>/g, "");
+            excerpt = excerpt.replace(/\n/g, " ");
+            return excerpt.substring(0, length) + (content.length > length ? "..." : "");
+        }
+
+        randPosts();
+
+    </script>
 {% endblock javascripts %}

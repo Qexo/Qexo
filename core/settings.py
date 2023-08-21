@@ -24,6 +24,9 @@ SECRET_KEY = 'django-insecure-mrf1flh+i8*!ao73h6)ne#%gowhtype!ld#+(j^r*!^11al2vz
 DEBUG = False
 
 try:
+    if os.environ.get("VERCEL"):
+        raise Exception("Vercel")
+
     import configs  # 本地部署
 
     ALLOWED_HOSTS = configs.DOMAINS
@@ -83,6 +86,9 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 try:
+    if os.environ.get("VERCEL"):
+        raise Exception("Vercel")
+
     import configs
 
     print("获取本地配置文件成功, 使用本地数据库配置")

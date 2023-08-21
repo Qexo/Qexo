@@ -19,13 +19,15 @@ from django.core.management import execute_from_command_line
 from django.template.defaulttags import register
 from markdown import markdown
 from urllib3 import disable_warnings
+from urllib.parse import quote, unquote
 
 from core.qexoSettings import ALL_SETTINGS
 from core.qexoSettings import QEXO_VERSION
 from hexoweb.libs.elevator import elevator
 from hexoweb.libs.onepush import notify
 from hexoweb.libs.platforms import get_provider
-from .models import Cache, SettingModel, FriendModel, NotificationModel, CustomModel, StatisticUV, StatisticPV, ImageModel, TalkModel
+from .models import Cache, SettingModel, FriendModel, NotificationModel, CustomModel, StatisticUV, StatisticPV, ImageModel, TalkModel, \
+    PostModel
 
 disable_warnings()
 
@@ -71,6 +73,16 @@ def div(value, _div):  # 保留两位小数的除法
     return round((value / _div), 2)
 
 
+@register.filter
+def urlencoder(value):
+    return quote(value)
+
+
+@register.filter
+def excerpt(value, length):
+    return value if len(value) <= length else value[0:length - 1] + "..."
+
+
 def get_cdn():
     cdn_prev = get_setting("CDN_PREV")
     if not cdn_prev:
@@ -79,17 +91,17 @@ def get_cdn():
     return cdn_prev
 
 
-def get_cdnjs():
-    cdnjs = get_setting("CDNJS")
-    if not cdnjs:
-        save_setting("CDNJS", "https://cdn.staticfile.org/")
-        cdnjs = "https://cdn.staticfile.org/"
-    return cdnjs
+# def get_cdnjs():
+#     cdnjs = get_setting("CDNJS")
+#     if not cdnjs:
+#         save_setting("CDNJS", "https://cdn.staticfile.org/")
+#         cdnjs = "https://cdn.staticfile.org/"
+#     return cdnjs
 
 
 # 获取用户自定义的样式配置
 def get_custom_config():
-    context = {"cdn_prev": get_cdn(), "cdnjs": get_cdnjs(), "QEXO_NAME": get_setting("QEXO_NAME")}
+    context = {"cdn_prev": get_cdn(), "QEXO_NAME": get_setting("QEXO_NAME")}
     if not context["QEXO_NAME"]:
         save_setting('QEXO_NAME', 'Hexo管理面板')
         context["QEXO_NAME"] = get_setting("QEXO_NAME")
@@ -100,14 +112,17 @@ def get_custom_config():
     context["QEXO_LOGO"] = get_setting("QEXO_LOGO")
     if not context["QEXO_LOGO"]:
         save_setting('QEXO_LOGO',
-                     'https://unpkg.com/qexo-static@1.4.0/assets' +
-                     '/img/brand/qexo.png')
+                     'https://unpkg.com/qexo-static@2.2.3/qexo/images/qexo.png')
         context["QEXO_LOGO"] = get_setting("QEXO_LOGO")
+    context["QEXO_LOGO_DARK"] = get_setting("QEXO_LOGO_DARK")
+    if not context["QEXO_LOGO_DARK"]:
+        save_setting('QEXO_LOGO_DARK',
+                     'https://unpkg.com/qexo-static@2.2.3/qexo/images/qexo-dark.png')
+        context["QEXO_LOGO_DARK"] = get_setting("QEXO_LOGO_DARK")
     context["QEXO_ICON"] = get_setting("QEXO_ICON")
     if not context["QEXO_ICON"]:
         save_setting('QEXO_ICON',
-                     'https://unpkg.com/qexo-static@1.4.0/assets' +
-                     '/img/brand/favicon.ico')
+                     'https://unpkg.com/qexo-static@2.2.3/qexo/images/icon.png')
         context["QEXO_ICON"] = get_setting("QEXO_ICON")
     return context
 
@@ -657,18 +672,18 @@ def verify_provider(provider):
                 res = provider.get_content("_config.yml")
                 content = yaml.load(res, Loader=yaml.SafeLoader)
                 if content.get("theme"):
-                    theme = str(content.get("theme")).lower()
+                    theme = str(content.get("theme"))
                     for file in home["data"]:
-                        if file["name"].lower() == "_config.{}.yml".format(theme) and file["type"] == "file":
+                        if file["name"] == "_config.{}.yml".format(theme) and file["type"] == "file":
                             config_theme = "_config.{}.yml".format(theme)
                             logging.info("检测到主题配置文件: _config.{}.yml".format(theme))
                             break
                     if (not config_theme) and theme_dir:
                         theme_path = provider.get_path("themes/" + theme)
                         for file in theme_path["data"]:
-                            if file["name"].lower() == "_config.yml" and file["type"] == "file":
-                                config_theme = "themes/" + theme + "_config.yml"
-                                logging.info("检测到主题配置文件: themes/" + theme + "_config.yml")
+                            if file["name"] == "_config.yml" and file["type"] == "file":
+                                config_theme = "themes/" + theme + "/_config.yml"
+                                logging.info("检测到主题配置文件: themes/" + theme + "/_config.yml")
                                 break
         except Exception as e:
             logging.error("校验配置报错" + repr(e))
@@ -709,29 +724,51 @@ def verify_provider(provider):
 
 
 def get_post_details(article, safe=True):
+    flag = False
+    if not (article.startswith("---") or article.startswith(";;;")):
+        flag = True
+        if ";;;" in article:
+            article = ";;;\n" + article
+        elif "---" in article:
+            article = "---\n" + article
+    abbrlink = get_crc_by_time(str(time()), get_setting("ABBRLINK_ALG"), get_setting("ABBRLINK_REP"))
+    dateformat = datetime.now(timezone.utc).astimezone().isoformat()
     try:
-        if not (article.startswith("---") or article.startswith(";;;")):
-            article = ";;;\n" + article if ";;;" in article else "---\n" + article
-        abbrlink = get_crc_by_time(str(time()), get_setting("ABBRLINK_ALG"), get_setting("ABBRLINK_REP"))
-        dateformat = datetime.now(timezone.utc).astimezone().isoformat()
-        front_matter = yaml.safe_load(
-            re.search(r"---([\s\S]*?)---", article, flags=0).group()[3:-4].replace("{{ date }}", dateformat).replace("{{ abbrlink }}",
-                                                                                                                     abbrlink).replace(
-                "{{ slug }}", abbrlink).replace("{", "").replace("}", "")) if article[:3] == "---" else json.loads("{{{}}}".format(
-            re.search(r";;;([\s\S]*?);;;", article, flags=0).group()[3:-4].replace("{{ date }}", dateformat).replace("{{ abbrlink }}",
-                                                                                                                     abbrlink).replace(
-                "{{ slug }}", abbrlink)))
+        if article[:3] == "---":
+            front_matter = re.search(r"---([\s\S]*?)---", article, flags=0).group()[3:-4]
+            front_matter = front_matter.replace("{{ date }}", dateformat).replace("{{ abbrlink }}", abbrlink).replace("{{ slug }}",
+                                                                                                                      abbrlink).replace("{",
+                                                                                                                                        "").replace(
+                "}", "")
+            front_matter = yaml.safe_load(front_matter)
+        elif article[:3] == ";;;":
+            front_matter = json.loads("{{{}}}".format(
+                re.search(r";;;([\s\S]*?);;;", article, flags=0).group()[3:-4].replace("{{ date }}", dateformat).replace("{{ abbrlink }}",
+                                                                                                                         abbrlink).replace(
+                    "{{ slug }}", abbrlink)))
+        else:
+            front_matter = {}
     except Exception:
-        return {}, repr(article)
-    for key in front_matter.keys():
-        if type(front_matter.get(key)) in [datetime, date]:
-            front_matter[key] = front_matter[key].astimezone().isoformat()
-    if safe:
-        passage = repr(re.search(r"[;-][;-][;-]([\s\S]*)", article[3:], flags=0).group()[3:]).replace("<", "\\<").replace(">",
-                                                                                                                          "\\>").replace(
-            "!", "\\!")
+        if flag:
+            article = article[3:]
+        return {}, repr(article).replace("<", "\\<").replace(">", "\\>").replace("!", "\\!") if safe else article
+    if not front_matter:
+        front_matter = {}
+        if flag:
+            article = article[3:]
+        passage = repr(article).replace("<", "\\<").replace(">", "\\>").replace("!", "\\!") if safe else article
     else:
-        passage = re.search(r"[;-][;-][;-]([\s\S]*)", article[3:], flags=0).group()[3:]
+        for key in front_matter.keys():
+            if type(front_matter.get(key)) == datetime:
+                front_matter[key] = front_matter[key].astimezone().isoformat()
+            elif type(front_matter.get(key)) == date:
+                front_matter[key] = front_matter[key].isoformat()
+        if safe:
+            passage = repr(re.search(r"[;-][;-][;-]([\s\S]*)", article[3:], flags=0).group()[3:]).replace("<", "\\<").replace(">",
+                                                                                                                              "\\>").replace(
+                "!", "\\!")
+        else:
+            passage = re.search(r"[;-][;-][;-]([\s\S]*)", article[3:], flags=0).group()[3:]
     return front_matter, passage
 
 
@@ -796,6 +833,15 @@ def export_talks():
     ss = list()
     for s in all_:
         ss.append({"content": s.content, "tags": s.tags, "time": s.time, "like": s.like})
+    return ss
+
+
+def export_posts():
+    all_ = PostModel.objects.all()
+    ss = list()
+    for s in all_:
+        ss.append(
+            {"title": s.title, "path": s.path, "status": s.status, "front_matter": s.front_matter, "date": s.date, "filename": s.filename})
     return ss
 
 
@@ -898,6 +944,22 @@ def import_talks(ss):
     return True
 
 
+def import_posts(ss):
+    _all = PostModel.objects.all()
+    for i in _all:
+        i.delete()
+    for s in ss:
+        post = PostModel()
+        post.title = s["title"]
+        post.path = s["path"]
+        post.status = s["status"]
+        post.front_matter = s["front_matter"]
+        post.date = s["date"]
+        post.filename = s["filename"]
+        post.save()
+    return True
+
+
 def excerpt_post(content, length, mark=True):
     if content is None:
         content = ""
@@ -921,6 +983,49 @@ def escapeString(_str):
     if not _str:
         return ""
     return escape(_str)
+
+
+def mark_post(path, front_matter, status, filename):
+    p = PostModel.objects.filter(path=path)
+    if p:
+        p.first().delete()
+        PostModel.objects.create(
+            title=front_matter["title"],
+            path=path,
+            status=status,
+            front_matter=json.dumps(front_matter),
+            date=time(),
+            filename=filename
+        )
+        logging.info(f"更新文章详情索引：{path}")
+    else:
+        PostModel.objects.create(
+            title=front_matter["title"],
+            path=path,
+            status=status,
+            front_matter=json.dumps(front_matter),
+            date=time(),
+            filename=filename
+        )
+        logging.info(f"创建文章详情索引：{path}")
+
+
+def del_post_mark():
+    PostModel.objects.all().delete()
+
+
+def convert_to_kb_mb_gb(size_in_bytes):
+    kb = size_in_bytes / 1024
+    mb = kb / 1024
+    gb = mb / 1024
+    if gb >= 1:
+        return f"{gb:.2f} GB"
+    elif mb >= 1:
+        return f"{mb:.2f} MB"
+    elif kb >= 1:
+        return f"{kb:.2f} KB"
+    else:
+        return f"{size_in_bytes} B"
 
 
 # print(" ......................阿弥陀佛......................\n" +

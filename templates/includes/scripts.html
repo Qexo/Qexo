@@ -69,7 +69,6 @@
                 var that = this;
                 this.hide();
                 setTimeout(function () {
-                    that.hide(function () {
                         var node = $('#loaderModal-' + that.id);
                         node.next().remove();
                         node.remove();
@@ -80,7 +79,6 @@
                         };
                         that.destroy = function () {
                         };
-                    });
                 }, 300);
             }
 

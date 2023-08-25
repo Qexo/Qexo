@@ -569,7 +569,7 @@ def save_draft(request):
                 context = {"msg": "保存草稿成功并提交部署！", "status": True, "path": result[1]}
             else:
                 context = {"msg": "保存草稿成功！", "status": True, "path": result[1]}
-            mark_post(request.POST.get("path"), front_matter, False, file_name)
+            mark_post(result[1], front_matter, False, file_name)
             delete_all_caches()
         except Exception as error:
             logging.error(repr(error))

@@ -159,13 +159,13 @@ class Provider(object):
                             flag = True
                             break
                     if post["type"] == "file" and flag:
-                        name = post["path"][len(self.config["configs"]["path"][path_index]) + (
-                            0 if self.config["configs"]["path"][path_index].endswith("/") else 1):]
+                        name = post["path"][len(self.config["configs"]["path"][path_index]):]
+                        name = name[1:] if name[0] == "/" else name
                         results.append({"name": name,
                                         "path": post["path"],
                                         "size": post["size"]})
             except Exception as e:
-                logging.error("读取页面 {} 错误: {}，跳过".format(self.config["configs"]["path"][path_index], repr(e)))
+                logging.error("读取配置 {} 错误: {}，跳过".format(self.config["configs"]["path"][path_index], repr(e)))
         logging.info("读取博客配置列表成功")
         return results
 

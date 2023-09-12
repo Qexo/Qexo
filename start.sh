@@ -1,11 +1,9 @@
 # /bin/bash
-if [ ! -z $(ls /blog) ]
+if [ ! "$(ls -A /blog)" ]
 then
     echo "Hexo 目录为空，自动初始化..."
-    cd / && \
-    hexo init blog && \
-    cd blog && \
-    npm i && \
+    hexo init /blog && \
+    cd /blog && \
     hexo g -d
     cd /app
 fi

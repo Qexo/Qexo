@@ -21,7 +21,7 @@ RUN apt-get update -y && \
     apt-get install -y caddy dumb-init
 
 EXPOSE 3000 8000
-VOLUME ["/blog", "/db"]
+# VOLUME ["/blog", "/db"]
 CMD ["/usr/bin/dumb-init", "--", "bash", "/app/start.sh"]
 
 # CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000", "--noreload" ] 

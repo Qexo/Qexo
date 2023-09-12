@@ -1,7 +1,7 @@
 # /bin/bash
-if [ ! -s /blog ]
+if [ ! -z $(ls /blog) ]
 then
-    echo "未发现 Hexo 目录下有内容，自动初始化..."
+    echo "Hexo 目录为空，自动初始化..."
     cd / && \
     hexo init blog && \
     cd blog && \

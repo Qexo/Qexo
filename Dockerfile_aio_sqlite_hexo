@@ -1,0 +1,27 @@
+FROM nikolaik/python-nodejs:latest
+USER root
+WORKDIR /app
+COPY . .
+RUN sed -i "s/qexo_data.db/\/db\/qexo_data.db/g" core/settings.py && \
+    mkdir /db && \
+    mkdir /blog
+RUN pip install -r requirements_withoutmsyql.txt
+    # python3 manage.py makemigrations && \
+    # python3 manage.py migrate
+RUN npm install hexo-cli -g
+#     cd / && \
+#     hexo init blog && \
+#     cd blog && \
+#     npm i && \
+#     hexo g -d
+RUN apt-get update -y && \
+    apt-get install -y debian-keyring debian-archive-keyring apt-transport-https && \
+    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg && \
+    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list && \
+    apt-get update -y && \
+    apt-get install -y caddy dumb-init
+EXPOSE 3000 8000
+# VOLUME ["/blog", "/db"]
+CMD ["/usr/bin/dumb-init", "--", "bash", "/app/start.sh"]
+
+# CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000", "--noreload" ] 

@@ -990,7 +990,7 @@ def mark_post(path, front_matter, status, filename):
     if p:
         p.first().delete()
         PostModel.objects.create(
-            title=front_matter["title"],
+            title=front_matter.get("title") if front_matter.get("title") else "未命名",
             path=path,
             status=status,
             front_matter=json.dumps(front_matter),
@@ -1000,7 +1000,7 @@ def mark_post(path, front_matter, status, filename):
         logging.info(f"更新文章详情索引：{path}")
     else:
         PostModel.objects.create(
-            title=front_matter["title"],
+            title=front_matter.get("title") if front_matter.get("title") else "未命名",
             path=path,
             status=status,
             front_matter=json.dumps(front_matter),

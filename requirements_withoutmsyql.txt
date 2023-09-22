@@ -1,4 +1,4 @@
-Django==3.2.19
+Django==3.2.20
 boto3==1.26.94
 requests==2.31.0
 PyGithub==1.58.1

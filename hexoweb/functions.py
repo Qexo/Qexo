@@ -1010,7 +1010,14 @@ def mark_post(path, front_matter, status, filename):
         logging.info(f"创建文章详情索引：{path}")
 
 
-def del_post_mark():
+def del_postmark(path):
+    p = PostModel.objects.filter(path=path)
+    if p:
+        p.first().delete()
+        logging.info(f"删除文章详情索引：{path}")
+
+
+def del_all_postmark():
     PostModel.objects.all().delete()
 
 

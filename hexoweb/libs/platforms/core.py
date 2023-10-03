@@ -181,18 +181,18 @@ class Provider(object):
             draft_file = None
         save_file = self.config["posts"]["save_path"].replace("${filename}", name)
         if path and (path not in [draft_file, save_file]):
-            return [self.save(path, content, f"Save Post {name} by Qexo", autobuild), path]
+            return [self.save(path, content, f"Save Post {name} by Qexo", autobuild), path, False]
         if status:
             try:
                 self.delete(draft_file, f"Delete Post Draft {draft_file} by Qexo", False)
             except:
                 logging.info(f"删除草稿{draft_file}失败, 可能无需删除草稿")
-            return [self.save(save_file, content, f"Publish Post {save_file} by Qexo", autobuild), save_file]
+            return [self.save(save_file, content, f"Publish Post {save_file} by Qexo", autobuild), save_file, draft_file]
         else:
             if not draft_file:
                 raise Exception("当前配置不支持草稿")
             return [self.save(self.config["drafts"]["save_path"].replace("${filename}", name), content,
-                              f"Save Post Draft {draft_file} by Qexo", autobuild), draft_file]
+                              f"Save Post Draft {draft_file} by Qexo", autobuild), draft_file, False]
 
     def save_page(self, name, content, autobuild=True):
         path = self.config["pages"]["save_path"].replace("${filename}", name)

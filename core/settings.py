@@ -138,7 +138,7 @@ except:
                 'PORT': os.environ.get("PG_PORT") or os.environ.get("POSTGRES_PORT") or 5432,
             }
         }
-    else:  # 使用MYSQL
+    elif os.environ.get("MYSQL_HOST"):  # 使用MYSQL
         print("使用环境变量中的MySQL数据库")
         for env in ["MYSQL_HOST", "MYSQL_PORT", "MYSQL_PASSWORD"]:
             if env not in os.environ:
@@ -161,6 +161,15 @@ except:
         }
         if os.environ.get("PLANETSCALE"):
             DATABASES["default"]["ENGINE"] = "hexoweb.libs.django_psdb_engine"
+    else:   # sqlite
+        print("使用sqlite数据库")
+        import sqlite3
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': 'qexo_data.db',
+            }
+        }
     if errors:
         raise exceptions.InitError(f"\"{errors}\"环境变量未设置")
 

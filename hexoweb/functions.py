@@ -670,7 +670,7 @@ def verify_provider(provider):
         try:
             if config_hexo:
                 res = provider.get_content("_config.yml")
-                content = yaml.load(res, Loader=yaml.SafeLoader)
+                content = yaml.unsafe_load(res)
                 if content.get("theme"):
                     theme = str(content.get("theme"))
                     for file in home["data"]:

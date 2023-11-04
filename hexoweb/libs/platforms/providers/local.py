@@ -82,6 +82,6 @@ class Local(Provider):
             exec_cmd = "powershell \"cd {}; {}\"".format(self.path, self.auto)
         else:
             exec_cmd = "cd {} && {}".format(self.path, self.auto)
-        logging.error(exec_cmd)
+        logging.info(exec_cmd)
         p = subprocess.Popen(exec_cmd, shell=True)
         return p

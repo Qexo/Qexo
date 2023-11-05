@@ -34,8 +34,9 @@ class S3(Provider):
         self.prev_url = prev_url
 
     def upload(self, file):
+        now = date.today()
         photo_stream = file.read()
-        path = replace_path(self.path, file)
+        path = replace_path(self.path, file, now)
 
         s3 = boto3.resource(
             service_name='s3',
@@ -48,4 +49,4 @@ class S3(Provider):
         bucket = s3.Bucket(self.bucket)
         bucket.put_object(Key=path, Body=photo_stream, ContentType=file.content_type)
 
-        return replace_path(self.prev_url, file)
+        return replace_path(self.prev_url, file, now)

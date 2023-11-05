@@ -39,8 +39,8 @@ class Ftp(Provider):
         ftp.connect(self.host, int(self.port))
         ftp.login(self.user, self.password)
         now = date.today()
-        path = replace_path(self.path, file)
+        path = replace_path(self.path, file, now)
 
         bufsize = 1024
         ftp.storbinary('STOR ' + path, file, bufsize)
-        return replace_path(self.prev_url, file)
+        return replace_path(self.prev_url, file, now)

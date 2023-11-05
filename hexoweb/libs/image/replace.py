@@ -8,9 +8,8 @@ from hashlib import md5
 from time import time
 
 
-def replace_path(path: str, file):
+def replace_path(path: str, file, now=date.today()):
     """替换图片url的函数"""
-    now = date.today()
     photo_stream = file.read()
     file_md5 = md5(photo_stream).hexdigest()
     # {year} 23

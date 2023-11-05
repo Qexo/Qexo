@@ -34,7 +34,7 @@ class Github(Provider):
     def upload(self, file):
         now = date.today()
         photo_stream = file.read()
-        path = replace_path(self.path, file)
+        path = replace_path(self.path, file, now)
 
         commitchange = "Upload {} by Qexo".format(file.name)
         try:
@@ -43,4 +43,4 @@ class Github(Provider):
         except:
             self.repo.create_file(path, commitchange, photo_stream, branch=self.branch)
 
-        return replace_path(self.url, file)
+        return replace_path(self.url, file, now)

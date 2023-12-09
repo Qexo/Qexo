@@ -1,7 +1,7 @@
 import json
 import random
 
-QEXO_VERSION = "3.0.0"
+QEXO_VERSION = "3.0.1"
 
 DEFAULT_EMOJI = {"微笑": "🙂", "撇嘴": "😦", "色": "😍", "发呆": "😍", "得意": "😎",
                  "流泪": "😭", "害羞": "😊", "闭嘴": "😷", "睡": "😴",
@@ -37,8 +37,8 @@ DEFAULT_EMOJI = {"微笑": "🙂", "撇嘴": "😦", "色": "😍", "发呆": "�
 DEFAULT_CDN = [
     {"name": "Jsdelivr", "url": "https://cdn.jsdelivr.net/npm/"},
     {"name": "Unpkg", "url": "https://unpkg.com/"},
-    {"name": "渺软公益 CDN", "url": "https://npm.onmicrosoft.cn/"},
-    {"name": "初七云", "url": "https://cdn.chuqis.com/npm/"}
+    {"name": "渺软公益 CDN", "url": "https://npm.onmicrosoft.cn/"}
+    # {"name": "初七云", "url": "https://cdn.chuqis.com/npm/"}
 ]
 
 DEFAULT_UPDATES = [

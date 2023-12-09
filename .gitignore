@@ -4,3 +4,5 @@
 tmp
 venv
 configs.py
+
+*.db

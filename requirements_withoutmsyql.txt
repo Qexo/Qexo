@@ -1,6 +1,6 @@
-Django==3.2.18
+Django==3.2.20
 boto3==1.26.94
-requests==2.28.2
+requests==2.31.0
 PyGithub==1.58.1
 python-gitlab==3.13.0
 html2text==2020.1.16

@@ -104,7 +104,7 @@ def set_hexo(request):
             save_setting("PROVIDER", provider)
             update_provider()
             delete_all_caches()
-            del_post_mark()
+            del_all_postmark()
             context = {"msg": msg + "\n保存配置成功!", "status": True}
         else:
             context = {"msg": msg + "\n配置校验失败", "status": False}
@@ -497,6 +497,8 @@ def save_post(request):
             else:
                 context = {"msg": "保存成功！", "status": True, "path": result[1]}
             mark_post(result[1], front_matter, True, file_name)
+            if result[2]:
+                del_postmark(result[2])
             delete_all_caches()
         except Exception as error:
             logging.error(repr(error))
@@ -569,7 +571,7 @@ def save_draft(request):
                 context = {"msg": "保存草稿成功并提交部署！", "status": True, "path": result[1]}
             else:
                 context = {"msg": "保存草稿成功！", "status": True, "path": result[1]}
-            mark_post(request.POST.get("path"), front_matter, False, file_name)
+            mark_post(result[1], front_matter, False, file_name)
             delete_all_caches()
         except Exception as error:
             logging.error(repr(error))

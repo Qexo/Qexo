@@ -159,13 +159,13 @@ class Provider(object):
                             flag = True
                             break
                     if post["type"] == "file" and flag:
-                        name = post["path"][len(self.config["configs"]["path"][path_index]) + (
-                            0 if self.config["configs"]["path"][path_index].endswith("/") else 1):]
+                        name = post["path"][len(self.config["configs"]["path"][path_index]):]
+                        name = name[1:] if name[0] == "/" else name
                         results.append({"name": name,
                                         "path": post["path"],
                                         "size": post["size"]})
             except Exception as e:
-                logging.error("读取页面 {} 错误: {}，跳过".format(self.config["configs"]["path"][path_index], repr(e)))
+                logging.error("读取配置 {} 错误: {}，跳过".format(self.config["configs"]["path"][path_index], repr(e)))
         logging.info("读取博客配置列表成功")
         return results
 
@@ -181,18 +181,18 @@ class Provider(object):
             draft_file = None
         save_file = self.config["posts"]["save_path"].replace("${filename}", name)
         if path and (path not in [draft_file, save_file]):
-            return [self.save(path, content, f"Save Post {name} by Qexo", autobuild), path]
+            return [self.save(path, content, f"Save Post {name} by Qexo", autobuild), path, False]
         if status:
             try:
                 self.delete(draft_file, f"Delete Post Draft {draft_file} by Qexo", False)
             except:
                 logging.info(f"删除草稿{draft_file}失败, 可能无需删除草稿")
-            return [self.save(save_file, content, f"Publish Post {save_file} by Qexo", autobuild), save_file]
+            return [self.save(save_file, content, f"Publish Post {save_file} by Qexo", autobuild), save_file, draft_file]
         else:
             if not draft_file:
                 raise Exception("当前配置不支持草稿")
             return [self.save(self.config["drafts"]["save_path"].replace("${filename}", name), content,
-                              f"Save Post Draft {draft_file} by Qexo", autobuild), draft_file]
+                              f"Save Post Draft {draft_file} by Qexo", autobuild), draft_file, False]
 
     def save_page(self, name, content, autobuild=True):
         path = self.config["pages"]["save_path"].replace("${filename}", name)

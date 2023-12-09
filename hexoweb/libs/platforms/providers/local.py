@@ -78,5 +78,10 @@ class Local(Provider):
         if not self.auto:
             return False
         logging.info("进行自动部署...")
-        p = subprocess.Popen("cd {} && {}".format(self.path, self.auto), shell=True)
+        if os.name == 'nt':
+            exec_cmd = "powershell \"cd {}; {}\"".format(self.path, self.auto)
+        else:
+            exec_cmd = "cd {} && {}".format(self.path, self.auto)
+        logging.info(exec_cmd)
+        p = subprocess.Popen(exec_cmd, shell=True)
         return p

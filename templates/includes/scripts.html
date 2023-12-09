@@ -69,18 +69,16 @@
                 var that = this;
                 this.hide();
                 setTimeout(function () {
-                    that.hide(function () {
-                        var node = $('#loaderModal-' + that.id);
-                        node.next().remove();
-                        node.remove();
-                        that.show = function () {
-                            throw new Error('对象已销毁！');
-                        };
-                        that.hide = function () {
-                        };
-                        that.destroy = function () {
-                        };
-                    });
+                    var node = $('#loaderModal-' + that.id);
+                    node.next().remove();
+                    node.remove();
+                    that.show = function () {
+                        throw new Error('对象已销毁！');
+                    };
+                    that.hide = function () {
+                    };
+                    that.destroy = function () {
+                    };
                 }, 300);
             }
 
@@ -215,19 +213,10 @@
     }
 
     function getRFC3339() {
-        var date = new Date();
-        var year = date.getFullYear();
-        var month = date.getMonth() + 1;
-        var day = date.getDate();
-        var hour = date.getHours();
-        var minute = date.getMinutes();
-        var second = date.getSeconds();
-        var millisecond = date.getMilliseconds();
-        var offset = date.getTimezoneOffset();
-        var offsetHour = Math.floor(Math.abs(offset / 60));
-        var offsetMinute = Math.abs(offset % 60);
-        var offsetSign = offset < 0 ? "+" : "-";
-        return year + "-" + month + "-" + day + "T" + hour + ":" + minute + ":" + second + "." + millisecond + offsetSign + offsetHour + ":" + offsetMinute;
+        let date = new Date(+new Date() + 8 * 3600 * 1000);
+        let iso = date.toISOString();
+        let rfc = iso.replace("Z", "+08:00");
+        return rfc;
     }
 
 

@@ -670,7 +670,7 @@ def verify_provider(provider):
         try:
             if config_hexo:
                 res = provider.get_content("_config.yml")
-                content = yaml.load(res, Loader=yaml.SafeLoader)
+                content = yaml.unsafe_load(res)
                 if content.get("theme"):
                     theme = str(content.get("theme"))
                     for file in home["data"]:
@@ -990,7 +990,7 @@ def mark_post(path, front_matter, status, filename):
     if p:
         p.first().delete()
         PostModel.objects.create(
-            title=front_matter["title"],
+            title=front_matter.get("title") if front_matter.get("title") else "未命名",
             path=path,
             status=status,
             front_matter=json.dumps(front_matter),
@@ -1000,7 +1000,7 @@ def mark_post(path, front_matter, status, filename):
         logging.info(f"更新文章详情索引：{path}")
     else:
         PostModel.objects.create(
-            title=front_matter["title"],
+            title=front_matter.get("title") if front_matter.get("title") else "未命名",
             path=path,
             status=status,
             front_matter=json.dumps(front_matter),
@@ -1010,7 +1010,14 @@ def mark_post(path, front_matter, status, filename):
         logging.info(f"创建文章详情索引：{path}")
 
 
-def del_post_mark():
+def del_postmark(path):
+    p = PostModel.objects.filter(path=path)
+    if p:
+        p.first().delete()
+        logging.info(f"删除文章详情索引：{path}")
+
+
+def del_all_postmark():
     PostModel.objects.all().delete()
 
 

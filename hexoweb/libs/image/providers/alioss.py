@@ -34,7 +34,9 @@ class AliOss(Provider):
 
     def upload(self, file):
         photo_stream = file.read()
-        path = replace_path(self.path, file)
+        now = date.today()
+
+        path = replace_path(self.path, file, now)
 
         # 处理路径开头斜杠
         path = path[1:] if path.startswith("/") else path
@@ -47,4 +49,4 @@ class AliOss(Provider):
 
         bucket.put_object(path, photo_stream, headers={"Content-Type": file.content_type})
 
-        return replace_path(self.prev_url, file)
+        return replace_path(self.prev_url, file, now)

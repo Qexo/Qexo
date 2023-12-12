@@ -42,5 +42,6 @@ class Ftp(Provider):
         path = replace_path(self.path, file, now)
 
         bufsize = 1024
+        file.open()
         ftp.storbinary('STOR ' + path, file, bufsize)
         return replace_path(self.prev_url, file, now)

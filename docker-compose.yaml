@@ -1,0 +1,13 @@
+version: "3"
+
+services:
+  app:
+    build: 
+      context: .
+      args:
+        CN: "true"
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    image: qexo:${IMAGE_TAG:-latest}

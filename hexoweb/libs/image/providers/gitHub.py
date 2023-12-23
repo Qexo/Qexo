@@ -5,7 +5,7 @@
 """
 
 import github
-from datetime import date
+from datetime import datetime
 from hashlib import md5
 
 from ..core import Provider
@@ -32,7 +32,7 @@ class Github(Provider):
     }
 
     def upload(self, file):
-        now = date.today()
+        now = datetime.now()
         photo_stream = file.read()
         file_md5 = md5(photo_stream).hexdigest()
         path = replace_path(self.path, file, file_md5, now)

@@ -4,7 +4,7 @@
 @Blog      : https://www.oplog.cn
 """
 
-from datetime import date
+from datetime import datetime
 import oss2
 from hashlib import md5
 
@@ -33,7 +33,7 @@ class AliOss(Provider):
 
     def upload(self, file):
         photo_stream = file.read()
-        now = date.today()
+        now = datetime.now()
         file_md5 = md5(photo_stream).hexdigest()
         path = replace_path(self.path, file, file_md5, now)
 

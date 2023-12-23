@@ -57,7 +57,8 @@ class DogeCloudOss(Provider):
     def upload(self, file):
         now = date.today()
         photo_stream = file.read()
-        path = replace_path(self.path, file, now)
+        file_md5 = md5(photo_stream).hexdigest()
+        path = replace_path(self.path, file, file_md5, now)
 
         res = self.dogecloud_api()
         if res['code'] != 200:
@@ -75,4 +76,4 @@ class DogeCloudOss(Provider):
         bucket.put_object(Key=path, Body=photo_stream,
                           ContentType=file.content_type)
 
-        return replace_path(self.prev_url, file, now)
+        return replace_path(self.prev_url, file, file_md5, now)

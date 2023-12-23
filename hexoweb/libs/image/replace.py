@@ -3,22 +3,21 @@
 @Author    : abudu
 @Blog      : https://www.oplog.cn
 """
-from datetime import date
+from datetime import datetime
 from hashlib import md5
-from time import time
 
 
-def replace_path(path: str, file, now=date.today()):
+def replace_path(path: str, file, file_md5, now=datetime.now()):
     """替换图片url的函数"""
-    photo_stream = file.read()
-    file_md5 = md5(photo_stream).hexdigest()
+    timestamp = str(datetime.timestamp(now))
+    now = now.date()
     # {year} 23
     # {month} 6
     # {day}   3
     path = path.replace("{year}", str(now.year)[-2:]).replace("{month}", str(now.month)).replace("{day}", str(now.day)).replace(
         "{filename}", file.name[0:-len(file.name.split(".")[-1]) - 1]).replace("{extName}", file.name.split(".")[-1]).replace("{md5}",
                                                                                                                               file_md5).replace(
-        "{time}", str(time()))
+        "{time}", timestamp)
     # {YEAR} 2023
     # {MONTH} 06
     # {DAY}   03

@@ -7,7 +7,7 @@
 import github
 from datetime import date
 from hashlib import md5
-from time import time
+
 from ..core import Provider
 from ..replace import replace_path
 
@@ -34,7 +34,8 @@ class Github(Provider):
     def upload(self, file):
         now = date.today()
         photo_stream = file.read()
-        path = replace_path(self.path, file, now)
+        file_md5 = md5(photo_stream).hexdigest()
+        path = replace_path(self.path, file, file_md5, now)
 
         commitchange = "Upload {} by Qexo".format(file.name)
         try:
@@ -43,4 +44,4 @@ class Github(Provider):
         except:
             self.repo.create_file(path, commitchange, photo_stream, branch=self.branch)
 
-        return replace_path(self.url, file, now)
+        return replace_path(self.url, file, file_md5, now)

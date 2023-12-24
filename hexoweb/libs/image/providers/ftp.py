@@ -30,7 +30,7 @@ class Ftp(Provider):
         'password': {'description': '密码', 'placeholder': 'FTP 登录密码'},
         'encoding': {'description': 'FTP 编码', 'placeholder': '如 utf-8/gbk'},
         'path': {'description': '保存路径', 'placeholder': '文件上传后保存的路径 包含文件名'},
-        'prev_url': {'description': '自定义域名', 'placeholder': '最终返回的链接为自定义域名+保存路径'}
+        'prev_url': {'description': '自定义域名', 'placeholder': '需填写完整路径'}
     }
 
     def __init__(self, host, port, user, password, path, prev_url, encoding="utf-8"):

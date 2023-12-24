@@ -24,7 +24,7 @@ class DogeCloudOss(Provider):
         'bucket': {'description': '储存桶名', 'placeholder': 'DogeCloud 储存桶 (Bucket) 名称'},
         'endpoint_url': {'description': '边缘节点', 'placeholder': 'DogeCloud Endpoint'},
         'path': {'description': '保存路径', 'placeholder': '文件上传后保存的路径 包含文件名'},
-        'prev_url': {'description': '自定义域名', 'placeholder': '最终返回的链接为自定义域名/保存路径'}
+        'prev_url': {'description': '自定义域名', 'placeholder': '需填写完整路径'}
     }
 
     def __init__(self, secret_key, access_key, endpoint_url, bucket, path, prev_url):

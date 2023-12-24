@@ -28,7 +28,7 @@ class Github(Provider):
         'repo': {"description": "Github 仓库", "placeholder": "username/repo"},
         'branch': {"description": "项目分支", "placeholder": "e.g. master"},
         'path': {'description': '保存路径', 'placeholder': '文件上传后保存的路径 包含文件名'},
-        'url': {'description': '自定义域名', 'placeholder': '最终返回的链接为自定义域名/保存路径'}
+        'url': {'description': '自定义域名', 'placeholder': '需填写完整路径'}
     }
 
     def upload(self, file):

@@ -5,9 +5,9 @@
 """
 
 import github
-from datetime import date
+from datetime import datetime
 from hashlib import md5
-from time import time
+
 from ..core import Provider
 from ..replace import replace_path
 
@@ -28,13 +28,14 @@ class Github(Provider):
         'repo': {"description": "Github 仓库", "placeholder": "username/repo"},
         'branch': {"description": "项目分支", "placeholder": "e.g. master"},
         'path': {'description': '保存路径', 'placeholder': '文件上传后保存的路径 包含文件名'},
-        'url': {'description': '自定义域名', 'placeholder': '最终返回的链接为自定义域名/保存路径'}
+        'url': {'description': '自定义域名', 'placeholder': '需填写完整路径'}
     }
 
     def upload(self, file):
-        now = date.today()
+        now = datetime.now()
         photo_stream = file.read()
-        path = replace_path(self.path, file, now)
+        file_md5 = md5(photo_stream).hexdigest()
+        path = replace_path(self.path, file, file_md5, now)
 
         commitchange = "Upload {} by Qexo".format(file.name)
         try:
@@ -43,4 +44,4 @@ class Github(Provider):
         except:
             self.repo.create_file(path, commitchange, photo_stream, branch=self.branch)
 
-        return replace_path(self.url, file, now)
+        return replace_path(self.url, file, file_md5, now)

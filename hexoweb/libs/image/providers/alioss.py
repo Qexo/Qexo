@@ -4,9 +4,8 @@
 @Blog      : https://www.oplog.cn
 """
 
-from datetime import date
+from datetime import datetime
 import oss2
-from time import time
 from hashlib import md5
 
 from ..core import Provider
@@ -21,7 +20,7 @@ class AliOss(Provider):
         'bucket': {'description': '储存桶名', 'placeholder': '存储桶名称'},
         'endpoint_url': {'description': '边缘节点', 'placeholder': '所在地域对应的Endpoint'},
         'path': {'description': '保存路径', 'placeholder': '文件上传后保存的路径 包含文件名'},
-        'prev_url': {'description': '自定义域名', 'placeholder': '最终返回的链接为自定义域名/保存路径'}
+        'prev_url': {'description': '自定义域名', 'placeholder': '需填写完整路径'}
     }
 
     def __init__(self, access_id, access_key, endpoint_url, bucket, path, prev_url):
@@ -34,9 +33,9 @@ class AliOss(Provider):
 
     def upload(self, file):
         photo_stream = file.read()
-        now = date.today()
-
-        path = replace_path(self.path, file, now)
+        now = datetime.now()
+        file_md5 = md5(photo_stream).hexdigest()
+        path = replace_path(self.path, file, file_md5, now)
 
         # 处理路径开头斜杠
         path = path[1:] if path.startswith("/") else path
@@ -49,4 +48,4 @@ class AliOss(Provider):
 
         bucket.put_object(path, photo_stream, headers={"Content-Type": file.content_type})
 
-        return replace_path(self.prev_url, file, now)
+        return replace_path(self.prev_url, file, file_md5, now)

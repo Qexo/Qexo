@@ -89,7 +89,7 @@
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
-    <script src="{{ cdn_prev }}vditor@3.9.4/dist/index.min.js"></script>
+    <script src="{{ cdn_prev }}vditor@3.9.7/dist/index.min.js"></script>
     <script>
         var _status = true, front_matter = {{ front_matter|safe }};
         var file_content = "";
@@ -201,7 +201,7 @@
                 toolbarConfig: {
                     pin: true
                 },
-                "cdn": "{{ cdn_prev }}vditor@3.9.4",
+                "cdn": "{{ cdn_prev }}vditor@3.9.7",
                 "mode": "wysiwyg",
                 counter: {
                     enable: true
@@ -213,7 +213,7 @@
                 },
                 "preview": {
                     "theme": {
-                        "path": "{{ cdn_prev }}vditor@3.9.4/dist/css/content-theme"
+                        "path": "{{ cdn_prev }}vditor@3.9.7/dist/css/content-theme"
                     }
                 },
                 "debugger": false,
@@ -296,7 +296,7 @@
                 // _lutePath: "lib/vditor-3.7.3/src/js/lute/lute.min.js",
                 // 这个是自定义导航栏
                 toolbar,
-                "cdn": "{{ cdn_prev }}vditor@3.9.4",
+                "cdn": "{{ cdn_prev }}vditor@3.9.7",
                 "fullscreen": {
                     "index": 1050,
                 },
@@ -305,12 +305,12 @@
                     "enable": false
                 },
                 "value": {{ file_content|safe }},
-                "mode": "wysiwyg",
+                "mode": "ir",
                 "debugger": false,
                 "preview": {
                     "mode": "both",
                     "theme": {
-                        "path": "{{ cdn_prev }}vditor@3.9.4/dist/css/content-theme"
+                        "path": "{{ cdn_prev }}vditor@3.9.7/dist/css/content-theme"
                     }
                 }, hint: {
                     emoji: {{ emoji|safe }}

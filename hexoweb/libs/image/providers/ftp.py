@@ -3,13 +3,22 @@
 @Author    : abudu
 @Blog      : https://www.oplog.cn
 """
-
+import ftplib
 from ftplib import FTP
-from time import time
-from datetime import date
+from datetime import datetime
+import os
+from hashlib import md5
 
 from ..core import Provider
 from ..replace import replace_path
+
+
+def create_dir(ftp, path):
+    try:
+        ftp.cwd(path)
+    except ftplib.all_errors as e:
+        create_dir(ftp, os.path.dirname(path))
+        ftp.mkd(path)
 
 
 class Ftp(Provider):
@@ -21,7 +30,7 @@ class Ftp(Provider):
         'password': {'description': '密码', 'placeholder': 'FTP 登录密码'},
         'encoding': {'description': 'FTP 编码', 'placeholder': '如 utf-8/gbk'},
         'path': {'description': '保存路径', 'placeholder': '文件上传后保存的路径 包含文件名'},
-        'prev_url': {'description': '自定义域名', 'placeholder': '最终返回的链接为自定义域名+保存路径'}
+        'prev_url': {'description': '自定义域名', 'placeholder': '需填写完整路径'}
     }
 
     def __init__(self, host, port, user, password, path, prev_url, encoding="utf-8"):
@@ -38,9 +47,16 @@ class Ftp(Provider):
         ftp.set_debuglevel(0)
         ftp.connect(self.host, int(self.port))
         ftp.login(self.user, self.password)
-        now = date.today()
-        path = replace_path(self.path, file, now)
-
+        now = datetime.now()
+        photo_stream = file.read()
+        file_md5 = md5(photo_stream).hexdigest()
+        file.file.seek(0)  # seek file
+        path = replace_path(self.path, file, file_md5, now)
         bufsize = 1024
-        ftp.storbinary('STOR ' + path, file, bufsize)
-        return replace_path(self.prev_url, file, now)
+        try:
+            ftp.storbinary('STOR ' + path, file, bufsize)
+        except ftplib.all_errors as e:
+            create_dir(ftp, os.path.dirname(path))
+            ftp.storbinary('STOR ' + path, file, bufsize)
+        ftp.quit()
+        return replace_path(self.prev_url, file, file_md5, now)

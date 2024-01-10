@@ -4,14 +4,13 @@
 @Blog      : https://tnxg.loyunet.cn
 """
 
-from datetime import date
+from datetime import datetime
 import boto3
 from hashlib import md5
 from hashlib import sha1
 import hmac
 import requests
 import json
-import urllib
 
 from ..core import Provider
 from ..replace import replace_path
@@ -25,7 +24,7 @@ class DogeCloudOss(Provider):
         'bucket': {'description': '储存桶名', 'placeholder': 'DogeCloud 储存桶 (Bucket) 名称'},
         'endpoint_url': {'description': '边缘节点', 'placeholder': 'DogeCloud Endpoint'},
         'path': {'description': '保存路径', 'placeholder': '文件上传后保存的路径 包含文件名'},
-        'prev_url': {'description': '自定义域名', 'placeholder': '最终返回的链接为自定义域名/保存路径'}
+        'prev_url': {'description': '自定义域名', 'placeholder': '需填写完整路径'}
     }
 
     def __init__(self, secret_key, access_key, endpoint_url, bucket, path, prev_url):
@@ -55,9 +54,10 @@ class DogeCloudOss(Provider):
         return response.json()
 
     def upload(self, file):
-        now = date.today()
+        now = datetime.now()
         photo_stream = file.read()
-        path = replace_path(self.path, file, now)
+        file_md5 = md5(photo_stream).hexdigest()
+        path = replace_path(self.path, file, file_md5, now)
 
         res = self.dogecloud_api()
         if res['code'] != 200:
@@ -75,4 +75,4 @@ class DogeCloudOss(Provider):
         bucket.put_object(Key=path, Body=photo_stream,
                           ContentType=file.content_type)
 
-        return replace_path(self.prev_url, file, now)
+        return replace_path(self.prev_url, file, file_md5, now)

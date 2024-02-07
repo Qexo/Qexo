@@ -200,6 +200,7 @@
     }
 
     function escapeString(str) {
+        if (str === undefined || str === null) return str;
         var temp = "";
         str = str.toString();
         if (str.length === 0) return "";

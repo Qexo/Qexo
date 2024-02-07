@@ -35,7 +35,7 @@ def get_params(provider_name):
 
 def delete_image(config):
     if not config:
-        return
+        return "已删除本地记录"
     if config["provider"] not in _all_providers:
         raise NoSuchProviderError(config["provider"])
     return _all_providers[config["provider"]].delete(config)

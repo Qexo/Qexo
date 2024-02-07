@@ -57,7 +57,7 @@ class Main(Provider):
                 response = requests.post(self.api, data={},
                                          files={self.post_params: [file.name, file.read(),
                                                                    file.content_type]})
-        data = response.json()
+        data = response.text
         if self.json_path:
             json_path = self.json_path.split(".")
             response.encoding = "utf8"
@@ -68,11 +68,10 @@ class Main(Provider):
                 else:
                     url = url[path]
         else:
-            url = response.text
-
+            url = data
         if self.delete_url:
             json_path = self.delete_url.split(".")
-            delete_url = data
+            delete_url = json.loads(data)
             for path in json_path:
                 if path.isdigit():
                     delete_url = [int(path)]

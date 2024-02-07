@@ -642,9 +642,9 @@ def delete_img(request):
         image_date = request.POST.get('image')
         try:
             image = ImageModel.objects.filter(date=image_date)
-            delete_image(json.loads(image[0].deleteConfig))
+            msg = delete_image(json.loads(image[0].deleteConfig))
             image.delete()
-            context = {"msg": "删除成功！", "status": True}
+            context = {"msg": msg, "status": True}
         except Exception as error:
             logging.error(repr(error))
             context = {"msg": repr(error), "status": False}

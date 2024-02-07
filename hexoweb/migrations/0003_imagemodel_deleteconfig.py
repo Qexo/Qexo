@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='imagemodel',
             name='deleteConfig',
-            field=models.TextField(blank=True, default='{}', max_length=2147483647),
+            field=models.TextField(default='{}', max_length=2147483647),
         ),
     ]

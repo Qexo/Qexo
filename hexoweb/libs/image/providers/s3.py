@@ -12,7 +12,21 @@ from ..core import Provider
 from ..replace import replace_path
 
 
-class S3(Provider):
+def delete(config):
+    s3 = boto3.resource(
+        service_name='s3',
+        aws_access_key_id=config.get("key_id"),
+        aws_secret_access_key=config.get("access_key"),
+        endpoint_url=config.get("endpoint_url"),
+        region_name=config.get("region_name"),
+        verify=False
+    )
+    bucket = s3.Bucket(config.get("bucket"))
+    bucket.delete_object(Key=config.get("path"))
+    return "删除成功"
+
+
+class Main(Provider):
     name = 'S3协议'
     params = {
         'key_id': {'description': '应用密钥 ID', 'placeholder': 'S3 应用程序的 Access Key ID'},
@@ -50,4 +64,14 @@ class S3(Provider):
         bucket = s3.Bucket(self.bucket)
         bucket.put_object(Key=path, Body=photo_stream, ContentType=file.content_type)
 
-        return replace_path(self.prev_url, file, file_md5, now)
+        delete_config = {
+            "provider": Main.name,
+            "key_id": self.key_id,
+            "access_key": self.access_key,
+            "endpoint_url": self.endpoint_url,
+            "region_name": self.region_name,
+            "bucket": self.bucket,
+            "path": path
+        }
+
+        return [replace_path(self.prev_url, file, file_md5, now), delete_config]

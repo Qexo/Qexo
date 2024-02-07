@@ -12,7 +12,14 @@ from ..core import Provider
 from ..replace import replace_path
 
 
-class Github(Provider):
+def delete(config):
+    repo = github.Github(config.get("token")).get_repo(config.get("repo"))
+    repo.delete_file(config.get("path"), "Delete by Qexo", repo.get_contents(config.get("path")).sha,
+                     branch=config.get("branch"))
+    return "删除成功"
+
+
+class Main(Provider):
     name = "Github"
 
     def __init__(self, token, repo, branch, path, url):
@@ -40,8 +47,16 @@ class Github(Provider):
         commitchange = "Upload {} by Qexo".format(file.name)
         try:
             self.repo.update_file(path, commitchange, photo_stream,
-                                  self.repo.get_contents(self.path + path, ref=self.branch).sha, branch=self.branch)
+                                  self.repo.get_contents(path, ref=self.branch).sha, branch=self.branch)
         except:
             self.repo.create_file(path, commitchange, photo_stream, branch=self.branch)
 
-        return replace_path(self.url, file, file_md5, now)
+        delete_config = {
+            "provider": Main.name,
+            "token": self.token,
+            "repo": self._repo,
+            "path": path,
+            "branch": self.branch
+        }
+
+        return [replace_path(self.url, file, file_md5, now), delete_config]

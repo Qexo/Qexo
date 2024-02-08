@@ -14,6 +14,7 @@ from .functions import *
 
 # 登录验证API api/auth
 def auth(request):
+    captcha = "获取失败"
     try:
         username = request.POST.get("username")
         password = request.POST.get("password")
@@ -48,6 +49,7 @@ def auth(request):
             context = {"msg": "登录信息错误", "status": False}
     except Exception as e:
         logging.error(repr(e))
+        logging.info("reCaptcha结果: " + str(captcha))
         context = {"msg": repr(e), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -642,7 +644,9 @@ def delete_img(request):
         image_date = request.POST.get('image')
         try:
             image = ImageModel.objects.filter(date=image_date)
-            msg = delete_image(json.loads(image[0].deleteConfig))
+            msg = "已删除本地记录"
+            if request.POST.get("sync") == "true" and image[0].deleteConfig:
+                msg = delete_image(json.loads(image[0].deleteConfig))
             image.delete()
             context = {"msg": msg, "status": True}
         except Exception as error:

@@ -8,12 +8,13 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from hexoweb.libs.image import get_image_host
+from hexoweb.libs.image import get_image_host, delete_image
 from .functions import *
 
 
 # 登录验证API api/auth
 def auth(request):
+    captcha = "获取失败"
     try:
         username = request.POST.get("username")
         password = request.POST.get("password")
@@ -48,6 +49,7 @@ def auth(request):
             context = {"msg": "登录信息错误", "status": False}
     except Exception as e:
         logging.error(repr(e))
+        logging.info("reCaptcha结果: " + str(captcha))
         context = {"msg": repr(e), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -642,8 +644,11 @@ def delete_img(request):
         image_date = request.POST.get('image')
         try:
             image = ImageModel.objects.filter(date=image_date)
+            msg = "已删除本地记录"
+            if request.POST.get("sync") == "true" and image[0].deleteConfig:
+                msg = delete_image(json.loads(image[0].deleteConfig))
             image.delete()
-            context = {"msg": "删除成功！", "status": True}
+            context = {"msg": msg, "status": True}
         except Exception as error:
             logging.error(repr(error))
             context = {"msg": repr(error), "status": False}
@@ -721,7 +726,8 @@ def upload_img(request):
         try:
             image_host = json.loads(get_setting("IMG_HOST"))
             if image_host["type"] != "关闭":
-                context["url"] = get_image_host(image_host["type"], **image_host["params"]).upload(file)
+                res = get_image_host(image_host["type"], **image_host["params"]).upload(file)
+                context["url"] = res[0]
                 context["status"] = True
                 context["msg"] = "上传成功"
                 image = ImageModel()
@@ -730,6 +736,7 @@ def upload_img(request):
                 image.size = file.size
                 image.type = file.content_type
                 image.date = time()
+                image.deleteConfig = json.dumps(res[1])
                 image.save()
         except Exception as error:
             logging.error(repr(error))

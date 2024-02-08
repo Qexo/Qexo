@@ -677,6 +677,7 @@ def pages(request):
                                   "time": i.date})
             for item in range(len(posts)):
                 posts[item]["size"] = convert_to_kb_mb_gb(posts[item]["size"])
+            posts.sort(key=lambda x: x["time"])
             context["posts"] = json.dumps(posts[::-1])
             context["post_number"] = len(posts)
             context["page_number"] = ceil(context["post_number"] / 15)

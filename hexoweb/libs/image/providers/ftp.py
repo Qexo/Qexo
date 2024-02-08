@@ -21,7 +21,16 @@ def create_dir(ftp, path):
         ftp.mkd(path)
 
 
-class Ftp(Provider):
+def delete(config):
+    ftp = FTP(encoding=config.get("encoding"))
+    ftp.connect(config.get("host"), int(config.get("port")))
+    ftp.login(config.get("user"), config.get("password"))
+    ftp.delete(config.get("path"))
+    ftp.quit()
+    return "删除成功"
+
+
+class Main(Provider):
     name = 'FTP协议'
     params = {
         'host': {'description': 'FTP 主机', 'placeholder': '所连接的 FTP 主机'},
@@ -59,4 +68,15 @@ class Ftp(Provider):
             create_dir(ftp, os.path.dirname(path))
             ftp.storbinary('STOR ' + path, file, bufsize)
         ftp.quit()
-        return replace_path(self.prev_url, file, file_md5, now)
+
+        delete_config = {
+            "provider": Main.name,
+            "host": self.host,
+            "port": self.port,
+            "user": self.user,
+            "password": self.password,
+            "encoding": self.encoding,
+            "path": path
+        }
+
+        return [replace_path(self.prev_url, file, file_md5, now), delete_config]

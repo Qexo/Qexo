@@ -24,10 +24,18 @@ def all_providers():
 def get_image_host(provider_name: str, **kwargs):
     if provider_name not in _all_providers:
         raise NoSuchProviderError(provider_name)
-    return _all_providers[provider_name](**kwargs)
+    return _all_providers[provider_name].Main(**kwargs)
 
 
 def get_params(provider_name):
     if provider_name not in _all_providers:
         raise NoSuchProviderError(provider_name)
-    return _all_providers[provider_name].params
+    return _all_providers[provider_name].Main.params
+
+
+def delete_image(config):
+    if not config:
+        return "已删除本地记录"
+    if config["provider"] not in _all_providers:
+        raise NoSuchProviderError(config["provider"])
+    return _all_providers[config["provider"]].delete(config)

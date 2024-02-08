@@ -85,6 +85,11 @@
                 </div>
                 <div class="modal-body">
                     确认要删除 <a id="delfile"></a> 吗？此操作不可撤回
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" id="checkSync"
+                               checked>
+                        <label class="custom-control-label" for="checkSync">删除远程文件</label>
+                    </div>
                 </div>
                 <div class="modal-footer" style="border: none;">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消
@@ -109,7 +114,7 @@
 
         function change_page(page) {
             scrollToTop();
-            let color = checkIfDark()?"text-white":"text-dark";
+            let color = checkIfDark() ? "text-white" : "text-dark";
             let post_temp = `<tr>
                                 <td>
                                     <div class="d-flex px-4 py-1">
@@ -199,12 +204,12 @@
             $.ajax({
                 url: '/api/delete_img/',
                 method: 'post',
-                data: {"image": del_file},
+                data: {"image": del_file, "sync": $("#checkSync").prop('checked')},
                 dataType: 'JSON',
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        notyf.success('删除成功！');
+                        notyf.success(escapeString(res.msg));
                         for (let i = 0; i < posts.length; i++) {
                             if (posts[i]["time"] === del_file) {
                                 posts.splice(i, 1);

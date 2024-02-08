@@ -21,6 +21,7 @@ class ImageModel(models.Model):
     size = models.TextField(max_length=0x7FFFFFFF)
     date = models.TextField(max_length=0x7FFFFFFF)
     type = models.TextField(max_length=0x7FFFFFFF)
+    deleteConfig = models.TextField(max_length=0x7FFFFFFF, default="{}")
 
 
 class FriendModel(models.Model):

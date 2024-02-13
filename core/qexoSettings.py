@@ -1,7 +1,7 @@
 import json
 import random
 
-QEXO_VERSION = "3.1.0"
+QEXO_VERSION = "3.1.1"
 
 DEFAULT_EMOJI = {"微笑": "🙂", "撇嘴": "😦", "色": "😍", "发呆": "😍", "得意": "😎",
                  "流泪": "😭", "害羞": "😊", "闭嘴": "😷", "睡": "😴",
@@ -43,7 +43,9 @@ DEFAULT_CDN = [
 
 DEFAULT_UPDATES = [
     {"name": "master", "url": "https://github.com/Qexo/Qexo/tarball/master/"},
-    {"name": "dev", "url": "https://github.com/Qexo/Qexo/tarball/dev/"}
+    {"name": "dev", "url": "https://github.com/Qexo/Qexo/tarball/dev/"},
+    {"name": "master_ghproxy", "url": "https://mirror.ghproxy.com/https://github.com/Qexo/Qexo/archive/master.tar.gz"},
+    {"name": "dev_ghproxy", "url": "https://mirror.ghproxy.com/https://github.com/Qexo/Qexo/archive/dev.tar.gz"}
 ]
 
 ALL_SETTINGS = [  # [名称, 默认值, 是否在尝试修复时重置, 简介]
@@ -74,8 +76,12 @@ ALL_SETTINGS = [  # [名称, 默认值, 是否在尝试修复时重置, 简介]
     ["LOGIN_RECAPTCHA_SERVER_TOKEN", "", False, "用于登录验证的reCaptchaV3服务端密钥"],
     ["LOGIN_RECAPTCHAV2_SITE_TOKEN", "", False, "用于登录验证的reCaptchaV2网站密钥"],
     ["LOGIN_RECAPTCHAV2_SERVER_TOKEN", "", False, "用于登录验证的reCaptchaV2服务端密钥"],
-    ["POST_SIDEBAR", "[{\"search\":\"title\",\"name\":\"标题\",\"icon\":\"fas fa-heading\"},{\"search\":\"abbrlink\",\"name\":\"缩写\",\"icon\":\"fas fa-id-card\"},{\"search\":\"date\",\"name\":\"发布于\",\"icon\":\"fas fa-globe-americas\"},{\"search\":\"updated\",\"name\":\"更新于\",\"icon\":\"fas fa-calendar-alt\"},{\"search\":\"tags\",\"name\":\"标签\",\"icon\":\"fas fa-tags\"},{\"search\":\"categories\",\"name\":\"分类\",\"icon\":\"fas fa-folder-open\"}]", False, "文章侧边栏配置JSON"],
-    ["PAGE_SIDEBAR", "[{\"search\":\"title\",\"name\":\"标题\",\"icon\":\"fas fa-heading\"},{\"search\":\"date\",\"name\":\"发布于\",\"icon\":\"fas fa-globe-americas\"},{\"search\":\"updated\",\"name\":\"更新于\",\"icon\":\"fas fa-calendar-alt\"}]", False, "页面侧边栏配置JSON"],
+    ["POST_SIDEBAR",
+     "[{\"search\":\"title\",\"name\":\"标题\",\"icon\":\"fas fa-heading\"},{\"search\":\"abbrlink\",\"name\":\"缩写\",\"icon\":\"fas fa-id-card\"},{\"search\":\"date\",\"name\":\"发布于\",\"icon\":\"fas fa-globe-americas\"},{\"search\":\"updated\",\"name\":\"更新于\",\"icon\":\"fas fa-calendar-alt\"},{\"search\":\"tags\",\"name\":\"标签\",\"icon\":\"fas fa-tags\"},{\"search\":\"categories\",\"name\":\"分类\",\"icon\":\"fas fa-folder-open\"}]",
+     False, "文章侧边栏配置JSON"],
+    ["PAGE_SIDEBAR",
+     "[{\"search\":\"title\",\"name\":\"标题\",\"icon\":\"fas fa-heading\"},{\"search\":\"date\",\"name\":\"发布于\",\"icon\":\"fas fa-globe-americas\"},{\"search\":\"updated\",\"name\":\"更新于\",\"icon\":\"fas fa-calendar-alt\"}]",
+     False, "页面侧边栏配置JSON"],
     ["TALK_SIDEBAR", "[]", False, "说说侧边栏配置JSON"],
     # ["EXCERPT_POST", "否", False, "是否开启在摘录为空时自动截取文章 是/否"],   # 弃用
     # ["EXCERPT_LENGTH", "200", False, "自动截取文章的长度"],  # 弃用
@@ -84,5 +90,6 @@ ALL_SETTINGS = [  # [名称, 默认值, 是否在尝试修复时重置, 简介]
     ["ALL_UPDATES", json.dumps(DEFAULT_UPDATES), True, "更新源列表"],
     ["UPDATE_FROM", "false", False, "是否更新过"],
     ["JUMP_UPDATE", "false", False, "是否转跳到更新界面"],
-    ["AUTO_EXCERPT_CONFIG", '{"method":"本地","auto":"关闭","save_key":"excerpt","params":{"save_key":"excerpt","length":"200"}}', False, "文章截取配置JSON"]
+    ["AUTO_EXCERPT_CONFIG", '{"method":"本地","auto":"关闭","save_key":"excerpt","params":{"save_key":"excerpt","length":"200"}}', False,
+     "文章截取配置JSON"]
 ]

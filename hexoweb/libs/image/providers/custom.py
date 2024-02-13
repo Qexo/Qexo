@@ -63,8 +63,8 @@ class Main(Provider):
             response.encoding = "utf8"
             url = json.loads(data)
             for path in json_path:
-                if path.isdigit():  # 处理列表Index
-                    url = [int(path)]
+                if isinstance(url, list):  # 处理列表Index
+                    url = url[int(path)]
                 else:
                     url = url[path]
         else:
@@ -73,8 +73,8 @@ class Main(Provider):
             json_path = self.delete_url.split(".")
             delete_url = json.loads(data)
             for path in json_path:
-                if path.isdigit():
-                    delete_url = [int(path)]
+                if isinstance(url, list):
+                    delete_url = delete_url[int(path)]
                 else:
                     delete_url = delete_url[path]
             return [str(self.custom_url) + str(url), {"provider": Main.name, "delete_url": delete_url}]

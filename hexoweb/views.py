@@ -634,24 +634,22 @@ def pages(request):
             context["breadcrumb_cn"] = "说说列表"
             search = request.GET.get("s")
             posts = []
-            if search:
-                talks = TalkModel.objects.filter(content__contains=search)
-                for i in talks:
-                    t = json.loads(i.like)
+            talks = TalkModel.objects.all()
+            for i in talks:
+                t = json.loads(i.like)
+                if not search:
                     posts.append({"content": excerpt_post(i.content, 20, mark=False),
                                   "tags": ', '.join(json.loads(i.tags)),
                                   "time": strftime("%Y-%m-%d %H:%M:%S", localtime(int(i.time))),
                                   "like": len(t) if t else 0,
                                   "id": i.id.hex})
-            else:
-                talks = TalkModel.objects.all()
-                for i in talks:
-                    t = json.loads(i.like)
-                    posts.append({"content": excerpt_post(i.content, 20, mark=False),
-                                  "tags": ', '.join(json.loads(i.tags)),
-                                  "time": strftime("%Y-%m-%d %H:%M:%S", localtime(int(i.time))),
-                                  "like": len(t) if t else 0,
-                                  "id": i.id.hex})
+                else:
+                    if search.upper() in i.content.upper() or search in i.tags.upper() or search in i.values.upper():
+                        posts.append({"content": excerpt_post(i.content, 20, mark=False),
+                                      "tags": ', '.join(json.loads(i.tags)),
+                                      "time": strftime("%Y-%m-%d %H:%M:%S", localtime(int(i.time))),
+                                      "like": len(t) if t else 0,
+                                      "id": i.id.hex})
             context["posts"] = json.dumps(sorted(posts, key=lambda x: x["time"], reverse=True))
             context["post_number"] = len(posts)
             context["page_number"] = ceil(context["post_number"] / 15)
@@ -661,20 +659,19 @@ def pages(request):
             context["breadcrumb_cn"] = "图片列表"
             search = request.GET.get("s")
             posts = []
-            if search:
-                images = ImageModel.objects.filter(name__contains=search)
-                for i in images:
+            images = ImageModel.objects.all()
+            for i in images:
+                if not search:
                     posts.append({"name": i.name, "size": int(i.size), "url": escape(i.url),
                                   "date": strftime("%Y-%m-%d %H:%M:%S",
                                                    localtime(float(i.date))),
                                   "time": i.date})
-            else:
-                images = ImageModel.objects.all()
-                for i in images:
-                    posts.append({"name": i.name, "size": int(i.size), "url": escape(i.url),
-                                  "date": strftime("%Y-%m-%d %H:%M:%S",
-                                                   localtime(float(i.date))),
-                                  "time": i.date})
+                else:
+                    if search.upper() in i.name.upper() or search.upper() in i.url.upper():
+                        posts.append({"name": i.name, "size": int(i.size), "url": escape(i.url),
+                                      "date": strftime("%Y-%m-%d %H:%M:%S",
+                                                       localtime(float(i.date))),
+                                      "time": i.date})
             for item in range(len(posts)):
                 posts[item]["size"] = convert_to_kb_mb_gb(posts[item]["size"])
             posts.sort(key=lambda x: x["time"])
@@ -687,20 +684,19 @@ def pages(request):
             context["breadcrumb_cn"] = "友情链接"
             search = request.GET.get("s")
             posts = []
-            if search:
-                friends = FriendModel.objects.filter(name__contains=search)
-                for i in friends:
+            images = FriendModel.objects.all()
+            for i in images:
+                if not search:
                     posts.append({"name": escapeString(i.name), "url": escapeString(i.url), "image": escapeString(i.imageUrl),
                                   "description": escapeString(i.description),
                                   "time": i.time,
                                   "status": i.status})
-            else:
-                images = FriendModel.objects.all()
-                for i in images:
-                    posts.append({"name": escapeString(i.name), "url": escapeString(i.url), "image": escapeString(i.imageUrl),
-                                  "description": escapeString(i.description),
-                                  "time": i.time,
-                                  "status": i.status})
+                else:
+                    if search.upper() in i.name.upper() or search.upper() in i.url.upper() or search.upper() in i.description.upper():
+                        posts.append({"name": escapeString(i.name), "url": escapeString(i.url), "image": escapeString(i.imageUrl),
+                                      "description": escapeString(i.description),
+                                      "time": i.time,
+                                      "status": i.status})
             posts.sort(key=lambda x: x["time"])
             context["posts"] = json.dumps(posts)
             context["post_number"] = len(posts)

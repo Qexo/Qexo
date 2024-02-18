@@ -75,7 +75,7 @@
                 notyf.error("密码不能为空! ");
                 return false;
             }
-            $("#submit-button").html("<button class=\"btn btn-white my-4\">······</button>");
+            $("#submit-button").html("<button class=\"btn btn-white my-4\" disabled>······</button>");
             {% if site_token %}
                 grecaptcha.ready(function () {
                 grecaptcha.execute('{{ site_token }}', {action: 'submit'}).then(function (token) {

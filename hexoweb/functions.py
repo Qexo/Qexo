@@ -784,7 +784,8 @@ def export_images():
     all_settings = ImageModel.objects.all()
     settings = list()
     for setting in all_settings:
-        settings.append({"name": setting.name, "url": setting.url, "size": setting.size, "date": setting.date, "type": setting.type})
+        settings.append({"name": setting.name, "url": setting.url, "size": setting.size, "date": setting.date, "type": setting.type,
+                         "deleteConfig": setting.deleteConfig})
     return settings
 
 
@@ -862,6 +863,7 @@ def import_images(ss):
         image.size = s["size"]
         image.date = s["date"]
         image.type = s["type"]
+        image.deleteConfig = s["deleteConfig"]
         image.save()
     return True
 

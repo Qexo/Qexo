@@ -662,18 +662,16 @@ def pages(request):
             images = ImageModel.objects.all()
             for i in images:
                 if not search:
-                    posts.append({"name": i.name, "size": int(i.size), "url": escape(i.url),
+                    posts.append({"name": i.name, "size": convert_to_kb_mb_gb(int(i.size)), "url": escape(i.url),
                                   "date": strftime("%Y-%m-%d %H:%M:%S",
                                                    localtime(float(i.date))),
                                   "time": i.date})
                 else:
                     if search.upper() in i.name.upper() or search.upper() in i.url.upper():
-                        posts.append({"name": i.name, "size": int(i.size), "url": escape(i.url),
+                        posts.append({"name": i.name, "size": convert_to_kb_mb_gb(int(i.size)), "url": escape(i.url),
                                       "date": strftime("%Y-%m-%d %H:%M:%S",
                                                        localtime(float(i.date))),
                                       "time": i.date})
-            for item in range(len(posts)):
-                posts[item]["size"] = convert_to_kb_mb_gb(posts[item]["size"])
             posts.sort(key=lambda x: x["time"])
             context["posts"] = json.dumps(posts[::-1])
             context["post_number"] = len(posts)

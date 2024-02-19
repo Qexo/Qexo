@@ -5,10 +5,9 @@ PyGithub==2.2.0
 python-gitlab==4.4.0
 html2text==2020.1.16
 PyYAML==6.0.1
-urllib3==2.2.1
+urllib3==2.0.7
 Markdown==3.5.2
 django-cors-headers==4.1.0
-dnspython==2.2.1
 psycopg2-binary==2.9.9
 cryptography==42.0.3
 pyopenssl==24.0.0

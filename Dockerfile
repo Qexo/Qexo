@@ -9,7 +9,7 @@ RUN if [ "$CN" = "true" ]; then \
     fi
 
 RUN python -m pip install --upgrade pip && \
-    pip install -r requirements_withoutmysqltxt && \
+    pip install -r requirements_withoutmysql.txt && \
     python3 manage.py makemigrations && \
     python3 manage.py migrate
 

@@ -819,6 +819,7 @@ def get_notifications(request):
     try:
         # 检查更新
         latest = get_latest_version()
+        latest.replace("<h2>", "<h5>")
         if latest["status"]:
             cache = Cache.objects.filter(name="update")
             if cache.count():

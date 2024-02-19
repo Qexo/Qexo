@@ -6,6 +6,7 @@
 
 import json
 import requests
+import logging
 
 from ..core import Provider
 
@@ -58,6 +59,7 @@ class Main(Provider):
                                          files={self.post_params: [file.name, file.read(),
                                                                    file.content_type]})
         data = response.text
+        logging.info(data)
         if self.json_path:
             json_path = self.json_path.split(".")
             response.encoding = "utf8"

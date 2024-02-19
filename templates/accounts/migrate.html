@@ -63,9 +63,9 @@
                         {% csrf_token %}
                         <input type="hidden" name="type" value="import">
                         <div class="custom-file">
-                            <input type="file" class="custom-file-input" id="customFile"
+                            <label for="customFile" class="form-label">备份文件</label>
+                            <input type="file" class="form-control" id="customFile"
                                    name="import-file">
-                            <label class="custom-file-label" for="customFile"></label>
                         </div>
                     </form>
                 </div>

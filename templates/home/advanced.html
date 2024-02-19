@@ -207,17 +207,6 @@
         });
 
 
-        function excerpt_by_local(content, length) {
-            let excerpt = content.replace(/<img[^>]*>/g, "");
-            excerpt = excerpt.replace(/<iframe[^>]*>/g, "");
-            excerpt = excerpt.replace(/<script[^>]*>/g, "");
-            excerpt = excerpt.replace(/<style[^>]*>/g, "");
-            excerpt = excerpt.replace(/<[^>]*>/g, "");
-            excerpt = excerpt.replace(/\n/g, " ");
-            return excerpt.substring(0, length) + (content.length > length ? "..." : "");
-        }
-
-
         function query_edit(name, content) {
             let color = checkIfDark() ? "bg-gradient-dark text-white" : "bg-white text-dark";
             let html = `<div class="form-group"><label class="form-control-label">字段名</label><input type="text"

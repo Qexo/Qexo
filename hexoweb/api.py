@@ -738,9 +738,12 @@ def upload_img(request):
                 image.date = time()
                 image.deleteConfig = json.dumps(res[1])
                 image.save()
+                context["data"] = {"name": image.name, "size": convert_to_kb_mb_gb(int(image.size)), "url": escape(image.url),
+                                   "date": strftime("%Y-%m-%d %H:%M:%S", localtime(float(image.date))),
+                                   "time": str(image.date)}
         except Exception as error:
             logging.error(repr(error))
-            context = {"msg": repr(error), "url": False}
+            context = {"msg": repr(error), "url": False, "status": False}
     return JsonResponse(safe=False, data=context)
 
 

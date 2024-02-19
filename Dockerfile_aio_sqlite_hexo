@@ -5,7 +5,7 @@ COPY . .
 RUN sed -i "s/qexo_data.db/\/db\/qexo_data.db/g" core/settings.py && \
     mkdir /db && \
     mkdir /blog
-RUN pip install -r requirements_withoutmsyql.txt
+RUN pip install -r requirements_withoutmysql.txt
     # python3 manage.py makemigrations && \
     # python3 manage.py migrate
 RUN npm install hexo-cli -g

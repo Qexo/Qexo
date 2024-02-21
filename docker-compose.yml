@@ -1,0 +1,11 @@
+version: '3'
+services:
+  qexo:
+    image: registry.cn-hangzhou.aliyuncs.com/zznn/mycentos:qexo-3.2.1
+    container_name: qexo
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./db.sqlite3:/app/db/db.sqlite3
+      - ./blog:/app/data
+      - ./configs.py:/app/configs.py

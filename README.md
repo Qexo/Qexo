@@ -63,6 +63,29 @@ Vercel 的无服务器函数用量对于 Qexo 来说是充裕的，但这依然�
 ### 其他问题
 如果还有问题，可以发 [issue](https://github.com/am-abudu/Qexo/issues) 或加入 [HexoPlusPlus交流群](https://jq.qq.com/?_wv=1027&k=rAcnhzqK) 询问
 
+###docker方式本地部署
+如不想了解镜像制作过程可直接使用此docker-compose.yml文件启动qexo服务
+镜像可选"registry.cn-hangzhou.aliyuncs.com/zznn/mycentos:qexo-3.2.1"
+docker-compose.yml文件(需要修改config.py文件将自己的机器IP或域名加入 | 关于db.sqlite3只需要在当前目录创建一个名为db.sqlite3的空文件即可😎 )
+###docker-compose.yml文件
+```yaml
+version: '3'
+services:
+  qexo:
+    image: registry.cn-hangzhou.aliyuncs.com/zznn/mycentos:qexo-3.2.1 
+    container_name: qexo
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./db.sqlite3:/app/db/db.sqlite3
+      - ./blog:/app/data
+      - ./configs.py:/app/configs.py
+```
+###执行部署
+docker-compose up -d
+NOTE： 详情参考 [粘人的鸭嘴兽.](http://sunlight.zznnwn.cloudns.biz/2024/01/24/docker方式部署qexo/)
+
+
 ## 鸣谢
 - [Ace](https://ace.c9.io/)
 - [Argon-Dashboard-Django](https://github.com/creativetimofficial/argon-dashboard-django)

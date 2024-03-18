@@ -21,8 +21,7 @@ def delete(config):
         region_name=config.get("region_name"),
         verify=False
     )
-    bucket = s3.Bucket(config.get("bucket"))
-    bucket.delete_object(Key=config.get("path"))
+    s3.Object(config.get("bucket"), config.get("path")).delete()
     return "删除成功"
 
 

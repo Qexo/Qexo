@@ -752,7 +752,8 @@ def get_post_details(article, safe=True):
         if flag:
             article = article[3:]
         return {}, repr(article).replace("<", "\\<").replace(">", "\\>").replace("!", "\\!") if safe else article
-    if not front_matter:
+    if not isinstance(front_matter, dict):
+        logging.info("FrontMatter解析失败, {}".format(front_matter))
         front_matter = {}
         if flag:
             article = article[3:]

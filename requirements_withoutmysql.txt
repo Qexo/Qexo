@@ -13,3 +13,4 @@ cryptography==42.0.3
 pyopenssl==24.0.0
 oss2==2.18.4
 beautifulsoup4==4.12.3
+upyun==2.5.5

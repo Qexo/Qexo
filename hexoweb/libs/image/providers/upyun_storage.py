@@ -35,9 +35,6 @@ def delete(config):
 class Main(Provider):
     name = '又拍云-云储存'
     params = {
-        #     service = "admsec-store"
-        # username = "admsec"
-        # password = "2k2FhiuECPXIPmcmVmFajlu4uxfYvWXH"
         'service': {'description': 'bucket名称', 'placeholder': '云储存里的服务名称'},
         'username': {'description': '操作员名', 'placeholder': '又拍云的操作员名'},
         'password': {'description': '操作员密码', 'placeholder': '又拍云的操作员密码'},

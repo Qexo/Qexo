@@ -1,4 +1,5 @@
 {
+  "version": 2,
   "builds": [
     {
       "src": "migrate.sh",
@@ -9,14 +10,16 @@
     },
     {
       "src": "core/wsgi.py",
-      "use": "@vercel/python"
+      "use": "@vercel/python",
+      "config": { 
+        "installCommand": "pip install -r requirements.txt" 
+      }
     }
   ],
   "rewrites": [
     {
-      "source": "(.*)",
-      "destination": "core/wsgi.py"
+      "source": "/(.*)",
+      "destination": "/core/wsgi.py"
     }
-  ],
-  "trailingSlash": true
+  ]
 }

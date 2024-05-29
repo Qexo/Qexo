@@ -2,24 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "migrate.sh",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "templates"
-      }
-    },
-    {
-      "src": "core/wsgi.py",
-      "use": "@vercel/python",
-      "config": { 
-        "installCommand": "pip install -r requirements.txt" 
-      }
+      "src": "manage.py",
+      "use": "@vercel/python"
     }
   ],
-  "rewrites": [
+  "routes": [
     {
-      "source": "/(.*)",
-      "destination": "/core/wsgi.py"
+      "src": "/(.*)",
+      "dest": "/core/wsgi.py"
     }
   ]
 }

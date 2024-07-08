@@ -22,7 +22,7 @@ from urllib3 import disable_warnings
 from urllib.parse import quote, unquote
 
 from core.qexoSettings import ALL_SETTINGS
-from core.qexoSettings import QEXO_VERSION
+from core.qexoSettings import QEXO_VERSION, QEXO_STATIC
 from hexoweb.libs.elevator import elevator
 from hexoweb.libs.onepush import notify
 from hexoweb.libs.platforms import get_provider
@@ -101,7 +101,7 @@ def get_cdn():
 
 # 获取用户自定义的样式配置
 def get_custom_config():
-    context = {"cdn_prev": get_cdn(), "QEXO_NAME": get_setting("QEXO_NAME")}
+    context = {"cdn_prev": get_cdn(), "QEXO_NAME": get_setting("QEXO_NAME"), "static_version": QEXO_STATIC}
     if not context["QEXO_NAME"]:
         save_setting('QEXO_NAME', 'Hexo管理面板')
         context["QEXO_NAME"] = get_setting("QEXO_NAME")
@@ -112,17 +112,17 @@ def get_custom_config():
     context["QEXO_LOGO"] = get_setting("QEXO_LOGO")
     if not context["QEXO_LOGO"]:
         save_setting('QEXO_LOGO',
-                     'https://unpkg.com/qexo-static@2.2.3/qexo/images/qexo.png')
+                     'https://unpkg.com/qexo-static@' + QEXO_STATIC + '/qexo/images/qexo.png')
         context["QEXO_LOGO"] = get_setting("QEXO_LOGO")
     context["QEXO_LOGO_DARK"] = get_setting("QEXO_LOGO_DARK")
     if not context["QEXO_LOGO_DARK"]:
         save_setting('QEXO_LOGO_DARK',
-                     'https://unpkg.com/qexo-static@2.2.3/qexo/images/qexo-dark.png')
+                     'https://unpkg.com/qexo-static@' + QEXO_STATIC + '/qexo/images/qexo-dark.png')
         context["QEXO_LOGO_DARK"] = get_setting("QEXO_LOGO_DARK")
     context["QEXO_ICON"] = get_setting("QEXO_ICON")
     if not context["QEXO_ICON"]:
         save_setting('QEXO_ICON',
-                     'https://unpkg.com/qexo-static@2.2.3/qexo/images/icon.png')
+                     'https://unpkg.com/qexo-static@' + QEXO_STATIC + '/qexo/images/icon.png')
         context["QEXO_ICON"] = get_setting("QEXO_ICON")
     return context
 

@@ -418,6 +418,7 @@ def index(request):
     context["images"] = images
     context = dict(context, **get_latest_version())
     context["version"] = QEXO_VERSION
+    context["static_version"] = QEXO_STATIC
     context["post_number"] = str(len(posts))
     context["images_number"] = str(len(images))
     context["breadcrumb"] = "Dashboard"

@@ -731,6 +731,8 @@ def get_post_details(article, safe=True):
             article = ";;;\n" + article
         elif "---" in article:
             article = "---\n" + article
+        else:
+            flag = False
     abbrlink = get_crc_by_time(str(time()), get_setting("ABBRLINK_ALG"), get_setting("ABBRLINK_REP"))
     dateformat = datetime.now(timezone.utc).astimezone().isoformat()
     try:
@@ -752,7 +754,7 @@ def get_post_details(article, safe=True):
         if flag:
             article = article[3:]
         return {}, repr(article).replace("<", "\\<").replace(">", "\\>").replace("!", "\\!") if safe else article
-    if not isinstance(front_matter, dict):
+    if not isinstance(front_matter, dict) or not front_matter:
         logging.info("FrontMatter解析失败, {}".format(front_matter))
         front_matter = {}
         if flag:

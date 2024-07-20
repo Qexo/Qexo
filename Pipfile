@@ -29,5 +29,5 @@ upyun = "==2.5.5"
 [dev-packages]
 
 [requires]
-python_version = "3.11"
-python_full_version = "3.11.8"
+python_version = "3.12"
+python_full_version = "3.12.4"

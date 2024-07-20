@@ -331,7 +331,7 @@ def check_if_api_auth(request):
 
 
 def check_if_vercel():
-    return True if os.environ.get("VERCEL") else False
+    return True if os.environ.get("VERCEL") or get_setting("FORCE_VERCEL") else False
 
 
 def get_crc16(x, _hex=False):
@@ -410,6 +410,7 @@ def checkBuilding(projectId, token):
 
 def file_get_contents(file):
     with open(file, 'r', encoding="utf8") as f:
+        logging.info("读取文件: " + file)
         content = f.read()
     return content
 

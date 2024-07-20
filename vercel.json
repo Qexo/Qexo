@@ -1,15 +1,15 @@
 {
   "builds": [
     {
+      "src": "core/wsgi.py",
+      "use": "@vercel/python"
+    },
+    {
       "src": "migrate.sh",
       "use": "@vercel/static-build",
       "config": {
         "distDir": "templates"
       }
-    },
-    {
-      "src": "core/wsgi.py",
-      "use": "@vercel/python"
     }
   ],
   "rewrites": [

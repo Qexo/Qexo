@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     # 'django.contrib.staticfiles',
     'hexoweb.apps.ConsoleConfig',
     'corsheaders',
+    # "passkeys"
 ]
 
 MIDDLEWARE = [

@@ -22,7 +22,8 @@
                                 <thead>
                                 <tr>
                                     <th class="text-secondary text-xxs font-weight-bolder opacity-7">
-                                        <span class="px-1 text-secondary">图片名</span>
+                                        <span class="px-1 text-secondary"
+                                              id="dynamic-gallery">图片名</span>
                                     </th>
                                     <th class="text-secondary text-xxs font-weight-bolder opacity-7">
                                         <span class="text-secondary">大小</span>
@@ -127,9 +128,11 @@
                     <div id="showurl"></div>
                 </div>
                 <div class="modal-footer" style="border: none;">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭
+                    </button>
                     <div id="uploadButton">
-                        <button type="button" class="btn btn-primary" onclick="upload_file()" >上传</button>
+                        <button type="button" class="btn btn-primary" onclick="upload_file()">上传
+                        </button>
                     </div>
                 </div>
             </div>
@@ -140,8 +143,21 @@
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
+    <link href="{{ cdn_prev }}@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css"
+          rel="stylesheet">
+    <script src="{{ cdn_prev }}@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
 
     <script>
+        function displayImage(url) {
+            $.fancybox.open([
+                {
+                    src: url,
+                },
+            ], {
+                loop: false
+            });
+        }
+
         var posts = {{ posts|safe }};
         var _page = 1;
         var del_file;
@@ -153,7 +169,7 @@
                                 <td>
                                     <div class="d-flex px-4 py-1">
                                         <h6 class="mb-0 text-sm">@@name@@</h6>
-                                        <a href="@@url@@" target="_blank">&nbsp<i class="fa
+                                        <a href="javascript:displayImage('@@url@@')"">&nbsp<i class="fa
                                             fa-external-link-alt text-primary"></i></a>
                                     </div>
                                 </td>
@@ -195,7 +211,7 @@
             } else {
                 $("#prev-page").removeClass("disabled");
             }
-            if (page >={{ page_number }}) {
+            if (page >= {{ page_number }}) {
                 $("#next-page").addClass("disabled");
             } else {
                 $("#next-page").removeClass("disabled");
@@ -211,7 +227,7 @@
         }
 
         function next_page() {
-            if (_page <{{ page_number }}) {
+            if (_page < {{ page_number }}) {
                 change_page(_page + 1);
             } else {
                 notyf.error("已是最后一页");

@@ -1,7 +1,8 @@
 import json
 import random
 
-QEXO_VERSION = "3.2.1"
+QEXO_VERSION = "3.3.0"
+QEXO_STATIC = "2.4.0"
 
 DEFAULT_EMOJI = {"微笑": "🙂", "撇嘴": "😦", "色": "😍", "发呆": "😍", "得意": "😎",
                  "流泪": "😭", "害羞": "😊", "闭嘴": "😷", "睡": "😴",
@@ -54,9 +55,9 @@ ALL_SETTINGS = [  # [名称, 默认值, 是否在尝试修复时重置, 简介]
     ["CDN_PREV", "https://npm.onmicrosoft.cn/", True, "调用NPM的CDN前缀"],
     # ["CDNJS", "https://cdn.staticfile.org/", True, "调用CDNJS的CDN前缀"],
     ["INIT", "2", False, "初始化标识"],
-    ["QEXO_ICON", "https://unpkg.com/qexo-static@2.2.3/qexo/images/icon.png", False, "站点ICON"],
-    ["QEXO_LOGO", "https://unpkg.com/qexo-static@2.2.3/qexo/images/qexo.png", False, "站点LOGO"],
-    ["QEXO_LOGO_DARK", "https://unpkg.com/qexo-static@2.2.3/qexo/images/qexo-dark.png", False, "暗色站点LOGO"],
+    ["QEXO_ICON", "/static/qexo-static@" + QEXO_STATIC + "/qexo/images/icon.png", False, "站点ICON"],
+    ["QEXO_LOGO", "/static/qexo-static@" + QEXO_STATIC + "/qexo/images/qexo.png", False, "站点LOGO"],
+    ["QEXO_LOGO_DARK", "https://unpkg.com/qexo-static@" + QEXO_STATIC + "/qexo/images/qexo-dark.png", False, "暗色站点LOGO"],
     ["QEXO_NAME", "博客管理面板", False, "站点名"],
     ["QEXO_SPLIT", "-", False, "站点分隔符"],
     ["VDITOR_EMOJI", json.dumps(DEFAULT_EMOJI), True, "自定义表情"],

@@ -24,11 +24,7 @@ SECRET_KEY = 'django-insecure-mrf1flh+i8*!ao73h6)ne#%gowhtype!ld#+(j^r*!^11al2vz
 DEBUG = False
 
 try:
-    if os.environ.get("VERCEL"):
-        raise Exception("Vercel")
-
     import configs  # 本地部署
-
     ALLOWED_HOSTS = configs.DOMAINS
 except:
     logging.info("获取本地配置文件失败, 使用环境变量获取配置")  # Serverless部署
@@ -87,11 +83,7 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 try:
-    if os.environ.get("VERCEL"):
-        raise Exception("Vercel")
-
     import configs
-
     print("获取本地配置文件成功, 使用本地数据库配置")
     DATABASES = configs.DATABASES
 except:
@@ -162,17 +154,24 @@ except:
         }
         if os.environ.get("PLANETSCALE"):
             DATABASES["default"]["ENGINE"] = "hexoweb.libs.django_psdb_engine"
-    else:   # sqlite
-        print("使用sqlite数据库")
-        import sqlite3
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.sqlite3',
-                'NAME': 'qexo_data.db',
-            }
-        }
+    else:
+        errors = "数据库"
+
+    # Vercel 无法使用 Sqlite
+    # else:  # sqlite
+    #     print("使用sqlite数据库")
+    #     import sqlite3
+    #
+    #     DATABASES = {
+    #         'default': {
+    #             'ENGINE': 'django.db.backends.sqlite3',
+    #             'NAME': 'qexo_data.db',
+    #         }
+    #     }
+
     if errors:
-        raise exceptions.InitError(f"\"{errors}\"环境变量未设置")
+        logging.error(f"{errors}未设置, 请查看: https://www.oplog.cn/qexo/start/build.html")
+        raise exceptions.InitError(f"{errors}未设置, 请查看: https://www.oplog.cn/qexo/start/build.html")
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators

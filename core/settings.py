@@ -170,6 +170,7 @@ except:
     #     }
 
     if errors:
+        logging.error(f"{errors}未设置, 请查看: https://www.oplog.cn/qexo/start/build.html")
         raise exceptions.InitError(f"{errors}未设置, 请查看: https://www.oplog.cn/qexo/start/build.html")
 
 # Password validation

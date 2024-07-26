@@ -21,6 +21,7 @@ from markdown import markdown
 from urllib3 import disable_warnings
 from urllib.parse import quote, unquote
 
+import hexoweb.libs.i18n
 from core.qexoSettings import ALL_SETTINGS
 from core.qexoSettings import QEXO_VERSION, QEXO_STATIC, VDITOR_LANGUAGES
 from hexoweb.libs.elevator import elevator
@@ -47,8 +48,8 @@ def update_language():
     global _Language
     _Language = get_setting("LANGUAGE")
     if not _Language:
-        save_setting("LANGUAGE", "zh-CN")
-        _Language = "zh-CN"
+        save_setting("LANGUAGE", "zh_CN")
+        _Language = "zh_CN"
     _Language = get_language(_Language).default
     return _Language
 
@@ -56,8 +57,8 @@ def update_language():
 try:
     _Language = update_language()
 except Exception:
-    logging.error("Language获取失败, 默认为zh-CN")
-    _Language = get_language("zh-CN").default
+    logging.error("Language获取失败, 默认为zh_CN")
+    _Language = get_language("zh_CN").default
 
 
 @register.filter
@@ -125,7 +126,7 @@ def get_cdn():
 # 获取用户自定义的样式配置
 def get_custom_config():
     context = {"cdn_prev": get_cdn(), "QEXO_NAME": get_setting("QEXO_NAME"), "static_version": QEXO_STATIC,
-               "language": _Language.get("name", "zh-CN"), "vditor_languages": VDITOR_LANGUAGES}
+               "language": _Language.get("name", "zh_CN"), "vditor_languages": VDITOR_LANGUAGES, "all_languages": hexoweb.libs.i18n.all_languages()}
     if not context["QEXO_NAME"]:
         save_setting('QEXO_NAME', 'Hexo' + gettext("CONSOLE"))
         context["QEXO_NAME"] = get_setting("QEXO_NAME")

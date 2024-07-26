@@ -9,6 +9,7 @@ from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.template import loader
 
+import hexoweb.libs.i18n
 from hexoweb.libs.image import all_providers as all_image_providers
 from hexoweb.libs.image import get_params as get_image_params
 from hexoweb.libs.onepush import all_providers as onepush_providers
@@ -115,7 +116,7 @@ def update_view(request):
 
 def init_view(request):
     msg = None
-    context = dict()
+    context = dict(all_languages=hexoweb.libs.i18n.all_languages())
     context.update(get_custom_config())
     step = get_setting("INIT")
     if not step:
@@ -129,6 +130,8 @@ def init_view(request):
         if request.POST.get("step") == "1":
             fix_all()
             save_setting("INIT", "2")
+            save_setting("LANGUAGE", request.POST.get("language"))
+            update_language()
             if not User.objects.all():
                 step = "2"
             else:

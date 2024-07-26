@@ -270,6 +270,28 @@
         excerpt = excerpt.replace(/\n/g, " ");
         return excerpt.substring(0, length) + (content.length > length ? "..." : "");
     }
+    
+    function change_lang(lang) {
+        $.ajax({
+            url: "/api/change_lang/",
+            type: "post",
+            dataType: "JSON",
+            data: {"lang": lang},
+            success: function (res) {
+                if (res.status) {
+                    notyf.success(res.msg);
+                    setTimeout(function () {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    notyf.error(res.msg);
+                }
+            },
+            error: function (res) {
+                notyf.error("{{ "NETWORK_ERROR" | gettext }}");
+            }
+        })
+    }
 
     {% if error %}
         notyf.error("{{ error }}");

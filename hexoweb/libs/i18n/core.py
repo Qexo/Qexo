@@ -16,7 +16,10 @@ from .languages import _all_languages
 
 
 def all_languages():
-    return list(_all_languages.keys())
+    languages = list()
+    for lang in _all_languages.keys():
+        languages.append({"name": lang, "name_local": _all_languages[lang].Main.name_local})
+    return languages
 
 
 def get_language(language_name: str):

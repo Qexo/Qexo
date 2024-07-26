@@ -60,6 +60,12 @@
                     <form method="POST" id="main-form">
                         {% if step == "1" %}
                             <div class="text-center">
+                                <select name="language" id="config-container"
+                                        class="form-control">
+                                    {% for i in all_languages %}
+                                        <option value="{{ i.name }}">{{ i.name_local }}</option>
+                                    {% endfor %}
+                                </select>
                                 <button type="submit" class="btn btn-primary my-4">
                                     {{ "START" | gettext }}</button>
                             </div>
@@ -74,7 +80,7 @@
                                     <div class="form-group">
                                         <label class="form-control-label">{{ "INIT_2_1" | gettext }}</label>
                                         <input type="text" name="apikey" class="form-control"
-                                               placeholder="{{ "INIT_2_1_PH" | gettext }}" 
+                                               placeholder="{{ "INIT_2_1_PH" | gettext }}"
                                                value="{{ apikey }}">
                                     </div>
                                 </div>
@@ -83,7 +89,8 @@
                                         <label class="form-control-label">
                                             {{ "INIT_2_2" | gettext }}</label>
                                         <input type="text" name="username"
-                                               class="form-control" placeholder="{{ "INIT_2_2_PH" | gettext }}"
+                                               class="form-control"
+                                               placeholder="{{ "INIT_2_2_PH" | gettext }}"
                                                value="{{ username }}">
                                     </div>
                                 </div>
@@ -94,7 +101,7 @@
                                         <label class="form-control-label">
                                             {{ "INIT_2_3" | gettext }}</label>
                                         <input type="text" name="password" class="form-control"
-                                               placeholder="{{ "INIT_2_3_PH" | gettext }}" 
+                                               placeholder="{{ "INIT_2_3_PH" | gettext }}"
                                                value="{{ password }}">
                                     </div>
                                 </div>
@@ -134,7 +141,7 @@
                                             <select name="config" id="config-container"
                                                     class="form-control">
                                                 {% for config in all_platform_configs %}
-                                                <option value="{{ config }}">{{ config }}</option>
+                                                    <option value="{{ config }}">{{ config }}</option>
                                                 {% endfor %}
                                             </select>
 
@@ -146,7 +153,8 @@
                             <div class="text-center" id="submit-button">
                                 {% if PROVIDER %}
                                     <input type="button" class="btn btn-secondary my-4"
-                                           value="{{ "FORCE_SUBMIT" | gettext }}" onclick="query_force()">
+                                           value="{{ "FORCE_SUBMIT" | gettext }}"
+                                           onclick="query_force()">
                                 {% endif %}
                                 <button type="submit" class="btn btn-primary my-4">下一步</button>
                             </div>

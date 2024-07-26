@@ -1,5 +1,5 @@
 """
-@Project   : zh-CN
+@Project   : zh_CN
 @Author    : abudu
 @Blog      : https://www.oplog.cn
 """
@@ -9,6 +9,7 @@ from ..core import Language
 
 class Main(Language):
     name = 'zh_CN'
+    name_local = "中文(简体)"
     default = {
         "name": name,
         "data": {
@@ -32,6 +33,7 @@ class Main(Language):
             "CAPTCHA_NO": "未收到人机验证信息",
             "CAPTCHA_RESULT": "reCaptcha{}结果: {}",
             "CATEGORY_EXITS": "分类已存在!",
+            "CHANGE_LANGUAGE": "切换语言",
             "CLEAN_FLINKS_FAILED": "无隐藏的友链",
             "CLEAN_FLINKS_SUCCESS": "成功清理了{}条友链",
             "CLEAR_ALL": "清除全部",

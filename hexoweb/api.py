@@ -953,3 +953,16 @@ def run_online_script(request):
         logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
+
+# 切换语言 api/change_lang
+@login_required(login_url="/login/")
+def change_lang(request):
+    try:
+        lang = request.POST.get("lang")
+        save_setting("LANGUAGE", lang)
+        context = {"msg": gettext("SAVE_SUCCESS"), "status": True}
+        update_language()
+    except Exception as error:
+        logging.error(repr(error))
+        context = {"msg": repr(error), "status": False}
+    return JsonResponse(safe=False, data=context)

@@ -35,7 +35,9 @@
             <div class="ms-md-auto pe-md-3 d-flex align-items-center">
                 {% if 'new' in segment %}
                     <input type="text" name="filename" class="form-control rounded-pill me-3"
-                           placeholder="{% if 'page' in segment %}{{ "PAGE" | gettext }}{% else %}{{ "POST" | gettext }}{% endif %}{{ "NAME" | gettext }}">
+                           placeholder="
+                                   
+                                   {% if 'page' in segment %}{{ "PAGE" | gettext }}{% else %}{{ "POST" | gettext }}{% endif %}{{ "NAME" | gettext }}">
                 {% endif %}
                 {% if 'page' in segment %}
                     <form id="navbar-search-main" class="input-group" action="/pages.html"
@@ -92,16 +94,16 @@
                            placeholder="{{ "SEARCH_TALK" | gettext }}..."
                            type="text" name="s">
                 {% elif 'userscripts' in segment %}
-                    <input class="form-control" 
-                           placeholder="{{ "SEARCH_SCRIPT" | gettext }}..." 
+                    <input class="form-control"
+                           placeholder="{{ "SEARCH_SCRIPT" | gettext }}..."
                            type="text" name="s">
                 {% elif 'advanced' in segment %}
-                    <input class="form-control" 
-                           placeholder="{{ "SEARCH_SETTINGS" | gettext }}..." 
+                    <input class="form-control"
+                           placeholder="{{ "SEARCH_SETTINGS" | gettext }}..."
                            type="text" name="s">
                 {% else %}
                     <input class="form-control"
-                           placeholder="{{ "SEARCH_POST" | gettext }}..." 
+                           placeholder="{{ "SEARCH_POST" | gettext }}..."
                            type="text" name="s">
                 {% endif %}
                 </form>
@@ -127,7 +129,6 @@
                             <i class="ni ni-single-02"></i>
                             <span>{{ "SETTINGS" | gettext }}</span>
                         </a>
-
                         <a target="_blank" href="https://www.oplog.cn/qexo" class="dropdown-item">
                             <i class="ni ni-support-16"></i>
                             <span>{{ "SUPPORT" | gettext }}</span>
@@ -152,6 +153,24 @@
                     <a href="/settings.html" class="nav-link text-white p-0">
                         <i class="fa fa-cog cursor-pointer"></i>
                     </a>
+                </li>
+                <li class="nav-item dropdown pe-3 d-flex align-items-center">
+                    <a href="#" class="nav-link text-white p-0" role="button"
+                       data-bs-toggle="dropdown"
+                       aria-haspopup="true" aria-expanded="false">
+                        <i class="fa-solid fa-earth-americas"></i>
+                    </a>
+                    <ul class="dropdown-menu  dropdown-menu-end px-2 py-3 me-sm-n4"
+                        aria-labelledby="dropdownMenuButton">
+                        <div class="dropdown-header noti-title">
+                            <a class="font-weight-bold">{{ "CHANGE_LANGUAGE" | gettext }}</a>
+                        </div>
+                        {% for i in all_languages %}
+                            <a href="javascript:change_lang('{{ i.name }}')" class="dropdown-item">
+                                <span>{{ i.name_local }}</span>
+                            </a>
+                        {% endfor %}
+                    </ul>
                 </li>
                 <li class="nav-item dropdown pe-2 d-flex align-items-center">
                     <a href="#" class="nav-link text-white p-0" role="button"

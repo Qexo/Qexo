@@ -220,7 +220,7 @@
             if (_page < {{ page_number }}) {
                 change_page(_page + 1);
             } else {
-                notyf.error({{ "NO_NEXT_PAGE" | gettext }});
+                notyf.error("{{ "NO_NEXT_PAGE" | gettext }}");
             }
         }
 

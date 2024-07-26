@@ -67,6 +67,7 @@ urlpatterns = [
     path('api/save_talk/', save_talk, name='save_talk'),
     path('api/del_talk/', del_talk, name='del_talk'),
     path('api/run_online_script/', run_online_script, name='run_online_script'),
+    path('api/change_lang/', change_lang, name='change_lang'),
 
     path('pub/save/', pub.save, name='pub_save'),
     path('pub/save_post/', pub.save_post, name='pub_save_post'),

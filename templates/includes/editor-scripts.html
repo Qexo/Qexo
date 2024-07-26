@@ -32,7 +32,7 @@
 
     function excerpt_by_tianli(content, length, key, nextstep) {
         let excerpt = excerpt_by_local(content, length);
-        let loading = new KZ_Loading('摘要获取中...');
+        let loading = new KZ_Loading('{{ "EXCERPT_LOADING" | gettext }}');
         loading.show();
         $.ajax({
             url: "https://summary.tianli0.top/",
@@ -53,7 +53,7 @@
             },
             error: function (data) {
                 loading.destroy();
-                notyf.error("摘要生成失败: " + data.responseText);
+                notyf.error("{{ "EXCERPT_FAILED" | gettext }}" + data.responseText);
             }
         });
         return excerpt;

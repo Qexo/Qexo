@@ -22,7 +22,7 @@ from urllib3 import disable_warnings
 from urllib.parse import quote, unquote
 
 from core.qexoSettings import ALL_SETTINGS
-from core.qexoSettings import QEXO_VERSION, QEXO_STATIC
+from core.qexoSettings import QEXO_VERSION, QEXO_STATIC, VDITOR_LANGUAGES
 from hexoweb.libs.elevator import elevator
 from hexoweb.libs.onepush import notify
 from hexoweb.libs.platforms import get_provider
@@ -124,7 +124,8 @@ def get_cdn():
 
 # 获取用户自定义的样式配置
 def get_custom_config():
-    context = {"cdn_prev": get_cdn(), "QEXO_NAME": get_setting("QEXO_NAME"), "static_version": QEXO_STATIC}
+    context = {"cdn_prev": get_cdn(), "QEXO_NAME": get_setting("QEXO_NAME"), "static_version": QEXO_STATIC,
+               "language": _Language.get("name", "zh-CN"), "vditor_languages": VDITOR_LANGUAGES}
     if not context["QEXO_NAME"]:
         save_setting('QEXO_NAME', 'Hexo' + gettext("CONSOLE"))
         context["QEXO_NAME"] = get_setting("QEXO_NAME")

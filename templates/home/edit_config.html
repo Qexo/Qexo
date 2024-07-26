@@ -71,7 +71,7 @@
             if (!_status) {
                 return false;
             }
-            var loading = new KZ_Loading('正在保存中...');
+            var loading = new KZ_Loading('{{ "SAVING" | gettext }}');
             _status = false;
             loading.show();
             $.ajax({
@@ -91,7 +91,7 @@
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.error("网络错误！");
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
                     _status = true;
                 }
             })
@@ -108,8 +108,8 @@
         window.onbeforeunload = function (e) {
             e = e || window.event;
             if (e && file_content !== editor.getValue()) {
-                e.returnValue = '确定要离开吗?';
-                return '确定要离开吗?';
+                e.returnValue = '{{ "LEAVE_CONFIRM" | gettext }}';
+                return '{{ "LEAVE_CONFIRM" | gettext }}';
             }
         }
 

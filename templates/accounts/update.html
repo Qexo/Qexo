@@ -1,6 +1,6 @@
 {% extends 'layouts/base-fullscreen.html' %}
 
-{% block title %} 更新配置 {% endblock title %}
+{% block title %} {{ "UPDATE_CONFIG" | gettext }} {% endblock title %}
 
 <!-- Specific CSS goes HERE -->
 {% block stylesheets %}{% endblock stylesheets %}
@@ -13,7 +13,7 @@
             <div class="col-lg-5 col-md-5">
                 <div class="card z-index-0">
                     <div class="card-header text-center pt-5">
-                        <h4>更新配置</h4>
+                        <h4>{{ "UPDATE_CONFIG" | gettext }}</h4>
                     </div>
                     <div class="card-body px-lg-5 py-lg-5">
                         <form method="POST">
@@ -26,7 +26,8 @@
                             </div>
                             {% endfor %}
                         <div class="text-center">
-                                <button type="submit" class="btn btn-primary my-4">完成</button>
+                                <button type="submit" class="btn btn-primary my-4">
+                                    {{ "FINISH" | gettext }}</button>
                             </div>
                         </form>
                     </div>

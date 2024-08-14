@@ -195,25 +195,25 @@
                         </form>
                         <form id="security-settings" onsubmit="return false;">
                             <hr class="my-4"/>
-                            <h6 class="heading-small text-muted mb-4">安全配置</h6>
+                            <h6 class="heading-small text-muted mb-4">{{ "SET_SECURE" | gettext }}</h6>
                             <div class="pl-lg-4">
                                 <div class="row">
                                     {% csrf_token %}
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">{{ "SET_USER_1" | gettext }}</label>
+                                            <label class="form-control-label">{{ "SET_SECURE_1" | gettext }}</label>
                                             <input type="text" name="site-token"
                                                    class="form-control"
-                                                   placeholder="{{ "SET_USER_1_PH" | gettext }}"
+                                                   placeholder="{{ "SET_SECURE_1_PH" | gettext }}"
                                                    value="{{ LOGIN_RECAPTCHA_SITE_TOKEN }}">
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">{{ "SET_USER_2" | gettext }}</label>
+                                            <label class="form-control-label">{{ "SET_SECURE_2" | gettext }}</label>
                                             <input type="text" name="server-token"
                                                    class="form-control"
-                                                   placeholder="{{ "SET_USER_2_PH" | gettext }}"
+                                                   placeholder="{{ "SET_SECURE_2_PH" | gettext }}"
                                                    value="{{ LOGIN_RECAPTCHA_SERVER_TOKEN }}">
                                         </div>
                                     </div>
@@ -225,7 +225,7 @@
                                                 {{ "SET_USER_3_PH" | gettext }}</label>
                                             <input type="text" name="site-token-v2"
                                                    class="form-control"
-                                                   placeholder="{{ "SET_USER_3_PH" | gettext }}"
+                                                   placeholder="{{ "SET_SECURE_3_PH" | gettext }}"
                                                    value="{{ LOGIN_RECAPTCHAV2_SITE_TOKEN }}">
                                         </div>
                                     </div>
@@ -235,7 +235,7 @@
                                                 {{ "SET_USER_4_PH" | gettext }}</label>
                                             <input type="text" name="server-token-v2"
                                                    class="form-control"
-                                                   placeholder="{{ "SET_USER_4_PH" | gettext }}"
+                                                   placeholder="{{ "SET_SECURE_4_PH" | gettext }}"
                                                    value="{{ LOGIN_RECAPTCHAV2_SERVER_TOKEN }}">
                                         </div>
                                     </div>

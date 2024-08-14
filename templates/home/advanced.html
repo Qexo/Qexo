@@ -1,7 +1,10 @@
 {% extends 'layouts/base.html' %}
 
-{% block title %} {% if search %}搜索设置: {{ search }}{% else %}高级设置
-{% endif %} {% endblock title %}
+{% block title %}
+    {% if search %}{{ "SEARCH_SETTINGS" | gettext }}:
+        {{ search }}{% else %}{{ "ADVANCED_SETTINGS_LABEL" | gettext }}
+    {% endif %}
+{% endblock title %}
 
 {% block content %}
     <div class="container-fluid py-4">
@@ -9,8 +12,9 @@
             <div class="col-12">
                 <div class="card mb-4">
                     <div class="card-header pb-0">
-                        <h6>{% if search %}搜索设置: {{ search }}{% else %}
-                            高级设置{% endif %}
+                        <h6>{% if search %}{{ "SEARCH_SETTINGS" | gettext }}:
+                            {{ search }}{% else %}{{ "ADVANCED_SETTINGS_LABEL" | gettext }}
+                        {% endif %}
                             (<span id="post-number">{{ settings_number }}</span>个)
                             <a href="javascript:query_fix()" class="text-primary text-lg">
                                 <i class="fa-solid fa-wrench "></i>
@@ -27,13 +31,13 @@
                                 <thead>
                                 <tr>
                                     <th class="text-secondary text-xxs font-weight-bolder opacity-7">
-                                        <span class="px-1 text-secondary">字段名</span>
+                                        <span class="px-1 text-secondary">{{ "VALUE_NAME" | gettext }}</span>
                                     </th>
                                     <th class="text-secondary text-xxs font-weight-bolder opacity-7">
-                                        <span class="text-secondary">内容</span>
+                                        <span class="text-secondary">{{ "CONTENT" | gettext }}</span>
                                     </th>
                                     <th class="text-secondary text-xxs font-weight-bolder opacity-7">
-                                        <span class="text-secondary">操作</span>
+                                        <span class="text-secondary">{{ "OPERATION" | gettext }}</span>
                                     </th>
                                 </tr>
                                 </thead>
@@ -48,7 +52,7 @@
                                 <a class="page-link"
                                    href="javascript:prev_page()">
                                     <i class="fas fa-angle-left"></i>
-                                    <span class="sr-only">上一页</span>
+                                    <span class="sr-only">{{ "PREV_PAGE" | gettext }}</span>
                                 </a>
                             </li>
                             {% for i in page_number|get_range %}
@@ -62,7 +66,7 @@
                                 <a class="page-link"
                                    href="javascript:next_page()">
                                     <i class="fas fa-angle-right"></i>
-                                    <span class="sr-only">下一页</span>
+                                    <span class="sr-only">{{ "NEXT_PAGE" | gettext }}</span>
                                 </a>
                             </li>
                         </ul>
@@ -79,7 +83,7 @@
         <div class="modal-dialog">
             <div class="modal-content bg-white">
                 <div class="modal-header" style="border: none;">
-                    <h5 class="modal-title fs-5" id="exampleModalLabel">提示</h5>
+                    <h5 class="modal-title fs-5" id="exampleModalLabel">{{ "TIPS" | gettext }}</h5>
                     <button type="button" data-bs-dismiss="modal"
                             aria-label="Close" style="box-sizing: content-box;width: 1em;height:
                             1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem;
@@ -88,13 +92,15 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    确认要删除 <a id="delfile"></a> 吗？此操作不可撤回
+                    {{ "DEL_CONFIRM_1" | gettext }} <a
+                        id="delfile"></a> {{ "DEL_CONFIRM_2" | gettext }}
                 </div>
                 <div class="modal-footer" style="border: none;">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消
+                    <button type="button" class="btn btn-secondary"
+                            data-bs-dismiss="modal">{{ "CANCEL" | gettext }}
                     </button>
                     <button type="button" class="btn btn-primary" onclick="delete_file()"
-                            data-bs-dismiss="modal">确定
+                            data-bs-dismiss="modal">{{ "CONFIRM" | gettext }}
                     </button>
                 </div>
             </div>
@@ -177,7 +183,7 @@
             } else {
                 $("#prev-page").removeClass("disabled");
             }
-            if (page >={{ page_number }}) {
+            if (page >= {{ page_number }}) {
                 $("#next-page").addClass("disabled");
             } else {
                 $("#next-page").removeClass("disabled");
@@ -188,15 +194,15 @@
             if (_page > 1) {
                 change_page(_page - 1);
             } else {
-                notyf.error("已是第一页");
+                notyf.error("{{ "NO_PREV_PAGE" | gettext }}");
             }
         }
 
         function next_page() {
-            if (_page <{{ page_number }}) {
+            if (_page < {{ page_number }}) {
                 change_page(_page + 1);
             } else {
-                notyf.error("已是最后一页");
+                notyf.error("{{ "NO_NEXT_PAGE" | gettext }}");
             }
         }
 
@@ -215,7 +221,7 @@
                                                                                                  value="${name}"
                                                                                                  class="form-control ${color}">
                         </div>
-                        <div class="form-group"><label class="form-control-label">内容</label><input type="text"
+                        <div class="form-group"><label class="form-control-label">{{ "CONTENT" | gettext }}</label><input type="text"
                                                                                                  name="edit-content"
                                                                                                  id="edit-content"
                                                                                                  value="${content.toString().replaceAll("\"", "&quot;")}"
@@ -224,44 +230,44 @@
             $("#query-modal-body").html(html);
             $("#queryLabel").html("编辑");
             let footer = "<button type=\"button\" class=\"btn btn-secondary\" " +
-                "data-bs-dismiss=\"modal\">取消</button><button type=\"button\" class=\"btn " +
+                "data-bs-dismiss=\"modal\">{{ "CANCEL" | gettext }}</button><button type=\"button\" class=\"btn " +
                 "btn-primary\" data-bs-dismiss=\"modal\" onclick=\"change_value('" + name +
-                "')\">确定</button>"
+                "')\">{{ "CONFIRM" | gettext }}</button>"
             $("#query-modal-footer").html(footer);
             $("#query").modal("show");
         }
 
         function query_delete(name) {
-            let html = "确认要删除 " + name + " 字段吗？该操作不可回退";
+            let html = formatString("{{ "CONFIRM_DEL_CUSTOM" | gettext }}", name);
             $("#query-modal-body").html(html);
-            $("#queryLabel").html("提示");
+            $("#queryLabel").html("{{ "TIPS" | gettext }}");
             let footer = "<button type=\"button\" class=\"btn btn-secondary\" " +
-                "data-bs-dismiss=\"modal\">取消</button><button type=\"button\" class=\"btn " +
+                "data-bs-dismiss=\"modal\">{{ "CANCEL" | gettext }}</button><button type=\"button\" class=\"btn " +
                 "btn-primary\" data-bs-dismiss=\"modal\" onclick=\"delete_value('" + name +
-                "')\">确定</button>"
+                "')\">{{ "CONFIRM" | gettext }}</button>"
             $("#query-modal-footer").html(footer);
             $("#query").modal("show");
         }
 
         function query_new() {
             let html = "<div class=\"form-group\"><label " +
-                "class=\"form-control-label\">字段名</label><input type=\"text\" " +
+                "class=\"form-control-label\">{{ "VALUE_NAME" | gettext }}</label><input type=\"text\" " +
                 "name=\"name\" id=\"edit-name\" " +
                 "class=\"form-control\"></div>" + "<div class=\"form-group\"><label " +
-                "class=\"form-control-label\">内容</label><input type=\"text\" " +
+                "class=\"form-control-label\">{{ "CONTENT" | gettext }}</label><input type=\"text\" " +
                 "name=\"content\" id=\"edit-content\" " +
                 "class=\"form-control\"></div>";
             $("#query-modal-body").html(html);
-            $("#queryLabel").html("新建字段");
+            $("#queryLabel").html("{{ "NEW_VALUE" | gettext }}");
             let footer = "<button type=\"button\" class=\"btn btn-secondary\" " +
-                "data-bs-dismiss=\"modal\">取消</button><button type=\"button\" class=\"btn " +
-                "btn-primary\" data-bs-dismiss=\"modal\" onclick=\"new_value()\">确定</button>"
+                "data-bs-dismiss=\"modal\">{{ "CANCEL" | gettext }}</button><button type=\"button\" class=\"btn " +
+                "btn-primary\" data-bs-dismiss=\"modal\" onclick=\"new_value()\">{{ "CONFIRM" | gettext }}</button>"
             $("#query-modal-footer").html(footer);
             $("#query").modal("show");
         }
 
         function change_value(name) {
-            let loading = new KZ_Loading('正在保存中...');
+            let loading = new KZ_Loading('{{ "SAVING" | gettext }}');
             loading.show();
             let content = $("#edit-content").val();
             $.ajax({
@@ -286,13 +292,13 @@
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.error("网络错误！");
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
                 }
             })
         }
 
         function delete_value(name) {
-            let loading = new KZ_Loading('正在删除中...');
+            let loading = new KZ_Loading('{{ "DELETING" | gettext }}');
             loading.show();
             $.ajax({
                 url: '/api/del_value/',
@@ -317,7 +323,7 @@
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.error("网络错误！");
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
                 }
             })
         }
@@ -325,7 +331,7 @@
         function new_value() {
             let name = $("#edit-name").val();
             let content = $("#edit-content").val();
-            let loading = new KZ_Loading('正在保存中...');
+            let loading = new KZ_Loading('{{ "SAVING" | gettext }}');
             loading.show();
             $.ajax({
                 url: '/api/new_value/',
@@ -354,13 +360,13 @@
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.error("网络错误！");
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
                 }
             })
         }
 
         function auto_fix() {
-            let loading = new KZ_Loading('尝试修复中...请耐心等待');
+            let loading = new KZ_Loading('{{ "FIXING" | gettext }}');
             loading.show();
             $.ajax({
                 url: '/api/fix/',
@@ -378,19 +384,19 @@
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.error("网络错误！");
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
                 }
             })
         }
 
 
         function query_fix() {
-            let html = "确认要尝试自动修复程序吗？这会检查并创建/删除相应字段";
+            let html = "{{ 'CONFIRM_FIX' | gettext }}";
             $("#query-modal-body").html(html);
-            $("#queryLabel").html("提示");
+            $("#queryLabel").html("{{ "TIPS" | gettext }}");
             let footer = "<button type=\"button\" class=\"btn btn-secondary\" " +
-                "data-bs-dismiss=\"modal\">取消</button><button type=\"button\" class=\"btn " +
-                "btn-primary\" data-bs-dismiss=\"modal\" onclick=\"auto_fix()\">确定</button>"
+                "data-bs-dismiss=\"modal\">{{ "CANCEL" | gettext }}</button><button type=\"button\" class=\"btn " +
+                "btn-primary\" data-bs-dismiss=\"modal\" onclick=\"auto_fix()\">{{ "CONFIRM" | gettext }}</button>"
             $("#query-modal-footer").html(footer);
             $("#query").modal("show");
         }

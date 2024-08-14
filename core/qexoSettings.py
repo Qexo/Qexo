@@ -1,7 +1,7 @@
 import json
 import random
 
-QEXO_VERSION = "3.3.1"
+QEXO_VERSION = "3.4.0"
 QEXO_STATIC = "2.4.0"
 
 DEFAULT_EMOJI = {"微笑": "🙂", "撇嘴": "😦", "色": "😍", "发呆": "😍", "得意": "😎",
@@ -38,7 +38,7 @@ DEFAULT_EMOJI = {"微笑": "🙂", "撇嘴": "😦", "色": "😍", "发呆": "�
 DEFAULT_CDN = [
     {"name": "Jsdelivr", "url": "https://cdn.jsdelivr.net/npm/"},
     {"name": "Unpkg", "url": "https://unpkg.com/"},
-    {"name": "渺软公益 CDN", "url": "https://npm.onmicrosoft.cn/"}
+    # {"name": "渺软公益 CDN", "url": "https://npm.onmicrosoft.cn/"}
     # {"name": "初七云", "url": "https://cdn.chuqis.com/npm/"}
 ]
 
@@ -92,5 +92,8 @@ ALL_SETTINGS = [  # [名称, 默认值, 是否在尝试修复时重置, 简介]
     ["UPDATE_FROM", "false", False, "是否更新过"],
     ["JUMP_UPDATE", "false", False, "是否转跳到更新界面"],
     ["AUTO_EXCERPT_CONFIG", '{"method":"本地","auto":"关闭","save_key":"excerpt","params":{"save_key":"excerpt","length":"200"}}', False,
-     "文章截取配置JSON"]
+     "文章截取配置JSON"],
+    ["LANGUAGE", "zh_CN", True, "语言"],
 ]
+
+VDITOR_LANGUAGES = ["zh_CN", "en_US", "zh_TW", "fr_FR", "ja_JP", "ko_KR", "pt_BR", "ru_RU", "sv_SE"]

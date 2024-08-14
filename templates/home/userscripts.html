@@ -1,6 +1,6 @@
 {% extends 'layouts/base.html' %}
 
-{% block title %} {% if search %}搜索命令: {{ search }}{% else %}云端命令
+{% block title %} {% if search %}{{ "SEARCH_SCRIPT" | gettext }}: {{ search }}{% else %}{{ "SCRIPTS_LABEL" | gettext }}
 {% endif %} {% endblock title %}
 
 {% block content %}
@@ -9,8 +9,8 @@
             <div class="col-12">
                 <div class="card mb-4">
                     <div class="card-header pb-0">
-                        <h6>{% if search %}搜索命令: {{ search }}{% else %}
-                            云端命令{% endif %}
+                        <h6>{% if search %}{{ "SEARCH_SCRIPT" | gettext }}: {{ search }}{% else %}
+                            {{ "SCRIPTS_LABEL" | gettext }}{% endif %}
                             (<span id="post-number">{{ post_number }}</span>个)
                         </h6>
                     </div>
@@ -20,18 +20,18 @@
                                 <thead>
                                 <tr>
                                     <th class="text-secondary text-xxs font-weight-bolder opacity-7">
-                                        <span class="px-1 text-secondary">名称</span>
+                                        <span class="px-1 text-secondary">{{ "NAME" | gettext }}</span>
                                     </th>
                                     <th class="text-secondary text-xxs font-weight-bolder opacity-7">
-                                        <span class="text-secondary">作者</span>
+                                        <span class="text-secondary">{{ "AUTHOR" | gettext }}</span>
                                     </th>
 
                                     <th class="text-secondary text-xxs font-weight-bolder opacity-7">
-                                        <span class="text-secondary">简介</span>
+                                        <span class="text-secondary">{{ "DESCRIPTION" | gettext }}</span>
                                     </th>
                                     <th class="ttext-secondary text-xxs font-weight-bolder
                                     text-center opacity-7">
-                                        <span class="text-secondary">操作</span>
+                                        <span class="text-secondary">{{ "OPERATION" | gettext }}</span>
                                     </th>
                                 </tr>
                                 </thead>
@@ -46,7 +46,7 @@
                                 <a class="page-link"
                                    href="javascript:prev_page()">
                                     <i class="fas fa-angle-left"></i>
-                                    <span class="sr-only">上一页</span>
+                                    <span class="sr-only">{{ "PREV_PAGE" | gettext }}</span>
                                 </a>
                             </li>
                             {% for i in page_number|get_range %}
@@ -60,7 +60,7 @@
                                 <a class="page-link"
                                    href="javascript:next_page()">
                                     <i class="fas fa-angle-right"></i>
-                                    <span class="sr-only">下一页</span>
+                                    <span class="sr-only">{{ "NEXT_PAGE" | gettext }}</span>
                                 </a>
                             </li>
                         </ul>
@@ -76,7 +76,7 @@
         <div class="modal-dialog">
             <div class="modal-content bg-white">
                 <div class="modal-header" style="border: none;">
-                    <h5 class="modal-title fs-5" id="resultModalLabel">运行结果</h5>
+                    <h5 class="modal-title fs-5" id="resultModalLabel">{{ "RESULT" | gettext }}</h5>
                     <button type="button" data-bs-dismiss="modal"
                             aria-label="Close" style="box-sizing: content-box;width: 1em;height:
                             1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem;
@@ -87,7 +87,7 @@
                 <div class="modal-body" id="result-container">
                 </div>
                 <div class="modal-footer" style="border: none;">
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">关闭
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">{{ "CLOSE"  | gettext }}
                     </button>
                 </div>
             </div>
@@ -99,7 +99,7 @@
         <div class="modal-dialog">
             <div class="modal-content bg-white">
                 <div class="modal-header" style="border: none;">
-                    <h5 class="modal-title" id="runModalLabel">提示</h5>
+                    <h5 class="modal-title" id="runModalLabel">{{ "TIPS"  | gettext }}</h5>
                     <button type="button" data-bs-dismiss="modal"
                             aria-label="Close" style="box-sizing: content-box;width: 1em;height:
                             1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem;
@@ -110,10 +110,9 @@
                 <div class="modal-body" id="runContainer">
                 </div>
                 <div class="modal-footer" style="border: none;">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ "CANCEL"  | gettext }}
                     </button>
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
-                            onclick="run_script()">确定
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="run_script()">{{ "CONFIRM"  | gettext }}
                     </button>
                 </div>
             </div>
@@ -186,7 +185,7 @@
             if (_page > 1) {
                 change_page(_page - 1);
             } else {
-                notyf.error("已是第一页");
+                notyf.error("{{ "NO_PREV_PAGE" | gettext }}");
             }
         }
 
@@ -194,7 +193,7 @@
             if (_page <{{ page_number }}) {
                 change_page(_page + 1);
             } else {
-                notyf.error("已是最后一页");
+                notyf.error("{{ "NO_NEXT_PAGE" | gettext }}");
             }
         }
 
@@ -216,7 +215,7 @@
                 }
             }
             if (argv) {
-                html = "请输入参数:";
+                html = "{{ "INPUT_ARGV | gettext" }}:";
                 for (let i = 0; i < argv.length; i++) {
                     html += `<div class="form-group">
                                         <input type="text" name="argv-${argv[i]["name"]}"
@@ -225,13 +224,13 @@
                                     </div>`;
                 }
             }
-            html += "确认要执行 <a id='script-path'>" + path + "</a> 吗？此操作不可中止";
+            html += formatString("{{ "CONFIRM_RUN" | gettext }}", "<a id='script-path'>" + path + "</a>");
             $("#runContainer").html(html);
             $("#runModal").modal("show");
         }
 
         function run_script() {
-            let loading = new KZ_Loading('正在运行中...');
+            let loading = new KZ_Loading('{{ "RUNNING" | gettext }}');
             let file = $("#script-path").text();
             let argv = [];
             for (let i = 0; i <= posts.length; i++) {
@@ -264,7 +263,7 @@
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.error("网络错误！");
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }});
                 }
             })
         }

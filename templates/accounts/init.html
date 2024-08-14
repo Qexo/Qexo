@@ -1,6 +1,6 @@
 {% extends 'layouts/base-fullscreen.html' %}
 
-{% block title %} 初始化 {% endblock title %}
+{% block title %} {{ "INIT" | gettext }} {% endblock title %}
 
 <!-- Specific CSS goes HERE -->
 {% block stylesheets %}
@@ -30,35 +30,44 @@
                 <div class="card-body">
                     <div class="text-center text-muted mb-4">
                         {% if step == "1" %}
-                            <h4>欢迎！请点击开始以继续初始化</h4>
+                            <h4>{{ "INIT_WELCOME" | gettext }}</h4>
                         {% endif %}
                         {% if step == "2" %}
-                            <h5>用户配置</h5>
+                            <h5>{{ "INIT_USER" | gettext }}</h5>
                         {% endif %}
                         {% if step == "3" %}
-                            <h4>博客配置</h4>
+                            <h4>{{ "INIT_BLOG" | gettext }}</h4>
                         {% endif %}
                         {% if step == "4" %}
-                            <h5>图床配置</h5>
+                            <h5>{{ "INIT_IMAGE" | gettext }}</h5>
                         {% endif %}
                         {% if step == "5" %}
-                            <h5>Vercel 配置</h5>
+                            <h5>{{ "INIT_VERCEL" | gettext }}</h5>
                         {% endif %}
                         {% if step == "6" %}
-                            <h5>恭喜您初始化完毕</h5>
+                            <h5>{{ "INIT_FINISH" | gettext }}</h5>
                         {% endif %}
                     </div>
                     {% if step == "6" %}
-                        <ul>请牢记您的登录信息：
-                            <li>用户名: {{ username }}</li>
-                            <li>密码: 您设定的值</li>
-                            <a class="btn btn-primary my-4 text-white" href="/">登录控制台</a>
+                        <ul>{{ "INIT_LOGIN_MSG_1" | gettext }}
+                            <li>{{ "INIT_LOGIN_MSG_2" | gettext }}{{ username }}</li>
+                            <li>{{ "INIT_LOGIN_MSG_3" | gettext }}</li>
+                            <a class="btn btn-primary my-4 text-white" href="/">
+                                {{ "INIT_LOGIN_MSG_4" | gettext }}
+                            </a>
                         </ul>
                     {% endif %}
                     <form method="POST" id="main-form">
                         {% if step == "1" %}
                             <div class="text-center">
-                                <button type="submit" class="btn btn-primary my-4">开始</button>
+                                <select name="language" id="config-container"
+                                        class="form-control">
+                                    {% for i in all_languages %}
+                                        <option value="{{ i.name }}">{{ i.name_local }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="btn btn-primary my-4">
+                                    {{ "START" | gettext }}</button>
                             </div>
                         {% endif %}
                         <input type="hidden" name="step"
@@ -69,16 +78,19 @@
                             <div class="row">
                                 <div class="col-lg-6">
                                     <div class="form-group">
-                                        <label class="form-control-label">API密钥</label>
+                                        <label class="form-control-label">{{ "INIT_2_1" | gettext }}</label>
                                         <input type="text" name="apikey" class="form-control"
-                                               placeholder="留空即自动生成" value="{{ apikey }}">
+                                               placeholder="{{ "INIT_2_1_PH" | gettext }}"
+                                               value="{{ apikey }}">
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
                                     <div class="form-group">
-                                        <label class="form-control-label">用户名</label>
+                                        <label class="form-control-label">
+                                            {{ "INIT_2_2" | gettext }}</label>
                                         <input type="text" name="username"
-                                               class="form-control" placeholder="设置用户名"
+                                               class="form-control"
+                                               placeholder="{{ "INIT_2_2_PH" | gettext }}"
                                                value="{{ username }}">
                                     </div>
                                 </div>
@@ -86,22 +98,26 @@
                             <div class="row">
                                 <div class="col-lg-6">
                                     <div class="form-group">
-                                        <label class="form-control-label">密码</label>
+                                        <label class="form-control-label">
+                                            {{ "INIT_2_3" | gettext }}</label>
                                         <input type="text" name="password" class="form-control"
-                                               placeholder="设置密码" value="{{ password }}">
+                                               placeholder="{{ "INIT_2_3_PH" | gettext }}"
+                                               value="{{ password }}">
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
                                     <div class="form-group">
-                                        <label class="form-control-label">重复密码</label>
+                                        <label class="form-control-label">
+                                            {{ "INIT_2_4" | gettext }}</label>
                                         <input type="text" name="repassword" class="form-control"
-                                               placeholder="再次输入以确认密码"
+                                               placeholder="{{ "INIT_2_4_PH" | gettext }}"
                                                value="{{ repassword }}">
                                     </div>
                                 </div>
                             </div>
                             <div class="text-center">
-                                <button type="submit" class="btn btn-primary my-4">下一步</button>
+                                <button type="submit" class="btn btn-primary my-4">
+                                    {{ "NEXT" | gettext }}</button>
                             </div>
                         {% endif %}
                         {% if step == "3" %}
@@ -110,7 +126,8 @@
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">服务商</label>
+                                            <label class="form-control-label">
+                                                {{ "INIT_3_1" | gettext }}</label>
                                             <select name="provider" id="provider-container"
                                                     class="form-control"
                                                     onchange="change_provider(this.value)">
@@ -119,11 +136,12 @@
                                     </div>
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">使用配置</label>
+                                            <label class="form-control-label">
+                                                {{ "INIT_3_2" | gettext }}</label>
                                             <select name="config" id="config-container"
                                                     class="form-control">
                                                 {% for config in all_platform_configs %}
-                                                <option value="{{ config }}">{{ config }}</option>
+                                                    <option value="{{ config }}">{{ config }}</option>
                                                 {% endfor %}
                                             </select>
 
@@ -135,7 +153,8 @@
                             <div class="text-center" id="submit-button">
                                 {% if PROVIDER %}
                                     <input type="button" class="btn btn-secondary my-4"
-                                           value="强制提交" onclick="query_force()">
+                                           value="{{ "FORCE_SUBMIT" | gettext }}"
+                                           onclick="query_force()">
                                 {% endif %}
                                 <button type="submit" class="btn btn-primary my-4">下一步</button>
                             </div>
@@ -143,18 +162,19 @@
                         {% if step == "5" %}
                             <hr class="my-4"/>
                             <div class="form-group">
-                                <label class="form-control-label">Vercel密钥</label>
+                                <label class="form-control-label">{{ "INIT_4_1" | gettext }}</label>
                                 <input type="text" name="token" class="form-control"
                                        placeholder="Vercel Token" value="{{ vercel_token }}">
                             </div>
                             <div class="form-group">
-                                <label class="form-control-label">项目ID</label>
+                                <label class="form-control-label">{{ "INIT_4_2" | gettext }}</label>
                                 <input type="text" name="id" class="form-control"
                                        placeholder="Project ID"
                                        value="{{ project_id }}">
                             </div>
                             <div class="text-center">
-                                <button type="submit" class="btn btn-primary my-4">完成</button>
+                                <button type="submit" class="btn btn-primary my-4">
+                                    {{ "FINISH" | gettext }}</button>
                             </div>
                         {% endif %}
                     </form>
@@ -170,7 +190,7 @@
         <div class="modal-dialog">
             <div class="modal-content bg-white">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="queryModalLabel">提示</h5>
+                    <h5 class="modal-title" id="queryModalLabel">{{ "TIPS" | gettext }}</h5>
                     <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -217,12 +237,12 @@
             {% if PROVIDER %}
                 var now_provider = {{ PROVIDER | safe }};
                 function query_force() {
-                    $("#question").html("确定要强制提交吗？");
+                    $("#question").html("{{ "FORCE_MSG" | gettext }}");
                     $("#query-footer").html(
                         `<button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                                onclick="force_submit()">确定
+                                onclick="force_submit()">{{ "CONFIRM" | gettext }}
                         </button>
-                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">取消
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">{{ "CANCEL" | gettext }}
                         </button>`
                     );
                     $("#queryModal").modal("show");

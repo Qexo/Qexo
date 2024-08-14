@@ -1,9 +1,10 @@
 {% extends 'layouts/base.html' %}
 
-{% block title %} 新建页面 {% endblock title %}
+{% block title %} {{ "NEW_PAGE_LABEL" | gettext }} {% endblock title %}
 
 {% block stylesheets %}
-    <link href="{{ cdn_prev }}qexo-static@{{ static_version }}/qexo/vditor/index.css" rel="stylesheet"/>
+    <link href="{{ cdn_prev }}qexo-static@{{ static_version }}/qexo/vditor/index.css"
+          rel="stylesheet"/>
 {% endblock stylesheets %}
 
 {% block content %}
@@ -19,7 +20,7 @@
                 color: #172b4d"
                    href="javascript:editSide()"><i class="fas
                    fa-pen"></i></a>
-                <h5 class="mt-3">页面参数</h5>
+                <h5 class="mt-3">{{ "PAGE_ARGV_LABEL" | gettext }}</h5>
                 <hr class="my-2"/>
                 <div id="sidebar-container"></div>
             </div>
@@ -28,10 +29,10 @@
             <div class="card ms-md-4 col-md-11" id="bottom-bar">
                 <div class="col-12">
                     <input type="button" class="btn btn-sm float-end mt-3"
-                           value="添加"
+                           value="{{ "ADD" | gettext }}"
                            style="border: 1px solid #dee2e6;border-radius: .25rem;"
                            onclick="addBottomItem()">
-                    <h5 class="mt-3"><i class="fas fa-cogs"></i> 其他参数</h5>
+                    <h5 class="mt-3"><i class="fas fa-cogs"></i> {{ "OTHER_ARGV" | gettext }}</h5>
                     <hr class="my-2"/>
                     <div id="bottom-container">
                     </div>
@@ -46,7 +47,8 @@
             <div class="modal-dialog modal-lg">
                 <div class="modal-content bg-white">
                     <div class="modal-header" style="border: none;">
-                        <h5 class="modal-title" id="sidebarEditModalLabel">编辑侧边栏</h5>
+                        <h5 class="modal-title" id="sidebarEditModalLabel">
+                            {{ "EDIT_SIDEBAR" | gettext }}</h5>
                         <button type="button" data-bs-dismiss="modal"
                                 aria-label="Close" style="box-sizing: content-box;width: 1em;height:
                             1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem;
@@ -58,23 +60,27 @@
                         <div id="side-form" onsubmit="return false;">
                             <div class="row">
                                 <div class="col-2">
-                                    <label class="form-control-label">搜索项</label>
+                                    <label class="form-control-label">
+                                        {{ "SEARCH_ITEM" | gettext }}</label>
                                 </div>
                                 <div class="col-4">
-                                    <label class="form-control-label">描述</label>
+                                    <label class="form-control-label">
+                                        {{ "DESCRIPTION" | gettext }}</label>
                                 </div>
                                 <div class="col-6">
-                                    <label class="form-control-label">图标</label>
+                                    <label class="form-control-label">
+                                        {{ "ICON" | gettext }}</label>
                                 </div>
                             </div>
                             <div id="side-form-container"></div>
                         </div>
                     </div>
                     <div class="modal-footer" style="border: none;">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消
+                        <button type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">{{ "CANCEL" | gettext }}
                         </button>
                         <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
-                                onclick="applySide()">确定
+                                onclick="applySide()">{{ "CONFIRM" | gettext }}
                         </button>
                     </div>
                 </div>
@@ -115,12 +121,12 @@
 
         function Publish() {
             if (!$("input[name='filename']").val()) {
-                notyf.error("请输入正确的页面名！");
+                notyf.error("{{ "NO_PAGE_NAME" | gettext }}");
             } else {
                 if (!_status) {
                     return false;
                 }
-                let loading = new KZ_Loading('正在保存中...');
+                let loading = new KZ_Loading('{{ "SAVING" | gettext }}');
                 let nextstep = function () {
                     _status = false;
                     loading.show();
@@ -137,7 +143,7 @@
                         success: function (res) {
                             loading.destroy();
                             if (res.status) {
-                                notyf.success(res.msg + "等待转跳...");
+                                notyf.success(res.msg + "...");
                                 file_content = vditor.getValue();
                                 setTimeout(window.location.href = "edit_page.html?file=" +
                                     encodeURIComponent(res.path), 1000);
@@ -148,7 +154,7 @@
                         },
                         error: function (res) {
                             loading.destroy();
-                            notyf.error("网络错误！");
+                            notyf.error("{{ "NETWORK_ERROR" | gettext }}");
                             _status = true;
                         }
                     })
@@ -165,6 +171,7 @@
         //挂载到全局
         if (fIsMobile()) {
             window.vditor = new Vditor('vditor', {
+                lang: '{% if language in vditor_languages %}{{ language }}{% else %}en_US{% endif %}',
                 after(d) {
                     file_content = vditor.getValue();
                     showSidebar(true);
@@ -198,7 +205,7 @@
                     {% if img_bed %}
                         {
                             name: "upload",
-                            tip: '上传图片',
+                            tip: '{{ "UPLOAD_TIP" | gettext }}',
                         },
                     {% endif %}
                     'edit-mode',
@@ -245,12 +252,13 @@
 
                     },
                     error() {
-                        notyf.error("上传失败！");
+                        notyf.error("{{ "UPLOAD_FAILED" | gettext }}");
                     }
                 },
             })
         } else {
             window.vditor = new Vditor("vditor", {
+                lang: '{% if language in vditor_languages %}{{ language }}{% else %}en_US{% endif %}',
                 after(d) {
                     file_content = vditor.getValue();
                     showSidebar(true);
@@ -287,7 +295,7 @@
                     {% if img_bed %}
                         {
                             name: "upload",
-                            tip: '上传图片',
+                            tip: '{{ "UPLOAD_TIP" | gettext }}',
                         },
                     {% endif %}
                     "table",
@@ -348,7 +356,7 @@
 
                     },
                     error() {
-                        notyf.error("上传失败！");
+                        notyf.error("{{ "UPLOAD_FAILED" | gettext }}");
                     }
                 },
             });
@@ -357,8 +365,8 @@
         window.onbeforeunload = function (e) {
             e = e || window.event;
             if (e && file_content !== vditor.getValue()) {
-                e.returnValue = '确定要离开吗?';
-                return '确定要离开吗?';
+                e.returnValue = '{{ "LEAVE_CONFIRM" | gettext }}';
+                return '{{ "LEAVE_CONFIRM" | gettext }}';
             }
         }
 
@@ -375,16 +383,16 @@
                 html += `<form class="row" id="side-row-${i}">
                                 <div class="col-2">
                                     <input type="text" class="form-control ${color}" name="search"
-                                           placeholder="冒号前的内容" value="${Sidebar[i].search}">
+                                           placeholder="{{ "SIDEBAR_EDIT_1" | gettext }}" value="${Sidebar[i].search}">
                                 </div>
                                 <div class="col-4">
                                     <input type="text" class="form-control ${color}" name="name"
-                                           placeholder="描述标题" value="${Sidebar[i].name}">
+                                           placeholder="{{ "SIDEBAR_EDIT_2" | gettext }}" value="${Sidebar[i].name}">
                                 </div>
                                 <div class="col-6">
                                     <div class="input-group">
                                         <input type="text" class="form-control ${color}" name="icon"
-                                               placeholder="使用的图标"  value="${Sidebar[i].icon}">
+                                               placeholder="{{ "SIDEBAR_EDIT_3" | gettext }}"  value="${Sidebar[i].icon}">
                                         <button class="btn mb-0 childButton" type="button"
                                                 onclick="newSideItem(${(i + 1).toString()})">
                                             +
@@ -438,7 +446,7 @@
                     i--;
                 }
             }
-            let loading = new KZ_Loading('边栏保存中...');
+            let loading = new KZ_Loading('{{ "SAVING" | gettext }}');
             loading.show();
             $.ajax({
                 url: '/api/set_sidebar/',
@@ -450,15 +458,15 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        notyf.success('保存成功！');
+                        notyf.success('{{ "SAVE_SUCCESS" | gettext }}');
                         showSidebar();
                     } else {
-                        notyf.error('保存失败！');
+                        notyf.error('{{ "SAVE_FAILED" | gettext }}');
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.error("网络错误！");
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
                 }
             })
         }
@@ -544,27 +552,27 @@
             let html = "";
             let keys = Object.keys(front_matter);
             if (keys.length === 0) {
-                $("#bottom-container").html("暂无其他参数");
+                $("#bottom-container").html("{{ "NO_OTHER_ARGV" | gettext }}");
                 return;
             }
             html = `<div class="row">
                         <div class="col-2">
-                            <label class="form-control-label">标头</label>
+                            <label class="form-control-label">{{ "HEADER" | gettext }}</label>
                         </div>
                         <div class="col-4">
-                            <label class="form-control-label">内容</label>
+                            <label class="form-control-label">{{ "CONTENT" | gettext }}</label>
                         </div>
                     </div>`
             for (let i = 0; i < keys.length; i++) {
                 html += `<form class="row" id="bottom-row-${i}">
                                 <div class="col-2">
                                     <input type="text" class="form-control" name="search"
-                                           placeholder="冒号前的内容" value="${escapeString(keys[i])}">
+                                           placeholder="{{ "SIDEBAR_EDIT_1" | gettext }}" value="${escapeString(keys[i])}">
                                 </div>
                                 <div class="col-10">
                                     <div class="input-group">
                                         <input type="text" class="form-control" name="icon"
-                                               placeholder="若有多级, 请使用JSON格式"  value="` +
+                                               placeholder="{{ "BOTTOM_PH" | gettext }}"  value="` +
                     escapeString(typeof (front_matter[keys[i]]) === "object" ? JSON.stringify
                     (front_matter[keys[i]]) : front_matter[keys[i]]) + `">
 

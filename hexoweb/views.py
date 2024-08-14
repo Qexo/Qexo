@@ -9,6 +9,7 @@ from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.template import loader
 
+import hexoweb.libs.i18n
 from hexoweb.libs.image import all_providers as all_image_providers
 from hexoweb.libs.image import get_params as get_image_params
 from hexoweb.libs.onepush import all_providers as onepush_providers
@@ -27,17 +28,21 @@ def page_403(request, exception):
 
 
 def page_500(request):
-    return render(request, 'home/page-500.html',
-                  {"error": "程序遇到了错误！", "cdn_prev": "https://unpkg.com/"})
+    try:
+        return render(request, 'home/page-500.html',
+                      {"error": gettext("SYSTEM_ERROR"), "cdn_prev": "https://unpkg.com/"})
+    except Exception as e:
+        return render(request, 'home/page-500.html',
+                      {"error": repr(e), "cdn_prev": "https://unpkg.com/"})
 
 
 def login_view(request):
     try:
         if int(get_setting("INIT")) <= 5:
-            logging.info("未完成初始化配置, 转跳到初始化页面")
+            logging.info(gettext("NOT_INIT"))
             return redirect("/init/")
     except Exception:
-        logging.info("未检测到初始化配置, 转跳到初始化页面")
+        logging.info(gettext("NOT_INIT"))
         return redirect("/init/")
     if request.user.is_authenticated:
         if not request.GET.get("next"):
@@ -59,14 +64,14 @@ def login_view(request):
 @login_required(login_url="/login/")
 def update_view(request):
     if not request.user.is_staff:
-        logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
-        return page_403(request, "您没有权限访问此页面")
+        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
+        return page_403(request, gettext("NO_PERMISSION"))
     try:
         if int(get_setting("INIT")) <= 5:
-            logging.info("未完成初始化配置, 转跳到初始化页面")
+            logging.info(gettext("NOT_INIT"))
             return redirect("/init/")
     except Exception:
-        logging.info("未检测到初始化配置, 转跳到初始化页面")
+        logging.info(gettext("NOT_INIT"))
         return redirect("/init/")
     if request.method == 'POST':
         for setting in request.POST.keys():
@@ -95,7 +100,7 @@ def update_view(request):
                 if verify_provider(_provider)["status"] == 1:
                     save_setting("PROVIDER", _provider)
                 else:
-                    context["msg"] = "自动生成PROVIDER错误，请检查配置并提交"
+                    context["msg"] = gettext("AUTO_PROVIDER_FAILED")
 
             else:
                 if setting[2]:
@@ -111,7 +116,7 @@ def update_view(request):
 
 def init_view(request):
     msg = None
-    context = dict()
+    context = dict(all_languages=hexoweb.libs.i18n.all_languages())
     context.update(get_custom_config())
     step = get_setting("INIT")
     if not step:
@@ -125,6 +130,8 @@ def init_view(request):
         if request.POST.get("step") == "1":
             fix_all()
             save_setting("INIT", "2")
+            save_setting("LANGUAGE", request.POST.get("language"))
+            update_language()
             if not User.objects.all():
                 step = "2"
             else:
@@ -151,19 +158,19 @@ def init_view(request):
                             random.choice("qwertyuiopasdfghjklzxcvbnm1234567890") for x in
                             range(12)))
                 if repassword != password:
-                    msg = "两次密码不一致!"
+                    msg = gettext("RESET_PASSWORD_NO_MATCH")
                     context["username"] = username
                     context["password"] = password
                     context["repassword"] = repassword
                     context["apikey"] = apikey
                 elif not password:
-                    msg = "请输入正确的密码！"
+                    msg = gettext("RESET_PASSWORD_NO")
                     context["username"] = username
                     context["password"] = password
                     context["repassword"] = repassword
                     context["apikey"] = apikey
                 elif not username:
-                    msg = "请输入正确的用户名！"
+                    msg = gettext("RESET_PASSWORD_NO_USERNAME")
                     context["username"] = username
                     context["password"] = password
                     context["repassword"] = repassword
@@ -181,7 +188,7 @@ def init_view(request):
                         context["all_providers"][provider] = params
                     context["all_platform_configs"] = platform_configs()
             except Exception as e:
-                logging.error("初始化用户名密码错误:" + repr(e))
+                logging.error(gettext("INIT_USER_FAILED").foramt(repr(e)))
                 msg = repr(e)
                 context["username"] = username
                 context["password"] = password
@@ -215,35 +222,27 @@ def init_view(request):
                             msg = "远程连接错误!请检查Token或分支是否正确"
                         else:
                             if verify["hexo"]:
-                                msg += "检测到Hexo版本: " + verify["hexo"]
+                                msg += gettext("HEXO_VERSION").format(verify["hexo"])
                             else:
-                                msg += "未检测到Hexo"
+                                msg += gettext("HEXO_VERSION_FAILED")
                             if verify["indexhtml"]:
-                                msg += "\n检测到index.html, 这可能不是正确的仓库"
+                                msg += gettext("HEXO_INDEX_FAILED")
                             if verify["config_hexo"]:
-                                msg += "\n检测到Hexo配置文件"
+                                msg += gettext("HEXO_CONFIG_FAILED")
                             else:
-                                msg += "\n未检测到Hexo配置"
-                            if verify["theme"]:
-                                msg += "\n检测到主题: " + verify["theme"]
-                            else:
-                                msg += "\n未检测到主题"
-                            if verify["config_theme"]:
-                                msg += "\n检测到主题配置" + verify["config_theme"]
-                            else:
-                                msg += "\n未检测到主题配置"
+                                msg += gettext("HEXO_CONFIG_FAILED")
                             if verify["theme_dir"]:
-                                msg += "\n检测到主题目录"
+                                msg += gettext("HEXO_THEME")
                             else:
-                                msg += "\n未检测到主题目录"
+                                msg += gettext("HEXO_THEME_FAILED")
                             if verify["package"]:
-                                msg += "\n检测到package.json"
+                                msg += gettext("HEXO_PACKAGE")
                             else:
-                                msg += "\n未检测到package.json"
+                                msg += gettext("HEXO_PACKAGE_FAILED")
                             if verify["source"]:
-                                msg += "\n检测到source目录 "
+                                msg += gettext("HEXO_SOURCE")
                             else:
-                                msg += "\n未检测到source目录"
+                                msg += gettext("HEXO_SOURCE_FAILED")
                         msg = msg.replace("\n", "<br>")
                         context["PROVIDER"] = json.dumps(provider)
                         # Get Provider Settings
@@ -261,7 +260,7 @@ def init_view(request):
                     save_setting("INIT", step)
             except Exception as e:
                 msg = repr(e)
-                logging.error("初始化Provider错误:" + repr(e))
+                logging.error(gettext("INIT_PROVIDER_FAILED").format(repr(e)))
                 context["PROVIDER"] = json.dumps(get_setting("PROVIDER") if not provider else provider)
                 # Get Provider Settings
                 all_provider = all_providers()
@@ -280,15 +279,15 @@ def init_view(request):
                 save_setting("INIT", "6")
                 step = "6"
             except Exception as e:
-                logging.error("初始化Vercel配置错误:" + repr(e))
+                logging.error(gettext("INIT_VERCEL_FAILED").format(repr(e)))
                 context["project_id"] = project_id
                 context["vercel_token"] = vercel_token
-                msg = "校验错误"
+                msg = gettext("VERIFY_FAILED")
         if step == "6":
             user = User.objects.all()[0]
             context["username"] = user.username
     elif int(step) >= 6:
-        logging.info("已完成初始化, 转跳至首页")
+        logging.info(gettext("INIT_SUCCESS"))
         return redirect("/")
     else:
         if int(step) == 3:
@@ -307,20 +306,20 @@ def init_view(request):
 
 def logout_view(request):
     logout(request)
-    logging.info("注销成功")
+    logging.info(gettext("LOGOUT_SUCCESS"))
     return redirect('/login/?next=/')
 
 
 @login_required(login_url='/login/')
 def migrate_view(request):
     if not request.user.is_staff:
-        logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
-        return page_403(request, "您没有权限访问此页面")
+        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
+        return page_403(request, gettext("NO_PERMISSION"))
     try:
         if int(get_setting("INIT")) <= 5:
             return redirect("/init/")
     except Exception:
-        logging.info("未检测到初始化配置, 转跳到初始化页面")
+        logging.info(gettext("NOT_INIT"))
         return redirect("/init/")
     context = {}
     if request.method == "POST":
@@ -343,34 +342,34 @@ def migrate_view(request):
                 return response
             elif request.POST.get("type") == "import_settings":
                 import_settings(json.loads(request.POST.get("data")))
-                context["msg"] = "配置迁移完成！"
+                context["msg"] = gettext("MIGRATE_CONFIG_SUCCESS")
             elif request.POST.get("type") == "import_images":
                 import_images(json.loads(request.POST.get("data")))
-                context["msg"] = "图片迁移完成！"
+                context["msg"] = gettext("MIGRATE_IMAGE_SUCCESS")
             elif request.POST.get("type") == "import_friends":
                 import_friends(json.loads(request.POST.get("data")))
-                context["msg"] = "友链迁移完成！"
+                context["msg"] = gettext("MIGRATE_FLINKS_SUCCESS")
             elif request.POST.get("type") == "import_notifications":
                 import_notifications(json.loads(request.POST.get("data")))
-                context["msg"] = "通知迁移完成！"
+                context["msg"] = gettext("MIGRATE_MSG_SUCCESS")
             elif request.POST.get("type") == "import_custom":
                 import_custom(json.loads(request.POST.get("data")))
-                context["msg"] = "自定义字段迁移完成！"
+                context["msg"] = gettext("MIGRATE_CUSTOM_SUCCESS")
             elif request.POST.get("type") == "import_uv":
                 import_uv(json.loads(request.POST.get("data")))
-                context["msg"] = "UV统计迁移完成！"
+                context["msg"] = gettext("MIGRATE_UV_SUCCESS")
             elif request.POST.get("type") == "import_pv":
                 import_pv(json.loads(request.POST.get("data")))
-                context["msg"] = "PV统计迁移完成！"
+                context["msg"] = gettext("MIGRATE_PV_SUCCESS")
             elif request.POST.get("type") == "import_talks":
                 import_talks(json.loads(request.POST.get("data")))
-                context["msg"] = "说说迁移完成！"
+                context["msg"] = gettext("MIGRATE_TALKS_SUCCESS")
             elif request.POST.get("type") == "import_posts":
                 import_posts(json.loads(request.POST.get("data")))
-                context["msg"] = "文章索引迁移完成！"
+                context["msg"] = gettext("MIGRATE_POST_SUCCESS")
         except Exception as error:
-            logging.error(request.POST.get("type") + "错误: " + repr(error))
-            context["msg"] = request.POST.get("type") + "错误: " + repr(error)
+            logging.error(gettext("MIGRATE_FAILED").format(request.POST.get("type"), repr(error)))
+            context["msg"] = gettext("MIGRATE_FAILED").format(request.POST.get("type"), repr(error))
         return JsonResponse(safe=False, data=context)
     else:
         context = get_custom_config()
@@ -382,17 +381,17 @@ def migrate_view(request):
 def index(request):
     try:
         if int(get_setting("INIT")) <= 5:
-            logging.info("初始化未完成, 转跳到初始化页面")
+            logging.info(gettext("NOT_INIT"))
             return redirect("/init/")
     except Exception:
-        logging.info("未检测到初始化配置, 转跳到初始化页面")
+        logging.info(gettext("NOT_INIT"))
         return redirect("/init/")
     try:
         if get_setting("JUMP_UPDATE") != "false":
-            logging.info("检测到更新配置, 转跳至配置更新页面")
+            logging.info(gettext("JUMP_UPDATE"))
             return redirect("/update/")
     except Exception:
-        logging.info("检测配置更新失败, 转跳至更新页面")
+        logging.info(gettext("JUMP_UPDATE_FAILED"))
         return redirect("/update/")
     context = {'segment': 'index'}
     context.update(get_custom_config())
@@ -413,7 +412,7 @@ def index(request):
     for item in range(len(posts)):
         posts[item]["quotename"] = quote(posts[item]["name"])
         posts[item]["path"] = quote(posts[item]["path"])
-        posts[item]["status"] = "已发布" if posts[item]["status"] else "草稿"
+        posts[item]["status"] = gettext("PUBLISHED") if posts[item]["status"] else gettext("DRAFT")
     context["posts"] = json.dumps(posts)
     context["images"] = images
     context = dict(context, **get_latest_version())
@@ -422,7 +421,7 @@ def index(request):
     context["post_number"] = str(len(posts))
     context["images_number"] = str(len(images))
     context["breadcrumb"] = "Dashboard"
-    context["breadcrumb_cn"] = "控制台"
+    context["breadcrumb_cn"] = gettext("DASHBOARD")
     _recent_posts = PostModel.objects.all().order_by("-date")
     context["recent_posts"] = list()
     for i in _recent_posts:
@@ -430,7 +429,7 @@ def index(request):
             "title": i.title,
             "path": escape(i.path),
             "date": i.date,
-            "status": "已发布" if i.status == 1 else "草稿",
+            "status": gettext("PUBLISHED") if i.status == 1 else gettext("DRAFT"),
             "filename": escape(i.filename)
         })
     save_setting("LAST_LOGIN", str(int(time())))
@@ -443,17 +442,17 @@ def pages(request):
     context = dict()
     try:
         if int(get_setting("INIT")) <= 5:
-            logging.info("初始化未完成, 转跳到初始化页面")
+            logging.info(gettext("NOT_INIT"))
             return redirect("/init/")
     except Exception:
-        logging.info("未检测到初始化配置, 转跳到初始化页面")
+        logging.info(gettext("NOT_INIT"))
         return redirect("/init/")
     try:
         if get_setting("JUMP_UPDATE") != "false":
-            logging.info("检测到更新配置, 转跳至配置更新页面")
+            logging.info(gettext("JUMP_UPDATE"))
             return redirect("/update/")
     except Exception:
-        logging.info("检测配置更新失败, 转跳至更新页面")
+        logging.info(gettext("JUMP_UPDATE_FAILED"))
         return redirect("/update/")
     try:
         context.update(get_custom_config())
@@ -463,7 +462,7 @@ def pages(request):
             return index(request)
         elif "edit_talk" in load_template:
             context["breadcrumb"] = "TalkEditor"
-            context["breadcrumb_cn"] = "编辑说说"
+            context["breadcrumb_cn"] = gettext("EDIT_TALK")
             talk_id = request.GET.get("id")
             context["content"] = repr("")
             context["tags"] = "[]"
@@ -475,11 +474,8 @@ def pages(request):
                 context["tags"] = Talk.tags
                 context["id"] = talk_id
                 context["values"] = Talk.values
-            try:
-                if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
-                    context["img_bed"] = True
-            except Exception:
-                logging.info("未检测到图床配置, 图床功能关闭")
+            if json.loads(get_setting("IMG_HOST")).get("type") in hexoweb.libs.image.all_providers():
+                context["img_bed"] = True
         elif "edit_page" in load_template:
             context["breadcrumb"] = "PageEditor"
             file_path = request.GET.get("file")
@@ -490,20 +486,17 @@ def pages(request):
             context["file_path"] = file_path
             context["emoji"] = get_setting("VDITOR_EMOJI")
             context["sidebar"] = get_setting("PAGE_SIDEBAR")
-            try:
-                if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
-                    context["img_bed"] = True
-            except Exception:
-                logging.info("未检测到图床配置, 图床功能关闭")
+            if json.loads(get_setting("IMG_HOST")).get("type") in hexoweb.libs.image.all_providers():
+                context["img_bed"] = True
             context["AUTO_EXCERPT_CONFIG"] = get_setting("AUTO_EXCERPT_CONFIG")
-            context["breadcrumb_cn"] = "编辑页面: " + context['filename']
+            context["breadcrumb_cn"] = gettext("EDIT_PAGE") + ": " + context['filename']
         elif "edit_config" in load_template:
             context["breadcrumb"] = "ConfigEditor"
             file_path = request.GET.get("file")
             context["file_content"] = repr(Provider().get_content(file_path)).replace("<", "\\<").replace(">", "\\>").replace("!", "\\!")
             context["filepath"] = file_path
             context['filename'] = file_path.split("/")[-1]
-            context["breadcrumb_cn"] = "编辑配置: " + context['filename']
+            context["breadcrumb_cn"] = gettext("EDIT_CONFIG") + ": " + context['filename']
         elif "edit" in load_template:
             context["breadcrumb"] = "PostEditor"
             file_path = request.GET.get("file")
@@ -511,20 +504,17 @@ def pages(request):
                 (Provider().get_content(file_path)))
             context["front_matter"] = json.dumps(context["front_matter"])
             context['filename'] = request.GET.get("postname")
-            context["breadcrumb_cn"] = "编辑文章: " + context['filename']
+            context["breadcrumb_cn"] = gettext("EDIT_POST") + ": " + context['filename']
             context['fullname'] = file_path
             context["emoji"] = get_setting("VDITOR_EMOJI")
             context["sidebar"] = get_setting("POST_SIDEBAR")
             context["config"] = Provider().config
-            try:
-                if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
-                    context["img_bed"] = True
-            except Exception:
-                logging.info("未检测到图床配置, 图床功能关闭")
+            if json.loads(get_setting("IMG_HOST")).get("type") in hexoweb.libs.image.all_providers():
+                context["img_bed"] = True
             context["AUTO_EXCERPT_CONFIG"] = get_setting("AUTO_EXCERPT_CONFIG")
         elif "new_page" in load_template:
             context["breadcrumb"] = "NewPage"
-            context["breadcrumb_cn"] = "新建页面"
+            context["breadcrumb_cn"] = gettext("NEW_PAGE")
             context["emoji"] = get_setting("VDITOR_EMOJI")
             context["sidebar"] = get_setting("PAGE_SIDEBAR")
             try:
@@ -532,18 +522,15 @@ def pages(request):
                     (Provider().get_scaffold("pages")))
                 context["front_matter"] = json.dumps(context["front_matter"])
             except Exception as error:
-                logging.error("获取页面模板失败, 错误信息: " + repr(error))
+                logging.error(gettext("GET_PAGE_SCAFFOLD_FAILED").format(repr(error)))
                 # context["error"] = repr(error)
                 context["front_matter"], context["file_content"] = {}, ""
-            try:
-                if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
-                    context["img_bed"] = True
-            except Exception:
-                logging.info("未检测到图床配置, 图床功能关闭")
+            if json.loads(get_setting("IMG_HOST")).get("type") in hexoweb.libs.image.all_providers():
+                context["img_bed"] = True
             context["AUTO_EXCERPT_CONFIG"] = get_setting("AUTO_EXCERPT_CONFIG")
         elif "new" in load_template:
             context["breadcrumb"] = "NewPost"
-            context["breadcrumb_cn"] = "新建文章"
+            context["breadcrumb_cn"] = gettext("NEW_POST")
             context["emoji"] = get_setting("VDITOR_EMOJI")
             context["sidebar"] = get_setting("POST_SIDEBAR")
             context["config"] = Provider().config
@@ -552,18 +539,15 @@ def pages(request):
                     (Provider().get_scaffold("posts")))
                 context["front_matter"] = json.dumps(context["front_matter"])
             except Exception as error:
-                logging.error("获取文章模板失败, 错误信息: " + repr(error))
+                logging.error(gettext("GET_POST_SCAFFOLD_FAILED").format(repr(error)))
                 # context["error"] = repr(error)
                 context["front_matter"], context["file_content"] = {}, ""
-            try:
-                if json.loads(get_setting("IMG_HOST"))["type"] != "关闭":
-                    context["img_bed"] = True
-            except Exception:
-                print("未检测到图床配置, 图床功能关闭")
+            if json.loads(get_setting("IMG_HOST")).get("type") in hexoweb.libs.image.all_providers():
+                context["img_bed"] = True
             context["AUTO_EXCERPT_CONFIG"] = get_setting("AUTO_EXCERPT_CONFIG")
         elif "posts" in load_template:
             context["breadcrumb"] = "Posts"
-            context["breadcrumb_cn"] = "文章列表"
+            context["breadcrumb_cn"] = gettext("POSTS_LIST")
             search = request.GET.get("s")
             if search:
                 cache = Cache.objects.filter(name="posts." + search)
@@ -585,7 +569,7 @@ def pages(request):
             context["search"] = search
         elif "pages" in load_template:
             context["breadcrumb"] = "Pages"
-            context["breadcrumb_cn"] = "页面列表"
+            context["breadcrumb_cn"] = gettext("PAGES_LIST")
             search = request.GET.get("s")
             if search:
                 cache = Cache.objects.filter(name="pages." + search)
@@ -607,10 +591,10 @@ def pages(request):
             context["search"] = search
         elif "configs" in load_template:
             context["breadcrumb"] = "Configs"
-            context["breadcrumb_cn"] = "配置列表"
+            context["breadcrumb_cn"] = gettext("CONFIGS_LIST")
             if not request.user.is_staff:
-                logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
-                return page_403(request, "您没有权限访问此页面")
+                logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
+                return page_403(request, gettext("NO_PERMISSION"))
             search = request.GET.get("s")
             if search:
                 cache = Cache.objects.filter(name="configs." + search)
@@ -632,7 +616,7 @@ def pages(request):
             context["search"] = search
         elif "talks" in load_template:
             context["breadcrumb"] = "Talks"
-            context["breadcrumb_cn"] = "说说列表"
+            context["breadcrumb_cn"] = gettext("TALKS_LIST")
             search = request.GET.get("s")
             posts = []
             talks = TalkModel.objects.all()
@@ -657,7 +641,7 @@ def pages(request):
             context["search"] = search
         elif "images" in load_template:
             context["breadcrumb"] = "Gallery"
-            context["breadcrumb_cn"] = "图片列表"
+            context["breadcrumb_cn"] = gettext("IMAGES_LIST")
             search = request.GET.get("s")
             posts = []
             images = ImageModel.objects.all()
@@ -680,7 +664,7 @@ def pages(request):
             context["search"] = search
         elif "friends" in load_template:
             context["breadcrumb"] = "Friends"
-            context["breadcrumb_cn"] = "友情链接"
+            context["breadcrumb_cn"] = gettext("FLINKS_LIST")
             search = request.GET.get("s")
             posts = []
             images = FriendModel.objects.all()
@@ -703,10 +687,10 @@ def pages(request):
             context["search"] = search
         elif 'settings' in load_template:
             context["breadcrumb"] = "Settings"
-            context["breadcrumb_cn"] = "设置"
+            context["breadcrumb_cn"] = gettext("SETTINGS")
             if not request.user.is_staff:
-                logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
-                return page_403(request, "您没有权限访问此页面")
+                logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
+                return page_403(request, gettext("NO_PERMISSION"))
             try:
                 context['ABBRLINK_ALG'] = get_setting("ABBRLINK_ALG")
                 context['ABBRLINK_REP'] = get_setting("ABBRLINK_REP")
@@ -761,14 +745,14 @@ def pages(request):
                 context["AUTO_EXCERPT_SAVE_KEY"] = json.loads(context["AUTO_EXCERPT_CONFIG"]).get("save_key", "excerpt")
                 context["AUTO_EXCERPT"] = json.loads(context["AUTO_EXCERPT_CONFIG"]).get("auto", "关闭")
             except Exception:
-                logging.error("配置获取错误, 转跳至配置更新页面")
+                logging.error(gettext("GET_SETTINGS_FAILED"))
                 return redirect("/update/")
         elif 'advanced' in load_template:
             context["breadcrumb"] = "Advanced"
-            context["breadcrumb_cn"] = "高级设置"
+            context["breadcrumb_cn"] = gettext("ADVANCED_SETTINGS")
             if not request.user.is_staff:
-                logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
-                return page_403(request, "您没有权限访问此页面")
+                logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
+                return page_403(request, gettext("NO_PERMISSION"))
             try:
                 search = request.GET.get("s")
                 if search:
@@ -783,14 +767,14 @@ def pages(request):
                 context["settings_number"] = len(context["settings"])
                 context["page_number"] = ceil(context["settings_number"] / 15)
             except Exception as e:
-                logging.error("高级设置获取错误: " + repr(e))
+                logging.error(gettext("GET_ADVANCED_SETTINGS_FAILED").format(repr(e)))
                 context["error"] = repr(e)
         elif 'custom' in load_template:
             context["breadcrumb"] = "Custom"
-            context["breadcrumb_cn"] = "自定义字段"
+            context["breadcrumb_cn"] = gettext("CUSTOM_LIST")
             if not request.user.is_staff:
-                logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
-                return page_403(request, "您没有权限访问此页面")
+                logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
+                return page_403(request, gettext("NO_PERMISSION"))
             try:
                 search = request.GET.get("s")
                 all_values = CustomModel.objects.all()
@@ -804,13 +788,13 @@ def pages(request):
                 context["settings_number"] = len(context["settings"])
                 context["page_number"] = ceil(context["settings_number"] / 15)
             except Exception as e:
-                logging.error("自定义字段获取错误: " + repr(e))
+                logging.error(gettext("GET_CUSTOM_FAILED").format(repr(e)))
                 context["error"] = repr(e)
         elif "userscripts" in load_template:
             context["breadcrumb"] = "Scripts"
-            context["breadcrumb_cn"] = "在线函数库"
+            context["breadcrumb_cn"] = gettext("SCRIPTS_LIST")
             if not request.user.is_staff:
-                logging.info(f"子用户{request.user.username}尝试访问{request.path}被拒绝")
+                logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
                 return page_403(request, "您没有权限访问此页面")
             try:
                 search = request.GET.get("s")
@@ -826,7 +810,7 @@ def pages(request):
                 context["all_posts"] = json.dumps(context["posts"])
                 context["posts"] = json.dumps(context["posts"])
             except Exception as e:
-                logging.error("获取错误: " + repr(e))
+                logging.error(gettext("GET_SCRIPTS_FAILED").format(repr(e)))
                 context["error"] = repr(e)
 
         save_setting("LAST_LOGIN", str(int(time())))
@@ -834,12 +818,12 @@ def pages(request):
         return HttpResponse(html_template.render(context, request))
 
     except template.TemplateDoesNotExist as e:
-        logging.error("页面不存在: " + repr(e))
+        logging.error(gettext("PAGE_404").format(repr(e)))
         html_template = loader.get_template('home/page-404.html')
         return HttpResponse(html_template.render(context, request))
 
     except Exception as error:
-        logging.error("服务端错误: " + repr(error))
+        logging.error(gettext("PAGE_500").format(repr(e)))
         html_template = loader.get_template('home/page-500.html')
         context["error"] = error
         return HttpResponse(html_template.render(context, request))

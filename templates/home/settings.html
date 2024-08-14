@@ -1,6 +1,6 @@
 {% extends 'layouts/base.html' %}
 
-{% block title %} 设置 {% endblock title %}
+{% block title %} {{ "SETTINGS" | gettext }} {% endblock title %}
 
 {% block content %}
     <!-- Page content -->
@@ -9,43 +9,50 @@
             <div class="col-12">
                 <div class="card mb-4">
                     <div class="card-header pb-0">
-                        <h6 class="mb-0">修改配置</h6>
+                        <h6 class="mb-0">{{ "SETTINGS_LABEL" | gettext }}</h6>
                     </div>
                     <div class="card-body">
-                        <button type="button" class="btn bg-gradient-success" onclick="query_webhook()">
-                            一键设置WEBHOOK
+                        <button type="button" class="btn bg-gradient-success"
+                                onclick="query_webhook()">
+                            {{ "SET_WEBHOOK" | gettext }}
                         </button>
-                        <button class="btn bg-gradient-danger" onclick="location.href='/advanced.html'">
-                            高级设置
+                        <button class="btn bg-gradient-danger"
+                                onclick="location.href='/advanced.html'">
+                            {{ "ADVANCED" | gettext }}
                         </button>
-                        <button class="btn bg-gradient-info" onclick="location.href='/userscripts.html'">
-                            云端命令库
+                        <button class="btn bg-gradient-info"
+                                onclick="location.href='/userscripts.html'">
+                            {{ "CLOUD_SCRIPTS" | gettext }}
                         </button>
-                        <button type="button" class="btn bg-gradient-warning" onclick="query_purge()">
-                            清除缓存
+                        <button type="button" class="btn bg-gradient-warning"
+                                onclick="query_purge()">
+                            {{ "PURGE_CACHE" | gettext }}
                         </button>
-                        <button type="button" class="btn bg-gradient-danger" onclick="query_update()">
-                            一键更新
+                        <button type="button" class="btn bg-gradient-danger"
+                                onclick="query_update()">
+                            {{ "ONEKEY_UPDATE" | gettext }}
                         </button>
-                        <button type="button" class="btn bg-gradient-primary" onclick="location.href='/migrate/'">
-                            迁移
+                        <button type="button" class="btn bg-gradient-primary"
+                                onclick="location.href='/migrate/'">
+                            {{ "MIGRATE" | gettext }}
                         </button>
                         <form id="apikey-settings" onsubmit="return false;">
                             <hr class="my-4"/>
-                            <h6 class="heading-small text-muted mb-4">API配置</h6>
+                            <h6 class="heading-small text-muted mb-4">{{ "SET_API" | gettext }}</h6>
                             <div class="pl-lg-4">
                                 <div class="row">
                                     {% csrf_token %}
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">API密钥</label>
+                                            <label class="form-control-label">{{ "SET_API_1" | gettext }}</label>
                                             <input type="text" name="apikey" class="form-control"
-                                                   placeholder="留空将保持不变">
+                                                   placeholder="{{ "SET_API_1_PH" | gettext }}">
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">启用友链申请API</label>
+                                            <label class="form-control-label">
+                                                {{ "SET_API_2" | gettext }}</label>
                                             <select name="allow_friend" class="form-control">
                                                 <option{% if ALLOW_FRIEND == "是" %}
                                                     selected{% endif %}>是
@@ -60,9 +67,8 @@
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label
-                                                    class="form-control-label">使用 reCaptcha
-                                                验证友链申请</label>
+                                            <label class="form-control-label">
+                                                {{ "SET_API_3" | gettext }}</label>
                                             <select name="friend-recaptcha" class="form-control">
                                                 <option{% if FRIEND_RECAPTCHA == "v2" %}
                                                     selected{% endif %}>v2
@@ -78,17 +84,19 @@
                                     </div>
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">reCaptcha 密钥</label>
+                                            <label class="form-control-label">
+                                                {{ "SET_API_4" | gettext }}</label>
                                             <input type="text" name="recaptcha-token"
                                                    class="form-control"
-                                                   placeholder="reCaptchaV3 服务器端 Token"
+                                                   placeholder="{{ "SET_API_4_PH" | gettext }}"
                                                    value="{{ RECAPTCHA_TOKEN }}">
                                         </div>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-lg-6">
-                                        <input type="button" class="btn btn-primary" value="提交"
+                                        <input type="button" class="btn btn-primary"
+                                               value="{{ "SUBMIT" | gettext }}"
                                                onclick="set_api()">
                                     </div>
                                 </div>
@@ -96,13 +104,13 @@
                         </form>
                         <form id="statistic-settings" onsubmit="return false;">
                             <hr class="my-4"/>
-                            <h6 class="heading-small text-muted mb-4">统计配置</h6>
+                            <h6 class="heading-small text-muted mb-4">{{ "SET_STATISTICS" | gettext }}</h6>
                             <div class="pl-lg-4">
                                 <div class="row">
                                     {% csrf_token %}
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">启用统计API</label>
+                                            <label class="form-control-label">{{ "SET_STATISTICS_1" | gettext }}</label>
                                             <select name="allow_statistic" class="form-control">
                                                 <option{% if STATISTIC_ALLOW == "是" %}
                                                     selected{% endif %}>是
@@ -115,17 +123,19 @@
                                     </div>
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">统计安全域名</label>
+                                            <label class="form-control-label">
+                                                {{ "SET_STATISTICS_2" | gettext }}</label>
                                             <input type="text" name="statistic_domains"
                                                    class="form-control"
-                                                   placeholder="输入域名包含的关键字, 英文半角逗号间隔"
+                                                   placeholder="{{ "SET_STATISTICS_2_PH" | gettext }}"
                                                    value="{{ STATISTIC_DOMAINS }}">
                                         </div>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-lg-6">
-                                        <input type="button" class="btn btn-primary" value="提交"
+                                        <input type="button" class="btn btn-primary"
+                                               value="{{ "SUBMIT" | gettext }}"
                                                onclick="set_statistic()">
                                     </div>
                                 </div>
@@ -133,46 +143,51 @@
                         </form>
                         <form id="user-settings" onsubmit="return false;">
                             <hr class="my-4"/>
-                            <h6 class="heading-small text-muted mb-4">用户配置</h6>
+                            <h6 class="heading-small text-muted mb-4">{{ "SET_USER" | gettext }}</h6>
                             <div class="pl-lg-4">
                                 <div class="row">
                                     {% csrf_token %}
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">原密码</label>
+                                            <label class="form-control-label">
+                                                {{ "SET_USER_1" | gettext }}</label>
                                             <input type="text" name="password" class="form-control"
-                                                   placeholder="原密码">
+                                                   placeholder="{{ "SET_USER_1_PH" | gettext }}">
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">新用户名</label>
+                                            <label class="form-control-label">
+                                                {{ "SET_USER_2" | gettext }}</label>
                                             <input type="text" name="username" class="form-control"
-                                                   placeholder="新的用户名">
+                                                   placeholder="{{ "SET_USER_2_PH" | gettext }}">
                                         </div>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">新密码</label>
+                                            <label class="form-control-label">
+                                                {{ "SET_USER_3" | gettext }}</label>
                                             <input type="text" name="newpassword"
                                                    class="form-control"
-                                                   placeholder="新的密码">
+                                                   placeholder="{{ "SET_USER_3_PH" | gettext }}">
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">重复密码</label>
+                                            <label class="form-control-label">
+                                                {{ "SET_USER_4" | gettext }}</label>
                                             <input type="text" name="repassword"
                                                    class="form-control"
-                                                   placeholder="再次输入以确认密码">
+                                                   placeholder="{{ "SET_USER_4_PH" | gettext }}">
                                         </div>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-lg-6">
-                                        <input type="button" class="btn btn-primary" value="提交"
+                                        <input type="button" class="btn btn-primary"
+                                               value="{{ "SUBMIT" | gettext }}"
                                                onclick="submit_user_config()">
                                     </div>
                                 </div>
@@ -180,27 +195,25 @@
                         </form>
                         <form id="security-settings" onsubmit="return false;">
                             <hr class="my-4"/>
-                            <h6 class="heading-small text-muted mb-4">安全配置</h6>
+                            <h6 class="heading-small text-muted mb-4">{{ "SET_SECURE" | gettext }}</h6>
                             <div class="pl-lg-4">
                                 <div class="row">
                                     {% csrf_token %}
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">登录页 reCaptchaV3
-                                                用户端密钥</label>
+                                            <label class="form-control-label">{{ "SET_SECURE_1" | gettext }}</label>
                                             <input type="text" name="site-token"
                                                    class="form-control"
-                                                   placeholder="留空即关闭该功能"
+                                                   placeholder="{{ "SET_SECURE_1_PH" | gettext }}"
                                                    value="{{ LOGIN_RECAPTCHA_SITE_TOKEN }}">
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">登录页 reCaptchaV3
-                                                服务器端密钥</label>
+                                            <label class="form-control-label">{{ "SET_SECURE_2" | gettext }}</label>
                                             <input type="text" name="server-token"
                                                    class="form-control"
-                                                   placeholder="留空即关闭该功能"
+                                                   placeholder="{{ "SET_SECURE_2_PH" | gettext }}"
                                                    value="{{ LOGIN_RECAPTCHA_SERVER_TOKEN }}">
                                         </div>
                                     </div>
@@ -208,28 +221,29 @@
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">登录页 reCaptchaV2
-                                                用户端密钥</label>
+                                            <label class="form-control-label">
+                                                {{ "SET_USER_3_PH" | gettext }}</label>
                                             <input type="text" name="site-token-v2"
                                                    class="form-control"
-                                                   placeholder="留空即关闭该功能"
+                                                   placeholder="{{ "SET_SECURE_3_PH" | gettext }}"
                                                    value="{{ LOGIN_RECAPTCHAV2_SITE_TOKEN }}">
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">登录页 reCaptchaV2
-                                                服务器端密钥</label>
+                                            <label class="form-control-label">
+                                                {{ "SET_USER_4_PH" | gettext }}</label>
                                             <input type="text" name="server-token-v2"
                                                    class="form-control"
-                                                   placeholder="留空即关闭该功能"
+                                                   placeholder="{{ "SET_SECURE_4_PH" | gettext }}"
                                                    value="{{ LOGIN_RECAPTCHAV2_SERVER_TOKEN }}">
                                         </div>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-lg-6">
-                                        <input type="button" class="btn btn-primary" value="提交"
+                                        <input type="button" class="btn btn-primary"
+                                               value="{{ "SUBMIT" | gettext }}"
                                                onclick="submit_security_config()">
                                     </div>
                                 </div>
@@ -237,13 +251,15 @@
                         </form>
                         <form id="hexo-settings" onsubmit="return false;">
                             <hr class="my-4"/>
-                            <h6 class="heading-small text-muted mb-4">博客配置</h6>
+                            <h6 class="heading-small text-muted mb-4">
+                                {{ "SET_BLOG" | gettext }}</h6>
                             <div class="pl-lg-4">
                                 {% csrf_token %}
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">服务商</label>
+                                            <label class="form-control-label">
+                                                {{ "SET_BLOG_1" | gettext }}</label>
                                             <select name="provider" id="provider-container"
                                                     class="form-control"
                                                     onchange="change_provider(this.value)">
@@ -252,7 +268,8 @@
                                     </div>
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">使用配置</label>
+                                            <label class="form-control-label">
+                                                {{ "SET_BLOG_2" | gettext }}</label>
                                             <select name="config" id="config-container"
                                                     class="form-control">
                                                 {% for config in ALL_PLATFORM_CONFIGS %}
@@ -269,9 +286,11 @@
                                 <div id="hexo-settings-container"></div>
                                 <div class="row">
                                     <div class="col-lg-6">
-                                        <input type="button" class="btn btn-primary" value="提交"
+                                        <input type="button" class="btn btn-primary"
+                                               value="{{ "SUBMIT" | gettext }}"
                                                onclick="set_hexo(false)">
-                                        <input type="button" class="btn btn-white" value="强制提交"
+                                        <input type="button" class="btn btn-white"
+                                               value="{{ "FORCE_SUBMIT" | gettext }}"
                                                onclick="set_hexo(true)">
                                     </div>
                                 </div>
@@ -279,13 +298,15 @@
                         </form>
                         <form id="notify-settings" onsubmit="return false;">
                             <hr class="my-4"/>
-                            <h6 class="heading-small text-muted mb-4">消息配置</h6>
+                            <h6 class="heading-small text-muted mb-4">
+                                {{ "SET_NOTIFY" | gettext }}</h6>
                             <div class="pl-lg-4">
                                 {% csrf_token %}
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">服务商</label>
+                                            <label class="form-control-label">
+                                                {{ "SET_NOTIFY_1" | gettext }}</label>
                                             <select name="notifier" id="onepush-container"
                                                     class="form-control"
                                                     onchange="change_pusher(this.value)">
@@ -296,9 +317,11 @@
                                 <div id="onepush-settings-container"></div>
                                 <div class="row">
                                     <div class="col-lg-6">
-                                        <input type="button" class="btn btn-primary" value="提交"
+                                        <input type="button" class="btn btn-primary"
+                                               value="{{ "SUBMIT" | gettext }}"
                                                onclick="set_onepush()">
-                                        <input type="button" class="btn btn-info" value="测试"
+                                        <input type="button" class="btn btn-info"
+                                               value="{{ "TEST" | gettext }}"
                                                onclick="test_onepush()">
                                     </div>
                                 </div>
@@ -306,13 +329,15 @@
                         </form>
                         <form id="abbrlink-settings" onsubmit="return false;">
                             <hr class="my-4"/>
-                            <h6 class="heading-small text-muted mb-4">短链接配置</h6>
+                            <h6 class="heading-small text-muted mb-4">
+                                {{ "SET_ABBRLINK" | gettext }}</h6>
                             <div class="pl-lg-4">
                                 <div class="row">
                                     {% csrf_token %}
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">短链接算法</label>
+                                            <label class="form-control-label">
+                                                {{ "SET_ABBRLINK_1" | gettext }}</label>
                                             <select name="alg" class="form-control">
                                                 <option{% if ABBRLINK_ALG == "crc16" %}
                                                     selected{% endif %}>crc16
@@ -325,7 +350,8 @@
                                     </div>
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">短链接进制</label>
+                                            <label class="form-control-label">
+                                                {{ "SET_ABBRLINK_2" | gettext }}</label>
                                             <select name="rep" class="form-control">
                                                 <option{% if ABBRLINK_REP == "hex" %}
                                                     selected{% endif %}>hex
@@ -339,7 +365,8 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-lg-6">
-                                        <input type="button" class="btn btn-primary" value="提交"
+                                        <input type="button" class="btn btn-primary"
+                                               value="{{ "SUBMIT" | gettext }}"
                                                onclick="submit_abbrlink_config()">
                                     </div>
                                 </div>
@@ -347,13 +374,15 @@
                         </form>
                         <form id="excerpt-settings" onsubmit="return false;">
                             <hr class="my-4"/>
-                            <h6 class="heading-small text-muted mb-4">文章截取配置</h6>
+                            <h6 class="heading-small text-muted mb-4">
+                                {{ "SET_EXCERPT" | gettext }}</h6>
                             <div class="pl-lg-4">
                                 <div class="row">
                                     {% csrf_token %}
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">截取方法</label>
+                                            <label class="form-control-label">
+                                                {{ "SET_EXCERPT_1" | gettext }}</label>
                                             <select class="form-control" name="excerpt-type"
                                                     id="excerpt-method-container"
                                                     onchange="change_excerpt(this.value)">
@@ -364,7 +393,8 @@
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">自动截取</label>
+                                            <label class="form-control-label">
+                                                {{ "SET_EXCERPT_2" | gettext }}</label>
                                             <select class="form-control" name="auto-excerpt"
                                                     id="auto-excerpt">
                                                 <option{% if AUTO_EXCERPT == "关闭" %} selected
@@ -381,10 +411,11 @@
                                     </div>
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">保存字段</label>
+                                            <label class="form-control-label">
+                                                {{ "SET_EXCERPT_3" | gettext }}</label>
                                             <input type="text" name="save_key"
                                                    class="form-control"
-                                                   placeholder="一般为 excerpt"
+                                                   placeholder="{{ "SET_EXCERPT_3_PH" | gettext }}"
                                                    id="save-key"
                                                    value="{{ AUTO_EXCERPT_SAVE_KEY }}">
                                         </div>
@@ -393,7 +424,8 @@
                                 <div id="excerpt-container"></div>
                                 <div class="row">
                                     <div class="col-lg-6">
-                                        <input type="button" class="btn btn-primary" value="提交"
+                                        <input type="button" class="btn btn-primary"
+                                               value="{{ "SUBMIT" | gettext }}"
                                                onclick="set_excerpt()">
                                     </div>
                                 </div>
@@ -401,13 +433,15 @@
                         </form>
                         <form id="image-settings" onsubmit="return false;">
                             <hr class="my-4"/>
-                            <h6 class="heading-small text-muted mb-4">图床配置</h6>
+                            <h6 class="heading-small text-muted mb-4">
+                                {{ "SET_IMAGE" | gettext }}</h6>
                             <div class="pl-lg-4">
                                 <div class="row">
                                     {% csrf_token %}
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">图床类型</label>
+                                            <label class="form-control-label">
+                                                {{ "SET_IMAGE_1" | gettext }}</label>
                                             <select name="image-type" id="image-type"
                                                     class="form-control"
                                                     onchange="change_image_host(this.value)">
@@ -418,7 +452,8 @@
                                 <div id="image-host-container"></div>
                                 <div class="row">
                                     <div class="col-lg-6">
-                                        <input type="button" class="btn btn-primary" value="提交"
+                                        <input type="button" class="btn btn-primary"
+                                               value="{{ "SUBMIT" | gettext }}"
                                                onclick="set_image_host()">
                                     </div>
                                 </div>
@@ -426,13 +461,14 @@
                         </form>
                         <form id="cdn-settings" onsubmit="return false;">
                             <hr class="my-4"/>
-                            <h6 class="heading-small text-muted mb-4">CDN配置</h6>
+                            <h6 class="heading-small text-muted mb-4">{{ "SET_CDN" | gettext }}</h6>
                             <div class="pl-lg-4">
                                 <div class="row">
                                     {% csrf_token %}
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">CDN 提供商</label>
+                                            <label class="form-control-label">
+                                                {{ "SET_CDN_1" | gettext }}</label>
                                             <select class="form-control" name="CDNJS"
                                                     id="cdnjs">
                                                 {% for cdn in ALL_CDN %}
@@ -446,7 +482,8 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-lg-6">
-                                        <input type="button" class="btn btn-primary" value="提交"
+                                        <input type="button" class="btn btn-primary"
+                                               value="{{ "SUBMIT" | gettext }}"
                                                onclick="set_cdn()">
                                     </div>
                                 </div>
@@ -454,23 +491,26 @@
                         </form>
                         <form id="cust-settings" onsubmit="return false;">
                             <hr class="my-4"/>
-                            <h6 class="heading-small text-muted mb-4">自定义配置</h6>
+                            <h6 class="heading-small text-muted mb-4">
+                                {{ "SET_CUSTOM" | gettext }}</h6>
                             <div class="pl-lg-4">
                                 <div class="row">
                                     {% csrf_token %}
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">站点名称</label>
+                                            <label class="form-control-label">
+                                                {{ "SET_CUSTOM_1" | gettext }}</label>
                                             <input type="text" name="name" class="form-control"
-                                                   placeholder="默认为 Hexo管理面板"
+                                                   placeholder="{{ "SET_CUSTOM_1_PH" | gettext }}"
                                                    value="{{ QEXO_NAME }}">
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">站点连接符</label>
+                                            <label class="form-control-label">
+                                                {{ "SET_CUSTOM_2" | gettext }}</label>
                                             <input type="text" name="split" class="form-control"
-                                                   placeholder="默认为“ - ”"
+                                                   placeholder="{{ "SET_CUSTOM_2_PH" | gettext }}"
                                                    value="{{ QEXO_SPLIT }}">
                                         </div>
                                     </div>
@@ -478,19 +518,21 @@
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">站点 LOGO</label>
+                                            <label class="form-control-label">
+                                                {{ "SET_CUSTOM_3" | gettext }}</label>
                                             <input type="text" name="logo"
                                                    class="form-control"
-                                                   placeholder="默认为 images 下的 qexo.png"
+                                                   placeholder="{{ "SET_CUSTOM_3_PH" | gettext }}"
                                                    value="{{ QEXO_LOGO }}">
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">站点 ICON</label>
+                                            <label class="form-control-label">
+                                                {{ "SET_CUSTOM_4" | gettext }}</label>
                                             <input type="text" name="icon"
                                                    class="form-control"
-                                                   placeholder="默认为 images 下的 icon.png"
+                                                   placeholder="{{ "SET_CUSTOM_4_PH" | gettext }}"
                                                    value="{{ QEXO_ICON }}">
                                         </div>
                                     </div>
@@ -498,19 +540,22 @@
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <div class="form-group">
-                                            <label class="form-control-label">暗色 LOGO</label>
+                                            <label class="form-control-label">
+                                                {{ "SET_CUSTOM_5" | gettext }}</label>
                                             <input type="text" name="logo-dark"
                                                    class="form-control"
-                                                   placeholder="默认为 images 下的 qexo-dark.png"
+                                                   placeholder="{{ "SET_CUSTOM_5_PH" | gettext }}"
                                                    value="{{ QEXO_LOGO_DARK }}">
                                         </div>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-lg-6">
-                                        <input type="button" class="btn btn-primary" value="提交"
+                                        <input type="button" class="btn btn-primary"
+                                               value="{{ "SUBMIT" | gettext }}"
                                                onclick="submit_cust_config()">
-                                        <input type="button" class="btn btn-white" value="重置"
+                                        <input type="button" class="btn btn-white"
+                                               value="{{ "RESET" | gettext }}"
                                                onclick="query_reset_cust()">
                                     </div>
                                 </div>
@@ -525,7 +570,7 @@
             <div class="modal-dialog">
                 <div class="modal-content bg-white">
                     <div class="modal-header" style="border: none;">
-                        <h5 class="modal-title" id="queryModalLabel">提示</h5>
+                        <h5 class="modal-title" id="queryModalLabel">{{ "TIPS" | gettext }}</h5>
                         <button type="button" data-bs-dismiss="modal"
                                 aria-label="Close" style="box-sizing: content-box;width: 1em;height:
                             1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem;
@@ -537,10 +582,11 @@
                         <a id="question"></a>
                     </div>
                     <div class="modal-footer" style="border: none;">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消
+                        <button type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">{{ "CANCEL" | gettext }}
                         </button>
                         <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
-                                onclick="purge()">确定
+                                onclick="purge()">{{ "CONFIRM" | gettext }}
                         </button>
                     </div>
                 </div>
@@ -551,7 +597,7 @@
             <div class="modal-dialog">
                 <div class="modal-content bg-white">
                     <div class="modal-header" style="border: none;">
-                        <h5 class="modal-title" id="queryWebhookLabel">提示</h5>
+                        <h5 class="modal-title" id="queryWebhookLabel">{{ "TIPS" | gettext }}</h5>
                         <button type="button" data-bs-dismiss="modal"
                                 aria-label="Close" style="box-sizing: content-box;width: 1em;height:
                             1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem;
@@ -560,13 +606,14 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        确定要自动创建Webhook事件吗？这会清除您原仓库的所有Webhook事件
+                        {{ "WARN_WEBHOOK" | gettext }}
                     </div>
                     <div class="modal-footer" style="border: none;">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消
+                        <button type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">{{ "CANCEL" | gettext }}
                         </button>
                         <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
-                                onclick="create_webhook()">确定
+                                onclick="create_webhook()">{{ "CONFIRM" | gettext }}
                         </button>
                     </div>
                 </div>
@@ -577,7 +624,7 @@
             <div class="modal-dialog">
                 <div class="modal-content bg-white">
                     <div class="modal-header" style="border: none;">
-                        <h5 class="modal-title" id="queryWebhookLabel">更新</h5>
+                        <h5 class="modal-title" id="queryWebhookLabel">{{ "UPDATE" | gettext }}</h5>
                         <button type="button" data-bs-dismiss="modal"
                                 aria-label="Close" style="box-sizing: content-box;width: 1em;height:
                             1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem;
@@ -587,7 +634,8 @@
                     </div>
                     <div class="modal-body">
                         <div class="col">
-                            <label class="form-control-label">更新通道</label>
+                            <label class="form-control-label">
+                                {{ "UPDATE_CHANNEL" | gettext }}</label>
                             <select class="form-control" id="update-origin-branch">
                                 {% for update in ALL_UPDATES %}
                                     <option>{{ update.name }}</option>
@@ -596,10 +644,11 @@
                         </div>
                     </div>
                     <div class="modal-footer" style="border: none;">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消
+                        <button type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">{{ "CANCEL" | gettext }}
                         </button>
                         <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
-                                onclick="do_update()">确定
+                                onclick="do_update()">{{ "CONFIRM" | gettext }}
                         </button>
                     </div>
                 </div>
@@ -612,7 +661,7 @@
             <div class="modal-dialog">
                 <div class="modal-content bg-white">
                     <div class="modal-header" style="border: none;">
-                        <h5 class="modal-title" id="queryResetCustLabel">提示</h5>
+                        <h5 class="modal-title" id="queryResetCustLabel">{{ "TIPS" | gettext }}</h5>
                         <button type="button" data-bs-dismiss="modal"
                                 aria-label="Close" style="box-sizing: content-box;width: 1em;height:
                             1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem;
@@ -621,13 +670,14 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        确定要重置自定义配置吗？该操作不可回退
+                        {{ "WARN_RESET" | gettext }}
                     </div>
                     <div class="modal-footer" style="border: none;">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消
+                        <button type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">{{ "CANCEL" | gettext }}
                         </button>
                         <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
-                                onclick="reset_cust_config()">确定
+                                onclick="reset_cust_config()">{{ "CONFIRM" | gettext }}
                         </button>
                     </div>
                 </div>
@@ -656,11 +706,7 @@
 
         function set_hexo(force) {
             let loading;
-            if ($("#config-container").val() === "Hexo" && !force) {
-                loading = new KZ_Loading('正在校验并保存中...');
-            } else {
-                loading = new KZ_Loading('正在保存中...');
-            }
+            loading = new KZ_Loading('{{ "SAVING" | gettext }}');
             loading.show();
             let form = $('#hexo-settings').serializeArray();
             let params = {};
@@ -695,29 +741,29 @@
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.error("网络错误！");
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
                 }
             })
         }
 
         function submit_user_config() {
             if (!$("input[name='username']").val()) {
-                notyf.error("请输入正确的用户名！");
+                notyf.error('{{ "RESET_PASSWORD_NO_USERNAME" | gettext }}');
                 return false;
             }
             if (!$("input[name='password']").val()) {
-                notyf.error("原密码不能为空！");
+                notyf.error('{{ "RESET_PASSWORD_NO_PASSWORD" | gettext }}');
                 return false;
             }
             if (!$("input[name='newpassword']").val()) {
-                notyf.error("请输入正确的新密码！");
+                notyf.error('{{ "RESET_PASSWORD_NO" | gettext }}');
                 return false;
             }
             if ($("input[name='newpassword']").val() != $("input[name='repassword']").val()) {
-                notyf.error("两次输入的密码不相同！");
+                notyf.error('{{ "RESET_PASSWORD_NO_MATCH" | gettext }}');
                 return false;
             }
-            let loading = new KZ_Loading('正在校验并保存中...');
+            let loading = new KZ_Loading("{{ "SAVING" | gettext }}");
             loading.show();
             $.ajax({
                 url: '/api/set_user/',
@@ -735,13 +781,13 @@
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.error("网络错误！");
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
                 }
             })
         }
 
         function set_image_host() {
-            let loading = new KZ_Loading('正在保存中...');
+            let loading = new KZ_Loading('{{ "SAVING" | gettext }}');
             loading.show();
             let form = $('#image-settings').serializeArray();
             let params = {};
@@ -770,13 +816,13 @@
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.error("网络错误！");
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
                 }
             })
         }
 
         function query_purge() {
-            $("#question").text("确定清除所有缓存吗");
+            $("#question").text("{{ "CACHE_CLEAN_REQUEST" | gettext }}");
             $("#queryModal").modal("show");
         }
 
@@ -793,7 +839,7 @@
         }
 
         function purge() {
-            let loading = new KZ_Loading('正在清除中...');
+            let loading = new KZ_Loading();
             loading.show();
             $.ajax({
                 url: '/api/purge/',
@@ -809,13 +855,13 @@
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.error("网络错误！");
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
                 }
             })
         }
 
         function create_webhook() {
-            let loading = new KZ_Loading('正在设置中...');
+            let loading = new KZ_Loading();
             loading.show();
             $.ajax({
                 url: '/api/create_webhook/',
@@ -834,13 +880,13 @@
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.error("网络错误！");
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
                 }
             })
         }
 
         function set_cdn() {
-            let loading = new KZ_Loading('正在保存中...');
+            let loading = new KZ_Loading('{{ "SAVING" | gettext }}');
             loading.show();
             $.ajax({
                 url: '/api/set_cdn/',
@@ -857,13 +903,13 @@
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.error("网络错误！");
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
                 }
             })
         }
 
         function submit_cust_config() {
-            let loading = new KZ_Loading('正在保存中...');
+            let loading = new KZ_Loading('{{ "SAVING" | gettext }}');
             loading.show();
             $.ajax({
                 url: '/api/set_cust/',
@@ -880,13 +926,13 @@
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.error("网络错误！");
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
                 }
             })
         }
 
         function reset_cust_config() {
-            let loading = new KZ_Loading('正在保存中...');
+            let loading = new KZ_Loading('{{ "SAVING" | gettext }}');
             loading.show();
             $.ajax({
                 url: '/api/set_cust/',
@@ -910,13 +956,13 @@
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.error("网络错误！");
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
                 }
             })
         }
 
         function set_excerpt() {
-            let loading = new KZ_Loading('正在保存中...');
+            let loading = new KZ_Loading('{{ "SAVING" | gettext }}');
             loading.show();
             let form = $('#excerpt-settings').serializeArray();
             let params = {};
@@ -948,13 +994,13 @@
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.error("网络错误！");
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
                 }
             })
         }
 
         function set_api() {
-            let loading = new KZ_Loading('正在保存中...');
+            let loading = new KZ_Loading('{{ "SAVING" | gettext }}');
             loading.show();
             $.ajax({
                 url: '/api/set_api/',
@@ -971,13 +1017,13 @@
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.error("网络错误！");
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
                 }
             })
         }
 
         function set_statistic() {
-            let loading = new KZ_Loading('正在保存中...');
+            let loading = new KZ_Loading('{{ "SAVING" | gettext }}');
             loading.show();
             $.ajax({
                 url: '/api/set_statistic/',
@@ -994,13 +1040,13 @@
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.error("网络错误！");
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
                 }
             })
         }
 
         function set_onepush() {
-            let loading = new KZ_Loading('正在保存中...');
+            let loading = new KZ_Loading('{{ "SAVING" | gettext }}');
             loading.show();
             let form = $('#notify-settings').serializeArray();
             let params = {};
@@ -1035,13 +1081,13 @@
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.error("网络错误！");
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
                 }
             })
         }
 
         function test_onepush() {
-            let loading = new KZ_Loading('正在请求中...');
+            let loading = new KZ_Loading();
             loading.show();
             let form = $('#notify-settings').serializeArray();
             let params = {};
@@ -1072,13 +1118,13 @@
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.error("网络错误！");
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
                 }
             })
         }
 
         function submit_abbrlink_config() {
-            let loading = new KZ_Loading('正在保存中...');
+            let loading = new KZ_Loading('{{ "SAVING" | gettext }}');
             loading.show();
             $.ajax({
                 url: '/api/set_abbrlink/',
@@ -1095,13 +1141,13 @@
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.error("网络错误！");
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
                 }
             })
         }
 
         function submit_security_config() {
-            let loading = new KZ_Loading('正在保存中... ');
+            let loading = new KZ_Loading('{{ "SAVING" | gettext }} ');
             loading.show();
             $.ajax({
                 url: '/api/set_security/',
@@ -1118,13 +1164,13 @@
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.error("网络错误！");
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
                 }
             })
         }
 
         function do_update() {
-            let loading = new KZ_Loading('正在尝试更新...');
+            let loading = new KZ_Loading('{{ "UPDATING" | gettext }}');
             loading.show();
             $.ajax({
                 url: '/api/do_update/',
@@ -1144,7 +1190,7 @@
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.error("网络错误！");
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
                 }
             })
         }
@@ -1264,7 +1310,7 @@
                             html += `<div class="row">
                                 <div class="col-lg-6">
                                     <div class="form-group">
-                                        <label class="form-control-label">` + required[i] + `(必填)
+                                        <label class="form-control-label">` + required[i] + `({{ "REQUIRED" | gettext }})
                                         </label>
                                         <input type="text" name="` + required[i] + `" class="form-control"
                                                placeholder="` + required[i] + `"
@@ -1275,7 +1321,7 @@
                         } else {
                             html += `<div class="col-lg-6">
                                 <div class="form-group">
-                                    <label class="form-control-label">` + required[i] + `(必填)</label>
+                                    <label class="form-control-label">` + required[i] + `({{ "REQUIRED" | gettext }})</label>
                                     <input type="text" name="` + required[i] + `" class="form-control"
                                            placeholder="` + required[i] + `"
                                            value="` + escapeString(tmp) + `">
@@ -1325,7 +1371,7 @@
                             html += `<div class="row">
                                 <div class="col-lg-6">
                                     <div class="form-group">
-                                        <label class="form-control-label">` + required[i] + `(必填)
+                                        <label class="form-control-label">` + required[i] + `({{ "REQUIRED" | gettext }})
                                         </label>
                                         <input type="text" name="` + required[i] + `" class="form-control"
                                                placeholder="` + required[i] + `"
@@ -1336,7 +1382,7 @@
                         } else {
                             html += `<div class="col-lg-6">
                                 <div class="form-group">
-                                    <label class="form-control-label">` + required[i] + `(必填)</label>
+                                    <label class="form-control-label">` + required[i] + `({{ "REQUIRED" | gettext }})</label>
                                     <input type="text" name="` + required[i] + `" class="form-control"
                                            placeholder="` + required[i] + `"
                                            value="">
@@ -1492,11 +1538,12 @@
 
         const all_excerpt = {
             "本地": {
-                "length": {"description": "摘要长度", "placeholder": "截取的长度"}
+                "length": {"description": "{{ "EXCERPT_LOCAL_LENGTH" | gettext }}",
+                    "placeholder": "{{ "EXCERPT_LOCAL_LENGTH_PH" | gettext }}"}
             },
             "TianliGPT": {
-                "key": {"description": "用户密钥", "placeholder": "在爱发电获得的用户密钥"},
-                "length": {"description": "发送长度", "placeholder": "发送到服务端的内容长度"}
+                "key": {"description": "{{ "EXCERPT_TIANLI_KEY" | gettext }}", "placeholder": "{{ "EXCERPT_TIANLI_KEY_PH" | gettext }}"},
+                "length": {"description": "{{ "EXCERPT_TIANLI_LENGTH" | gettext }}", "placeholder": "{{ "EXCERPT_TIANLI_LENGTH_PH" | gettext }}"}
             }
             /*
             "ChatGPT": {

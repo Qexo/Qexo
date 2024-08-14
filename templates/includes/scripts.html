@@ -110,12 +110,13 @@
     function showNotifications() {
         if (!notifications.length) {
             $("#notification-board").html(notificationTemp.replace('<span class="font-weight-bold">@@lebel@@<br></span><br>', '').replace("@@herf@@", "#")
-                .replace('@@content@@', '你当前没有消息哟~').replace('@@time@@', 'Now').replace('@@fore@@',
-                    '<i class="fas fa-check"></i>').replace("@@label@@", "提示"));
+                .replace('@@content@@', '{{ "NO_MSG_TIP" | gettext }}').replace('@@time@@', 'Now')
+                .replace('@@fore@@',
+                    '<i class="fas fa-check"></i>').replace("@@label@@", "{{ "TIPS" | gettext }}"));
             $("#msg-point").css({"background": "inherit"});
         } else {
-            let html = '<div class="px-3 py-1"><h6 class="text-sm text-muted m-0">你有 ' +
-                '<strong class="text-primary">' + notifications.length + '</strong> 则消息' +
+            let html = '<div class="px-3 py-1"><h6 class="text-sm text-muted m-0">{{ "HAS_MSG_TIP_1" | gettext }}' +
+                '<strong class="text-primary">' + notifications.length + '</strong>{{ "HAS_MSG_TIP_2" | gettext }}' +
                 '</h6></div><div class="list-group list-group-flush">';
             for (let i = 0; i < notifications.length; i++) {
                 html += notificationTemp.replace('@@herf@@', "javascript:delNotification('"
@@ -126,7 +127,7 @@
                     .replace("@@label@@", notifications[i]["label"]);
             }
             html += '<div class="px-3 py-1"><h6 class="text-sm text-primary m-0" ' +
-                'style="cursor: pointer;text-align: right;" onclick="clearNotification()">清除全部' +
+                'style="cursor: pointer;text-align: right;" onclick="clearNotification()">{{ "CLEAR_ALL" | gettext }}' +
                 '</h6></div>'
             $("#notification-board").html(html + '</div>');
             $("#msg-point").css({
@@ -145,9 +146,9 @@
                 notifications = data["data"];
                 showNotifications();
             } else {
-                $("#notification-board").html(notificationTemp.replace('@@lebel@@', '提示')
-                    .replace("@@herf@@", "#").replace('@@content@@', '消息加载失败咯').replace
-                    ('@@time@@', 'Error')
+                $("#notification-board").html(notificationTemp.replace('@@lebel@@', '{{ "TIPS" | gettext }}')
+                    .replace("@@herf@@", "#").replace('@@content@@', '{{ "MSG_LOAD_ERROR" | gettext }}')
+                    .replace('@@time@@', 'Error')
                     .replace('@@fore@@', '<i class="fa-solid fa-blender"></i>'));
             }
         }
@@ -174,7 +175,7 @@
                 }
             },
             error: function (res) {
-                notyf.error("网络错误!");
+                notyf.error("{{ "NETWORK_ERROR" | gettext }}");
             }
         })
     }
@@ -194,7 +195,7 @@
                 }
             },
             error: function (res) {
-                notyf.error("网络错误!");
+                notyf.error("{{ "NETWORK_ERROR" | gettext }}");
             }
         })
     }
@@ -253,15 +254,44 @@
         return false;
     }
 
+    function formatString(template, ...args) {
+        return template.replace(/{(\d+)}/g, (match, number) => {
+            return typeof args[number] !== 'undefined' ? args[number] : match;
+        });
+    }
+
+
     function excerpt_by_local(content, length) {
-            let excerpt = content.replace(/<img[^>]*>/g, "");
-            excerpt = excerpt.replace(/<iframe[^>]*>/g, "");
-            excerpt = excerpt.replace(/<script[^>]*>/g, "");
-            excerpt = excerpt.replace(/<style[^>]*>/g, "");
-            excerpt = excerpt.replace(/<[^>]*>/g, "");
-            excerpt = excerpt.replace(/\n/g, " ");
-            return excerpt.substring(0, length) + (content.length > length ? "..." : "");
-        }
+        let excerpt = content.replace(/<img[^>]*>/g, "");
+        excerpt = excerpt.replace(/<iframe[^>]*>/g, "");
+        excerpt = excerpt.replace(/<script[^>]*>/g, "");
+        excerpt = excerpt.replace(/<style[^>]*>/g, "");
+        excerpt = excerpt.replace(/<[^>]*>/g, "");
+        excerpt = excerpt.replace(/\n/g, " ");
+        return excerpt.substring(0, length) + (content.length > length ? "..." : "");
+    }
+    
+    function change_lang(lang) {
+        $.ajax({
+            url: "/api/change_lang/",
+            type: "post",
+            dataType: "JSON",
+            data: {"lang": lang},
+            success: function (res) {
+                if (res.status) {
+                    notyf.success(res.msg);
+                    setTimeout(function () {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    notyf.error(res.msg);
+                }
+            },
+            error: function (res) {
+                notyf.error("{{ "NETWORK_ERROR" | gettext }}");
+            }
+        })
+    }
 
     {% if error %}
         notyf.error("{{ error }}");

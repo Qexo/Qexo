@@ -20,7 +20,7 @@
                     <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                         <i class="ni ni-tv-2 text-primary text-sm opacity-10"></i>
                     </div>
-                    <span class="nav-link-text ms-1">主页</span>
+                    <span class="nav-link-text ms-1">{{ "HOME" | gettext }}</span>
                 </a>
             </li>
             <li class="nav-item">
@@ -29,7 +29,7 @@
                     <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                         <i class="ni ni-single-copy-04 text-warning text-sm opacity-10"></i>
                     </div>
-                    <span class="nav-link-text ms-1">文章</span>
+                    <span class="nav-link-text ms-1">{{ "POST" | gettext }}</span>
                 </a>
             </li>
             <li class="nav-item">
@@ -38,7 +38,7 @@
                     <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                         <i class="ni ni-app text-primary text-sm opacity-10"></i>
                     </div>
-                    <span class="nav-link-text ms-1">页面</span>
+                    <span class="nav-link-text ms-1">{{ "PAGE" | gettext }}</span>
                 </a>
             </li>
             {% if request.user.is_staff %}
@@ -48,7 +48,7 @@
                         <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                             <i class="ni ni-settings-gear-65 text-danger text-sm opacity-10"></i>
                         </div>
-                        <span class="nav-link-text ms-1">配置</span>
+                        <span class="nav-link-text ms-1">{{ "CONFIG" | gettext }}</span>
                     </a>
                 </li>
             {% endif %}
@@ -58,7 +58,7 @@
                     <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                         <i class="ni ni-image text-info text-sm opacity-10"></i>
                     </div>
-                    <span class="nav-link-text ms-1">图片</span>
+                    <span class="nav-link-text ms-1">{{ "IMAGE" | gettext }}</span>
                 </a>
             </li>
             <li class="nav-item">
@@ -67,7 +67,7 @@
                     <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                         <i class="ni ni-badge text-warning text-sm opacity-10"></i>
                     </div>
-                    <span class="nav-link-text ms-1">友链</span>
+                    <span class="nav-link-text ms-1">{{ "FLINK" | gettext }}</span>
                 </a>
             </li>
             <li class="nav-item">
@@ -76,7 +76,7 @@
                     <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                         <i class="ni ni-chat-round text-primary text-sm opacity-10"></i>
                     </div>
-                    <span class="nav-link-text ms-1">说说</span>
+                    <span class="nav-link-text ms-1">{{ "TALK" | gettext }}</span>
                 </a>
             </li>
             {% if request.user.is_staff %}
@@ -86,7 +86,7 @@
                         <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                             <i class="ni ni-archive-2 text-danger text-sm opacity-10"></i>
                         </div>
-                        <span class="nav-link-text ms-1">自定</span>
+                        <span class="nav-link-text ms-1">{{ "CUSTOM" | gettext }}</span>
                     </a>
                 </li>
             {% endif %}
@@ -99,8 +99,8 @@
                  alt="sidebar_illustration">
             <div class="card-body text-center p-3 w-100 pt-0">
                 <div class="docs-info">
-                    <h6 class="mb-0">需要帮助?</h6>
-                    <p class="text-xs font-weight-bold mb-0">点击这里查找文档</p>
+                    <h6 class="mb-0">{{ "HELP_LABEL" | gettext }}</h6>
+                    <p class="text-xs font-weight-bold mb-0">{{ "HELP_TIP" | gettext }}</p>
                 </div>
             </div>
         </div>
@@ -108,6 +108,7 @@
            target="_blank" class="btn btn-dark btn-sm w-100 mb-3"
            style="display:none">Documentation</a>
         <a href="https://www.oplog.cn/qexo"
-           target="_blank" class="btn btn-sm w-100 mb-0 bg-gradient-primary">文档</a>
+           target="_blank"
+           class="btn btn-sm w-100 mb-0 bg-gradient-primary">{{ "DOC" | gettext }}</a>
     </div>
 </aside>

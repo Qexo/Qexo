@@ -1,7 +1,9 @@
 {% extends 'layouts/base.html' %}
 
-{% block title %} {% if search %}搜索配置: {{ search }}{% else %}全部配置
-{% endif %} {% endblock title %}
+{% block title %}
+    {% if search %}{{ "SEARCH_CONFIG" | gettext }}: {{ search }}{% else %}
+        {{ "CONFIG_LABEL" | gettext }}{% endif %}
+{% endblock title %}
 
 {% block content %}
     <div class="container-fluid py-4">
@@ -9,8 +11,8 @@
             <div class="col-12">
                 <div class="card mb-4">
                     <div class="card-header pb-0">
-                        <h6>{% if search %}搜索配置: {{ search }}{% else %}
-                            全部配置{% endif %}
+                        <h6>{% if search %}{{ "SEARCH_CONFIG" | gettext }}: {{ search }}{% else %}
+                            {{ "CONFIG_LABEL" | gettext }}{% endif %}
                             (<span id="post-number">{{ post_number }}</span>个)</h6>
                     </div>
                     <div class="card-body px-0 pt-0 pb-2">
@@ -19,15 +21,15 @@
                                 <thead>
                                 <tr>
                                     <th class="text-secondary text-xxs font-weight-bolder opacity-7">
-                                        <span class="px-1 text-secondary">配置名</span>
+                                        <span class="px-1 text-secondary">{{ "CONFIG_NAME" | gettext }}</span>
                                     </th>
                                     <th class="text-secondary text-xxs font-weight-bolder opacity-7">
-                                        <span class="text-secondary">大小</span>
+                                        <span class="text-secondary">{{ "SIZE" | gettext }}</span>
                                     </th>
                                     <th class="text-center text-secondary text-xxs
                                     font-weight-bolder
                                     opacity-7">
-                                        <span class="text-secondary">操作</span>
+                                        <span class="text-secondary">{{ "OPERATION" | gettext }}</span>
                                     </th>
                                 </tr>
                                 </thead>
@@ -42,7 +44,7 @@
                                 <a class="page-link"
                                    href="javascript:prev_page()">
                                     <i class="fas fa-angle-left"></i>
-                                    <span class="sr-only">上一页</span>
+                                    <span class="sr-only">{{ "PREV_PAGE" | gettext }}</span>
                                 </a>
                             </li>
                             {% for i in page_number|get_range %}
@@ -56,7 +58,7 @@
                                 <a class="page-link"
                                    href="javascript:next_page()">
                                     <i class="fas fa-angle-right"></i>
-                                    <span class="sr-only">下一页</span>
+                                    <span class="sr-only">{{ "NEXT_PAGE" | gettext }}</span>
                                 </a>
                             </li>
                         </ul>
@@ -79,7 +81,7 @@
 
         function change_page(page) {
             scrollToTop();
-            let color = checkIfDark()?"text-white":"text-dark";
+            let color = checkIfDark() ? "text-white" : "text-dark";
             let post_temp = `<tr>
                                 <td>
                                     <div class="d-flex px-4 py-1">
@@ -120,7 +122,7 @@
             } else {
                 $("#prev-page").removeClass("disabled");
             }
-            if (page >={{ page_number }}) {
+            if (page >= {{ page_number }}) {
                 $("#next-page").addClass("disabled");
             } else {
                 $("#next-page").removeClass("disabled");
@@ -131,15 +133,15 @@
             if (_page > 1) {
                 change_page(_page - 1);
             } else {
-                notyf.error("已是第一页");
+                notyf.error("{{ "NO_PREV_PAGE" | gettext }}");
             }
         }
 
         function next_page() {
-            if (_page <{{ page_number }}) {
+            if (_page < {{ page_number }}) {
                 change_page(_page + 1);
             } else {
-                notyf.error("已是最后一页");
+                notyf.error("{{ "NO_NEXT_PAGE" | gettext }}");
             }
         }
 

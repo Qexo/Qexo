@@ -1,16 +1,18 @@
 {% extends 'layouts/base.html' %}
 
-{% block title %} {% if search %}搜索图片: {{ search }}{% else %}全部图片
-{% endif %} {% endblock title %}
+{% block title %}
+    {% if search %}{{ "SEARCH_IMAGE" | gettext }}:{{ search }}{% else %}
+        {{ "IMAGE_LABEL" | gettext }}{% endif %}
+{% endblock title %}
 {% block content %}
     <div class="container-fluid py-4">
         <div class="row">
             <div class="col-12">
                 <div class="card mb-4">
                     <div class="card-header pb-0">
-                        <h6>{% if search %}搜索图片: {{ search }}{% else %}
-                            全部图片{% endif %}
-                            (<span id="post-number">{{ post_number }}</span>张)
+                        <h6>{% if search %}{{ "SEARCH_IMAGE" | gettext }}:{{ search }}{% else %}
+                            {{ "IMAGE_LABEL" | gettext }}{% endif %}
+                            (<span id="post-number">{{ post_number }}</span>{{ "MEASURE_IMAGE" | gettext }})
                             <a href="javascript:show_upload()" class="text-primary text-lg">
                                 <i class="fa-solid fa-plus"></i>
                             </a>
@@ -23,17 +25,19 @@
                                 <tr>
                                     <th class="text-secondary text-xxs font-weight-bolder opacity-7">
                                         <span class="px-1 text-secondary"
-                                              id="dynamic-gallery">图片名</span>
+                                              id="dynamic-gallery">
+                                            {{ "IMAGE_NAME" | gettext }}</span>
                                     </th>
                                     <th class="text-secondary text-xxs font-weight-bolder opacity-7">
-                                        <span class="text-secondary">大小</span>
+                                        <span class="text-secondary">{{ "SIZE" | gettext }}</span>
                                     </th>
                                     <th class="text-secondary text-xxs font-weight-bolder opacity-7">
-                                        <span class="text-secondary">时间</span>
+                                        <span class="text-secondary">{{ "TIME" | gettext }}</span>
                                     </th>
                                     <th class="text-center text-secondary text-xxs
                                     font-weight-bolder opacity-7">
-                                        <span class="text-secondary">操作</span>
+                                        <span class="text-secondary">
+                                            {{ "OPERATION" | gettext }}</span>
                                     </th>
                                 </tr>
                                 </thead>
@@ -48,7 +52,7 @@
                                 <a class="page-link"
                                    href="javascript:prev_page()">
                                     <i class="fas fa-angle-left"></i>
-                                    <span class="sr-only">上一页</span>
+                                    <span class="sr-only">{{ "PREV_PAGE" | gettext }}</span>
                                 </a>
                             </li>
                             {% for i in page_number|get_range %}
@@ -62,7 +66,7 @@
                                 <a class="page-link"
                                    href="javascript:next_page()">
                                     <i class="fas fa-angle-right"></i>
-                                    <span class="sr-only">下一页</span>
+                                    <span class="sr-only">{{ "NEXT_PAGE" | gettext }}</span>
                                 </a>
                             </li>
                         </ul>
@@ -79,7 +83,7 @@
         <div class="modal-dialog">
             <div class="modal-content bg-white">
                 <div class="modal-header" style="border: none;">
-                    <h5 class="modal-title fs-5" id="deleteModalLabel">提示</h5>
+                    <h5 class="modal-title fs-5" id="deleteModalLabel">{{ "TIPS" | gettext }}</h5>
                     <button type="button" data-bs-dismiss="modal"
                             aria-label="Close" style="box-sizing: content-box;width: 1em;height:
                             1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem;
@@ -88,18 +92,21 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    确认要删除 <a id="delfile"></a> 吗？此操作不可撤回
+                    {{ "DEL_CONFIRM_1" | gettext }} <a
+                        id="delfile"></a> {{ "DEL_CONFIRM_2" | gettext }}
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" value="" id="checkSync"
                                checked>
-                        <label class="custom-control-label" for="checkSync">删除远程文件</label>
+                        <label class="custom-control-label"
+                               for="checkSync">{{ "DEL_REMOTE" | gettext }}</label>
                     </div>
                 </div>
                 <div class="modal-footer" style="border: none;">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消
+                    <button type="button" class="btn btn-secondary"
+                            data-bs-dismiss="modal">{{ "CANCEL" | gettext }}
                     </button>
                     <button type="button" class="btn btn-primary" onclick="delete_file()"
-                            data-bs-dismiss="modal">确定
+                            data-bs-dismiss="modal">{{ "CONFIRM" | gettext }}
                     </button>
                 </div>
             </div>
@@ -110,7 +117,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content bg-white">
                 <div class="modal-header" style="border: none;">
-                    <h5 class="modal-title fs-5" id="uploadModalLabel">上传</h5>
+                    <h5 class="modal-title fs-5" id="uploadModalLabel">{{ "UPLOAD" | gettext }}</h5>
                     <button type="button" data-bs-dismiss="modal"
                             aria-label="Close" style="box-sizing: content-box;width: 1em;height:
                             1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem;
@@ -121,17 +128,20 @@
                 <div class="modal-body">
                     <form id="uploadForm" enctype="multipart/form-data">
                         <div class="mb-3">
-                            <label for="imageInput" class="form-label">上传图片</label>
+                            <label for="imageInput"
+                                   class="form-label">{{ "UPLOAD_TIP" | gettext }}</label>
                             <input type="file" class="form-control" id="imageInput" name="file">
                         </div>
                     </form>
                     <div id="showurl"></div>
                 </div>
                 <div class="modal-footer" style="border: none;">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        {{ "CLOSE" | gettext }}
                     </button>
                     <div id="uploadButton">
-                        <button type="button" class="btn btn-primary" onclick="upload_file()">上传
+                        <button type="button" class="btn btn-primary" onclick="upload_file()">
+                            {{ "UPLOAD" | gettext }}
                         </button>
                     </div>
                 </div>
@@ -222,7 +232,7 @@
             if (_page > 1) {
                 change_page(_page - 1);
             } else {
-                notyf.error("已是第一页");
+                notyf.error("{{ "NO_PREV_PAGE" | gettext }}");
             }
         }
 
@@ -230,7 +240,7 @@
             if (_page < {{ page_number }}) {
                 change_page(_page + 1);
             } else {
-                notyf.error("已是最后一页");
+                notyf.error("{{ "NO_NEXT_PAGE" | gettext }}");
             }
         }
 
@@ -249,7 +259,7 @@
 
 
         function delete_file() {
-            let loading = new KZ_Loading('正在删除中...');
+            let loading = new KZ_Loading('{{ "DELETING" | gettext }}');
             loading.show();
             $.ajax({
                 url: '/api/delete_img/',
@@ -274,7 +284,7 @@
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.error("网络错误！");
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
                 }
             })
         }
@@ -384,15 +394,15 @@
                         posts.unshift(res.data);
                         $("#post-number").html(posts.length);
                         change_page(_page);
-                        $("#uploadButton").html(`<button type="button" class="btn btn-primary" onclick="upload_file()" >上传</button>`);
+                        $("#uploadButton").html(`<button type="button" class="btn btn-primary" onclick="upload_file()" >{{ "UPLOAD" | gettext }}</button>`);
                     } else {
                         notyf.error(res.msg);
-                        $("#uploadButton").html(`<button type="button" class="btn btn-primary" onclick="upload_file()" >上传</button>`);
+                        $("#uploadButton").html(`<button type="button" class="btn btn-primary" onclick="upload_file()" >{{ "UPLOAD" | gettext }}</button>`);
                     }
                 },
                 error: function (res) {
-                    notyf.error("网络错误！");
-                    $("#uploadButton").html(`<button type="button" class="btn btn-primary" onclick="upload_file()" >上传</button>`);
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
+                    $("#uploadButton").html(`<button type="button" class="btn btn-primary" onclick="upload_file()" >{{ "UPLOAD" | gettext }}</button>`);
                 }
             })
         }

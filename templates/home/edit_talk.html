@@ -1,6 +1,6 @@
 {% extends 'layouts/base.html' %}
 
-{% block title %} 编辑说说 {% endblock title %}
+{% block title %} {{ "EDIT_TALK_LABEL" | gettext }} {% endblock title %}
 
 {% block stylesheets %}
 {% endblock stylesheets %}
@@ -19,24 +19,25 @@
                 color: #172b4d"
                    href="javascript:editSide()"><i class="fas
                    fa-pen"></i></a>
-                <h5 class="mt-3">说说参数</h5>
+                <h5 class="mt-3">{{ "TALK_ARGV_LABEL" | gettext }}</h5>
                 <hr class="my-2"/>
                 <div id="sidebar-container">
                     <div class="form-group">
                         <label class="form-control-label"><i class="fas fa-globe-americas"></i>
-                            更新于</label>
+                            {{ "UPDATED_AT" | gettext }}</label>
                         <input type="text" name="title"
                                class="form-control"
-                               placeholder="更新时间"
+                               placeholder="{{ "UPDATED_AT_PH" | gettext }}"
                                id="time"
                                value="{{ time }}">
                     </div>
                     <div class="form-group">
-                        <label class="form-control-label"><i class="fas fa-tags"></i> 标签</label>
+                        <label class="form-control-label"><i class="fas fa-tags"></i>
+                            {{ "TAGS" | gettext }}</label>
                         <div class="input-group mb-0">
                             <input type="text" name="qexo-tag"
                                    class="form-control"
-                                   placeholder="添加标签"
+                                   placeholder="{{ "ADD_TAG" | gettext }}"
                                    id="qexo-tag">
                             <button class="btn mb-0 childButton" type="button"
                                     onclick="add_tag($('#qexo-tag').val());$('#qexo-tag').val('')">+
@@ -52,10 +53,10 @@
             <div class="card ms-md-4 col-md-11" id="bottom-bar">
                 <div class="col-12">
                     <input type="button" class="btn btn-sm float-end mt-3"
-                           value="添加"
+                           value="{{ "ADD" | gettext }}"
                            style="border: 1px solid #dee2e6;border-radius: .25rem;"
                            onclick="addBottomItem()">
-                    <h5 class="mt-3"><i class="fas fa-cogs"></i> 其他参数</h5>
+                    <h5 class="mt-3"><i class="fas fa-cogs"></i> {{ "OTHER_ARGV" | gettext }}</h5>
                     <hr class="my-2"/>
                     <div id="bottom-container">
                     </div>
@@ -70,7 +71,8 @@
             <div class="modal-dialog modal-lg">
                 <div class="modal-content bg-white">
                     <div class="modal-header" style="border: none;">
-                        <h5 class="modal-title" id="sidebarEditModalLabel">编辑侧边栏</h5>
+                        <h5 class="modal-title" id="sidebarEditModalLabel">
+                            {{ "EDIT_SIDEBAR" | gettext }}</h5>
                         <button type="button" data-bs-dismiss="modal"
                                 aria-label="Close" style="box-sizing: content-box;width: 1em;height:
                             1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem;
@@ -82,23 +84,27 @@
                         <div id="side-form" onsubmit="return false;">
                             <div class="row">
                                 <div class="col-2">
-                                    <label class="form-control-label">搜索项</label>
+                                    <label class="form-control-label">
+                                        {{ "SEARCH_ITEM" | gettext }}</label>
                                 </div>
                                 <div class="col-4">
-                                    <label class="form-control-label">描述</label>
+                                    <label class="form-control-label">
+                                        {{ "DESCRIPTION" | gettext }}</label>
                                 </div>
                                 <div class="col-6">
-                                    <label class="form-control-label">图标</label>
+                                    <label class="form-control-label">
+                                        {{ "ICON" | gettext }}</label>
                                 </div>
                             </div>
                             <div id="side-form-container"></div>
                         </div>
                     </div>
                     <div class="modal-footer" style="border: none;">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消
+                        <button type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">{{ "CANCEL" | gettext }}
                         </button>
                         <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
-                                onclick="applySide()">确定
+                                onclick="applySide()">{{ "CONFIRM" | gettext }}
                         </button>
                     </div>
                 </div>
@@ -132,7 +138,7 @@
             if (!_status) {
                 return false;
             }
-            let loading = new KZ_Loading('正在保存中...');
+            let loading = new KZ_Loading('{{ "SAVING" | gettext }}');
             _status = false;
             loading.show();
             save_bottom();
@@ -162,7 +168,7 @@
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.error("网络错误！");
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
                     _status = true;
                 }
             })
@@ -180,7 +186,7 @@
         const E = window.wangEditor;
 
         // 切换语言
-        const LANG = location.href.indexOf('lang=en') > 0 ? 'en' : 'zh-CN';
+        const LANG = "{{ language }}" === "zh_CN" || "{{ language }}" === "zh_TW" ? 'zh-CN' : "en";
         E.i18nChangeLanguage(LANG);
         window.editor = E.createEditor({
             selector: '#weditor',
@@ -188,7 +194,7 @@
             mode: 'simple',
             scroll: true,
             config: {
-                placeholder: '在这里书写说说...',
+                placeholder: '{{ "EDIT_TALK_PH" | gettext }}',
                 onCreated: function () {
                     file_content = editor.getHtml();
                 },
@@ -234,7 +240,7 @@
                     "insertLink",
                     {
                         "key": "group-image",
-                        "title": "图片",
+                        "title": "{{ "IMAGE" | gettext }}",
                         "iconSvg": "<svg viewBox=\"0 0 1024 1024\"><path d=\"M959.877 128l0.123 0.123v767.775l-0.123 0.122H64.102l-0.122-0.122V128.123l0.122-0.123h895.775zM960 64H64C28.795 64 0 92.795 0 128v768c0 35.205 28.795 64 64 64h896c35.205 0 64-28.795 64-64V128c0-35.205-28.795-64-64-64zM832 288.01c0 53.023-42.988 96.01-96.01 96.01s-96.01-42.987-96.01-96.01S682.967 192 735.99 192 832 234.988 832 288.01zM896 832H128V704l224.01-384 256 320h64l224.01-192z\"></path></svg>",
                         "menuKeys": [
                             "insertImage"{% if img_bed %},
@@ -256,8 +262,8 @@
         window.onbeforeunload = function (e) {
             e = e || window.event;
             if (e && file_content !== editor.getHtml()) {
-                e.returnValue = '确定要离开吗?';
-                return '确定要离开吗?';
+                e.returnValue = '{{ "LEAVE_CONFIRM" | gettext }}';
+                return '{{ "LEAVE_CONFIRM" | gettext }}';
             }
         }
         document.addEventListener('keydown', function (e) {
@@ -295,7 +301,7 @@
 
         function add_tag(name) {
             if (tags.includes(name)) {
-                notyf.error("标签已存在! ");
+                notyf.error("{{ "TAG_EXITS" | gettext }} ");
             } else {
                 tags.push(name);
                 show_tags();
@@ -329,10 +335,10 @@
             let keys = Object.keys(values);
             html = `<div class="row">
                         <div class="col-2">
-                            <label class="form-control-label">标头</label>
+                            <label class="form-control-label">{{ "HEADER" | gettext }}</label>
                         </div>
                         <div class="col-4">
-                            <label class="form-control-label">内容</label>
+                            <label class="form-control-label">{{ "CONTENT" | gettext }}</label>
                         </div>
                     </div>`
             let sidebar_items = [];
@@ -345,7 +351,7 @@
                 }
             }
             if (keys.length === 0) {
-                $("#bottom-container").html("暂无其他参数");
+                $("#bottom-container").html("{{ "NO_OTHER_ARGV" | gettext }}");
                 return;
             }
             for (let i = 0; i < keys.length; i++) {
@@ -357,7 +363,7 @@
                                 <div class="col-10">
                                     <div class="input-group">
                                         <input type="text" class="form-control" name="icon"
-                                               placeholder="内容"  value="` + values[keys[i]] + `">
+                                               placeholder="{{ "CONTENT" | gettext }}"  value="` + values[keys[i]] + `">
                                         <div class="input-group-append">
                                             <button class="btn mb-0 childButton" type="button"
                                                     onclick="delBottomItem(${i})">
@@ -418,16 +424,17 @@
                 html += `<form class="form-row" id="side-row-` + i + `">
                                 <div class="col-2">
                                     <input type="text" class="form-control" name="name"
-                                           placeholder="识别代号" value="${Sidebar[i].name}">
+                                           placeholder="{{ "ID_CODE" | gettext }}"
+                                           value="${Sidebar[i].name}">
                                 </div>
                                 <div class="col-4">
                                     <input type="text" class="form-control" name="desp"
-                                           placeholder="描述标题" value="${Sidebar[i].desp}">
+                                           placeholder="{{ "SIDEBAR_EDIT_2" | gettext }}" value="${Sidebar[i].desp}">
                                 </div>
                                 <div class="col-6">
                                     <div class="input-group">
                                         <input type="text" class="form-control" name="icon"
-                                               placeholder="使用的图标"  value="` + Sidebar[i].icon + `">
+                                               placeholder="{{ "SIDEBAR_EDIT_3" | gettext }}"  value="` + Sidebar[i].icon + `">
                                         <div class="input-group-append">
                                             <button class="btn" type="button"
                                                     style="border: 1px solid #dee2e6"
@@ -489,7 +496,7 @@
                     i--;
                 }
             }
-            let loading = new KZ_Loading('边栏保存中...');
+            let loading = new KZ_Loading('{{ "SAVING" | gettext }}');
             loading.show();
             $.ajax({
                 url: '/api/set_sidebar/',
@@ -501,15 +508,15 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        notyf.success('保存成功！');
+                        notyf.success('{{ "SAVE_SUCCESS" | gettext }}');
                         showSidebar();
                     } else {
-                        notyf.error('保存失败！');
+                        notyf.error('{{ "SAVE_FAILED" | gettext }}');
                     }
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.error("网络错误！");
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
                 }
             })
         }
@@ -545,7 +552,7 @@
         }
 
         function delete_talk() {
-            let loading = new KZ_Loading('正在删除中...');
+            let loading = new KZ_Loading('{{ "DELETING" | gettext }}');
             loading.show();
             $.ajax({
                 url: '/api/del_talk/',
@@ -555,7 +562,7 @@
                 success: function (res) {
                     loading.destroy();
                     if (res.status) {
-                        notyf.success('删除成功！');
+                        notyf.success('{{ "DEL_SUCCESS" | gettext }}');
                         window.location.href = "/talks.html";
                     } else {
                         notyf.error(res.msg);
@@ -563,7 +570,7 @@
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.error("网络错误！");
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
                 }
             })
         }

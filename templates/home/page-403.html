@@ -15,23 +15,23 @@
                     <div class="card-header bg-transparent pb-5">
 
                         <div class="text-muted text-center mt-2 mb-3">
-                            错误! Error 403
+                            {{ "PAGE_403_LABEL" | gettext }}
                         </div>
 
                         <div class="text-center mb-4">
-                            验证错误 - 请确认是否拥有权限
+                            {{ "PAGE_403_TIP" | gettext }}
                         </div>
 
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="col-6">
-                        <a href="/" class="text-light"><small>主页</small></a>
+                        <a href="/" class="text-light"><small>{{ "HOME" | gettext }}</small></a>
                     </div>
                     <div class="col-6 text-end">
                         <a target="_blank"
                            href="https://github.com/Qexo/Qexo/wiki"
-                           class="text-light"><small>帮助</small></a>
+                           class="text-light"><small>{{ "HELP" | gettext }}</small></a>
                     </div>
                 </div>
             </div>

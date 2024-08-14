@@ -1,6 +1,6 @@
 {% extends 'layouts/base.html' %}
 
-{% block title %} 控制台 {% endblock title %}
+{% block title %} {{ "DASHBOARD" | gettext }} {% endblock title %}
 
 <!-- Specific CSS goes HERE -->
 {% block stylesheets %}{% endblock stylesheets %}
@@ -15,13 +15,13 @@
                             <div class="col-8">
                                 <div class="numbers">
                                     <p class="text-sm mb-0 text-uppercase font-weight-bold">
-                                        总文章</p>
+                                        {{ "INDEX_POST_LABEL" | gettext }}</p>
                                     <h5 class="font-weight-bolder">
                                         {{ post_number }}
                                     </h5>
                                     <p class="mt-3 mb-0 text-sm">
                                         <span class="text me-2"><i class="fa fa-archive"></i></span>
-                                        <span class="text-nowrap">今天你写文章了吗</span>
+                                        <span class="text-nowrap">{{ "INDEX_POST_TIP" | gettext }}</span>
                                     </p>
                                 </div>
                             </div>
@@ -43,13 +43,13 @@
                             <div class="col-8">
                                 <div class="numbers">
                                     <p class="text-sm mb-0 text-uppercase font-weight-bold">
-                                        总图片</p>
+                                        {{ "INDEX_IMAGE_LABEL" | gettext }}</p>
                                     <h5 class="font-weight-bolder">
                                         {{ images_number }}
                                     </h5>
                                     <p class="mt-3 mb-0 text-sm">
                                         <span class="text me-2"><i class="fa fa-images"></i></span>
-                                        <span class="text-nowrap">尝试图片管理</span>
+                                        <span class="text-nowrap">{{ "INDEX_IMAGE_TIP" | gettext }}</span>
                                     </p>
                                 </div>
                             </div>
@@ -70,7 +70,7 @@
                             <div class="col-8">
                                 <div class="numbers">
                                     <p class="text-sm mb-0 text-uppercase font-weight-bold">
-                                        当前版本</p>
+                                        {{ "INDEX_VERSION_LABEL" | gettext }}</p>
                                     <h5 class="font-weight-bolder">
                                         {{ version }}
                                     </h5>
@@ -78,13 +78,13 @@
                                         <p class="mt-3 mb-0 text-sm">
                                             <span class="text me-2"><i
                                                     class="fa fa-arrow-up"></i></span>
-                                            <span class="text-nowrap">是最新版哦</span>
+                                            <span class="text-nowrap">{{ "INDEX_VERSION_TIP" | gettext }}</span>
                                         </p>
                                     {% else %}
                                         <p class="mt-3 mb-0 text-sm">
                                             <span class="text me-2"><i
                                                     class="fa fa-arrow-up"></i></span>
-                                            <span class="text-nowrap">检测到更新
+                                            <span class="text-nowrap">{{ "INDEX_VERSION_HASNEW" | gettext }}
                                                 <a href="{{ newer_link }}" target="_blank"
                                                    class="text-primary">{{ newer }}</a>
                                             </span>
@@ -116,7 +116,7 @@
                                     <p class="mt-3 mb-0 text-sm">
                                         <span class="text me-2"><i
                                                 class="fab fa-github-alt"></i></span>
-                                        <span class="text-nowrap">支持作者</span>
+                                        <span class="text-nowrap">{{ "INDEX_GITHUB_TIP" | gettext }}</span>
                                     </p>
                                 </div>
                             </div>
@@ -136,7 +136,7 @@
             <div class="col-lg-7 mb-lg-0 mb-4">
                 <div class="card z-index-2 h-80">
                     <div class="card-header pb-0 pt-3 bg-transparent">
-                        <h6 class="text-capitalize">现在要做点什么？</h6>
+                        <h6 class="text-capitalize">{{ "INDEX_GUIDE_LABEL" | gettext }}</h6>
                     </div>
                     <div class="card-body p-3">
                         <ul class="list-group">
@@ -146,9 +146,12 @@
                                         <i class="ni ni-mobile-button text-white opacity-10"></i>
                                     </div>
                                     <div class="d-flex flex-column">
-                                        <h6 class="mb-1 text-dark text-sm">新文章</h6>
-                                        <span class="text-xs">写下你的<span
-                                                class="font-weight-bold">新构思</span></span>
+                                        <h6 class="mb-1 text-dark text-sm">
+                                            {{ "INDEX_GUIDE_LABEL_1" | gettext }}</h6>
+                                        <span class="text-xs">
+                                            {{ "INDEX_GUIDE_TIP_1_P1" | gettext }}<span
+                                                class="font-weight-bold">
+                                            {{ "INDEX_GUIDE_TIP_1_P2" | gettext }}</span></span>
                                     </div>
                                 </div>
                                 <div class="d-flex">
@@ -163,9 +166,12 @@
                                         <i class="ni ni-tag text-white opacity-10"></i>
                                     </div>
                                     <div class="d-flex flex-column">
-                                        <h6 class="mb-1 text-dark text-sm">新页面</h6>
-                                        <span class="text-xs">创建你的<span
-                                                class="font-weight-bold">新页面</span></span>
+                                        <h6 class="mb-1 text-dark text-sm">
+                                            {{ "INDEX_GUIDE_LABEL_2" | gettext }}</h6>
+                                        <span class="text-xs">
+                                            {{ "INDEX_GUIDE_TIP_2_P1" | gettext }}<span
+                                                class="font-weight-bold">
+                                            {{ "INDEX_GUIDE_TIP_2_P2" | gettext }}</span></span>
                                     </div>
                                 </div>
                                 <div class="d-flex">
@@ -180,9 +186,12 @@
                                         <i class="ni ni-box-2 text-white opacity-10"></i>
                                     </div>
                                     <div class="d-flex flex-column">
-                                        <h6 class="mb-1 text-dark text-sm">新友链</h6>
-                                        <span class="text-xs">添加你的<span
-                                                class="font-weight-bold">新朋友</span></span>
+                                        <h6 class="mb-1 text-dark text-sm">
+                                            {{ "INDEX_GUIDE_LABEL_3" | gettext }}</h6>
+                                        <span class="text-xs">
+                                            {{ "INDEX_GUIDE_TIP_3_P1" | gettext }}<span
+                                                class="font-weight-bold">
+                                            {{ "INDEX_GUIDE_TIP_3_P2" | gettext }}</span></span>
                                     </div>
                                 </div>
                                 <div class="d-flex">
@@ -197,9 +206,12 @@
                                         <i class="ni ni-satisfied text-white opacity-10"></i>
                                     </div>
                                     <div class="d-flex flex-column">
-                                        <h6 class="mb-1 text-dark text-sm">新说说</h6>
-                                        <span class="text-xs">分享你的<span
-                                                class="font-weight-bold">新想法</span></span>
+                                        <h6 class="mb-1 text-dark text-sm">
+                                            {{ "INDEX_GUIDE_LABEL_4" | gettext }}</h6>
+                                        <span class="text-xs">
+                                            {{ "INDEX_GUIDE_TIP_4_P1" | gettext }}<span
+                                                class="font-weight-bold">
+                                            {{ "INDEX_GUIDE_TIP_4_P2" | gettext }}</span></span>
                                     </div>
                                 </div>
                                 <div class="d-flex">
@@ -215,7 +227,7 @@
             <div class="col-lg-5">
                 <div class="card z-index-2 h-100">
                     <div class="card-header pb-0 pt-3 bg-transparent table-responsive">
-                        <h6 class="text-capitalize">最近文章</h6>
+                        <h6 class="text-capitalize">{{ "INDEX_RECENT_POSTS" | gettext }}</h6>
                         <table class="table align-items-center">
                             <tbody>
                             <tr>
@@ -227,7 +239,8 @@
                                                    filename="{{ recent_posts.0.title }}"></i>
                                             </div>
                                             <div class="ms-4">
-                                                <p class="text-xs font-weight-bold mb-0">文章名</p>
+                                                <p class="text-xs font-weight-bold mb-0">
+                                                    {{ "POST_NAME" | gettext }}</p>
                                                 <h6 class="text-sm mb-0">
                                                     {{ recent_posts.0.title | excerpt:15 }}</h6>
                                             </div>
@@ -235,13 +248,15 @@
                                     </td>
                                     <td>
                                         <div class="text-center">
-                                            <p class="text-xs font-weight-bold mb-0">状态</p>
+                                            <p class="text-xs font-weight-bold mb-0">
+                                                {{ "STATUS" | gettext }}</p>
                                             <h6 class="text-sm mb-0">{{ recent_posts.0.status }}</h6>
                                         </div>
                                     </td>
                                     <td>
                                         <div class="text-center">
-                                            <p class="text-xs font-weight-bold mb-0">操作</p>
+                                            <p class="text-xs font-weight-bold mb-0">
+                                                {{ "OPERATION" | gettext }}</p>
                                             <a href="/edit.html?file={{ recent_posts.0.path | urlencoder }}&postname={{ recent_posts.0.filename | urlencoder }}">
                                                 <i class="fa fa-edit"></i></a>
                                         </div>
@@ -257,7 +272,8 @@
                                                    filename="{{ recent_posts.1.title }}"></i>
                                             </div>
                                             <div class="ms-4">
-                                                <p class="text-xs font-weight-bold mb-0">文章名</p>
+                                                <p class="text-xs font-weight-bold mb-0">
+                                                    {{ "POST_NAME" | gettext }}</p>
                                                 <h6 class="text-sm mb-0">
                                                     {{ recent_posts.1.title | excerpt:15 }}</h6>
                                             </div>
@@ -265,13 +281,13 @@
                                     </td>
                                     <td>
                                         <div class="text-center">
-                                            <p class="text-xs font-weight-bold mb-0">状态</p>
+                                            <p class="text-xs font-weight-bold mb-0">{{ "STATUS" | gettext }}</p>
                                             <h6 class="text-sm mb-0">{{ recent_posts.1.status }}</h6>
                                         </div>
                                     </td>
                                     <td>
                                         <div class="text-center">
-                                            <p class="text-xs font-weight-bold mb-0">操作</p>
+                                            <p class="text-xs font-weight-bold mb-0">{{ "OPERATION" | gettext }}</p>
                                             <a href="/edit.html?file={{ recent_posts.1.path | urlencoder }}&postname={{ recent_posts.1.filename | urlencoder }}">
                                                 <i class="fa fa-edit"></i></a>
                                         </div>
@@ -289,20 +305,20 @@
                                             <div class="ms-4">
                                                 <h6 class="text-sm mb-0">
                                                     <p class="text-xs font-weight-bold mb-0">
-                                                        文章名</p>
+                                                        {{ "POST_NAME" | gettext }}</p>
                                                     {{ recent_posts.2.title | excerpt:15 }}</h6>
                                             </div>
                                         </div>
                                     </td>
                                     <td>
                                         <div class="text-center">
-                                            <p class="text-xs font-weight-bold mb-0">状态</p>
+                                            <p class="text-xs font-weight-bold mb-0">{{ "STATUS" | gettext }}</p>
                                             <h6 class="text-sm mb-0">{{ recent_posts.2.status }}</h6>
                                         </div>
                                     </td>
                                     <td>
                                         <div class="text-center">
-                                            <p class="text-xs font-weight-bold mb-0">操作</p>
+                                            <p class="text-xs font-weight-bold mb-0">{{ "OPERATION" | gettext }}</p>
                                             <a href="/edit.html?file={{ recent_posts.2.path | urlencoder }}&postname={{ recent_posts.2.filename | urlencoder }}">
                                                 <i class="fa fa-edit"></i></a>
                                         </div>
@@ -320,20 +336,20 @@
                                             <div class="ms-4">
                                                 <h6 class="text-sm mb-0">
                                                     <p class="text-xs font-weight-bold mb-0">
-                                                        文章名</p>
+                                                        {{ "POST_NAME" | gettext }}</p>
                                                     {{ recent_posts.3.title | excerpt:15 }}</h6>
                                             </div>
                                         </div>
                                     </td>
                                     <td>
                                         <div class="text-center">
-                                            <p class="text-xs font-weight-bold mb-0">状态</p>
+                                            <p class="text-xs font-weight-bold mb-0">{{ "STATUS" | gettext }}</p>
                                             <h6 class="text-sm mb-0">{{ recent_posts.3.status }}</h6>
                                         </div>
                                     </td>
                                     <td>
                                         <div class="text-center">
-                                            <p class="text-xs font-weight-bold mb-0">操作</p>
+                                            <p class="text-xs font-weight-bold mb-0">{{ "OPERATION" | gettext }}</p>
                                             <a href="/edit.html?file={{ recent_posts.3.path | urlencoder }}&postname={{ recent_posts.3.filename | urlencoder }}">
                                                 <i class="fa fa-edit"></i></a>
                                         </div>
@@ -351,7 +367,7 @@
                                             <div class="ms-4">
                                                 <h6 class="text-sm mb-0">
                                                     <p class="text-xs font-weight-bold mb-0">
-                                                        文章名</p>
+                                                        {{ "POST_NAME" | gettext }}</p>
                                                     {{ recent_posts.4.title | excerpt:15 }}</h6>
                                             </div>
                                         </div>
@@ -359,13 +375,13 @@
                                     <td>
                                         <div class="text-center">
                                             <h6 class="text-sm mb-0">
-                                                <p class="text-xs font-weight-bold mb-0">状态</p>
+                                                <p class="text-xs font-weight-bold mb-0">{{ "STATUS" | gettext }}</p>
                                                 {{ recent_posts.4.status }}</h6>
                                         </div>
                                     </td>
                                     <td>
                                         <div class="text-center">
-                                            <p class="text-xs font-weight-bold mb-0">操作</p>
+                                            <p class="text-xs font-weight-bold mb-0">{{ "OPERATION" | gettext }}</p>
                                             <a href="/edit.html?file={{ recent_posts.4.path | urlencoder }}&postname={{ recent_posts.4.filename | urlencoder }}">
                                                 <i class="fa fa-edit"></i></a>
                                         </div>
@@ -382,7 +398,8 @@
             <div class="col-lg-7 mb-lg-0 mb-4">
                 <div class="card z-index-2 h-100">
                     <div class="card-header pb-0 pt-3 bg-transparent table-responsive">
-                        <h6 class="text-capitalize">随机文章<a href="javascript:randPosts()"> <i
+                        <h6 class="text-capitalize">{{ "INDEX_RANDOM_POSTS" | gettext }}<a
+                                href="javascript:randPosts()"> <i
                                 class="fa-solid fa-rotate"></i></a></h6>
                         <table class="table align-items-center">
                             <tbody id="rand-posts">
@@ -395,7 +412,7 @@
             <div class="col-lg-5">
                 <div class="card z-index-2 h-100">
                     <div class="card-header pb-0 pt-3 bg-transparent table-responsive">
-                        <h6 class="text-capitalize">最近图片</h6>
+                        <h6 class="text-capitalize">{{ "INDEX_RECENT_IMAGES" | gettext }}</h6>
                         <table class="table align-items-center">
                             <tbody>
                             <tr>
@@ -407,7 +424,7 @@
                                                    filename="{{ images.0.name }}"></i>
                                             </div>
                                             <div class="ms-4">
-                                                <p class="text-xs font-weight-bold mb-0">图片名</p>
+                                                <p class="text-xs font-weight-bold mb-0">{{ "IMAGE_NAME" | gettext }}</p>
                                                 <h6 class="text-sm mb-0">
                                                     {{ images.0.name | excerpt:15 }}</h6>
                                             </div>
@@ -415,13 +432,13 @@
                                     </td>
                                     <td>
                                         <div class="text-center">
-                                            <p class="text-xs font-weight-bold mb-0">大小</p>
+                                            <p class="text-xs font-weight-bold mb-0">{{ "SIZE" | gettext }}</p>
                                             <h6 class="text-sm mb-0">{{ images.0.size }}</h6>
                                         </div>
                                     </td>
                                     <td>
                                         <div class="text-center">
-                                            <p class="text-xs font-weight-bold mb-0">操作</p>
+                                            <p class="text-xs font-weight-bold mb-0">{{ "OPERATION" | gettext }}</p>
                                             <a href="{{ images.0.url | urlencoder }}"
                                                target="_blank">
                                                 <i class="fa fa-external-link-alt"></i></a>
@@ -438,7 +455,7 @@
                                                    filename="{{ images.1.name }}"></i>
                                             </div>
                                             <div class="ms-4">
-                                                <p class="text-xs font-weight-bold mb-0">图片名</p>
+                                                <p class="text-xs font-weight-bold mb-0">{{ "IMAGE_NAME" | gettext }}</p>
                                                 <h6 class="text-sm mb-0">
                                                     {{ images.1.name | excerpt:15 }}</h6>
                                             </div>
@@ -446,13 +463,13 @@
                                     </td>
                                     <td>
                                         <div class="text-center">
-                                            <p class="text-xs font-weight-bold mb-0">大小</p>
+                                            <p class="text-xs font-weight-bold mb-0">{{ "SIZE" | gettext }}</p>
                                             <h6 class="text-sm mb-0">{{ images.1.size }}</h6>
                                         </div>
                                     </td>
                                     <td>
                                         <div class="text-center">
-                                            <p class="text-xs font-weight-bold mb-0">操作</p>
+                                            <p class="text-xs font-weight-bold mb-0">{{ "OPERATION" | gettext }}</p>
                                             <a href="{{ images.1.url | urlencoder }}"
                                                target="_blank">
                                                 <i class="fa fa-external-link-alt"></i></a>
@@ -471,20 +488,20 @@
                                             <div class="ms-4">
                                                 <h6 class="text-sm mb-0">
                                                     <p class="text-xs font-weight-bold mb-0">
-                                                        图片名</p>
+                                                        {{ "IMAGE_NAME" | gettext }}</p>
                                                     {{ images.2.name | excerpt:15 }}</h6>
                                             </div>
                                         </div>
                                     </td>
                                     <td>
                                         <div class="text-center">
-                                            <p class="text-xs font-weight-bold mb-0">大小</p>
+                                            <p class="text-xs font-weight-bold mb-0">{{ "SIZE" | gettext }}</p>
                                             <h6 class="text-sm mb-0">{{ images.2.size }}</h6>
                                         </div>
                                     </td>
                                     <td>
                                         <div class="text-center">
-                                            <p class="text-xs font-weight-bold mb-0">操作</p>
+                                            <p class="text-xs font-weight-bold mb-0">{{ "OPERATION" | gettext }}</p>
                                             <a href="{{ images.2.url | urlencoder }}"
                                                target="_blank">
                                                 <i class="fa fa-external-link-alt"></i></a>
@@ -503,20 +520,20 @@
                                             <div class="ms-4">
                                                 <h6 class="text-sm mb-0">
                                                     <p class="text-xs font-weight-bold mb-0">
-                                                        图片名</p>
+                                                        {{ "IMAGE_NAME" | gettext }}</p>
                                                     {{ images.3.name | excerpt:15 }}</h6>
                                             </div>
                                         </div>
                                     </td>
                                     <td>
                                         <div class="text-center">
-                                            <p class="text-xs font-weight-bold mb-0">大小</p>
+                                            <p class="text-xs font-weight-bold mb-0">{{ "SIZE" | gettext }}</p>
                                             <h6 class="text-sm mb-0">{{ images.3.size }}</h6>
                                         </div>
                                     </td>
                                     <td>
                                         <div class="text-center">
-                                            <p class="text-xs font-weight-bold mb-0">操作</p>
+                                            <p class="text-xs font-weight-bold mb-0">{{ "OPERATION" | gettext }}</p>
                                             <a href="{{ images.3.url | urlencoder }}"
                                                target="_blank">
                                                 <i class="fa fa-external-link-alt"></i></a>
@@ -607,7 +624,7 @@
                                         <i class="fs-4 @@icon@@"></i>
                                     </div>
                                     <div class="ms-4">
-                                        <p class="text-xs font-weight-bold mb-0">文章名</p>
+                                        <p class="text-xs font-weight-bold mb-0">{{ "POST_NAME" | gettext }}</p>
                                         <h6 class="text-sm mb-0">
                                             @@title@@</h6>
                                     </div>
@@ -615,13 +632,13 @@
                             </td>
                             <td>
                                 <div class="text-center">
-                                    <p class="text-xs font-weight-bold mb-0">状态</p>
+                                    <p class="text-xs font-weight-bold mb-0">{{ "STATUS" | gettext }}</p>
                                     <h6 class="text-sm mb-0">@@status@@</h6>
                                 </div>
                             </td>
                             <td>
                                 <div class="text-center">
-                                    <p class="text-xs font-weight-bold mb-0">操作</p>
+                                    <p class="text-xs font-weight-bold mb-0">{{ "OPERATION" | gettext }}</p>
                                     <a href="/edit.html?file=@@path@@&postname=@@quotename@@">
                                         <i class="fa fa-edit"></i></a>
                                 </div>
@@ -639,7 +656,7 @@
                 }
                 temp = temp.replace("@@icon@@", "fa-solid fa-" + letter);
                 temp = temp.replace("@@title@@", excerpt_by_local(post[i].name, Math.floor(window
-                    .innerWidth/30)));
+                    .innerWidth / 30)));
                 temp = temp.replace("@@status@@", post[i].status);
                 temp = temp.replace("@@path@@", post[i].path);
                 temp = temp.replace("@@quotename@@", post[i].quotename);

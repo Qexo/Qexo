@@ -1,6 +1,6 @@
 {% extends 'layouts/base-fullscreen.html' %}
 
-{% block title %} 迁移 {% endblock title %}
+{% block title %} {{ "MIGRATE" | gettext }} {% endblock title %}
 
 <!-- Specific CSS goes HERE -->
 {% block stylesheets %}
@@ -15,17 +15,18 @@
                 <div class="card z-index-0">
                     <div class="card-body">
                         <div class="text-center text-muted mb-4">
-                            <h4>迁移配置</h4>
+                            <h4>{{ "MIGRATE_LABEL" | gettext }}</h4>
                         </div>
                         <hr/>
                         <div class="row text-center">
                             <div class="col">
                                 <button class="btn btn-primary my-2"
-                                        onclick='show_import()'>导入
+                                        onclick='show_import()'>{{ "IMPORT" | gettext }}
                                 </button>
                             </div>
                             <div class="col">
-                                <button class="btn btn-primary my-2" onclick="export_qexo()">导出
+                                <button class="btn btn-primary my-2" onclick="export_qexo()">
+                                    {{ "EXPORT" | gettext }}
                                 </button>
                             </div>
                         </div>
@@ -33,12 +34,12 @@
                 </div>
                 <div class="row mt-3">
                     <div class="col-6">
-                        <a href="/" class="text-light"><small>主页</small></a>
+                        <a href="/" class="text-light"><small>{{ "HOME" | gettext }}</small></a>
                     </div>
                     <div class="col-6 text-end">
                         <a target="_blank"
                            href="https://github.com/Qexo/Qexo/wiki"
-                           class="text-light"><small>帮助</small></a>
+                           class="text-light"><small>{{ "HELP" | gettext }}</small></a>
                     </div>
                 </div>
             </div>
@@ -49,7 +50,7 @@
         <div class="modal-dialog">
             <div class="modal-content bg-white">
                 <div class="modal-header" style="border: none;">
-                    <h5 class="modal-title" id="queryLabel">导入</h5>
+                    <h5 class="modal-title" id="queryLabel">{{ "IMPORT" | gettext }}</h5>
                     <button type="button" data-bs-dismiss="modal"
                             aria-label="Close" style="box-sizing: content-box;width: 1em;height:
                             1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem;
@@ -63,14 +64,16 @@
                         {% csrf_token %}
                         <input type="hidden" name="type" value="import">
                         <div class="custom-file">
-                            <label for="customFile" class="form-label">备份文件</label>
+                            <label for="customFile" class="form-label">
+                                {{ "BACKUP" | gettext }}</label>
                             <input type="file" class="form-control" id="customFile"
                                    name="import-file">
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer" id="query-modal-footer" style="border: none;">
-                    <button class="btn btn-primary" onclick="import_qexo()">确定</button>
+                    <button class="btn btn-primary" onclick="import_qexo()">
+                        {{ "CONFIRM" | gettext }}</button>
                 </div>
             </div>
         </div>
@@ -79,7 +82,7 @@
         <div class="modal-dialog">
             <div class="modal-content bg-white">
                 <div class="modal-header" style="border: none;">
-                    <h5 class="modal-title" id="queryLabel2">警告</h5>
+                    <h5 class="modal-title" id="queryLabel2">{{ "WARN" | gettext }}</h5>
                     <button type="button" data-bs-dismiss="modal"
                             aria-label="Close" style="box-sizing: content-box;width: 1em;height:
                             1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem;
@@ -88,10 +91,11 @@
                     </button>
                 </div>
                 <div class="modal-body" id="query-modal2-body">
-                    导入后, 您将会丢失现有的全部信息
+                    {{ "IMPORT_WARN" | gettext }}
                 </div>
                 <div class="modal-footer" id="query-modal2-footer" style="border: none;">
-                    <button class="btn btn-primary" onclick="final_import_qexo()">仍然继续</button>
+                    <button class="btn btn-primary" onclick="final_import_qexo()">
+                        {{ "STILL_IMPORT" | gettext }}</button>
                 </div>
             </div>
         </div>
@@ -100,7 +104,7 @@
         <div class="modal-dialog">
             <div class="modal-content bg-white">
                 <div class="modal-header" style="border: none;">
-                    <h5 class="modal-title" id="queryLabel3">结果</h5>
+                    <h5 class="modal-title" id="queryLabel3">{{ "RESULT" | gettext }}</h5>
                     <button type="button" data-bs-dismiss="modal"
                             aria-label="Close" style="box-sizing: content-box;width: 1em;height:
                             1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem;
@@ -170,8 +174,9 @@
                     import_type("import_posts", data["posts"])).then(
                     function () {
                         let html = $("#query-modal3-body").html();
-                        html += "全部迁移完成!";
-                        $("#query-modal3-footer").html(`<button class="btn btn-primary" data-bs-dismiss="modal">完成</button>`);
+                        html += "{{ "MIGRATE_SUCCESS" | gettext }}";
+                        $("#query-modal3-footer").html(`<button class="btn btn-primary" 
+                        data-bs-dismiss="modal">{{ "FINISH" | gettext }}</button>`);
                         $("#query-modal3-body").html(html);
                     })
 
@@ -196,9 +201,10 @@
                         $("#query-modal3-body").html(html);
                     } else {
                         let html = $("#query-modal3-body").html();
-                        html += _type + " 错误...跳过<br>";
+                        html += _type + " {{ "ERROR" | gettext }}...{{ "SKIP" | gettext }}<br>";
                         $("#query-modal3-body").html(html);
-                        $("#query-modal3-footer").html(`<button class="btn btn-primary" data-bs-dismiss="modal">完成</button>`);
+                        $("#query-modal3-footer").html(`<button class="btn btn-primary" 
+                        data-bs-dismiss="modal">{{ "FINISH" | gettext }}</button>`);
                     }
                 }
             })

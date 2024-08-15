@@ -439,8 +439,7 @@
                                     <td>
                                         <div class="text-center">
                                             <p class="text-xs font-weight-bold mb-0">{{ "OPERATION" | gettext }}</p>
-                                            <a href="{{ images.0.url | urlencoder }}"
-                                               target="_blank">
+                                            <a href="javascript:displayImage('{{ images.0.url | urlencoder }}')">
                                                 <i class="fa fa-external-link-alt"></i></a>
                                         </div>
                                     </td>
@@ -470,8 +469,7 @@
                                     <td>
                                         <div class="text-center">
                                             <p class="text-xs font-weight-bold mb-0">{{ "OPERATION" | gettext }}</p>
-                                            <a href="{{ images.1.url | urlencoder }}"
-                                               target="_blank">
+                                            <a href="javascript:displayImage('{{ images.1.url | urlencoder }}')">
                                                 <i class="fa fa-external-link-alt"></i></a>
                                         </div>
                                     </td>
@@ -502,8 +500,7 @@
                                     <td>
                                         <div class="text-center">
                                             <p class="text-xs font-weight-bold mb-0">{{ "OPERATION" | gettext }}</p>
-                                            <a href="{{ images.2.url | urlencoder }}"
-                                               target="_blank">
+                                            <a href="javascript:displayImage('{{ images.2.url | urlencoder }}')">
                                                 <i class="fa fa-external-link-alt"></i></a>
                                         </div>
                                     </td>
@@ -534,8 +531,7 @@
                                     <td>
                                         <div class="text-center">
                                             <p class="text-xs font-weight-bold mb-0">{{ "OPERATION" | gettext }}</p>
-                                            <a href="{{ images.3.url | urlencoder }}"
-                                               target="_blank">
+                                            <a href="javascript:displayImage('{{ images.3.url | urlencoder }}')">
                                                 <i class="fa fa-external-link-alt"></i></a>
                                         </div>
                                     </td>
@@ -553,7 +549,20 @@
 {% endblock content %}
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
+    <link href="{{ cdn_prev }}@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css"
+          rel="stylesheet">
+    <script src="{{ cdn_prev }}@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
     <script>
+        function displayImage(url) {
+            $.fancybox.open([
+                {
+                    src: url,
+                },
+            ], {
+                loop: false
+            });
+        }
+
         var recent_post_icon = $('.file-icon');
         for (let i = 0; i < recent_post_icon.length; i++) {
             let letter = getLetter($(recent_post_icon[i]).attr("filename"));

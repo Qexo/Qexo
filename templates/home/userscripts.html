@@ -215,7 +215,7 @@
                 }
             }
             if (argv) {
-                html = "{{ "INPUT_ARGV | gettext" }}:";
+                html = "{{ "INPUT_ARGV" | gettext }}:";
                 for (let i = 0; i < argv.length; i++) {
                     html += `<div class="form-group">
                                         <input type="text" name="argv-${argv[i]["name"]}"

@@ -1064,7 +1064,7 @@ def get_domain_and_path(url):
         url = url[8:]
     domain = url.split("/")[0]
     # 过滤参数
-    url = url.split("?")[:-1].split("#")[:-1]
+    url = url.split("?")[0].split("#")[0]
     return domain, url
 
 

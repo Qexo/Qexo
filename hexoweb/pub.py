@@ -471,11 +471,7 @@ def statistic(request):
         if not (allow and (t and get_setting("STATISTIC_ALLOW") == "是")):
             logging.error("域名未验证: " + url)
             return HttpResponseForbidden()
-        if url[:7] == "http://":
-            url = url[7:]
-        elif url[:8] == "https://":
-            url = url[8:]
-        domain = url.split("/")[0]
+        domain, url = get_domain_and_path(url)
         pv = StatisticPV.objects.filter(url=url)
         if pv.count() == 1:
             pv = StatisticPV.objects.get(url=url)

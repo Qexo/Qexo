@@ -48,7 +48,7 @@ Qexo 是一个快速、强大、美观的在线 静态博客编辑器。使用 G
 ## Sponsor 赞助
 作为一个开源项目，本项目并未给我带来直接利益。若您觉得本项目对您有帮助，您的支持将是我最大的动力。
 
-您可以在备注中附上您的姓名和网站博客。赞助1元及以上者，将在[文档页面](https://www.oplog.cn/qexo/en/dev/thanks.html)永久展示。
+您可以在备注中附上您的姓名和网站博客。赞助1元及以上者，将在[文档页面](https://www.oplog.cn/qexo/dev/thanks.html)永久展示。
 
 As an open-source project, this project does not provide me with any direct benefits. If you find this project helpful, your support is my greatest motivation.
 

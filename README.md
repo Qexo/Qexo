@@ -1,69 +1,39 @@
 # Qexo
-一个快速、强大、漂亮的在线 Hexo 编辑器，您的 Star 是对我最大的支持。
+Qexo 是一个快速、强大、美观的在线 静态博客编辑器。使用 GPL3.0 开源协议。支持包括且不限于在 Vercel 等平台部署, 为您的静态博客添加动态的元素
 
-*请查看 [文档](https://www.oplog.cn/qexo)*
-![](https://github.com/Qexo/Qexo/assets/51912589/75b7bc95-419e-4daf-8c5a-fcf3dbed8c1b)
-## 特色功能
-- 自定义图床上传图片
-- 在线配置编辑
-- 在线页面管理
-- 开放 API
-- 自动检查更新
-- 在线一键更新
-- 快速接入友情链接
-- 简单的说说短文
-- 类似不算子的统计
-- 自动填文章模板
-## 你可能需要
-* [文档](https://www.oplog.cn/qexo)
-### 快速上手
-* [部署程序](https://www.oplog.cn/qexo/start/build.html)
-* [如何更新](https://www.oplog.cn/qexo/start/update.html)
-* [常见问题](https://www.oplog.cn/qexo/start/questions.html)
-## 常见问题
-这里汇集了一些常见的问题，如果你遇到同样的问题，请先尝试如下的回答
-### 什么是 API 密钥
-在您完成初始化之后可在设置界面修改/创建 API 密钥，用于 Webhook 中的身份验证。若留空系统会随机生成一个 API 密钥
-### Webhook 是什么
-Qexo 中的 Webhook 指 /api/webhook 用于自动化操作，目前可用于自动清除缓存
-### 安装后出现 504 Time out
-1. 您的数据库没有正确配置或没有允许所有 IP 白名单访问，可在 MongoDB 控制台进行修改，修改完成后**一定要重新部署**
-2. 删除并重建数据库，注意区域**一定要选择 AWS / N. Virginia (us-east-1)**
-### 安装/更新后出现 5xx 错误
-Qexo 每个 Release 都经过 Dev 分支的测试，一般情况下不会出现较大问题，如果你遇到了500等错误，请尝试以下步骤
-1. 检查数据库配置
-2. 清除浏览器缓存
-3. 在高级设置中点击“修复”按钮
-4. 若无法登录请使用API: yoursite.com/pub/fix?token={$APIKEY}
-5. 保留数据库配置的环境变量并重新 Fork 仓库部署
-6. 重新部署整个程序
-7. 尝试 Dev 分支
-### AssertionError("xxx object ... its id attribute is set to None.")
-请检查你是否曾使用过0.01或0.1版本，这两个版本有严重问题，请重新创建数据库并部署
-### 如何创建子目录下的文章
-在文章名一栏填写 dir/filename 例如您希望创建 source/_posts/about/me.md 则需要输入 about/me
-### KeyError: 'XXX'
-表示并没有获取到 "XXX" 这个环境变量，请根据表格添加后 Redeploy
-| 名称 | 意义 | 示例 |
-| --- | --- | --- |
-| DOMAINS | 你所允许通信的安全域名 注意双引号而且是英文半角 | [".vercel.app", "127.0.0.1", ".yoursite.com"] |
-| MONGODB_HOST | MongoDB 数据库连接地址 | mongodb+srv://cluster0.xxxx.mongodb.net |
-| MONGODB_PORT | MongoDB 数据库通信端口 默认应填写 27017 | 27017 |
-| MONGODB_USER | MongoDB 数据库用户名 | abudu |
-| MONGODB_DB | MongoDB 数据库名 | Cluster0 |
-| MONGODB_PASS | MongoDB 数据库密码 | JWo0xxxxxxxx |
-### Github 配置校验错误
-如果配置中遇到问题，可以访问 [HPP校验助手](https://hexoplusplus.cronfly.workers.dev/?step=start) 自检配置，若确认无误，可检查仓库内是否有已经发布的文章
+**Qexo** is a fast, powerful and beautiful online **static blog editor**. Uses the GPL3.0 **Open Source** license. Support includes and is not limited to deployment on platforms such as **Vercel**, adding **dynamic** elements to your static blogs
+![](https://s2.loli.net/2024/07/19/r1XJPHnYANKbcRl.png)
 
-注意：Github 仓库一定为您 Hexo **自动化部署**所在的仓库
-### Vercel 用量问题
-Vercel 的无服务器函数用量对于 Qexo 来说是充裕的，但这依然抵挡不住有心之人的攻击行为，所以要保护好自己后台地址，不过好在 Vercel 不会随意扣费，所以在资源用完之后并不会产生费用，若依然不放心可以考虑部署在自己的服务器上 [#服务器部署#](https://github.com/am-abudu/Qexo/wiki/%E6%9C%8D%E5%8A%A1%E5%99%A8%E9%83%A8%E7%BD%B2)
-### 在线更新失败了
-检查高级设置中的 VERCEL_TOKEN 和 PROJECT_ID 是否正确为 Qexo 的部署项目
-### 其他问题
-如果还有问题，可以发 [issue](https://github.com/am-abudu/Qexo/issues) 或加入 [HexoPlusPlus交流群](https://jq.qq.com/?_wv=1027&k=rAcnhzqK) 询问
+[请阅读文档](https://www.oplog.cn/qexo/)
 
-## 鸣谢
+[Plese read Wiki first](https://www.oplog.cn/qexo/en/)
+## Features 特性
+
+- **Article Management ~ New Interface**
+
+  Version 3.0 of Qexo redesigned the post editing page, you can edit posts more elegantly.
+
+  Support multiple image uploading, uploading is just a click away!
+![](https://s2.loli.net/2024/07/19/q3LlJutFDCvpbMh.png)
+- **Cache function ~ speed is the most important thing**
+
+    Supports caching articles, pages and configuration indexes to database, ensuring your high-speed access.
+
+    Webhook fully automatic cache clearing, always keep your data up-to-date.
+- **Smaller than a sparrow ~ complete in every way** 
+
+  - Modularized Architecture
+  - Supports multiple Hexo, Hugo, Valaxy hosts Github, Gitlab, Local
+  - Multiple graph bed protocols support Github, S3, FTP, remote APIs
+  - Markdown syntax + multiple editing interfaces, what you see is what you get.
+  - New interface: Night/Day with one click
+  - Multi-format push Bark, Telegram, Pushdeer, Wechat...
+  - reCaptcha Spam Prevention
+  - Links Front-end application, one-click access
+  - Automatic update Easy and convenient, keep the latest
+  - Customized Fields / Site Statistics / Page Management / Configuration Editing
+  - Comment Notification / Image Upload / Logo Generation / API Expansion
+## Acknowledgements 鸣谢
 - [Ace](https://ace.c9.io/)
 - [Argon-Dashboard-Django](https://github.com/creativetimofficial/argon-dashboard-django)
 - [Bootstrap](https://getbootstrap.com/)
@@ -74,8 +44,15 @@ Vercel 的无服务器函数用量对于 Qexo 来说是充裕的，但这依然�
 - [jQuery](https://jquery.com/)
 - [OnePush](https://github.com/y1ndan/onepush)
 - [Vercel-Python-WSGI](https://github.com/ardnt/vercel-python-wsgi)
-## 捐赠
-作为一个开源项目，本项目不会给我带来任何直接收益。如果您觉得本项目对您有帮助，您的支持是我最大的动力。
+- ...
+## Sponsor 赞助
+作为一个开源项目，本项目并未给我带来直接利益。若您觉得本项目对您有帮助，您的支持将是我最大的动力。
 
-您可以在备注中添加您的称呼和网址博客，大于或等于 1 元的捐助都将在 [文档页面](https://www.oplog.cn/qexo/dev/thanks.html) 永久显示
-![支付宝/微信](https://github.com/user-attachments/assets/3ad5cf14-9296-4a7e-9a1b-1e4d317532a4)
+您可以在备注中附上您的姓名和网站博客。赞助1元及以上者，将在[文档页面](https://www.oplog.cn/qexo/dev/thanks.html)永久展示。
+
+As an open-source project, this project does not provide me with any direct benefits. If you find this project helpful, your support is my greatest motivation.
+
+You can include your name and website blog in the remarks. Sponsorship of 1 RMB or more will be 
+permanently displayed on the [documentation page](https://www.oplog.cn/qexo/en/dev/thanks.html).
+
+![Alipay/WeChat](https://github.com/user-attachments/assets/3ad5cf14-9296-4a7e-9a1b-1e4d317532a4)

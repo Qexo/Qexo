@@ -202,6 +202,8 @@
         $.ajaxSetup({
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
         });
+        
+        var running_command = "";
 
         function show_run(path) {
             let html = "";
@@ -215,7 +217,7 @@
                 }
             }
             if (argv) {
-                html = "{{ "INPUT_ARGV | gettext" }}:";
+                html = "{{ "INPUT_ARGV" | gettext }}:";
                 for (let i = 0; i < argv.length; i++) {
                     html += `<div class="form-group">
                                         <input type="text" name="argv-${argv[i]["name"]}"
@@ -224,6 +226,7 @@
                                     </div>`;
                 }
             }
+            running_command = path;
             html += formatString("{{ "CONFIRM_RUN" | gettext }}", "<a id='script-path'>" + path + "</a>");
             $("#runContainer").html(html);
             $("#runModal").modal("show");
@@ -231,7 +234,7 @@
 
         function run_script() {
             let loading = new KZ_Loading('{{ "RUNNING" | gettext }}');
-            let file = $("#script-path").text();
+            let file = running_command;
             let argv = [];
             for (let i = 0; i <= posts.length; i++) {
                 if (posts[i]["path"] === file) {
@@ -263,7 +266,7 @@
                 },
                 error: function (res) {
                     loading.destroy();
-                    notyf.error("{{ "NETWORK_ERROR" | gettext }});
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
                 }
             })
         }

@@ -126,7 +126,8 @@ def get_cdn():
 # 获取用户自定义的样式配置
 def get_custom_config():
     context = {"cdn_prev": get_cdn(), "QEXO_NAME": get_setting("QEXO_NAME"), "static_version": QEXO_STATIC,
-               "language": _Language.get("name", "zh_CN"), "vditor_languages": VDITOR_LANGUAGES, "all_languages": hexoweb.libs.i18n.all_languages()}
+               "language": _Language.get("name", "zh_CN"), "vditor_languages": VDITOR_LANGUAGES,
+               "all_languages": hexoweb.libs.i18n.all_languages()}
     if not context["QEXO_NAME"]:
         save_setting('QEXO_NAME', 'Hexo' + gettext("CONSOLE"))
         context["QEXO_NAME"] = get_setting("QEXO_NAME")
@@ -1054,6 +1055,17 @@ def convert_to_kb_mb_gb(size_in_bytes):
         return f"{kb:.2f} KB"
     else:
         return f"{size_in_bytes} B"
+
+
+def get_domain_and_path(url):
+    if url[:7] == "http://":
+        url = url[7:]
+    elif url[:8] == "https://":
+        url = url[8:]
+    domain = url.split("/")[0]
+    # 过滤参数
+    url = url.split("?")[0].split("#")[0]
+    return domain, url
 
 
 # print(" ......................阿弥陀佛......................\n" +

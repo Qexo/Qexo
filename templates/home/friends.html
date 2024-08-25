@@ -327,6 +327,12 @@
             $("#query").modal("show");
         }
 
+        function compare() {
+            return function (a, b) {
+                return a.time < b.time ? 1 : -1;
+            }
+        }
+
 
         function edit_friend(index) {
             let name = $("#edit-name").val();

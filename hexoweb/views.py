@@ -565,6 +565,7 @@ def pages(request):
                 posts[item]["size"] = convert_to_kb_mb_gb(posts[item]["size"])
             context["all_posts"] = json.dumps(posts)
             context["post_number"] = len(posts)
+            context["new_dir"] = Provider().config["posts"]["save_path"]
             context["page_number"] = ceil(context["post_number"] / 15)
             context["search"] = search
         elif "pages" in load_template:
@@ -585,6 +586,7 @@ def pages(request):
                     posts = update_pages_cache(search)
             for item in range(len(posts)):
                 posts[item]["size"] = convert_to_kb_mb_gb(posts[item]["size"])
+            context["new_dir"] = Provider().config["pages"]["save_path"]
             context["posts"] = json.dumps(posts)
             context["post_number"] = len(posts)
             context["page_number"] = ceil(context["post_number"] / 15)

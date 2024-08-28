@@ -462,7 +462,7 @@ def save(request):
         if (not request.user.is_staff) and flag:
             logging.info(gettext("USER_IS_NOT_STAFF_MODIFY").format(request.user.username, file_path))
             return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
-        commitchange = f"Update Post Draft {file_path} by Qexo"
+        commitchange = f"Update {file_path} by Qexo"
         try:
             if Provider().save(file_path, content, commitchange):
                 context = {"msg": gettext("SAVE_SUCCESS_AND_DEPLOY"), "status": True}
@@ -627,7 +627,7 @@ def rename(request):
         if (not request.user.is_staff) and file_path[:4] in ["yaml", ".yml"]:
             logging.info(gettext("USER_IS_NOT_STAFF_RENAME").format(request.user.username, file_path))
             return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
-        commitchange = f"Rename {file_path} by Qexo"
+        commitchange = f"Rename {file_path} to {new_path} by Qexo"
         try:
             if Provider().rename(file_path, new_path, commitchange):
                 context = {"msg": gettext("RENAME_SUCCESS_AND_DEPLOY"), "status": True}

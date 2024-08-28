@@ -20,20 +20,22 @@ from .api import *
 
 
 def page_404(request, exception):
-    return render(request, 'home/page-404.html', {"cdn_prev": "https://unpkg.com/"})
+    return render(request, 'home/page-404.html', {"cdn_prev": "https://unpkg.com/",
+                                                  "static_version": QEXO_STATIC})
 
 
 def page_403(request, exception):
-    return render(request, 'home/page-403.html', {"cdn_prev": "https://unpkg.com/"})
+    return render(request, 'home/page-403.html', {"cdn_prev": "https://unpkg.com/",
+                                                  "static_version": QEXO_STATIC})
 
 
 def page_500(request):
     try:
         return render(request, 'home/page-500.html',
-                      {"error": gettext("SYSTEM_ERROR"), "cdn_prev": "https://unpkg.com/"})
+                      {"error": gettext("SYSTEM_ERROR"), "cdn_prev": "https://unpkg.com/", "static_version": QEXO_STATIC})
     except Exception as e:
         return render(request, 'home/page-500.html',
-                      {"error": repr(e), "cdn_prev": "https://unpkg.com/"})
+                      {"error": repr(e), "cdn_prev": "https://unpkg.com/", "static_version": QEXO_STATIC})
 
 
 def login_view(request):

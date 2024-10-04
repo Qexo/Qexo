@@ -1,6 +1,6 @@
 
 config = {
-    "name": "nuxt",
+    "name": "Nuxt",
     "posts": {
         "path": ["content/posts"],
         "depth": [-1],

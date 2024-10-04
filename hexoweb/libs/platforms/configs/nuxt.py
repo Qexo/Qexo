@@ -3,7 +3,7 @@ config = {
     "name": "nuxt",
     "posts": {
         "path": ["content/posts"],
-        "depth": [-2],
+        "depth": [-1],
         "type": [".md"],
         "save_path": "content/posts/${filename}.md",
         "scaffold": "scaffolds/post.md"

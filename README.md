@@ -56,3 +56,8 @@ You can include your name and website blog in the remarks. Sponsorship of 1 RMB 
 permanently displayed on the [documentation page](https://www.oplog.cn/qexo/en/dev/thanks.html).
 
 ![Alipay/WeChat](https://github.com/user-attachments/assets/3ad5cf14-9296-4a7e-9a1b-1e4d317532a4)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FQexo%2FQexo.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FQexo%2FQexo?ref=badge_shield)
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FQexo%2FQexo.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FQexo%2FQexo?ref=badge_large)

@@ -13,7 +13,15 @@
     </div>
     <hr class="horizontal dark mt-0">
     <div class="collapse navbar-collapse  w-auto" id="sidenav-collapse-main"
-         style="height: calc(100vh - 330px);overflow: hidden;">
+         style="height: calc(100vh - 330px);">
+        <style>
+            #sidenav-collapse-main{
+                scrollbar-width: none; /* Firefox */
+            }
+            #sidenav-collapse-main::-webkit-scrollbar {
+                display: none; /* Chrome Safari */
+            }
+        </style>
         <ul class="navbar-nav">
             <li class="nav-item">
                 <a class="nav-link {% if 'index' in segment %} active {% endif %}" href="/">

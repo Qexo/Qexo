@@ -80,7 +80,7 @@ def set_hexo(request):
             if verify["indexhtml"]:
                 msg += gettext("HEXO_INDEX_FAILED")
             if verify["config_hexo"]:
-                msg += gettext("HEXO_CONFIG_FAILED")
+                msg += gettext("HEXO_CONFIG")
             else:
                 msg += gettext("HEXO_CONFIG_FAILED")
             if verify["theme_dir"]:
@@ -462,7 +462,7 @@ def save(request):
         if (not request.user.is_staff) and flag:
             logging.info(gettext("USER_IS_NOT_STAFF_MODIFY").format(request.user.username, file_path))
             return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
-        commitchange = f"Update Post Draft {file_path} by Qexo"
+        commitchange = f"Update {file_path} by Qexo"
         try:
             if Provider().save(file_path, content, commitchange):
                 context = {"msg": gettext("SAVE_SUCCESS_AND_DEPLOY"), "status": True}
@@ -531,17 +531,35 @@ def new_page(request):
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         file_path = unicodedata.normalize('NFC', request.POST.get('file'))
-        content = unicodedata.normalize('NFC', request.POST.get('content'))
-        front_matter = json.loads(unicodedata.normalize('NFC', request.POST.get('front_matter')))
         try:
-            front_matter = "---\n{}---".format(yaml.dump(front_matter, allow_unicode=True))
-            if not content.startswith("\n"):
-                front_matter += "\n"
-            result = Provider().save_page(file_path, front_matter + content)
-            if result[0]:
-                context = {"msg": gettext("SAVE_SUCCESS_AND_DEPLOY"), "status": True, "path": result[1]}
-            else:
-                context = {"msg": gettext("SAVE_SUCCESS"), "status": True, "path": result[1]}
+            try:
+                scaffold = Provider().get_scaffold("pages")
+            except Exception as error:
+                scaffold = ""
+                logging.error(repr(error))
+            result = Provider().save_page(file_path, scaffold, autobuild=False)
+            context = {"msg": gettext("SAVE_SUCCESS"), "status": True, "path": result[1]}
+            delete_all_caches()
+        except Exception as error:
+            logging.error(repr(error))
+            context = {"msg": repr(error), "status": False}
+    return JsonResponse(safe=False, data=context)
+
+
+# 保存页面 api/new_post
+@login_required(login_url="/login/")
+def new_post(request):
+    context = dict(msg="Error!", status=False)
+    if request.method == "POST":
+        file_path = unicodedata.normalize('NFC', request.POST.get('file'))
+        try:
+            try:
+                scaffold = Provider().get_scaffold("posts")
+            except Exception as error:
+                scaffold = ""
+                logging.error(repr(error))
+            result = Provider().save_post(file_path, scaffold, autobuild=False, status=False)
+            context = {"msg": gettext("SAVE_SUCCESS"), "status": True, "path": result[1], "name": file_path}
             delete_all_caches()
         except Exception as error:
             logging.error(repr(error))
@@ -562,11 +580,8 @@ def save_draft(request):
             _front_matter = "---\n{}---".format(yaml.dump(front_matter, allow_unicode=True))
             if not content.startswith("\n"):
                 _front_matter += "\n"
-            result = Provider().save_post(file_name, _front_matter + content, path=request.POST.get("path"), status=False)
-            if result[0]:
-                context = {"msg": gettext("DRAFT_SAVE_SUCCESS_AND_DEPLOY"), "status": True, "path": result[1]}
-            else:
-                context = {"msg": gettext("DRAFT_SAVE_SUCCESS"), "status": True, "path": result[1]}
+            result = Provider().save_post(file_name, _front_matter + content, path=request.POST.get("path"), status=False, autobuild=False)
+            context = {"msg": gettext("DRAFT_SAVE_SUCCESS"), "status": True, "path": result[1]}
             mark_post(result[1], front_matter, False, file_name)
             delete_all_caches()
         except Exception as error:
@@ -612,7 +627,7 @@ def rename(request):
         if (not request.user.is_staff) and file_path[:4] in ["yaml", ".yml"]:
             logging.info(gettext("USER_IS_NOT_STAFF_RENAME").format(request.user.username, file_path))
             return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
-        commitchange = f"Rename {file_path} by Qexo"
+        commitchange = f"Rename {file_path} to {new_path} by Qexo"
         try:
             if Provider().rename(file_path, new_path, commitchange):
                 context = {"msg": gettext("RENAME_SUCCESS_AND_DEPLOY"), "status": True}
@@ -818,11 +833,13 @@ def get_notifications(request):
             cache = Cache.objects.filter(name="update")
             if cache.count():
                 if (cache.first().content != latest["newer_time"]) and latest["hasNew"]:
-                    CreateNotification(gettext("UPDATE_LABEL"), gettext("UPDATE_CONTENT").format(latest["newer"], latest["newer_text"]), time())
+                    CreateNotification(gettext("UPDATE_LABEL"), gettext("UPDATE_CONTENT").format(latest["newer"], latest["newer_text"]),
+                                       time())
                     update_caches("update", latest["newer_time"], "text")
             else:
                 if latest["hasNew"]:
-                    CreateNotification(gettext("UPDATE_LABEL"), gettext("UPDATE_CONTENT").format(latest["newer"], latest["newer_text"]), time())
+                    CreateNotification(gettext("UPDATE_LABEL"), gettext("UPDATE_CONTENT").format(latest["newer"], latest["newer_text"]),
+                                       time())
                     update_caches("update", latest["newer_time"], "text")
         context = {"data": GetNotifications(), "status": True}
     except Exception as error:
@@ -945,7 +962,7 @@ def run_online_script(request):
             locals().update(json.loads(request.POST.get("argv")))
             exec(remote_script)
             sys.stdout = old_stdout
-            logging.info(gettext("SCRIPT_RUN_SUCCESS_LOG").format(path,output.getvalue().rstrip()))
+            logging.info(gettext("SCRIPT_RUN_SUCCESS_LOG").format(path, output.getvalue().rstrip()))
             context = {"msg": gettext("SCRIPT_RUN_SUCCESS"), "data": output.getvalue(), "status": True}
         else:
             context = {"msg": gettext("SCRIPT_ARGV_FAILED"), "status": False}
@@ -953,6 +970,7 @@ def run_online_script(request):
         logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
+
 
 # 切换语言 api/change_lang
 @login_required(login_url="/login/")

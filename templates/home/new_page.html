@@ -95,7 +95,7 @@
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
-    <script src="{{ cdn_prev }}vditor@3.10.4/dist/index.min.js"></script>
+    <script src="{{ cdn_prev }}vditor@3.10.7/dist/index.min.js"></script>
 
     <script>
         var _status = true, front_matter = {{ front_matter|safe }};
@@ -179,7 +179,7 @@
                 toolbarConfig: {
                     pin: true
                 },
-                "cdn": "{{ cdn_prev }}vditor@3.10.4",
+                "cdn": "{{ cdn_prev }}vditor@3.10.7",
                 "mode": "wysiwyg",
                 counter: {
                     enable: true
@@ -196,7 +196,7 @@
                     "enable": false,
                 }, "preview": {
                     "theme": {
-                        "path": "{{ cdn_prev }}vditor@3.10.4/dist/css/content-theme"
+                        "path": "{{ cdn_prev }}vditor@3.10.7/dist/css/content-theme"
                     }
                 },
                 toolbar: [
@@ -239,9 +239,9 @@
                             let imageUrl = responseData.url;
                             let succFileText = "";
                             if (vditor && vditor.vditor.currentMode === "wysiwyg") {
-                                succFileText += `\n <img alt=${imageUrl} src="${imageUrl}">`;
+                                succFileText += `\n <img alt src="${imageUrl}">`;
                             } else {
-                                succFileText += `\n![${imageUrl}](${imageUrl})`;
+                                succFileText += `\n![](${imageUrl})`;
                             }
                             //将图片路径写入文本
                             document.execCommand("insertHTML", false, succFileText);
@@ -305,7 +305,7 @@
                     "edit-mode",
                     "preview"
                 ],
-                "cdn": "{{ cdn_prev }}vditor@3.10.4",
+                "cdn": "{{ cdn_prev }}vditor@3.10.7",
                 "fullscreen": {
                     "index": 1050,
                 },
@@ -318,7 +318,7 @@
                 "preview": {
                     "mode": "both",
                     "theme": {
-                        "path": "{{ cdn_prev }}vditor@3.10.4/dist/css/content-theme"
+                        "path": "{{ cdn_prev }}vditor@3.10.7/dist/css/content-theme"
                     }
                 }, hint: {
                     emoji: {{ emoji|safe }}
@@ -343,9 +343,9 @@
                             let imageUrl = responseData.url;
                             let succFileText = "";
                             if (vditor && vditor.vditor.currentMode === "wysiwyg") {
-                                succFileText += `\n <img alt=${imageUrl} src="${imageUrl}">`;
+                                succFileText += `\n <img alt src="${imageUrl}">`;
                             } else {
-                                succFileText += `\n![${imageUrl}](${imageUrl})`;
+                                succFileText += `\n![](${imageUrl})`;
                             }
                             //将图片路径写入文本
                             document.execCommand("insertHTML", false, succFileText);

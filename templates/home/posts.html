@@ -14,7 +14,7 @@
                         <h6>{% if search %}{{ "SEARCH_POST" | gettext }}: {{ search }}{% else %}
                             {{ "POST_LABEL" | gettext }}{% endif %}
                             (<span id="post-number">{{ post_number }}</span>{{ "MEASURE_POST" | gettext }})
-                            <a href="/new.html" class="text-primary text-lg">
+                            <a href="javascript:query_new()" class="text-primary text-lg">
                                 <i class="fa-solid fa-plus"></i>
                             </a>
                         </h6>
@@ -136,6 +136,38 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="newModal" tabindex="-1" aria-labelledby="newModalLabel"
+         aria-hidden="false">
+        <div class="modal-dialog">
+            <div class="modal-content bg-white">
+                <div class="modal-header" style="border: none;">
+                    <h5 class="modal-title fs-5" id="newModalLabel">{{ "NEW" | gettext }}</h5>
+                    <button type="button" data-bs-dismiss="modal"
+                            aria-label="Close" style="box-sizing: content-box;width: 1em;height:
+                            1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem;
+                            opacity: .5;background: none">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group"><label class="form-control-label">
+                        {{ "filename" | gettext }}</label><input
+                            type="text" name="name" id="file-path" value=""
+                            placeholder="{{ "NEW_PH" | gettext }} {{ new_dir }}"
+                            class="form-control bg-white text-dark">
+                    </div>
+                </div>
+                <div class="modal-footer" style="border: none;">
+                    <button type="button" class="btn btn-secondary"
+                            data-bs-dismiss="modal">{{ "CANCEL" | gettext }}
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="new_file()"
+                            data-bs-dismiss="modal">{{ "CONFIRM" | gettext }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock content %}
 
 <!-- Specific JS goes HERE -->
@@ -242,6 +274,10 @@
             $("#edit-name").val(name);
             $("#renameModal").modal("show");
         }
+        
+        function query_new() {
+            $("#newModal").modal("show");
+        }
 
         function delete_file() {
             let loading = new KZ_Loading();
@@ -289,6 +325,43 @@
                     if (res.status) {
                         notyf.success("{{ "OPERATION_SUCCESS" | gettext }}");
                         location.reload();
+                    } else {
+                        notyf.error(res.msg);
+                    }
+                },
+                error: function (res) {
+                    loading.destroy();
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
+                }
+            })
+        }
+
+        function new_file() {
+            let loading = new KZ_Loading();
+            let new_name = $("#file-path").val();
+            if (new_name === "") {
+                notyf.error("{{ "NO_POST_NAME" | gettext }}");
+                return;
+            }
+            for (let i = 0; i < posts.length; i++) {
+                if (posts[i].name === new_name) {
+                    notyf.error("{{ "POST_EXIST" | gettext }}");
+                    return;
+                }
+            }
+            loading.show();
+            $.ajax({
+                url: '/api/new_post/',
+                method: 'post',
+                data: {"file": new_name},
+                dataType: 'JSON',
+                success: function (res) {
+                    loading.destroy();
+                    if (res.status) {
+                        notyf.success(res.msg);
+                        setTimeout(window.location.href = "edit.html?file=" +
+                            encodeURIComponent(res.path) + "&postname=" + 
+                            encodeURIComponent(new_name), 100);
                     } else {
                         notyf.error(res.msg);
                     }

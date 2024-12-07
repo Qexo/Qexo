@@ -29,6 +29,7 @@ urlpatterns = [
     path('api/save_page/', save_page, name='save_page'),
     path('api/save_draft/', save_draft, name='save_draft'),
     path('api/new_page/', new_page, name='new_page'),
+    path('api/new_post/', new_post, name='new_post'),
     path('api/delete/', delete, name='delete'),
     path('api/rename/', rename, name='rename'),
     path('api/upload/', upload_img, name='upload'),

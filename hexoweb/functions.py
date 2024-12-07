@@ -61,9 +61,17 @@ except Exception:
     _Language = get_language("zh_CN").default
 
 
+def Language():
+    try:
+        return _Language
+    except Exception:
+        logging.error(gettext("ERROR_GETTING_PROVIDER") + ": " + gettext("RETRY"))
+        return update_language()
+
+
 @register.filter
 def gettext(value):
-    return _Language["data"].get(value, value)
+    return Language()["data"].get(value, value)
 
 
 def update_provider():
@@ -126,7 +134,7 @@ def get_cdn():
 # 获取用户自定义的样式配置
 def get_custom_config():
     context = {"cdn_prev": get_cdn(), "QEXO_NAME": get_setting("QEXO_NAME"), "static_version": QEXO_STATIC,
-               "language": _Language.get("name", "zh_CN"), "vditor_languages": VDITOR_LANGUAGES,
+               "language": Language().get("name", "zh_CN"), "vditor_languages": VDITOR_LANGUAGES,
                "all_languages": hexoweb.libs.i18n.all_languages()}
     if not context["QEXO_NAME"]:
         save_setting('QEXO_NAME', 'Hexo' + gettext("CONSOLE"))

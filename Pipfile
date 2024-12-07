@@ -4,10 +4,10 @@ verify_ssl = false
 name = "pip_conf_index_global"
 
 [packages]
-django = "==3.2.24"
-pymysql = "==1.0.2"
+django = "==3.2.25"
+pymysql = "==1.1.1"
 boto3 = "==1.34.44"
-requests = "==2.31.0"
+requests = "==2.32.0"
 pygithub = "==2.2.0"
 python-gitlab = "==4.4.0"
 html2text = "==2020.1.16"

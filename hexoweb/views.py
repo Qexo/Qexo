@@ -20,20 +20,22 @@ from .api import *
 
 
 def page_404(request, exception):
-    return render(request, 'home/page-404.html', {"cdn_prev": "https://unpkg.com/"})
+    return render(request, 'home/page-404.html', {"cdn_prev": "https://unpkg.com/",
+                                                  "static_version": QEXO_STATIC})
 
 
 def page_403(request, exception):
-    return render(request, 'home/page-403.html', {"cdn_prev": "https://unpkg.com/"})
+    return render(request, 'home/page-403.html', {"cdn_prev": "https://unpkg.com/",
+                                                  "static_version": QEXO_STATIC})
 
 
 def page_500(request):
     try:
         return render(request, 'home/page-500.html',
-                      {"error": gettext("SYSTEM_ERROR"), "cdn_prev": "https://unpkg.com/"})
+                      {"error": gettext("SYSTEM_ERROR"), "cdn_prev": "https://unpkg.com/", "static_version": QEXO_STATIC})
     except Exception as e:
         return render(request, 'home/page-500.html',
-                      {"error": repr(e), "cdn_prev": "https://unpkg.com/"})
+                      {"error": repr(e), "cdn_prev": "https://unpkg.com/", "static_version": QEXO_STATIC})
 
 
 def login_view(request):
@@ -565,6 +567,7 @@ def pages(request):
                 posts[item]["size"] = convert_to_kb_mb_gb(posts[item]["size"])
             context["all_posts"] = json.dumps(posts)
             context["post_number"] = len(posts)
+            context["new_dir"] = Provider().config["posts"]["save_path"]
             context["page_number"] = ceil(context["post_number"] / 15)
             context["search"] = search
         elif "pages" in load_template:
@@ -585,6 +588,7 @@ def pages(request):
                     posts = update_pages_cache(search)
             for item in range(len(posts)):
                 posts[item]["size"] = convert_to_kb_mb_gb(posts[item]["size"])
+            context["new_dir"] = Provider().config["pages"]["save_path"]
             context["posts"] = json.dumps(posts)
             context["post_number"] = len(posts)
             context["page_number"] = ceil(context["post_number"] / 15)

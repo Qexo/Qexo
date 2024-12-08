@@ -47,7 +47,7 @@
             },
             success: function (data, status, xhr) {
                 loading.destroy();
-                return data["summary"];
+                excerpt = data["summary"];
             },
             error: function (data) {
                 loading.destroy();
@@ -80,7 +80,6 @@
                 loading.destroy();
                 if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
                     excerpt = data.choices[0].message.content.trim();
-                    return excerpt;
                 }
             },
             error: function (data) {
@@ -88,6 +87,7 @@
                 notyf.error("{{ "EXCERPT_FAILED" | gettext }}" + xhr.responseText);
             }
         });
+        console.log(excerpt)
         return excerpt;
     }
 

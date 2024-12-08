@@ -1544,12 +1544,26 @@
             "TianliGPT": {
                 "key": {"description": "{{ "EXCERPT_TIANLI_KEY" | gettext }}", "placeholder": "{{ "EXCERPT_TIANLI_KEY_PH" | gettext }}"},
                 "length": {"description": "{{ "EXCERPT_TIANLI_LENGTH" | gettext }}", "placeholder": "{{ "EXCERPT_TIANLI_LENGTH_PH" | gettext }}"}
-            }
-            /*
+            },
             "ChatGPT": {
-
+                "api_key": {
+                    "description": "{{ "EXCERPT_CHATGPT_API_KEY" | gettext }}",
+                    "placeholder": "{{ "EXCERPT_CHATGPT_API_KEY_PH" | gettext }}"
+                },
+                "api": {
+                    "description": "{{ "EXCERPT_CHATGPT_API" | gettext }}",
+                    "placeholder": "{{ "EXCERPT_CHATGPT_API_PH" | gettext }}"
+                },
+                "length": {
+                    "description": "{{ "EXCERPT_CHATGPT_LENGTH" | gettext }}",
+                    "placeholder": "{{ "EXCERPT_CHATGPT_LENGTH_PH" | gettext }}"
+                },
+                "model": {
+                    "description": "{{ "EXCERPT_CHATGPT_MODEL" | gettext }}",
+                    "placeholder": "{{ "EXCERPT_CHATGPT_MODEL_PH" | gettext }}"
+                },
+                
             }
-            */
         };
         {% if AUTO_EXCERPT_CONFIG %}
             var now_excerpt = {{ AUTO_EXCERPT_CONFIG | safe }};

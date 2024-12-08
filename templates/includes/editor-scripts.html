@@ -82,7 +82,7 @@
             }),
             success: function (data, status, xhr) {
                 loading.destroy();
-                console.log(data)
+                console.log("API response data:", data);
                 if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
                     excerpt = data.choices[0].message.content.trim();
                     console.log(excerpt)
@@ -98,6 +98,7 @@
             },
             error: function (data) {
                 loading.destroy();
+                console.log("API request failed:", data);
                 notyf.error("{{ "EXCERPT_FAILED" | gettext }}" + xhr.responseText);
             }
         });

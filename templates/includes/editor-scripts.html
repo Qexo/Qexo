@@ -13,11 +13,13 @@
             OrgSidebar = [...Sidebar];
             showSidebar(true);
             nextstep();
+        } else if (method === "TianliGPT") {
+            excerpt_by_tianli(html, excerpt_config.params.length, excerpt_config.params.key, nextstep);
+        } else if (method === "ChatGPT") {
+            excerpt_by_chatgpt(html, excerpt_config.params.length, excerpt_config.params.api_key, nextstep, excerpt_config.params.api, excerpt_config.params.model);
         }
-        if (method === "TianliGPT") {
-            excerpt_by_tianli(html, excerpt_config.params.length, excerpt_config.params
-                .key, nextstep);
-        }
+
+
     }
 
     function excerpt_by_local(content, length) {
@@ -58,4 +60,43 @@
         });
         return excerpt;
     }
+    
+    function excerpt_by_chatgpt(content, length, api_key, nextstep, api, model) {
+        let excerpt = excerpt_by_local(content, length);
+        let loading = new KZ_Loading('{{ "EXCERPT_LOADING" | gettext }}');
+        loading.show();
+    
+        $.ajax({
+            url: api,
+            type: "POST",
+            headers: {
+                'Authorization': `Bearer ${api_key}`,
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify({
+                "model": model,
+                "messages": [
+                    {"role": "system", "content": `请为以下博客文章撰写一个简明扼要的摘要，长度在100至200字之间。摘要应包括文章的核心主题、关键观点和任何重要的结论或建议。`},
+                    {"role": "user","content": excerpt}
+                ]
+            }),
+            success: function (data, status, xhr) {
+                loading.destroy();
+                if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
+                    excerpt = data.choices[0].message.content.trim();
+                    front_matter = get_front_matter();
+                    front_matter[excerpt_config.save_key] = excerpt;
+                    OrgSidebar = [...Sidebar];
+                    showSidebar(true);
+                }
+                nextstep();
+            },
+            error: function (data) {
+                loading.destroy();
+                notyf.error("{{ "EXCERPT_FAILED" | gettext }}" + xhr.responseText);
+            }
+        });
+        return excerpt;
+    }
+
 </script>

@@ -48,6 +48,7 @@
             success: function (data, status, xhr) {
                 loading.destroy();
                 excerpt = data["summary"];
+                nextstep();
             },
             error: function (data) {
                 loading.destroy();
@@ -81,6 +82,7 @@
                 if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
                     excerpt = data.choices[0].message.content.trim();
                 }
+                nextstep();
             },
             error: function (data) {
                 loading.destroy();

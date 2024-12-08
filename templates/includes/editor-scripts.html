@@ -84,11 +84,15 @@
                 loading.destroy();
                 if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
                     excerpt = data.choices[0].message.content.trim();
+                    console.log(excerpt)
+                    console.log(666)
                     front_matter = get_front_matter();
                     front_matter[excerpt_config.save_key] = excerpt;
                     OrgSidebar = [...Sidebar];
                     showSidebar(true);
                 }
+                console.log(777)
+                console.log(excerpt)
                 nextstep();
             },
             error: function (data) {

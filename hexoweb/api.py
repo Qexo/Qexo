@@ -501,6 +501,33 @@ def save_post(request):
             context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
+@login_required(login_url="/login/")
+def unpublish_post(request):
+    context = dict(msg="Error!", status=False)
+    if request.method == "POST":
+        file_name = unicodedata.normalize('NFC', request.POST.get('file'))
+        try:
+            Provider().unpublish_post(file_name)
+            context = {"msg": gettext("UNPUBLISH_SUCCESS"), "status": True, "file_name": file_name}
+            delete_all_caches()
+        except Exception as error:
+            logging.error(repr(error))
+            context = {"msg": repr(error), "status": False}
+    return JsonResponse(safe=False, data=context)
+
+@login_required(login_url="/login/")
+def publish_post(request):
+    context = dict(msg="Error!", status=False)
+    if request.method == "POST":
+        file_name = unicodedata.normalize('NFC', request.POST.get('file'))
+        try:
+            Provider().publish_post(file_name)
+            context = {"msg": gettext("PUBLISH_SUCCESS"), "status": True, "file_name": file_name}
+            delete_all_caches()
+        except Exception as error:
+            logging.error(repr(error))
+            context = {"msg": repr(error), "status": False}
+    return JsonResponse(safe=False, data=context)
 
 # 保存页面 api/save_page
 @login_required(login_url="/login/")

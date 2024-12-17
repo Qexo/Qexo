@@ -1098,14 +1098,14 @@ def get_domain_and_path(url):
 #       "                                                    \n" +
 #       "....................佛祖保佑 ,永无BUG...................")
 
+import platform as pf
 print("           _               _ \n" +
       "     /\\   | |             | |\n" +
       "    /  \\  | |__  _   _  __| |_   _ \n" +
       "   / /\\ \\ | |_ \\| | | |/ _| | | | |\n" +
       "  / ____ \\| |_) | |_| | (_| | |_| |\n" +
       " /_/    \\_\\____/ \\____|\\____|\\____|")
-
-print(gettext("CURRENT_ENV") + ": " + ("Vercel" if check_if_vercel() else gettext("LOCAL")))
+print(gettext("CURRENT_ENV") + ": " + ("Vercel" if check_if_vercel() else gettext("LOCAL")) + " / " + pf.system() + " / Qexo " + QEXO_VERSION + " / Python " + pf.python_version())
 
 if check_if_vercel():
     logging.info = logging.warn

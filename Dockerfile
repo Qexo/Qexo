@@ -1,4 +1,4 @@
-FROM python:3.11.11-alpine3.21
+FROM python:3.11.11-slim
 
 LABEL org.opencontainers.image.authors="abudulin@foxmail.com"
 

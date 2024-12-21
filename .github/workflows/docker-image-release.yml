@@ -3,7 +3,7 @@ name: Docker Image Release CI
 on:
   push:
     tags:
-      - *
+      - '*'
 
 env:
   APP_NAME: qexo

@@ -560,14 +560,15 @@ def VercelOnekeyUpdate(url):
 def copy_all_files(src_dir, dst_dir):
     if not os.path.exists(dst_dir):
         os.makedirs(dst_dir)
-    if os.path.exists(src_dir):
-        for file in os.listdir(src_dir):
-            file_path = os.path.join(src_dir, file)
-            dst_path = os.path.join(dst_dir, file)
-            if os.path.isfile(os.path.join(src_dir, file)):
-                shutil.copyfile(file_path, dst_path)
-            else:
-                shutil.copytree(file_path, dst_path)
+    for file in os.listdir(src_dir):
+        file_path = os.path.join(src_dir, file)
+        dst_path = os.path.join(dst_dir, file)
+        if os.path.exists(dst_path):
+            continue
+        if os.path.isfile(os.path.join(src_dir, file)):
+            shutil.copyfile(file_path, dst_path)
+        else:
+            shutil.copytree(file_path, dst_path)
 
 
 def pip_main(args):
@@ -584,11 +585,13 @@ def pip_main(args):
 
 
 def LocalOnekeyUpdate(url):
+    import threading
     logging.info(gettext("START_LOCAL_UPDATE"))
     Path = os.path.abspath("")
     tmpPath = os.path.abspath("./_tmp")
-    if not os.path.exists(tmpPath):
-        os.mkdir(tmpPath)
+    if os.path.exists(tmpPath):
+        shutil.rmtree(tmpPath)
+    os.mkdir(tmpPath)
     _tarfile = tmpPath + '/github.tar.gz'
     with open(_tarfile, "wb") as file:
         file.write(requests.get(url).content)
@@ -622,7 +625,6 @@ def LocalOnekeyUpdate(url):
     execute_from_command_line(['manage.py', 'makemigrations'])
     execute_from_command_line(['manage.py', 'migrate'])
     logging.info(gettext("LOCAL_UPDATE_SUCCESS"))
-    import threading
     t = threading.Thread(target=lambda: rerun(5))
     t.start()
     return {"status": True, "msg": gettext("UPDATE_SUCCESS")}

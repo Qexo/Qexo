@@ -369,8 +369,18 @@ def check_if_api_auth(request):
 
 
 def check_if_vercel():
-    return True if os.environ.get("VERCEL") or get_setting("FORCE_VERCEL") else False
+    if os.environ.get("VERCEL"):
+        return True
+    if get_setting("FORCE_VERCEL"):
+        return True
+    return False
 
+def check_if_docker():
+    if os.environ.get("DOCKER"):
+        return True
+    if get_setting("FORCE_DOCKER"):
+        return True
+    return False
 
 def get_crc16(x, _hex=False):
     x = str(x)
@@ -604,7 +614,10 @@ def LocalOnekeyUpdate(url):
     logging.info(gettext("DEL_TMP"))
     shutil.rmtree(tmpPath)
     logging.info(gettext("UPDATE_LIB"))
-    pip_main(['install', '-r', 'requirements.txt'])
+    if check_if_docker():
+        pip_main(['install', '-r', 'requirements-slim.txt'])
+    else:
+        pip_main(['install', '-r', 'requirements.txt'])
     logging.info(gettext("MIGRATE_DB"))
     execute_from_command_line(['manage.py', 'makemigrations'])
     execute_from_command_line(['manage.py', 'migrate'])
@@ -1109,7 +1122,7 @@ print("           _               _ \n" +
       "   / /\\ \\ | |_ \\| | | |/ _| | | | |\n" +
       "  / ____ \\| |_) | |_| | (_| | |_| |\n" +
       " /_/    \\_\\____/ \\____|\\____|\\____|")
-print(gettext("CURRENT_ENV") + ": " + ("Vercel" if check_if_vercel() else gettext("LOCAL")) + " / " + pf.system() + " / Qexo " + QEXO_VERSION + " / Python " + pf.python_version())
+print(gettext("CURRENT_ENV") + ": " + ("Vercel" if check_if_vercel() else gettext("LOCAL")) + " / " + ("Docker" if check_if_docker() else pf.system()) + " / Qexo " + QEXO_VERSION + " / Python " + pf.python_version())
 
 if check_if_vercel():
     logging.info = logging.warn

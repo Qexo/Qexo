@@ -1,6 +1,11 @@
-FROM python:3.11
-WORKDIR /root
-COPY . .
+FROM python:3.11.11-alpine3.21
+
+LABEL org.opencontainers.image.authors="abudulin@foxmail.com"
+
+WORKDIR /app
+COPY . /app
+
+ENV DOCKER=1
 
 ARG CN=false
 RUN if [ "$CN" = "true" ]; then \
@@ -9,10 +14,16 @@ RUN if [ "$CN" = "true" ]; then \
     fi
 
 RUN python -m pip install --upgrade pip && \
-    pip install -r requirements_withoutmysql.txt && \
-    python3 manage.py makemigrations && \
-    python3 manage.py migrate
+    pip install -r requirements-slim.txt && \
+    chmod +x /app/entrypoint.sh
 
-EXPOSE 3000 8000
+EXPOSE 8000
 
-CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000", "--noreload" ] 
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    DOCKER=1 \
+    WORKERS=4 \
+    THREADS=4 \
+    TIMEOUT=600
+
+ENTRYPOINT ["/app/entrypoint.sh"]

@@ -1,4 +1,4 @@
-FROM python:3.11.11-slim
+FROM python:3.11.11-alpine3.21
 
 LABEL org.opencontainers.image.authors="abudulin@foxmail.com"
 
@@ -12,6 +12,8 @@ RUN if [ "$CN" = "true" ]; then \
         pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple/ && \
         pip config set global.trusted-host pypi.tuna.tsinghua.edu.cn; \
     fi
+
+RUN apk add --no-cache build-base
 
 RUN python -m pip install --upgrade pip && \
     pip install -r requirements-slim.txt && \

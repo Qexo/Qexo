@@ -118,8 +118,12 @@ def excerpt(value, length):
 def get_cdn():
     cdn_prev = get_setting("CDN_PREV")
     if not cdn_prev:
-        save_setting("CDN_PREV", "https://unpkg.com/")
-        cdn_prev = "https://unpkg.com/"
+        cdn_prev = "https://cdn.jsdelivr.net/npm/"
+        for i in ALL_SETTINGS:
+            if i[0] == "CDN_PREV":
+                cdn_prev = i[1]
+                break
+        save_setting("CDN_PREV", cdn_prev)
     return cdn_prev
 
 

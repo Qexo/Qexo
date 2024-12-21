@@ -13,11 +13,13 @@ RUN if [ "$CN" = "true" ]; then \
         pip config set global.trusted-host pypi.tuna.tsinghua.edu.cn; \
     fi
 
-RUN apk add --no-cache build-base
+RUN apk add --no-cache build-base musl-dev libpq-dev
 
 RUN python -m pip install --upgrade pip && \
     pip install -r requirements-slim.txt && \
     chmod +x /app/entrypoint.sh
+
+RUN apk del build-base musl-dev libpq-dev
 
 EXPOSE 8000
 

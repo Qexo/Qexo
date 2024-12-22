@@ -28,12 +28,14 @@ from hexoweb.libs.elevator import elevator
 from hexoweb.libs.onepush import notify
 from hexoweb.libs.platforms import get_provider
 from hexoweb.libs.i18n import get_language
-from .models import Cache, SettingModel, FriendModel, NotificationModel, CustomModel, StatisticUV, StatisticPV, ImageModel, TalkModel, \
+from .models import Cache, SettingModel, FriendModel, NotificationModel, CustomModel, StatisticUV, StatisticPV, \
+    ImageModel, TalkModel, \
     PostModel
 
 disable_warnings()
 
-logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s: %(message)s(%(filename)s.%(funcName)s[line:%(lineno)d])',
+logging.basicConfig(level=logging.INFO,
+                    format='[%(asctime)s] %(levelname)s: %(message)s(%(filename)s.%(funcName)s[line:%(lineno)d])',
                     datefmt="%d/%b/%Y %H:%M:%S")
 
 
@@ -118,8 +120,12 @@ def excerpt(value, length):
 def get_cdn():
     cdn_prev = get_setting("CDN_PREV")
     if not cdn_prev:
-        save_setting("CDN_PREV", "https://unpkg.com/")
-        cdn_prev = "https://unpkg.com/"
+        cdn_prev = "https://cdn.jsdelivr.net/npm/"
+        for i in ALL_SETTINGS:
+            if i[0] == "CDN_PREV":
+                cdn_prev = i[1]
+                break
+        save_setting("CDN_PREV", cdn_prev)
     return cdn_prev
 
 
@@ -360,12 +366,25 @@ def check_if_api_auth(request):
         return True
     logging.info(
         request.path + ":" + gettext("API_VERIFY_FAILED").format(
-            request.META['HTTP_X_FORWARDED_FOR'] if 'HTTP_X_FORWARDED_FOR' in request.META.keys() else request.META['REMOTE_ADDR']))
+            request.META['HTTP_X_FORWARDED_FOR'] if 'HTTP_X_FORWARDED_FOR' in request.META.keys() else request.META[
+                'REMOTE_ADDR']))
     return False
 
 
 def check_if_vercel():
-    return True if os.environ.get("VERCEL") or get_setting("FORCE_VERCEL") else False
+    if os.environ.get("VERCEL"):
+        return True
+    if get_setting("FORCE_VERCEL"):
+        return True
+    return False
+
+
+def check_if_docker():
+    if os.environ.get("DOCKER"):
+        return True
+    if get_setting("FORCE_DOCKER"):
+        return True
+    return False
 
 
 def get_crc16(x, _hex=False):
@@ -546,14 +565,15 @@ def VercelOnekeyUpdate(url):
 def copy_all_files(src_dir, dst_dir):
     if not os.path.exists(dst_dir):
         os.makedirs(dst_dir)
-    if os.path.exists(src_dir):
-        for file in os.listdir(src_dir):
-            file_path = os.path.join(src_dir, file)
-            dst_path = os.path.join(dst_dir, file)
-            if os.path.isfile(os.path.join(src_dir, file)):
-                shutil.copyfile(file_path, dst_path)
-            else:
-                shutil.copytree(file_path, dst_path)
+    for file in os.listdir(src_dir):
+        file_path = os.path.join(src_dir, file)
+        dst_path = os.path.join(dst_dir, file)
+        if os.path.exists(dst_path):
+            continue
+        if os.path.isfile(os.path.join(src_dir, file)):
+            shutil.copyfile(file_path, dst_path)
+        else:
+            shutil.copytree(file_path, dst_path)
 
 
 def pip_main(args):
@@ -570,11 +590,13 @@ def pip_main(args):
 
 
 def LocalOnekeyUpdate(url):
+    import threading
     logging.info(gettext("START_LOCAL_UPDATE"))
     Path = os.path.abspath("")
     tmpPath = os.path.abspath("./_tmp")
-    if not os.path.exists(tmpPath):
-        os.mkdir(tmpPath)
+    if os.path.exists(tmpPath):
+        shutil.rmtree(tmpPath)
+    os.mkdir(tmpPath)
     _tarfile = tmpPath + '/github.tar.gz'
     with open(_tarfile, "wb") as file:
         file.write(requests.get(url).content)
@@ -597,23 +619,36 @@ def LocalOnekeyUpdate(url):
                 pass
     logging.info(gettext("START_COPY"))
     copy_all_files(outPath, Path)
+    os.chmod(Path + "/entrypoint.sh", 0o755)
     logging.info(gettext("DEL_TMP"))
     shutil.rmtree(tmpPath)
     logging.info(gettext("UPDATE_LIB"))
-    pip_main(['install', '-r', 'requirements.txt'])
+    if check_if_docker():
+        pip_main(['install', '-r', 'requirements-slim.txt'])
+    else:
+        pip_main(['install', '-r', 'requirements.txt'])
     logging.info(gettext("MIGRATE_DB"))
     execute_from_command_line(['manage.py', 'makemigrations'])
     execute_from_command_line(['manage.py', 'migrate'])
     logging.info(gettext("LOCAL_UPDATE_SUCCESS"))
-    import threading
     t = threading.Thread(target=lambda: rerun(5))
     t.start()
     return {"status": True, "msg": gettext("UPDATE_SUCCESS")}
 
 
+def is_runserver():
+    import sys
+    current_command = sys.argv[1] if len(sys.argv) > 1 else ''
+    return current_command == 'runserver'
+
+
 def rerun(wait):
     sleep(wait)
-    os._exit(3)
+    if is_runserver():
+        os._exit(3)
+    else:
+        import signal
+        os.kill(os.getpid(), signal.SIGHUP)
 
 
 def CreateNotification(label, content, now):
@@ -763,15 +798,18 @@ def get_post_details(article, safe=True):
     try:
         if article[:3] == "---":
             front_matter = re.search(r"---([\s\S]*?)---", article, flags=0).group()[3:-4]
-            front_matter = front_matter.replace("{{ date }}", dateformat).replace("{{ abbrlink }}", abbrlink).replace("{{ slug }}",
-                                                                                                                      abbrlink).replace("{",
-                                                                                                                                        "").replace(
+            front_matter = front_matter.replace("{{ date }}", dateformat).replace("{{ abbrlink }}", abbrlink).replace(
+                "{{ slug }}",
+                abbrlink).replace("{",
+                                  "").replace(
                 "}", "")
             front_matter = yaml.safe_load(front_matter)
         elif article[:3] == ";;;":
             front_matter = json.loads("{{{}}}".format(
-                re.search(r";;;([\s\S]*?);;;", article, flags=0).group()[3:-4].replace("{{ date }}", dateformat).replace("{{ abbrlink }}",
-                                                                                                                         abbrlink).replace(
+                re.search(r";;;([\s\S]*?);;;", article, flags=0).group()[3:-4].replace("{{ date }}",
+                                                                                       dateformat).replace(
+                    "{{ abbrlink }}",
+                    abbrlink).replace(
                     "{{ slug }}", abbrlink)))
         else:
             front_matter = {}
@@ -792,8 +830,10 @@ def get_post_details(article, safe=True):
             elif type(front_matter.get(key)) == date:
                 front_matter[key] = front_matter[key].isoformat()
         if safe:
-            passage = repr(re.search(r"[;-][;-][;-]([\s\S]*)", article[3:], flags=0).group()[3:]).replace("<", "\\<").replace(">",
-                                                                                                                              "\\>").replace(
+            passage = repr(re.search(r"[;-][;-][;-]([\s\S]*)", article[3:], flags=0).group()[3:]).replace("<",
+                                                                                                          "\\<").replace(
+                ">",
+                "\\>").replace(
                 "!", "\\!")
         else:
             passage = re.search(r"[;-][;-][;-]([\s\S]*)", article[3:], flags=0).group()[3:]
@@ -812,8 +852,9 @@ def export_images():
     all_settings = ImageModel.objects.all()
     settings = list()
     for setting in all_settings:
-        settings.append({"name": setting.name, "url": setting.url, "size": setting.size, "date": setting.date, "type": setting.type,
-                         "deleteConfig": setting.deleteConfig})
+        settings.append(
+            {"name": setting.name, "url": setting.url, "size": setting.size, "date": setting.date, "type": setting.type,
+             "deleteConfig": setting.deleteConfig})
     return settings
 
 
@@ -821,7 +862,8 @@ def export_friends():
     all_ = FriendModel.objects.all()
     ss = list()
     for s in all_:
-        ss.append({"name": s.name, "url": s.url, "imageUrl": s.imageUrl, "time": s.time, "description": s.description, "status": s.status})
+        ss.append({"name": s.name, "url": s.url, "imageUrl": s.imageUrl, "time": s.time, "description": s.description,
+                   "status": s.status})
     return ss
 
 
@@ -870,7 +912,8 @@ def export_posts():
     ss = list()
     for s in all_:
         ss.append(
-            {"title": s.title, "path": s.path, "status": s.status, "front_matter": s.front_matter, "date": s.date, "filename": s.filename})
+            {"title": s.title, "path": s.path, "status": s.status, "front_matter": s.front_matter, "date": s.date,
+             "filename": s.filename})
     return ss
 
 
@@ -1098,14 +1141,16 @@ def get_domain_and_path(url):
 #       "                                                    \n" +
 #       "....................佛祖保佑 ,永无BUG...................")
 
+import platform as pf
+
 print("           _               _ \n" +
       "     /\\   | |             | |\n" +
       "    /  \\  | |__  _   _  __| |_   _ \n" +
       "   / /\\ \\ | |_ \\| | | |/ _| | | | |\n" +
       "  / ____ \\| |_) | |_| | (_| | |_| |\n" +
       " /_/    \\_\\____/ \\____|\\____|\\____|")
-
-print(gettext("CURRENT_ENV") + ": " + ("Vercel" if check_if_vercel() else gettext("LOCAL")))
+print(gettext("CURRENT_ENV") + ": " + ("Vercel" if check_if_vercel() else gettext("LOCAL")) + " / " + (
+    "Docker" if check_if_docker() else pf.system()) + " / Qexo " + QEXO_VERSION + " / Python " + pf.python_version())
 
 if check_if_vercel():
     logging.info = logging.warn

@@ -168,6 +168,62 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="publishModal" tabindex="-1" aria-labelledby="publishModalLabel"
+         aria-hidden="false">
+        <div class="modal-dialog">
+            <div class="modal-content bg-white">
+                <div class="modal-header" style="border: none;">
+                    <h5 class="modal-title fs-5" id="publishModalLabel">{{ "TIPS" | gettext }}</h5>
+                    <button type="button" data-bs-dismiss="modal"
+                            aria-label="Close" style="box-sizing: content-box;width: 1em;height:
+                            1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem;
+                            opacity: .5;background: none">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    {{ "PUBLISH_CONFIRM_1" | gettext }} <a
+                        id="publish-file"></a> {{ "PUBLISH_CONFIRM_2" | gettext }}
+                </div>
+                <div class="modal-footer" style="border: none;">
+                    <button type="button" class="btn btn-secondary"
+                            data-bs-dismiss="modal">{{ "CANCEL" | gettext }}
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="publish_file()"
+                            data-bs-dismiss="modal">{{ "CONFIRM" | gettext }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="unpublishModal" tabindex="-1" aria-labelledby="unpublishModalLabel"
+         aria-hidden="false">
+        <div class="modal-dialog">
+            <div class="modal-content bg-white">
+                <div class="modal-header" style="border: none;">
+                    <h5 class="modal-title fs-5" id="unpublishModalLabel">{{ "TIPS" | gettext }}</h5>
+                    <button type="button" data-bs-dismiss="modal"
+                            aria-label="Close" style="box-sizing: content-box;width: 1em;height:
+                            1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem;
+                            opacity: .5;background: none">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    {{ "UNPUBLISH_CONFIRM_1" | gettext }} <a
+                        id="unpublish-file"></a> {{ "UNPUBLISH_CONFIRM_2" | gettext }}
+                </div>
+                <div class="modal-footer" style="border: none;">
+                    <button type="button" class="btn btn-secondary"
+                            data-bs-dismiss="modal">{{ "CANCEL" | gettext }}
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="unpublish_file()"
+                            data-bs-dismiss="modal">{{ "CONFIRM" | gettext }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock content %}
 
 <!-- Specific JS goes HERE -->
@@ -201,7 +257,7 @@
                                     <a href="javascript:query_rename('@@path@@')"><i class="fa-solid fa-file
                                     me-2 text-primary text-xxs"></i></a>| <a
                                     href="javascript:query_delete('@@path@@')"><i class="fa
-                                    fa-trash-alt me-2 text-primary text-xxs"></i></a>
+                                    fa-trash-alt me-2 text-primary text-xxs"></i></a>| @@publish-button@@
                                 </td>
                             </tr>`;
             let page_posts;
@@ -216,11 +272,13 @@
                 bg-gradient-success">{{ "PUBLISHED" | gettext }}</span>` : `<span class="badge 
                 badge-sm
                 bg-gradient-secondary">{{ "DRAFT" | gettext }}</span>`;
-                list += post_temp.replaceAll("@@name@@", excerpt_by_local(page_posts[i].name, 50))
-                    .replaceAll("@@size@@", page_posts[i].size)
+                list += post_temp.replaceAll("@@size@@", page_posts[i].size)
                     .replaceAll("@@status@@", status)
+                    .replaceAll("@@publish-button@@", page_posts[i].status ? `<a href="javascript:query_unpublish('@@name@@')"><i class="fa-solid fa-eye-slash me-2 text-primary text-xxs"></i></a>`:`<a href="javascript:query_publish('@@name@@')"><i class="fa-solid fa-upload
+                                    me-2 text-primary text-xxs"></i></a>`)
                     .replaceAll("@@path@@", encodeURIComponent(page_posts[i].path))
-                    .replaceAll("@@fullname@@", encodeURIComponent(page_posts[i].name));
+                    .replaceAll("@@fullname@@", encodeURIComponent(page_posts[i].name))
+                    .replaceAll("@@name@@", excerpt_by_local(page_posts[i].name, 50));
             }
             $("#page-" + _page).removeClass("active");
             $("#page-" + _page).children().removeClass("text-white");
@@ -277,6 +335,18 @@
         
         function query_new() {
             $("#newModal").modal("show");
+        }
+
+        function query_publish(name) {
+            operate_post = name;
+            $("#publish-file").text(name);
+            $("#publishModal").modal("show");
+        }
+
+        function query_unpublish(name) {
+            operate_post = name;
+            $("#unpublish-file").text(name);
+            $("#unpublishModal").modal("show");
         }
 
         function delete_file() {
@@ -362,6 +432,66 @@
                         setTimeout(window.location.href = "edit.html?file=" +
                             encodeURIComponent(res.path) + "&postname=" + 
                             encodeURIComponent(new_name), 100);
+                    } else {
+                        notyf.error(res.msg);
+                    }
+                },
+                error: function (res) {
+                    loading.destroy();
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
+                }
+            })
+        }
+
+        function publish_file() {
+            let loading = new KZ_Loading();
+            loading.show();
+            $.ajax({
+                url: '/api/publish/',
+                method: 'post',
+                data: {"file": operate_post},
+                dataType: 'JSON',
+                success: function (res) {
+                    loading.destroy();
+                    if (res.status) {
+                        notyf.success(res.msg);
+                        for (let i = 0; i < posts.length; i++) {
+                            if (escapeString(posts[i]["name"]) === escapeString(operate_post)) {
+                                posts[i].status = true;
+                                break;
+                            }
+                        }
+                        change_page(_page);
+                    } else {
+                        notyf.error(res.msg);
+                    }
+                },
+                error: function (res) {
+                    loading.destroy();
+                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
+                }
+            })
+        }
+
+        function unpublish_file() {
+            let loading = new KZ_Loading();
+            loading.show();
+            $.ajax({
+                url: '/api/unpublish/',
+                method: 'post',
+                data: {"file": operate_post},
+                dataType: 'JSON',
+                success: function (res) {
+                    loading.destroy();
+                    if (res.status) {
+                        notyf.success(res.msg);
+                        for (let i = 0; i < posts.length; i++) {
+                            if (escapeString(posts[i]["name"]) === escapeString(operate_post)) {
+                                posts[i].status = false;
+                                break;
+                            }
+                        }
+                        change_page(_page);
                     } else {
                         notyf.error(res.msg);
                     }

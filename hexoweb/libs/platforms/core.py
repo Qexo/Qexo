@@ -194,6 +194,27 @@ class Provider(object):
             return [self.save(self.config["drafts"]["save_path"].replace("${filename}", name), content,
                               f"Save Post Draft {draft_file} by Qexo", autobuild), draft_file, False]
 
+    def unpublish_post(self, name, path=None, autobuild=True):
+        if not self.config["drafts"]["save_path"]:
+            raise Exception("当前配置不支持草稿")
+        post_file = self.config["posts"]["save_path"].replace("${filename}", name)
+        if path and path != post_file:
+            draft = self.save_post(name, self.get_content(path), None, False, False)
+            self.delete(path, f"Unpublish Post {name} by Qexo", autobuild)
+        else:
+            draft = self.save_post(name, self.get_content(post_file), None, False, False)
+            self.delete(post_file, f"Unpublish Post {name} by Qexo", autobuild)
+        return draft
+
+    def publish_post(self, name, path=None, autobuild=True):
+        if not self.config["drafts"]["save_path"]:
+            raise Exception("当前配置不支持草稿")
+        draft_file = self.config["drafts"]["save_path"].replace("${filename}", name)
+        if path and path != draft_file:
+            draft_file = path
+        return self.save_post(name, self.get_content(draft_file), None, True, autobuild)
+
+
     def save_page(self, name, content, autobuild=True):
         path = self.config["pages"]["save_path"].replace("${filename}", name)
         return [self.save(path, content, f"Update Page {name} by Qexo", autobuild), path]

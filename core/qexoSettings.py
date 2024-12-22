@@ -1,7 +1,7 @@
 import json
 import random
 
-QEXO_VERSION = "3.4.2"
+QEXO_VERSION = "3.5.0"
 QEXO_STATIC = "2.4.0"
 
 DEFAULT_EMOJI = {"微笑": "🙂", "撇嘴": "😦", "色": "😍", "发呆": "😍", "得意": "😎",
@@ -38,7 +38,7 @@ DEFAULT_EMOJI = {"微笑": "🙂", "撇嘴": "😦", "色": "😍", "发呆": "�
 DEFAULT_CDN = [
     {"name": "Jsdelivr", "url": "https://cdn.jsdelivr.net/npm/"},
     {"name": "Unpkg", "url": "https://unpkg.com/"},
-    # {"name": "渺软公益 CDN", "url": "https://npm.onmicrosoft.cn/"}
+    {"name": "渺软公益 CDN", "url": "https://npm.onmicrosoft.cn/"}
     # {"name": "初七云", "url": "https://cdn.chuqis.com/npm/"}
 ]
 
@@ -52,7 +52,7 @@ DEFAULT_UPDATES = [
 ALL_SETTINGS = [  # [名称, 默认值, 是否在尝试修复时重置, 简介]
     ["ABBRLINK_ALG", "crc16", False, "短链接算法"],
     ["ABBRLINK_REP", "dec", False, "短链接格式dec/hex"],
-    ["CDN_PREV", "https://npm.onmicrosoft.cn/", True, "调用NPM的CDN前缀"],
+    ["CDN_PREV", "https://cdn.jsdelivr.net/npm/", True, "调用NPM的CDN前缀"],
     # ["CDNJS", "https://cdn.staticfile.org/", True, "调用CDNJS的CDN前缀"],
     ["INIT", "2", False, "初始化标识"],
     ["QEXO_ICON", "/static/qexo-static@" + QEXO_STATIC + "/qexo/images/icon.png", False, "站点ICON"],

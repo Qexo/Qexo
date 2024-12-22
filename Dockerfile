@@ -1,4 +1,4 @@
-FROM python:3.11.11-alpine3.21 as build
+FROM python:3.11.11-alpine3.21 AS build
 
 LABEL org.opencontainers.image.authors="abudulin@foxmail.com"
 

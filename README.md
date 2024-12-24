@@ -1,4 +1,16 @@
 # Qexo
+[![GitHub Release](https://img.shields.io/github/release/qexo/qexo.svg?style=for-the-badge&logo=Qase&color=005AA4)](https://github.com/qexo/qexo/releases/latest)
+[![Docker Pulls](https://img.shields.io/docker/pulls/abudulin/qexo.svg?style=for-the-badge&logo=docker&logoColor=fff&color=005AA4&label=docker.io%20pulls)](https://hub.docker.com/r/abudulin/qexo)<br>
+[![Contributors](https://img.shields.io/github/contributors-anon/qexo/qexo.svg?style=flat-square&logo=Qase&color=005AA4)](https://github.com/qexo/qexo/graphs/contributors)
+[![Forks](https://img.shields.io/github/forks/qexo/qexo.svg?style=flat-square&logo=github&logoColor=fff&color=005AA4)](https://github.com/qexo/qexo/network/members)
+[![Stars](https://img.shields.io/github/stars/qexo/qexo.svg?style=flat-square&logo=github&logoColor=fff&color=005AA4)](https://github.com/qexo/qexo/stargazers)
+[![Issues Open](https://img.shields.io/github/issues/qexo/qexo.svg?style=flat-square&logo=github&logoColor=fff&color=005AA4&cacheSeconds=300)](https://github.com/qexo/qexo/issues)
+[![Issues Closed](https://img.shields.io/github/issues-closed/qexo/qexo.svg?style=flat-square&logo=github&logoColor=fff&color=005AA4&cacheSeconds=300)](https://github.com/qexo/qexo/issues?q=is%3Aissue+is%3Aclosed)<br>
+[![GPL-3.0 Licensed](https://img.shields.io/github/license/qexo/qexo.svg?style=flat-square&logo=Qase&color=e97536&cacheSeconds=14400)](https://github.com/qexo/qexo/blob/main/LICENSE.txt)
+[![GitHub Discussions](https://img.shields.io/github/discussions/qexo/qexo?style=flat-square&logo=github&logoColor=fff&color=953B00&cacheSeconds=300)](https://github.com/qexo/qexo/discussions)
+[![Docker Release](https://github.com/Qexo/Qexo/actions/workflows/docker-image-release.yml/badge.svg)](https://github.com/Qexo/Qexo/actions/workflows/docker-image-release.yml)
+[![Docker Testing](https://github.com/Qexo/Qexo/actions/workflows/docker-image-testing.yml/badge.svg)](https://github.com/Qexo/Qexo/actions/workflows/docker-image-testing.yml)
+
 Qexo 是一个快速、强大、美观的在线 静态博客编辑器。使用 GPL3.0 开源协议。支持包括且不限于在 Vercel 等平台部署, 为您的静态博客添加动态的元素
 
 **Qexo** is a fast, powerful and beautiful online **static blog editor**. Uses the GPL3.0 **Open Source** license. Support includes and is not limited to deployment on platforms such as **Vercel**, adding **dynamic** elements to your static blogs

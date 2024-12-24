@@ -9,6 +9,7 @@ ENV DOCKER=1
 
 ARG CN=false
 RUN if [ "$CN" = "true" ]; then \
+        sed -i 's#https\?://dl-cdn.alpinelinux.org/alpine#https://mirrors.tuna.tsinghua.edu.cn/alpine#g' /etc/apk/repositories && \
         pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple/ && \
         pip config set global.trusted-host pypi.tuna.tsinghua.edu.cn; \
     fi
@@ -16,7 +17,7 @@ RUN if [ "$CN" = "true" ]; then \
 RUN apk add --no-cache build-base musl-dev libpq-dev libffi-dev openssl-dev cargo
 
 RUN python -m pip install --upgrade pip && \
-    pip install -r requirements-slim.txt && \
+    pip install --prefer-binary -r requirements-slim.txt && \
     chmod +x /app/entrypoint.sh
 
 # 生产阶段

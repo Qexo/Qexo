@@ -1,29 +1,28 @@
-FROM python:3.11.11-bookworm AS build
+FROM python:3.11.11-alpine3.21 AS build
 
 LABEL org.opencontainers.image.authors="abudulin@foxmail.com"
 
 WORKDIR /app
 COPY . /app
 
-SHELL ["/bin/bash", "-c"]
 ENV DOCKER=1
 
 ARG CN=false
 RUN if [ "$CN" = "true" ]; then \
+        sed -i 's#https\?://dl-cdn.alpinelinux.org/alpine#https://mirrors.tuna.tsinghua.edu.cn/alpine#g' /etc/apk/repositories && \
         pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple/ && \
-        pip config set global.trusted-host pypi.tuna.tsinghua.edu.cn && \
-        apt-get update && apt-get install -y build-essential; \
+        pip config set global.trusted-host pypi.tuna.tsinghua.edu.cn; \
     fi
 
-RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
+RUN apk add --no-cache build-base musl-dev libpq-dev libffi-dev openssl-dev cargo
+RUN export RUSTFLAGS="-Ctarget-feature=-crt-static"
 
-RUN source $HOME/.cargo/env && \
-    python -m pip install --upgrade pip && \
+RUN python -m pip install --upgrade pip && \
     pip install --prefer-binary -r requirements-slim.txt && \
     chmod +x /app/entrypoint.sh
 
 # 生产阶段
-FROM python:3.11.11-slim-bookworm
+FROM python:3.11.11-alpine3.21
 
 WORKDIR /app
 COPY --from=build /app /app

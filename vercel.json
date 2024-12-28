@@ -2,14 +2,13 @@
   "builds": [
     {
       "src": "core/wsgi.py",
-      "use": "@vercel/python"
+      "use": "@vercel/python",
+      "config": { "runtime": "python3.12" }
     },
     {
-      "src": "migrate.sh",
+      "src": "vercel.sh",
       "use": "@vercel/static-build",
-      "config": {
-        "distDir": "templates"
-      }
+      "config": { "distDir": "." }
     }
   ],
   "rewrites": [

@@ -10,44 +10,46 @@ env:
   DOCKERHUB_REPO: abudulin/qexo
 
 jobs:
-  docker:
+  setup:
     runs-on: ubuntu-latest
+    outputs:
+      app_version: ${{ steps.set_version.outputs.app_version }}
     steps:
-      -
-        name: Checkout
-        uses: actions/checkout@v2
-      -
-        name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
-      -
-        name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-      -
-        name: Login to DockerHub
-        uses: docker/login-action@v1
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Update QEMU
+        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes -c yes
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      -
-        name: Generate App Version
-        run: echo APP_VERSION=`git rev-parse --short HEAD 2>/dev/null` >> $GITHUB_ENV
-      -
-        name: Build and push
-        uses: docker/build-push-action@v2
+      - name: Generate App Version
+        id: set_version
+        run: echo "::set-output name=app_version::$(git rev-parse --short HEAD 2>/dev/null)"
+
+  build:
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: [linux/amd64, linux/arm64, linux/386]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build and push
+        uses: docker/build-push-action@v6
         with:
           context: .
-          platforms: |
-            linux/386
-            linux/amd64
-            linux/arm64
-#            linux/ppc64le  # Too slow....
-#            linux/s390x
-#            linux/arm/v6
-#            linux/arm/v7
+          platforms: ${{ matrix.platform }}
           push: true
           build-args: |
             APP_NAME=${{ env.APP_NAME }}
-            APP_VERSION=${{ env.APP_VERSION }}
+            APP_VERSION=${{ needs.setup.outputs.app_version }}
           tags: |
             ${{ env.DOCKERHUB_REPO }}:testing
-            ${{ env.DOCKERHUB_REPO }}:${{ env.APP_VERSION }}
+            ${{ env.DOCKERHUB_REPO }}:${{ needs.setup.outputs.app_version }}

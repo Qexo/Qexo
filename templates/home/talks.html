@@ -201,6 +201,7 @@
 
         function query_delete(id) {
             del_file = id;
+            $("#delfile").html(excerpt_by_local(posts.find(x => x.id === id).content, 20));
             $("#deleteModal").modal("show");
         }
 

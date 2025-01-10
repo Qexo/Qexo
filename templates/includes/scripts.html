@@ -66,14 +66,16 @@
         }
 
         destroy() {
-            this.hide(() => {
-                const node = $(`#loaderModal-${this.id}`);
-                node.next().remove();
-                node.remove();
-                this.show = () => { throw new Error('Object has been destroyed!'); };
-                this.hide = () => {};
-                this.destroy = () => {};
-            });
+            setTimeout(() => {
+                this.hide(() => {
+                    const node = $(`#loaderModal-${this.id}`);
+                    node.next().remove();
+                    node.remove();
+                    this.show = () => { throw new Error('Object has been destroyed!'); };
+                    this.hide = () => {};
+                    this.destroy = () => {};
+                });
+            }, 100); // Let us finish the animation
         }
     }
 

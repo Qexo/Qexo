@@ -1,5 +1,6 @@
 from pathlib import Path
 
+DOMAINS = ["*"]
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',

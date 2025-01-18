@@ -739,6 +739,7 @@ def pages(request):
                 # CDNs
                 context["ALL_CDN"] = json.loads(get_setting("ALL_CDN_PREV"))
                 context["NOW_CDN"] = get_setting("CDN_PREV")
+                context["static_version"] = QEXO_STATIC
                 # 更新通道
                 context["ALL_UPDATES"] = json.loads(get_setting("ALL_UPDATES"))
                 context["ALL_PLATFORM_CONFIGS"] = platform_configs()

@@ -24,6 +24,7 @@ from urllib.parse import quote, unquote
 import hexoweb.libs.i18n
 from core.qexoSettings import ALL_SETTINGS
 from core.qexoSettings import QEXO_VERSION, QEXO_STATIC, VDITOR_LANGUAGES
+from core.settings import DATABASES
 from hexoweb.libs.elevator import elevator
 from hexoweb.libs.onepush import notify
 from hexoweb.libs.platforms import get_provider
@@ -120,13 +121,13 @@ def excerpt(value, length):
 def get_cdn():
     cdn_prev = get_setting("CDN_PREV")
     if not cdn_prev:
-        cdn_prev = "https://cdn.jsdelivr.net/npm/"
+        cdn_prev = "https://registry.npmmirror.com/qexo-static/{version}/files/qexo"
         for i in ALL_SETTINGS:
             if i[0] == "CDN_PREV":
                 cdn_prev = i[1]
                 break
         save_setting("CDN_PREV", cdn_prev)
-    return cdn_prev
+    return cdn_prev.format(version=QEXO_STATIC)
 
 
 # def get_cdnjs():
@@ -139,7 +140,7 @@ def get_cdn():
 
 # 获取用户自定义的样式配置
 def get_custom_config():
-    context = {"cdn_prev": get_cdn(), "QEXO_NAME": get_setting("QEXO_NAME"), "static_version": QEXO_STATIC,
+    context = {"cdn_prev": get_cdn(), "QEXO_NAME": get_setting("QEXO_NAME"),
                "language": Language().get("name", "zh_CN"), "vditor_languages": VDITOR_LANGUAGES,
                "all_languages": hexoweb.libs.i18n.all_languages()}
     if not context["QEXO_NAME"]:
@@ -1118,6 +1119,9 @@ def get_domain_and_path(url):
     url = url.split("?")[0].split("#")[0]
     return domain, url
 
+def get_db_config():
+    return DATABASES["default"]["ENGINE"]
+
 
 # print(" ......................阿弥陀佛......................\n" +
 #       "                       _oo0oo_                      \n" +
@@ -1150,7 +1154,7 @@ print("           _               _ \n" +
       "  / ____ \\| |_) | |_| | (_| | |_| |\n" +
       " /_/    \\_\\____/ \\____|\\____|\\____|")
 print(gettext("CURRENT_ENV") + ": " + ("Vercel" if check_if_vercel() else gettext("LOCAL")) + " / " + (
-    "Docker" if check_if_docker() else pf.system()) + " / Qexo " + QEXO_VERSION + " / Python " + pf.python_version())
+    "Docker" if check_if_docker() else pf.system()) + " / Qexo " + QEXO_VERSION + " / Python " + pf.python_version() + " / " + get_db_config())
 
 if check_if_vercel():
     logging.info = logging.warn

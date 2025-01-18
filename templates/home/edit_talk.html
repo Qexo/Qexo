@@ -120,8 +120,8 @@
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
-    <script src="{{ cdn_prev }}@wangeditor/editor@5.1.23/dist/index.js"></script>
-    <link rel="stylesheet" href="{{ cdn_prev }}@wangeditor/editor@5.1.23/dist/css/style.css">
+    <script src="{{ cdn_prev }}/wangeditor/index.js"></script>
+    <link rel="stylesheet" href="{{ cdn_prev }}/wangeditor/style.css">
 
     <script>
         var title = "{{ title }}", tags = {{ tags|safe }}, _status = true, id = "{{ id }}";
@@ -424,33 +424,30 @@
             if (!Sidebar.length) {
                 Sidebar = [{"name": "", "desp": "", "icon": ""}];
             }
+            let color = checkIfDark() ? "bg-gradient-dark text-white" : "bg-white text-dark";
             for (let i = 0; i < Sidebar.length; i++) {
-                html += `<form class="form-row" id="side-row-` + i + `">
+                html += `<form class="row" id="side-row-${i}">
                                 <div class="col-2">
-                                    <input type="text" class="form-control" name="name"
+                                    <input type="text" class="form-control ${color}" name="name"
                                            placeholder="{{ "ID_CODE" | gettext }}"
                                            value="${Sidebar[i].name}">
                                 </div>
                                 <div class="col-4">
-                                    <input type="text" class="form-control" name="desp"
+                                    <input type="text" class="form-control ${color}" name="desp"
                                            placeholder="{{ "SIDEBAR_EDIT_2" | gettext }}" value="${Sidebar[i].desp}">
                                 </div>
                                 <div class="col-6">
                                     <div class="input-group">
-                                        <input type="text" class="form-control" name="icon"
-                                               placeholder="{{ "SIDEBAR_EDIT_3" | gettext }}"  value="` + Sidebar[i].icon + `">
-                                        <div class="input-group-append">
-                                            <button class="btn" type="button"
-                                                    style="border: 1px solid #dee2e6"
-                                                    onclick="newSideItem(` + (i + 1).toString() + `)">
-                                                +
-                                            </button>
-                                            <button class="btn" type="button"
-                                                    style="border: 1px solid #dee2e6;border-radius: 0 .25rem .25rem 0"
-                                                    onclick="delSideItem(` + i + `)">
-                                                -
-                                            </button>
-                                        </div>
+                                        <input type="text" class="form-control ${color}" name="icon"
+                                               placeholder="{{ "SIDEBAR_EDIT_3" | gettext }}"  value="${Sidebar[i].icon}">
+                                        <button class="btn mb-0 childButton" type="button"
+                                                onclick="newSideItem(${(i + 1).toString()})">
+                                            +
+                                        </button>
+                                        <button class="btn mb-0 childButton" type="button"
+                                                onclick="delSideItem(${i})">
+                                            -
+                                        </button>
                                     </div>
                                 </div>
                             </form>`;

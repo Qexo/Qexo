@@ -1,8 +1,8 @@
 import json
 import random
 
-QEXO_VERSION = "3.5.3"
-QEXO_STATIC = "2.4.0"
+QEXO_VERSION = "3.5.4"
+QEXO_STATIC = "3.0.5"
 
 DEFAULT_EMOJI = {"微笑": "🙂", "撇嘴": "😦", "色": "😍", "发呆": "😍", "得意": "😎",
                  "流泪": "😭", "害羞": "😊", "闭嘴": "😷", "睡": "😴",
@@ -36,9 +36,10 @@ DEFAULT_EMOJI = {"微笑": "🙂", "撇嘴": "😦", "色": "😍", "发呆": "�
 # ]
 
 DEFAULT_CDN = [
-    {"name": "Jsdelivr", "url": "https://cdn.jsdelivr.net/npm/"},
-    {"name": "Unpkg", "url": "https://unpkg.com/"},
-    {"name": "渺软公益 CDN", "url": "https://npm.onmicrosoft.cn/"}
+    {"name": "CNPM", "url": "https://registry.npmmirror.com/qexo-static/{version}/files/qexo"},
+    {"name": "Jsdelivr", "url": "https://cdn.jsdelivr.net/npm/qexo-static@{version}/qexo"},
+    {"name": "Unpkg", "url": "https://unpkg.com/qexo-static@{version}/qexo"},
+    # {"name": "渺软公益 CDN", "url": "https://npm.onmicrosoft.cn/qexo-static@{version}/qexo"},
     # {"name": "初七云", "url": "https://cdn.chuqis.com/npm/"}
 ]
 
@@ -52,16 +53,18 @@ DEFAULT_UPDATES = [
 ALL_SETTINGS = [  # [名称, 默认值, 是否在尝试修复时重置, 简介]
     ["ABBRLINK_ALG", "crc16", False, "短链接算法"],
     ["ABBRLINK_REP", "dec", False, "短链接格式dec/hex"],
-    ["CDN_PREV", "https://cdn.jsdelivr.net/npm/", True, "调用NPM的CDN前缀"],
+    ["CDN_PREV", "https://registry.npmmirror.com/qexo-static/{version}/files/qexo", True, "调用NPM的CDN前缀"],
     # ["CDNJS", "https://cdn.staticfile.org/", True, "调用CDNJS的CDN前缀"],
     ["INIT", "2", False, "初始化标识"],
     ["QEXO_ICON", "/static/qexo-static@" + QEXO_STATIC + "/qexo/images/icon.png", False, "站点ICON"],
     ["QEXO_LOGO", "/static/qexo-static@" + QEXO_STATIC + "/qexo/images/qexo.png", False, "站点LOGO"],
-    ["QEXO_LOGO_DARK", "https://unpkg.com/qexo-static@" + QEXO_STATIC + "/qexo/images/qexo-dark.png", False, "暗色站点LOGO"],
+    ["QEXO_LOGO_DARK", "https://unpkg.com/qexo-static@" + QEXO_STATIC + "/qexo/images/qexo-dark.png", False,
+     "暗色站点LOGO"],
     ["QEXO_NAME", "博客管理面板", False, "站点名"],
     ["QEXO_SPLIT", "-", False, "站点分隔符"],
     ["VDITOR_EMOJI", json.dumps(DEFAULT_EMOJI), True, "自定义表情"],
-    ["WEBHOOK_APIKEY", ''.join(random.choice("qwertyuiopasdfghjklzxcvbnm1234567890") for x in range(12)), False, "API密钥"],
+    ["WEBHOOK_APIKEY", ''.join(random.choice("qwertyuiopasdfghjklzxcvbnm1234567890") for x in range(12)), False,
+     "API密钥"],
     ["VERCEL_TOKEN", "", False, "Vercel密钥"],
     ["PROJECT_ID", "", False, "Qexo项目ID"],
     ["ALLOW_FRIEND", "否", False, "是否允许友链申请 是/否"],
@@ -91,7 +94,8 @@ ALL_SETTINGS = [  # [名称, 默认值, 是否在尝试修复时重置, 简介]
     ["ALL_UPDATES", json.dumps(DEFAULT_UPDATES), True, "更新源列表"],
     ["UPDATE_FROM", "false", False, "是否更新过"],
     ["JUMP_UPDATE", "false", False, "是否转跳到更新界面"],
-    ["AUTO_EXCERPT_CONFIG", '{"method":"本地","auto":"关闭","save_key":"excerpt","params":{"save_key":"excerpt","length":"200"}}', False,
+    ["AUTO_EXCERPT_CONFIG",
+     '{"method":"本地","auto":"关闭","save_key":"excerpt","params":{"save_key":"excerpt","length":"200"}}', False,
      "文章截取配置JSON"],
     ["LANGUAGE", "zh_CN", True, "语言"],
 ]

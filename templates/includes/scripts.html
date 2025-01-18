@@ -1,13 +1,13 @@
-<script src="{{ cdn_prev }}jquery@3.7.0/dist/jquery.min.js"></script>
-<script src="{{ cdn_prev }}notyf@3.10.0/notyf.min.js"></script>
+<script src="{{ cdn_prev }}/jquery/jquery.min.js"></script>
+<script src="{{ cdn_prev }}/notyf/notyf.min.js"></script>
 
-<script src="{{ cdn_prev }}@creative-tim-official/argon-dashboard@2.0.4/assets/js/core/popper.min.js"></script>
-<script src="{{ cdn_prev }}bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
-<script src="{{ cdn_prev }}@creative-tim-official/argon-dashboard@2.0.4/assets/js/plugins/perfect-scrollbar.min.js"></script>
-<script src="{{ cdn_prev }}@creative-tim-official/argon-dashboard@2.0.4/assets/js/plugins/smooth-scrollbar.min.js"></script>
-<script src="{{ cdn_prev }}@creative-tim-official/argon-dashboard@2.0.4/assets/js/plugins/chartjs.min.js"></script>
-<script src="{{ cdn_prev }}qexo-static@{{ static_version }}/qexo/argon/argon-dashboard.js"></script>
-<script src="{{ cdn_prev }}github-buttons@2.27.0/dist/buttons.min.js"></script>
+<script src="{{ cdn_prev }}/argon/js/core/popper.min.js"></script>
+<script src="{{ cdn_prev }}/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="{{ cdn_prev }}/argon/js/plugins/perfect-scrollbar.min.js"></script>
+<script src="{{ cdn_prev }}/argon/js/plugins/smooth-scrollbar.min.js"></script>
+<script src="{{ cdn_prev }}/argon/js/plugins/chartjs.min.js"></script>
+<script src="{{ cdn_prev }}/argon/argon-dashboard.js"></script>
+<script src="{{ cdn_prev }}/github-buttons/buttons.min.js"></script>
 <script>
     $.ajaxSetup({data: {csrfmiddlewaretoken: '{{ csrf_token }}'}});
 
@@ -15,77 +15,67 @@
 
     var notifications = [];
 
-    function KZ_Loading(config) {
-        if (this instanceof KZ_Loading) {
-            const domTemplate = `
-            <div class="modal fade" id="loaderModal-@@KZ_Loadin_ID@@" tabindex="-1" aria-labelledby="loaderModalLabel-@@KZ_Loadin_ID@@"
-                 aria-hidden="true" data-bs-keyboard="false" data-bs-backdrop="static">
-                <div class="modal-dialog">
-                </div>
-                    <div style="width: 200px;height:20px; z-index: 20000; position: absolute; text-align: center; left: 50%; top: 50%;margin-left:-100px;margin-top:-10px">
-                        <div class="progress progress-striped active" style="margin-bottom: 0;">
-                            <div class="progress-bar" style="width: 100%;"></div>
-                        </div>
-                        <h5 style="font-size: .8125rem;margin-bottom: .5rem;font-family: inherit;font-weight: 600;line-height: 1.5;color: #32325d;">@@KZ_Loading_Text@@</h5>
-                    </div>
-            </div>`
+    class KZ_Loading {
+        constructor(config) {
             this.config = {
-                content: '正在加载中...',
+                content: 'Loading...',
                 time: 0,
+                ...typeof config === 'string' ? { content: config } : config
             };
-            if (config != null) {
-                if (typeof config === 'string') {
-                    this.config = Object.assign(this.config, {
-                        content: config
-                    });
-                } else if (typeof config === 'object') {
-                    this.config = Object.assign(this.config, config);
-                }
-            }
             this.id = new Date().getTime().toString();
             this.state = 'hide';
+            this.domTemplate = `
+                <div class="modal fade" id="loaderModal-${this.id}" tabindex="-1" aria-labelledby="loaderModalLabel-${this.id}"
+                     aria-hidden="true" data-bs-keyboard="false" data-bs-backdrop="static">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content" style="background: transparent; border: none;">
+                            <div class="d-flex flex-column align-items-center justify-content-center" style="height: 100px;">
+                                <div class="progress" style="width: 60%; height: 10px; background-color: #e9ecef;">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%; animation: progress-animation 2s infinite;"></div>
+                                </div>
+                                <h5 style="margin-top: 10px; font-size: 1rem; color: #32325d;">${this.config.content}</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            this.appendDom();
+        }
 
-            /*显示 */
-            this.show = function () {
-                $('#loaderModal-' + this.id).modal("show");
-                this.state = 'show';
-                if (this.config.time > 0) {
-                    var that = this;
-                    setTimeout(function () {
-                        that.hide();
-                    }, this.config.time);
-                }
-            };
-            /*隐藏 */
-            this.hide = function (callback) {
-                $('#loaderModal-' + this.id).modal("hide");
+        appendDom() {
+            $('body').append(this.domTemplate);
+        }
+
+        show() {
+            $('body').css('overflow', 'hidden'); // Disable scrollbar
+            $(`#loaderModal-${this.id}`).modal("show");
+            this.state = 'show';
+            if (this.config.time > 0) {
+                setTimeout(() => this.hide(), this.config.time);
+            }
+        }
+
+        hide(callback) {
+            const modal = $(`#loaderModal-${this.id}`);
+            modal.modal("hide");
+            modal.on('hidden.bs.modal', () => {
+                $('body').css('overflow', 'auto'); // Restore scrollbar
                 this.state = 'hide';
-                if (callback) {
-                    callback();
-                }
-            };
-            /*销毁dom */
-            this.destroy = function () {
-                var that = this;
-                this.hide();
-                setTimeout(function () {
-                    var node = $('#loaderModal-' + that.id);
+                modal.off('hidden.bs.modal'); // Remove the event listener
+                if (callback) callback();
+            });
+        }
+
+        destroy() {
+            setTimeout(() => {
+                this.hide(() => {
+                    const node = $(`#loaderModal-${this.id}`);
                     node.next().remove();
                     node.remove();
-                    that.show = function () {
-                        throw new Error('对象已销毁！');
-                    };
-                    that.hide = function () {
-                    };
-                    that.destroy = function () {
-                    };
-                }, 300);
-            }
-
-            var domHtml = domTemplate.replaceAll('@@KZ_Loadin_ID@@', this.id).replaceAll('@@KZ_Loading_Text@@', this.config.content);
-            $('body').append(domHtml);
-        } else {
-            return new KZ_Loading(config);
+                    this.show = () => { throw new Error('Object has been destroyed!'); };
+                    this.hide = () => {};
+                    this.destroy = () => {};
+                });
+            }, 500); // Let us finish the animation
         }
     }
 
@@ -297,3 +287,10 @@
         notyf.error("{{ error }}");
     {% endif %}
 </script>
+<style>
+    @keyframes progress-animation {
+        0% { width: 0; }
+        50% { width: 100%; }
+        100% { width: 0; }
+    }
+</style>

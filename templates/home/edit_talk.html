@@ -120,8 +120,8 @@
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
-    <script src="{{ cdn_prev }}@wangeditor/editor@5.1.23/dist/index.js"></script>
-    <link rel="stylesheet" href="{{ cdn_prev }}@wangeditor/editor@5.1.23/dist/css/style.css">
+    <script src="{{ cdn_prev }}/wangeditor/index.js"></script>
+    <link rel="stylesheet" href="{{ cdn_prev }}/wangeditor/style.css">
 
     <script>
         var title = "{{ title }}", tags = {{ tags|safe }}, _status = true, id = "{{ id }}";

@@ -472,7 +472,7 @@
                                             <select class="form-control" name="CDNJS"
                                                     id="cdnjs">
                                                 {% for cdn in ALL_CDN %}
-                                                    <option{% if cdn.url == cdn_prev %}
+                                                    <option{% if cdn.url == NOW_CDN %}
                                                         selected{% endif %} value="{{ cdn.url }}"
                                                     >{{ cdn.name }}</option>
                                                 {% endfor %}
@@ -939,9 +939,9 @@
                 method: 'post',
                 data: {
                     csrfmiddlewaretoken: '{{ csrf_token }}',
-                    'logo': 'https://unpkg.com/qexo-static@{{ static_version }}/qexo/images/qexo.png',
-                    'icon': 'https://unpkg.com/qexo-static@{{ static_version }}/qexo/images/icon.png',
-                    'logo-dark': 'https://unpkg.com/qexo-static@{{ static_version }}/qexo/images/qexo-dark.png',
+                    'logo': 'https://registry.npmmirror.com/qexo-static/{{ static_version }}/files/qexo/images/qexo.png',
+                    'icon': 'https://registry.npmmirror.com/qexo-static/{{ static_version }}/files/qexo/images/icon.png',
+                    'logo-dark': 'https://registry.npmmirror.com/qexo-static/{{ static_version }}/files/qexo/images/qexo-dark.png',
                     'name': 'Hexo管理面板',
                     'split': ' - '
                 },

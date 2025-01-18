@@ -3,8 +3,7 @@
 {% block title %} {{ "NEW_PAGE_LABEL" | gettext }} {% endblock title %}
 
 {% block stylesheets %}
-    <link href="{{ cdn_prev }}qexo-static@{{ static_version }}/qexo/vditor/index.css"
-          rel="stylesheet"/>
+    <link href="{{ cdn_prev }}/vditor/dist/index.css" rel="stylesheet"/>
 {% endblock stylesheets %}
 
 {% block content %}
@@ -95,7 +94,7 @@
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
-    <script src="{{ cdn_prev }}vditor@3.10.7/dist/index.min.js"></script>
+    <script src="{{ cdn_prev }}/vditor/dist/index.min.js"></script>
 
     <script>
         var _status = true, front_matter = {{ front_matter|safe }};
@@ -179,7 +178,7 @@
                 toolbarConfig: {
                     pin: true
                 },
-                "cdn": "{{ cdn_prev }}vditor@3.10.7",
+                "cdn": "{{ cdn_prev }}/vditor",
                 "mode": "wysiwyg",
                 counter: {
                     enable: true
@@ -196,7 +195,7 @@
                     "enable": false,
                 }, "preview": {
                     "theme": {
-                        "path": "{{ cdn_prev }}vditor@3.10.7/dist/css/content-theme"
+                        "path": "{{ cdn_prev }}/vditor/dist/css/content-theme"
                     }
                 },
                 toolbar: [
@@ -305,7 +304,7 @@
                     "edit-mode",
                     "preview"
                 ],
-                "cdn": "{{ cdn_prev }}vditor@3.10.7",
+                "cdn": "{{ cdn_prev }}/vditor",
                 "fullscreen": {
                     "index": 1050,
                 },
@@ -318,7 +317,7 @@
                 "preview": {
                     "mode": "both",
                     "theme": {
-                        "path": "{{ cdn_prev }}vditor@3.10.7/dist/css/content-theme"
+                        "path": "{{ cdn_prev }}/vditor/dist/css/content-theme"
                     }
                 }, hint: {
                     emoji: {{ emoji|safe }}

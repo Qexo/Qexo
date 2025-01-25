@@ -37,7 +37,7 @@ class GitEa(Provider):
             res = requests.delete(url, headers=headers, json=data)
         else:
             raise Exception("Method not allowed")
-        if res.status_code != 200 and res.status_code != 201:
+        if not str(res.status_code).startswith("2"):
             raise Exception("Request failed: {}".format(res.text))
         return res
 

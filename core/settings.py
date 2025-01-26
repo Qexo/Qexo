@@ -115,8 +115,10 @@ elif os.environ.get("PG_HOST") or os.environ.get("POSTGRES_HOST"):  # 使用 Pos
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get("PG_DB") or os.environ.get("POSTGRES_DB") or os.environ.get("POSTGRES_DATABASE") or "root",
-            'USER': os.environ.get("PG_USER") or os.environ.get("POSTGRES_USERNAME") or os.environ.get("POSTGRES_USER") or "root",
+            'NAME': os.environ.get("PG_DB") or os.environ.get("POSTGRES_DB") or os.environ.get(
+                "POSTGRES_DATABASE") or "root",
+            'USER': os.environ.get("PG_USER") or os.environ.get("POSTGRES_USERNAME") or os.environ.get(
+                "POSTGRES_USER") or "root",
             'PASSWORD': os.environ.get("PG_PASS") or os.environ.get("POSTGRES_PASSWORD"),
             'HOST': os.environ.get("PG_HOST") or os.environ.get("POSTGRES_HOST"),
             'PORT': os.environ.get("PG_PORT") or os.environ.get("POSTGRES_PORT") or 5432,
@@ -130,6 +132,7 @@ elif os.environ.get("MYSQL_HOST"):  # 使用MYSQL
                 continue
             errors += f"\"{env}\" "
     import pymysql
+
     pymysql.install_as_MySQLdb()
     DATABASES = {
         'default': {
@@ -139,17 +142,20 @@ elif os.environ.get("MYSQL_HOST"):  # 使用MYSQL
             'PORT': os.environ.get('MYSQL_PORT'),
             'USER': os.environ.get('MYSQL_USER') or os.environ.get('MYSQL_USERNAME') or 'root',
             'PASSWORD': os.environ.get('MYSQL_PASSWORD') or os.environ.get('MYSQL_PASS'),
-            'OPTIONS': {'ssl': {'ca': False}}
+            'OPTIONS': {
+                "init_command": "SET sql_mode='STRICT_TRANS_TABLES'"
+            }
         }
     }
     if os.environ.get("PLANETSCALE"):
         DATABASES["default"]["ENGINE"] = "hexoweb.libs.django_psdb_engine"
 elif os.path.exists(BASE_DIR / "configs.py"):
     import configs
+
     DATABASES = configs.DATABASES
     LOCAL_CONFIG = True
 else:
-     errors = "数据库"
+    errors = "数据库"
 
 # Vercel 无法使用 Sqlite
 # else:  # sqlite

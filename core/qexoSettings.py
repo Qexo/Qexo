@@ -1,7 +1,7 @@
 import json
 import random
 
-QEXO_VERSION = "3.5.4"
+QEXO_VERSION = "3.6.0"
 QEXO_STATIC = "3.0.5"
 
 DEFAULT_EMOJI = {"微笑": "🙂", "撇嘴": "😦", "色": "😍", "发呆": "😍", "得意": "😎",
@@ -36,9 +36,9 @@ DEFAULT_EMOJI = {"微笑": "🙂", "撇嘴": "😦", "色": "😍", "发呆": "�
 # ]
 
 DEFAULT_CDN = [
-    {"name": "CNPM", "url": "https://registry.npmmirror.com/qexo-static/{version}/files/qexo"},
-    {"name": "Jsdelivr", "url": "https://cdn.jsdelivr.net/npm/qexo-static@{version}/qexo"},
-    {"name": "Unpkg", "url": "https://unpkg.com/qexo-static@{version}/qexo"},
+    {"name": "CNPM(国内/不支持.top域名)", "url": "https://registry.npmmirror.com/qexo-static/{version}/files/qexo"},
+    {"name": "Jsdelivr(国际)", "url": "https://cdn.jsdelivr.net/npm/qexo-static@{version}/qexo"},
+    {"name": "Unpkg(国际)", "url": "https://unpkg.com/qexo-static@{version}/qexo"},
     # {"name": "渺软公益 CDN", "url": "https://npm.onmicrosoft.cn/qexo-static@{version}/qexo"},
     # {"name": "初七云", "url": "https://cdn.chuqis.com/npm/"}
 ]
@@ -53,7 +53,7 @@ DEFAULT_UPDATES = [
 ALL_SETTINGS = [  # [名称, 默认值, 是否在尝试修复时重置, 简介]
     ["ABBRLINK_ALG", "crc16", False, "短链接算法"],
     ["ABBRLINK_REP", "dec", False, "短链接格式dec/hex"],
-    ["CDN_PREV", "https://registry.npmmirror.com/qexo-static/{version}/files/qexo", True, "调用NPM的CDN前缀"],
+    ["CDN_PREV", "https://unpkg.com/qexo-static@{version}/qexo", True, "调用NPM的CDN前缀"],
     # ["CDNJS", "https://cdn.staticfile.org/", True, "调用CDNJS的CDN前缀"],
     ["INIT", "2", False, "初始化标识"],
     ["QEXO_ICON", "/static/qexo-static@" + QEXO_STATIC + "/qexo/images/icon.png", False, "站点ICON"],

@@ -79,7 +79,11 @@ class Github(Provider):
         logging.info("删除所有WebHook成功")
         return True
 
-    def create_hook(self, config):
+    def create_hook(self, url):
+        config = {
+            "content_type": "json",
+            "url": url
+        }
         self.repo.create_hook(active=True, config=config, events=["push"], name="web")
         logging.info("创建WebHook成功{}".format(config))
         return True

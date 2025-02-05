@@ -14,8 +14,10 @@ RUN if [ "$CN" = "true" ]; then \
         pip config set global.trusted-host pypi.tuna.tsinghua.edu.cn; \
     fi
 
-RUN apk add --no-cache build-base musl-dev libpq-dev libffi-dev openssl-dev cargo
-RUN export RUSTFLAGS="-Ctarget-feature=-crt-static"
+RUN apk add --no-cache build-base musl-dev musl libpq-dev libffi-dev openssl-dev cargo bzip2-dev
+RUN export CFLAGS="-O0"
+RUN export BZIP2_SYS_USE_LIBBZIP2=1
+
 
 RUN python -m pip install --upgrade pip && \
     pip install --prefer-binary -r requirements-slim.txt && \

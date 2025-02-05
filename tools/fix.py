@@ -6,16 +6,26 @@ import getpass
 
 def get_db_connection(db_type, db_info):
     try:
-        if db_type == "pgsql":
-            conn = psycopg2.connect(database=db_info['name'], user=db_info['user'], password=db_info['password'],
-                                    host=db_info['host'], port=db_info['port'])
-        elif db_type == "mysql":
-            conn = pymysql.connect(database=db_info['name'], user=db_info['user'], password=db_info['password'],
-                                   host=db_info['host'], port=db_info['port'])
-        elif db_type == "mongodb":
-            conn = MongoClient(f"mongodb://{db_info['user']}:{db_info['password']}@{db_info['host']}:{db_info['port']}/{db_info['name']}")
+        if db_info.get('conn_string'):
+            if db_type == "pgsql":
+                conn = psycopg2.connect(db_info['conn_string'])
+            elif db_type == "mysql":
+                conn = pymysql.connect(db_info['conn_string'])
+            elif db_type == "mongodb":
+                conn = MongoClient(db_info['conn_string'])
+            else:
+                raise ValueError("Unsupported database type")
         else:
-            raise ValueError("Unsupported database type")
+            if db_type == "pgsql":
+                conn = psycopg2.connect(database=db_info['name'], user=db_info['user'], password=db_info['password'],
+                                        host=db_info['host'], port=db_info['port'])
+            elif db_type == "mysql":
+                conn = pymysql.connect(database=db_info['name'], user=db_info['user'], password=db_info['password'],
+                                       host=db_info['host'], port=db_info['port'])
+            elif db_type == "mongodb":
+                conn = MongoClient(f"mongodb://{db_info['user']}:{db_info['password']}@{db_info['host']}:{db_info['port']}/{db_info['name']}")
+            else:
+                raise ValueError("Unsupported database type")
         return conn
     except Exception as e:
         print(f"Error connecting to database: {e}")
@@ -52,13 +62,21 @@ def update_cdn_to_unpkg(conn, db_type):
 
 def main():
     db_type = input("Select database type (pgsql/mysql/mongodb): ").strip().lower()
-    db_info = {
-        'name': input("Enter database name: ").strip(),
-        'user': input("Enter database user: ").strip(),
-        'password': getpass.getpass("Enter database password: ").strip(),
-        'host': input("Enter database host: ").strip(),
-        'port': input("Enter database port: ").strip(),
-    }
+    
+    use_conn_string = input("Do you want to use a connection string? (yes/no): ").strip().lower()
+    if use_conn_string == "yes":
+        conn_string = input("Enter the connection string: ").strip()
+        db_info = {
+            'conn_string': conn_string
+        }
+    else:
+        db_info = {
+            'name': input("Enter database name: ").strip(),
+            'user': input("Enter database user: ").strip(),
+            'password': getpass.getpass("Enter database password: ").strip(),
+            'host': input("Enter database host: ").strip(),
+            'port': input("Enter database port: ").strip(),
+        }
 
     conn = get_db_connection(db_type, db_info)
     if not conn:

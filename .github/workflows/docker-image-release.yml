@@ -43,10 +43,10 @@ jobs:
             linux/386
             linux/amd64
             linux/arm64
-            linux/ppc64le
-            linux/s390x
             linux/arm/v6
             linux/arm/v7
+#            linux/ppc64le
+#            linux/s390x  # wtf is this?
           push: true
           build-args: |
             APP_NAME=${{ env.APP_NAME }}

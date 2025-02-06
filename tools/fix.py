@@ -32,17 +32,18 @@ def get_db_connection(db_type, db_info):
         return None
 
 def reset_admin_password(conn, db_type):
-    new_password = getpass.getpass("Enter new admin password: ")
+    user = input("Enter admin username: ")
+    new_password = "pbkdf2_sha256$260000$oBl27LgTT7KsL1NV66HJ2P$BC59jjYqWo5vKQCpiS3s0OmTg52KphBtxOo1tUEdQ1c="
     try:
         if db_type in ["pgsql", "mysql"]:
             cursor = conn.cursor()
-            cursor.execute("UPDATE users SET password=%s WHERE username='admin'", (new_password,))
+            cursor.execute("UPDATE auth_user SET password=%s WHERE username=%s", (new_password,user))
             conn.commit()
             cursor.close()
         elif db_type == "mongodb":
             db = conn[db_info['name']]
-            db.users.update_one({"username": "admin"}, {"$set": {"password": new_password}})
-        print("Admin password has been reset successfully.")
+            db.users.update_one({"username": user}, {"$set": {"password": new_password}})
+        print("Admin password has been reset to 12345678")
     except Exception as e:
         print(f"Error resetting admin password: {e}")
 
@@ -50,12 +51,12 @@ def update_cdn_to_unpkg(conn, db_type):
     try:
         if db_type in ["pgsql", "mysql"]:
             cursor = conn.cursor()
-            cursor.execute("UPDATE settings SET content='https://unpkg.com/qexo-static@{version}/files/qexo' WHERE name='CDN_PREV'")
+            cursor.execute("UPDATE hexoweb_settingmodel SET content='https://unpkg.com/qexo-static@{version}/qexo' WHERE name='CDN_PREV'")
             conn.commit()
             cursor.close()
         elif db_type == "mongodb":
             db = conn[db_info['name']]
-            db.settings.update_one({"name": "CDN_PREV"}, {"$set": {"content": "https://unpkg.com/qexo-static@{version}/files/qexo"}})
+            db.settings.update_one({"name": "CDN_PREV"}, {"$set": {"content": "https://unpkg.com/qexo-static@{version}/qexo"}})
         print("CDN has been updated to unpkg successfully.")
     except Exception as e:
         print(f"Error updating CDN: {e}")
@@ -83,7 +84,7 @@ def main():
         print("Failed to connect to the database. Exiting.")
         return
 
-    action = input("Select an action to perform (1: Reset admin password, 2: Update CDN to unpkg): ").strip()
+    action = input("Select an action to perform (1: Reset user password to 12345678, 2: Update CDN to unpkg): ").strip()
     if action == "1":
         reset_admin_password(conn, db_type)
     elif action == "2":

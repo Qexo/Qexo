@@ -44,6 +44,8 @@ def reset_admin_password(conn, db_type):
             db = conn[db_info['name']]
             db.users.update_one({"username": user}, {"$set": {"password": new_password}})
         print("Admin password has been reset to 12345678")
+        print("")
+        print("Please Reset Password On Dashboard Right Away To Avoid Security Problems")
     except Exception as e:
         print(f"Error resetting admin password: {e}")
 

@@ -21,7 +21,7 @@ def get_db_connection(db_type, db_info):
                                         host=db_info['host'], port=db_info['port'])
             elif db_type == "mysql":
                 conn = pymysql.connect(database=db_info['name'], user=db_info['user'], password=db_info['password'],
-                                       host=db_info['host'], port=db_info['port'])
+                                        host=db_info['host'], port=db_info['port'])
             elif db_type == "mongodb":
                 conn = MongoClient(f"mongodb://{db_info['user']}:{db_info['password']}@{db_info['host']}:{db_info['port']}/{db_info['name']}")
             else:

@@ -624,17 +624,21 @@ def pages(request):
             talks = TalkModel.objects.all()
             for i in talks:
                 t = json.loads(i.like)
+                try:
+                    strtime = strftime("%Y-%m-%d %H:%M:%S", localtime(int(i.time)))
+                except Exception:
+                    strtime = "undefined"
                 if not search:
                     posts.append({"content": excerpt_post(i.content, 20, mark=False),
                                   "tags": ', '.join(json.loads(i.tags)),
-                                  "time": strftime("%Y-%m-%d %H:%M:%S", localtime(int(i.time))),
+                                  "time": strtime,
                                   "like": len(t) if t else 0,
                                   "id": i.id.hex})
                 else:
                     if search.upper() in i.content.upper() or search in i.tags.upper() or search in i.values.upper():
                         posts.append({"content": excerpt_post(i.content, 20, mark=False),
                                       "tags": ', '.join(json.loads(i.tags)),
-                                      "time": strftime("%Y-%m-%d %H:%M:%S", localtime(int(i.time))),
+                                      "time": strtime,
                                       "like": len(t) if t else 0,
                                       "id": i.id.hex})
             context["posts"] = json.dumps(sorted(posts, key=lambda x: x["time"], reverse=True))

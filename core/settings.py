@@ -147,6 +147,11 @@ elif os.environ.get("MYSQL_HOST"):  # 使用MYSQL
             }
         }
     }
+    if os.environ.get("MYSQL_SSL"):
+        DATABASES["default"]["OPTIONS"]["ssl"] = {
+            "ssl_verify_cert": True,
+            "ssl_verify_identity": False,
+        }
     if os.environ.get("PLANETSCALE"):
         DATABASES["default"]["ENGINE"] = "hexoweb.libs.django_psdb_engine"
 elif os.path.exists(BASE_DIR / "configs.py"):

@@ -77,7 +77,7 @@
                 "model": model,
                 "messages": [
                     {"role": "system", "content": `请为以下博客文章撰写一个简明扼要的摘要，长度在100至200字之间。摘要应包括文章的核心主题、关键观点和任何重要的结论或建议。`},
-                    {"role": "user","content": excerpt}
+                    {"role": "user","content": content}
                 ]
             }),
             success: function (data, status, xhr) {

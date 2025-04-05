@@ -20,73 +20,12 @@ def save(request):
     if request.method == "POST":
         file_path = request.POST.get('file')
         content = request.POST.get('content')
+        commitchange = request.POST.get('commitchange') if request.POST.get('commitchange') else f"Update {file_path} by Qexo"
         try:
-            Provider().save(file_path, content)
+            Provider().save(file_path, content, commitchange)
             context = {"msg": "OK!", "status": True}
+            delete_all_caches()
         except Exception as error:
-            context = {"msg": repr(error), "status": False}
-    return JsonResponse(safe=False, data=context)
-
-
-# 保存文章 pub/save_post
-@csrf_exempt
-def save_post(request):
-    if not check_if_api_auth(request):
-        return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
-    context = dict(msg="Error!", status=False)
-    if request.method == "POST":
-        file_name = request.POST.get('file')
-        content = request.POST.get('content')
-        front_matter = json.loads(request.POST.get('front_matter'))
-        excerpt = ""
-        try:
-            if get_setting("EXCERPT_POST") == "是":
-                excerpt = excerpt_post(content, get_setting("EXCERPT_LENGTH"))
-                logging.info(f"截取文章{file_name}摘要: " + excerpt)
-                front_matter["excerpt"] = excerpt
-            front_matter = "---\n{}---".format(yaml.dump(front_matter, allow_unicode=True))
-            if not content.startswith("\n"):
-                front_matter += "\n"
-            if Provider().save_post(file_name, front_matter + content, status=True):
-                context = {"msg": "保存成功并提交部署！", "status": True}
-            else:
-                context = {"msg": "保存成功！", "status": True}
-            if excerpt:
-                context["excerpt"] = excerpt
-        except Exception as error:
-            logging.error(repr(error))
-            context = {"msg": repr(error), "status": False}
-    return JsonResponse(safe=False, data=context)
-
-
-# 保存草稿 pub/save_draft
-@csrf_exempt
-def save_draft(request):
-    if not check_if_api_auth(request):
-        return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
-    context = dict(msg="Error!", status=False)
-    if request.method == "POST":
-        file_name = request.POST.get('file')
-        content = request.POST.get('content')
-        front_matter = json.loads(request.POST.get('front_matter'))
-        excerpt = ""
-        try:
-            # 创建/更新草稿
-            if get_setting("EXCERPT_POST") == "是":
-                excerpt = excerpt_post(content, get_setting("EXCERPT_LENGTH"))
-                logging.info(f"截取文章{file_name}摘要: " + excerpt)
-                front_matter["excerpt"] = excerpt
-            front_matter = "---\n{}---\n".format(yaml.dump(front_matter, allow_unicode=True))
-            if not content.startswith("\n"):
-                front_matter += "\n"
-            if Provider().save_post(file_name, front_matter + content, status=False):
-                context = {"msg": "保存草稿成功并提交部署！", "status": True}
-            else:
-                context = {"msg": "保存草稿成功！", "status": True}
-            if excerpt:
-                context["excerpt"] = excerpt
-        except Exception as error:
-            logging.error(repr(error))
             context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 
@@ -99,10 +38,12 @@ def delete(request):
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         file_path = request.POST.get('file')
+        commitchange = request.POST.get('commitchange') if request.POST.get('commitchange') else f"Delete {file_path} by Qexo"
         try:
-            Provider().delete(file_path)
-            context = {"msg": "OK!", "status": True}
-            # Delete Caches
+            if Provider().delete(file_path, commitchange):
+                context = {"msg": gettext("DEL_SUCCESS_AND_DEPLOY"), "status": True}
+            else:
+                context = {"msg": gettext("DEL_SUCCESS"), "status": True}
             delete_all_caches()
         except Exception as error:
             context = {"msg": repr(error)}
@@ -117,23 +58,18 @@ def create_webhook_config(request):
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         try:
-            if SettingModel.objects.filter(name="WEBHOOK_APIKEY"):
-                config = {
-                    "content_type": "json",
-                    "url": request.POST.get("uri") + "?token=" + SettingModel.objects.get(
-                        name="WEBHOOK_APIKEY").content
-                }
+            key = get_setting("WEBHOOK_APIKEY")
+            if key:
+                url = request.POST.get("uri") + "?token=" + key
             else:
-                save_setting("WEBHOOK_APIKEY", ''.join(
-                    random.choice("qwertyuiopasdfghjklzxcvbnm1234567890") for x in range(12)))
-                config = {
-                    "content_type": "json",
-                    "url": request.POST.get("uri") + "?token=" + SettingModel.objects.get(
-                        name="WEBHOOK_APIKEY").content
-                }
-            Provider().delete_hooks()
-            Provider().create_hook(config)
-            context = {"msg": "设置成功！", "status": True}
+                key = ''.join(random.choice("qwertyuiopasdfghjklzxcvbnm1234567890") for x in range(12))
+                save_setting("WEBHOOK_APIKEY", key)
+                url = request.POST.get("uri") + "?token=" + key
+            if Provider().delete_hooks():
+                Provider().create_hook(url)
+                context = {"msg": gettext("SAVE_SUCCESS"), "status": True}
+            else:
+                context = {"msg": gettext("PROVIDER_NO_SUPPORT"), "status": False}
         except Exception as error:
             logging.error(repr(error))
             context = {"msg": repr(error), "status": False}
@@ -146,11 +82,19 @@ def get_posts(request):
     if not check_if_api_auth(request):
         return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
     try:
-        cache = Cache.objects.filter(name="posts")
-        if cache.count():
-            posts = json.loads(cache.first().content)
+        search = request.GET.get("s")
+        if search:
+            cache = Cache.objects.filter(name="posts." + search)
+            if cache.count():
+                posts = json.loads(cache.first().content)
+            else:
+                posts = update_posts_cache(search)
         else:
-            posts = update_posts_cache()
+            cache = Cache.objects.filter(name="posts")
+            if cache.count():
+                posts = json.loads(cache.first().content)
+            else:
+                posts = update_posts_cache(search)
         context = {"status": True, "posts": posts}
     except Exception as error:
         context = {"status": False, "error": repr(error)}
@@ -163,11 +107,19 @@ def get_pages(request):
     if not check_if_api_auth(request):
         return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
     try:
-        cache = Cache.objects.filter(name="pages")
-        if cache.count():
-            posts = json.loads(cache.first().content)
+        search = request.GET.get("s")
+        if search:
+            cache = Cache.objects.filter(name="pages." + search)
+            if cache.count():
+                posts = json.loads(cache.first().content)
+            else:
+                posts = update_pages_cache(search)
         else:
-            posts = update_pages_cache()
+            cache = Cache.objects.filter(name="pages")
+            if cache.count():
+                posts = json.loads(cache.first().content)
+            else:
+                posts = update_pages_cache(search)
         context = {"status": True, "pages": posts}
     except Exception as error:
         context = {"status": False, "error": repr(error)}
@@ -180,11 +132,19 @@ def get_configs(request):
     if not check_if_api_auth(request):
         return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
     try:
-        cache = Cache.objects.filter(name="configs")
-        if cache.count():
-            posts = json.loads(cache.first().content)
+        search = request.GET.get("s")
+        if search:
+            cache = Cache.objects.filter(name="configs." + search)
+            if cache.count():
+                posts = json.loads(cache.first().content)
+            else:
+                posts = update_configs_cache(search)
         else:
-            posts = update_configs_cache()
+            cache = Cache.objects.filter(name="configs")
+            if cache.count():
+                posts = json.loads(cache.first().content)
+            else:
+                posts = update_configs_cache(search)
         context = {"status": True, "configs": posts}
     except Exception as error:
         context = {"status": False, "error": repr(error)}
@@ -197,13 +157,22 @@ def get_images(request):
     if not check_if_api_auth(request):
         return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
     try:
-        posts = list()
+        search = request.GET.get("s")
+        posts = []
         images = ImageModel.objects.all()
         for i in images:
-            posts.append({"name": i.name, "size": int(i.size), "url": i.url,
-                          "date": strftime("%Y-%m-%d %H:%M:%S",
-                                           localtime(float(i.date))),
-                          "time": i.date})
+            if not search:
+                posts.append({"name": i.name, "size": convert_to_kb_mb_gb(int(i.size)), "url": escape(i.url),
+                              "date": strftime("%Y-%m-%d %H:%M:%S",
+                                               localtime(float(i.date))),
+                              "time": i.date})
+            else:
+                if search.upper() in i.name.upper() or search.upper() in i.url.upper():
+                    posts.append({"name": i.name, "size": convert_to_kb_mb_gb(int(i.size)), "url": escape(i.url),
+                                  "date": strftime("%Y-%m-%d %H:%M:%S",
+                                                   localtime(float(i.date))),
+                                  "time": i.date})
+        posts.sort(key=lambda x: x["time"])
         context = {"status": True, "images": posts}
     except Exception as error:
         context = {"status": False, "error": repr(error)}
@@ -238,6 +207,36 @@ def friends(request):
                              "time": i.time})
         data.sort(key=lambda x: x["time"])
         context = {"data": data, "status": True}
+    except Exception as e:
+        logging.error(repr(e))
+        context = {"msg": repr(e), "status": False}
+    return JsonResponse(safe=False, data=context)
+
+# 获取全部友情链接 pub/get_friends
+@csrf_exempt
+def get_friends(request):
+    if not check_if_api_auth(request):
+        return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
+    try:
+        search = request.GET.get("s")
+        posts = []
+        images = FriendModel.objects.all()
+        for i in images:
+            if not search:
+                posts.append(
+                    {"name": escapeString(i.name), "url": escapeString(i.url), "image": escapeString(i.imageUrl),
+                     "description": escapeString(i.description),
+                     "time": i.time,
+                     "status": i.status})
+            else:
+                if search.upper() in i.name.upper() or search.upper() in i.url.upper() or search.upper() in i.description.upper():
+                    posts.append(
+                        {"name": escapeString(i.name), "url": escapeString(i.url), "image": escapeString(i.imageUrl),
+                         "description": escapeString(i.description),
+                         "time": i.time,
+                         "status": i.status})
+        posts.sort(key=lambda x: x["time"])
+        context = {"data": posts, "status": True}
     except Exception as e:
         logging.error(repr(e))
         context = {"msg": repr(e), "status": False}
@@ -514,28 +513,6 @@ def statistic(request):
         logging.error(repr(e))
         return JsonResponse(safe=False, data={"status": False, "error": repr(e)})
 
-
-# Waline Webhook通知 pub/waline
-@csrf_exempt
-def waline(request):
-    if not check_if_api_auth(request):
-        return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
-    try:
-        data = json.loads(request.body.decode())
-        if data.get("type") == "new_comment":
-            comment = data["data"]["comment"]
-            msg = "评论者: {}\n邮箱: {}\n".format(comment["nick"], comment["mail"])
-            if comment.get("link"):
-                msg += "网址: {}\n".format(comment["link"])
-            msg += "内容: {}\nIP: {}\n时间: {}\n地址: {}\n状态: {}\nUA: {}".format(comment["comment"], comment["ip"], comment["insertedAt"],
-                                                                                   comment["url"], comment["status"], comment["ua"])
-            CreateNotification("Waline评论通知", msg, time())
-    except Exception as error:
-        logging.error(repr(error))
-        context = {"msg": repr(error), "status": False}
-    return JsonResponse(safe=False, data=context)
-
-
 # 自定义通知api pub/notifications
 @csrf_exempt
 def notifications(request):
@@ -650,6 +627,40 @@ def del_talk(request):
             return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
         TalkModel.objects.get(id=uuid.UUID(hex=request.POST.get("id"))).delete()
         context = {"msg": "删除成功！", "status": True}
+    except Exception as error:
+        logging.error(repr(error))
+        context = {"msg": repr(error), "status": False}
+    return JsonResponse(safe=False, data=context)
+
+# 获取全部说说 pub/get_all_talks
+@csrf_exempt
+def get_all_talks(request):
+    try:
+        if not check_if_api_auth(request):
+            return JsonResponse(safe=False, data={"msg": "鉴权错误！", "status": False})
+        search = request.GET.get("s")
+        posts = []
+        talks = TalkModel.objects.all()
+        for i in talks:
+            t = json.loads(i.like)
+            try:
+                strtime = strftime("%Y-%m-%d %H:%M:%S", localtime(int(i.time)))
+            except Exception:
+                strtime = "undefined"
+            if not search:
+                posts.append({"content": excerpt_post(i.content, 20, mark=False),
+                              "tags": ', '.join(json.loads(i.tags)),
+                              "time": strtime,
+                              "like": len(t) if t else 0,
+                              "id": i.id.hex})
+            else:
+                if search.upper() in i.content.upper() or search in i.tags.upper() or search in i.values.upper():
+                    posts.append({"content": excerpt_post(i.content, 20, mark=False),
+                                  "tags": ', '.join(json.loads(i.tags)),
+                                  "time": strtime,
+                                  "like": len(t) if t else 0,
+                                  "id": i.id.hex})
+        context = {"msg": "获取成功！", "status": True, "data": sorted(posts, key=lambda x: x["time"], reverse=True)}
     except Exception as error:
         logging.error(repr(error))
         context = {"msg": repr(error), "status": False}

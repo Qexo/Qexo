@@ -183,94 +183,68 @@ def update_caches(name, content, _type="json"):
     logging.info(gettext("REBUILD_CACHE_SUCCESS").format(name))
 
 
+def _filter_items_by_search(items, search_term):
+    """过滤列表项，只保留名称中包含搜索词的项目"""
+    if not search_term:
+        return items
+
+    filtered_items = []
+    for item in items:
+        if search_term.upper() in item["name"].upper():
+            filtered_items.append(item)
+    return filtered_items
+
+
+def _get_cached_or_fresh_data(cache_name, provider_method, search_term=None):
+    """从缓存获取数据或通过provider获取新数据"""
+    old_cache = Cache.objects.filter(name=cache_name)
+
+    # 如果缓存不存在，获取新数据并同时缓存完整结果
+    if not old_cache.count():
+        results = provider_method()
+        update_caches(cache_name, results)
+
+        if search_term:
+            filtered_results = _filter_items_by_search(results, search_term)
+            update_caches(f"{cache_name}.{search_term}", filtered_results)
+            return filtered_results
+        return results
+
+    # 如果缓存已存在并且有搜索词
+    if search_term:
+        try:
+            cached_data = json.loads(old_cache.first().content)
+            filtered_data = _filter_items_by_search(cached_data, search_term)
+            update_caches(f"{cache_name}.{search_term}", filtered_data)
+            return filtered_data
+        except Exception:
+            # 如果解析缓存失败，重新获取数据
+            results = provider_method()
+            update_caches(cache_name, results)
+            filtered_results = _filter_items_by_search(results, search_term)
+            update_caches(f"{cache_name}.{search_term}", filtered_results)
+            return filtered_results
+
+    # 如果缓存存在且没有搜索词，直接返回缓存
+    try:
+        return json.loads(old_cache.first().content)
+    except Exception:
+        # 缓存解析失败，重新获取
+        results = provider_method()
+        update_caches(cache_name, results)
+        return results
+
+
 def update_posts_cache(s=None):
-    if s:
-        old_cache = Cache.objects.filter(name="posts")
-        if old_cache.count():
-            posts = json.loads(old_cache.first().content)
-            i = 0
-            while i < len(posts):
-                if s.upper() not in posts[i]["name"].upper():
-                    del posts[i]
-                    i -= 1
-                i += 1
-            cache_name = "posts." + str(s)
-            update_caches(cache_name, posts)
-            return posts
-    else:
-        old_cache = False
-    posts = Provider().get_posts()
-    if s:
-        if not old_cache.count():
-            update_caches("posts", posts)
-        i = 0
-        while i < len(posts):
-            if s.upper() not in posts[i]["name"].upper():
-                del posts[i]
-                i -= 1
-            i += 1
-    if s:
-        cache_name = "posts." + str(s)
-    else:
-        cache_name = "posts"
-    update_caches(cache_name, posts)
-    return posts
+    return _get_cached_or_fresh_data("posts", Provider().get_posts, s)
 
 
 def update_pages_cache(s=None):
-    if s:
-        old_cache = Cache.objects.filter(name="pages")
-        if old_cache.count():
-            posts = json.loads(old_cache.first().content)
-            i = 0
-            while i < len(posts):
-                if s.upper() not in posts[i]["name"].upper():
-                    del posts[i]
-                    i -= 1
-                i += 1
-            cache_name = "pages." + str(s)
-            update_caches(cache_name, posts)
-            return posts
-    results = Provider().get_pages()
-    update_caches("pages", results)
-    if not s:
-        return results
-    i = 0
-    while i < len(results):
-        if s.upper() not in results[i]["name"].upper():
-            del results[i]
-            i -= 1
-        i += 1
-    update_caches("pages." + str(s), results)
-    return results
+    return _get_cached_or_fresh_data("pages", Provider().get_pages, s)
 
 
 def update_configs_cache(s=None):
-    if s:
-        old_cache = Cache.objects.filter(name="configs")
-        if old_cache.count():
-            posts = json.loads(old_cache.first().content)
-            i = 0
-            while i < len(posts):
-                if s.upper() not in posts[i]["name"].upper():
-                    del posts[i]
-                    i -= 1
-                i += 1
-            cache_name = "configs." + str(s)
-            update_caches(cache_name, posts)
-            return posts
-    results = Provider().get_configs()
-    update_caches("configs", results)
-    if not s:
-        return results
-    i = 0
-    while i < len(results):
-        if s.upper() not in results[i]["name"].upper():
-            del results[i]
-            i -= 1
-        i += 1
-    update_caches("configs." + str(s), results)
-    return results
+    return _get_cached_or_fresh_data("configs", Provider().get_configs, s)
 
 
 def delete_all_caches():

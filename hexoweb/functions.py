@@ -197,10 +197,22 @@ def _filter_items_by_search(items, search_term):
 
 def _get_cached_or_fresh_data(cache_name, provider_method, search_term=None):
     """从缓存获取数据或通过provider获取新数据"""
+    # 检查是否有现有缓存
     old_cache = Cache.objects.filter(name=cache_name)
 
-    # 如果缓存不存在，获取新数据并同时缓存完整结果
-    if not old_cache.count():
+    # 如果没有缓存或需要搜索，获取完整结果
+    if not old_cache.count() or search_term:
+        try:
+            if old_cache.count():
+                # 有缓存但需要搜索，先尝试从缓存过滤
+                cached_data = json.loads(old_cache.first().content)
+                filtered_data = _filter_items_by_search(cached_data, search_term)
+                update_caches(f"{cache_name}.{search_term}", filtered_data)
+                return filtered_data
+        except Exception:
+            pass
+
+        # 获取新数据
         results = provider_method()
         update_caches(cache_name, results)
 
@@ -210,26 +222,10 @@ def _get_cached_or_fresh_data(cache_name, provider_method, search_term=None):
             return filtered_results
         return results
 
-    # 如果缓存已存在并且有搜索词
-    if search_term:
-        try:
-            cached_data = json.loads(old_cache.first().content)
-            filtered_data = _filter_items_by_search(cached_data, search_term)
-            update_caches(f"{cache_name}.{search_term}", filtered_data)
-            return filtered_data
-        except Exception:
-            # 如果解析缓存失败，重新获取数据
-            results = provider_method()
-            update_caches(cache_name, results)
-            filtered_results = _filter_items_by_search(results, search_term)
-            update_caches(f"{cache_name}.{search_term}", filtered_results)
-            return filtered_results
-
-    # 如果缓存存在且没有搜索词，直接返回缓存
+    # 直接返回缓存
     try:
         return json.loads(old_cache.first().content)
     except Exception:
-        # 缓存解析失败，重新获取
         results = provider_method()
         update_caches(cache_name, results)
         return results
@@ -815,197 +811,253 @@ def get_post_details(article, safe=True):
     return front_matter, passage
 
 
+def _export_model_data(model_class, field_mapping=None):
+    """
+    通用导出函数，从数据库获取指定模型的所有记录并转换为字典列表
+
+    Args:
+        model_class: 要导出的模型类
+        field_mapping: 字段映射函数，用于自定义每条记录如何转换为字典
+
+    Returns:
+        包含所有记录数据的字典列表
+    """
+    all_items = model_class.objects.all()
+    result = []
+
+    for item in all_items:
+        if field_mapping:
+            result.append(field_mapping(item))
+        else:
+            # 默认映射逻辑，获取所有字段
+            item_dict = {}
+            for field in item._meta.fields:
+                field_name = field.name
+                item_dict[field_name] = getattr(item, field_name)
+            result.append(item_dict)
+
+    return result
+
+
 def export_settings():
-    all_settings = SettingModel.objects.all()
-    settings = list()
-    for setting in all_settings:
-        settings.append({"name": setting.name, "content": setting.content})
-    return settings
+    return _export_model_data(
+        SettingModel,
+        lambda item: {"name": item.name, "content": item.content}
+    )
 
 
 def export_images():
-    all_settings = ImageModel.objects.all()
-    settings = list()
-    for setting in all_settings:
-        settings.append(
-            {"name": setting.name, "url": setting.url, "size": setting.size, "date": setting.date, "type": setting.type,
-             "deleteConfig": setting.deleteConfig})
-    return settings
+    return _export_model_data(
+        ImageModel,
+        lambda item: {
+            "name": item.name,
+            "url": item.url,
+            "size": item.size,
+            "date": item.date,
+            "type": item.type,
+            "deleteConfig": item.deleteConfig
+        }
+    )
 
 
 def export_friends():
-    all_ = FriendModel.objects.all()
-    ss = list()
-    for s in all_:
-        ss.append({"name": s.name, "url": s.url, "imageUrl": s.imageUrl, "time": s.time, "description": s.description,
-                   "status": s.status})
-    return ss
+    return _export_model_data(
+        FriendModel,
+        lambda item: {
+            "name": item.name,
+            "url": item.url,
+            "imageUrl": item.imageUrl,
+            "time": item.time,
+            "description": item.description,
+            "status": item.status
+        }
+    )
 
 
 def export_notifications():
-    all_ = NotificationModel.objects.all()
-    ss = list()
-    for s in all_:
-        ss.append({"time": s.time, "label": s.label, "content": s.content})
-    return ss
+    return _export_model_data(
+        NotificationModel,
+        lambda item: {"time": item.time, "label": item.label, "content": item.content}
+    )
 
 
 def export_customs():
-    all_ = CustomModel.objects.all()
-    ss = list()
-    for s in all_:
-        ss.append({"name": s.name, "content": s.content})
-    return ss
+    return _export_model_data(
+        CustomModel,
+        lambda item: {"name": item.name, "content": item.content}
+    )
 
 
 def export_uv():
-    all_ = StatisticUV.objects.all()
-    ss = list()
-    for s in all_:
-        ss.append({"ip": s.ip})
-    return ss
+    return _export_model_data(
+        StatisticUV,
+        lambda item: {"ip": item.ip}
+    )
 
 
 def export_pv():
-    all_ = StatisticPV.objects.all()
-    ss = list()
-    for s in all_:
-        ss.append({"url": s.url, "number": s.number})
-    return ss
+    return _export_model_data(
+        StatisticPV,
+        lambda item: {"url": item.url, "number": item.number}
+    )
 
 
 def export_talks():
-    all_ = TalkModel.objects.all()
-    ss = list()
-    for s in all_:
-        ss.append({"content": s.content, "tags": s.tags, "time": s.time, "like": s.like})
-    return ss
+    return _export_model_data(
+        TalkModel,
+        lambda item: {"content": item.content, "tags": item.tags, "time": item.time, "like": item.like}
+    )
 
 
 def export_posts():
-    all_ = PostModel.objects.all()
-    ss = list()
-    for s in all_:
-        ss.append(
-            {"title": s.title, "path": s.path, "status": s.status, "front_matter": s.front_matter, "date": s.date,
-             "filename": s.filename})
-    return ss
+    return _export_model_data(
+        PostModel,
+        lambda item: {
+            "title": item.title,
+            "path": item.path,
+            "status": item.status,
+            "front_matter": item.front_matter,
+            "date": item.date,
+            "filename": item.filename
+        }
+    )
+
+
+def _bulk_import(model_class, data, field_mapping_func, model_name):
+    """通用批量导入函数"""
+    try:
+        # 删除现有数据
+        model_class.objects.all().delete()
+
+        # 批量创建新对象
+        objects = [field_mapping_func(item) for item in data]
+        model_class.objects.bulk_create(objects)
+
+        logging.info(gettext("IMPORT_SUCCESS").format(model_name))
+        return True
+    except Exception as e:
+        logging.error(gettext("IMPORT_FAILED").format(model_name, str(e)))
+        return False
 
 
 def import_settings(ss):
-    for s in ss:
-        save_setting(s["name"], s["content"])
-    return True
+    return _bulk_import(
+        SettingModel,
+        ss,
+        lambda s: SettingModel(
+            name=s["name"],
+            content=s["content"]
+        ),
+        "设置"
+    )
 
 
 def import_images(ss):
-    _all = ImageModel.objects.all()
-    for i in _all:
-        i.delete()
-    for s in ss:
-        image = ImageModel()
-        image.name = s["name"]
-        image.url = s["url"]
-        image.size = s["size"]
-        image.date = s["date"]
-        image.type = s["type"]
-        image.deleteConfig = s["deleteConfig"]
-        image.save()
-    return True
+    return _bulk_import(
+        ImageModel,
+        ss,
+        lambda s: ImageModel(
+            name=s["name"],
+            url=s["url"],
+            size=s["size"],
+            date=s["date"],
+            type=s["type"],
+            deleteConfig=s["deleteConfig"]
+        ),
+        "图片"
+    )
 
 
 def import_friends(ss):
-    _all = FriendModel.objects.all()
-    for i in _all:
-        i.delete()
-    for s in ss:
-        friend = FriendModel()
-        friend.name = s["name"]
-        friend.url = s["url"]
-        friend.imageUrl = s["imageUrl"]
-        friend.time = s["time"]
-        friend.description = s["description"]
-        friend.status = s["status"]
-        friend.save()
-    return True
+    return _bulk_import(
+        FriendModel,
+        ss,
+        lambda s: FriendModel(
+            name=s["name"],
+            url=s["url"],
+            imageUrl=s["imageUrl"],
+            time=s["time"],
+            description=s["description"],
+            status=s["status"]
+        ),
+        "友链"
+    )
 
 
 def import_notifications(ss):
-    _all = NotificationModel.objects.all()
-    for i in _all:
-        i.delete()
-    for s in ss:
-        notification = NotificationModel()
-        notification.time = s["time"]
-        notification.label = s["label"]
-        notification.content = s["content"]
-        notification.save()
-    return True
+    return _bulk_import(
+        NotificationModel,
+        ss,
+        lambda s: NotificationModel(
+            time=s["time"],
+            label=s["label"],
+            content=s["content"]
+        ),
+        "通知"
+    )
 
 
 def import_custom(ss):
-    _all = CustomModel.objects.all()
-    for i in _all:
-        i.delete()
-    for s in ss:
-        custom = CustomModel()
-        custom.name = s["name"]
-        custom.content = s["content"]
-        custom.save()
-    return True
+    return _bulk_import(
+        CustomModel,
+        ss,
+        lambda s: CustomModel(
+            name=s["name"],
+            content=s["content"]
+        ),
+        "自定义"
+    )
 
 
 def import_uv(ss):
-    _all = StatisticUV.objects.all()
-    for i in _all:
-        i.delete()
-    for s in ss:
-        uv = StatisticUV()
-        uv.ip = s["ip"]
-        uv.save()
-    return True
+    return _bulk_import(
+        StatisticUV,
+        ss,
+        lambda s: StatisticUV(ip=s["ip"]),
+        "UV统计"
+    )
 
 
 def import_pv(ss):
-    _all = StatisticPV.objects.all()
-    for i in _all:
-        i.delete()
-    for s in ss:
-        pv = StatisticPV()
-        pv.url = s["url"]
-        pv.number = s["number"]
-        pv.save()
-    return True
+    return _bulk_import(
+        StatisticPV,
+        ss,
+        lambda s: StatisticPV(
+            url=s["url"],
+            number=s["number"]
+        ),
+        "PV统计"
+    )
 
 
 def import_talks(ss):
-    _all = TalkModel.objects.all()
-    for i in _all:
-        i.delete()
-    for s in ss:
-        talk = TalkModel()
-        talk.content = s["content"]
-        talk.tags = s["tags"]
-        talk.time = s["time"]
-        talk.like = s["like"]
-        talk.save()
-    return True
+    return _bulk_import(
+        TalkModel,
+        ss,
+        lambda s: TalkModel(
+            content=s["content"],
+            tags=s["tags"],
+            time=s["time"],
+            like=s["like"]
+        ),
+        "说说"
+    )
 
 
 def import_posts(ss):
-    _all = PostModel.objects.all()
-    for i in _all:
-        i.delete()
-    for s in ss:
-        post = PostModel()
-        post.title = s["title"]
-        post.path = s["path"]
-        post.status = s["status"]
-        post.front_matter = s["front_matter"]
-        post.date = s["date"]
-        post.filename = s["filename"]
-        post.save()
-    return True
+    return _bulk_import(
+        PostModel,
+        ss,
+        lambda s: PostModel(
+            title=s["title"],
+            path=s["path"],
+            status=s["status"],
+            front_matter=s["front_matter"],
+            date=s["date"],
+            filename=s["filename"]
+        ),
+        "文章"
+    )
 
 
 def excerpt_post(content, length, mark=True):

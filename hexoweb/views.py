@@ -315,12 +315,6 @@ def migrate_view(request):
     if not request.user.is_staff:
         logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
         return page_403(request, gettext("NO_PERMISSION"))
-    try:
-        if int(get_setting("INIT")) <= 5:
-            return redirect("/init/")
-    except Exception:
-        logging.info(gettext("NOT_INIT"))
-        return redirect("/init/")
     context = {}
     if request.method == "POST":
         try:

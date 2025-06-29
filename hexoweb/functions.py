@@ -19,7 +19,7 @@ from django.core.management import execute_from_command_line
 from django.template.defaulttags import register
 from markdown import markdown
 from urllib3 import disable_warnings
-from urllib.parse import quote, unquote
+from urllib.parse import quote, unquote, urlparse
 
 import hexoweb.libs.i18n
 from core.qexoSettings import ALL_SETTINGS
@@ -30,8 +30,7 @@ from hexoweb.libs.onepush import notify
 from hexoweb.libs.platforms import get_provider
 from hexoweb.libs.i18n import get_language
 from .models import Cache, SettingModel, FriendModel, NotificationModel, CustomModel, StatisticUV, StatisticPV, \
-    ImageModel, TalkModel, \
-    PostModel
+    ImageModel, TalkModel, PostModel
 
 disable_warnings()
 
@@ -1136,14 +1135,10 @@ def convert_to_kb_mb_gb(size_in_bytes):
 
 
 def get_domain_and_path(url):
-    if url[:7] == "http://":
-        url = url[7:]
-    elif url[:8] == "https://":
-        url = url[8:]
-    domain = url.split("/")[0]
-    # 过滤参数
-    url = url.split("?")[0].split("#")[0]
-    return domain, url
+    parsed = urlparse(url if "://" in url else "//" + url)
+    domain = parsed.netloc
+    path = parsed.path
+    return domain, path
 
 def get_db_config():
     return DATABASES["default"]["ENGINE"]

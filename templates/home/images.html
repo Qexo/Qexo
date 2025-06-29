@@ -47,29 +47,7 @@
                         </div>
                     </div>
                     <div class="card-footer py-4">
-                        <ul class="pagination justify-content-end mb-0">
-                            <li class="page-item" id="prev-page">
-                                <a class="page-link"
-                                   href="javascript:prev_page()">
-                                    <i class="fas fa-angle-left"></i>
-                                    <span class="sr-only">{{ "PREV_PAGE" | gettext }}</span>
-                                </a>
-                            </li>
-                            {% for i in page_number|get_range %}
-                                <li class="page-item" id="page-{{ i }}">
-                                    <a class="page-link"
-                                       href="javascript:change_page({{ i }})">{{ i }}</a>
-                                </li>
-                            {% endfor %}
-
-                            <li class="page-item" id="next-page">
-                                <a class="page-link"
-                                   href="javascript:next_page()">
-                                    <i class="fas fa-angle-right"></i>
-                                    <span class="sr-only">{{ "NEXT_PAGE" | gettext }}</span>
-                                </a>
-                            </li>
-                        </ul>
+                        <ul class="pagination justify-content-end mb-0" id="page-changer"></ul>
                     </div>
                 </div>
             </div>
@@ -209,11 +187,83 @@
                     .replaceAll("@@date@@", page_posts[i].date)
                     .replaceAll("@@url@@", page_posts[i].url);
             }
-            $("#page-" + _page).removeClass("active");
-            $("#page-" + _page).children().removeClass("text-white");
-            $("#page-" + page).addClass("active");
-            $("#page-" + page).children().addClass("text-white");
+
+            let list_temp = `<li class="page-item" id="page-@@page@@">
+                    <a class="page-link @@active@@"
+                       href="javascript:change_page(@@page@@)">@@page@@</a>
+                </li>`;
+            let max_page;
+            if (window.innerWidth > 1200) {
+                max_page = 7;
+            } else if (window.innerWidth > 768) {
+                max_page = 5;
+            } else {
+                max_page = 3;
+            }
+            // 计算总页数和每侧保留的中间页数
+            const totalPages = Math.ceil(posts.length / 15);
+            if (totalPages <= max_page) {
+                startPage = 1;
+                endPage = totalPages;
+            } else {
+                const innerSlots = max_page - 2;              // 中间可展示的页码数
+                const halfInner = Math.floor(innerSlots / 2);
+                // 靠前
+                if (page - halfInner <= 2) {
+                    startPage = 2;
+                    endPage = 1 + innerSlots;
+                    // 靠后
+                } else if (page + halfInner >= totalPages - 1) {
+                    startPage = totalPages - innerSlots;
+                    endPage = totalPages - 1;
+                    // 居中
+                } else {
+                    startPage = page - halfInner;
+                    endPage = page + halfInner;
+                }
+            }
+
+            let page_list = `<li class="page-item" id="prev-page">
+                    <a class="page-link" href="javascript:prev_page()">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                </li>`;
+
+            // 仅当 startPage>1 时才渲染“首页”及前置省略号
+            if (startPage > 1) {
+                page_list += list_temp
+                    .replaceAll('@@page@@', 1)
+                    .replaceAll('@@active@@', page === 1 ? 'active text-white' : '');
+                if (startPage > 2) {
+                    page_list += `<li class="page-item disabled"><a class="page-link">…</a></li>`;
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const active = i === page ? 'active text-white' : '';
+                page_list += list_temp
+                    .replaceAll('@@page@@', i)
+                    .replaceAll('@@active@@', active);
+            }
+
+            // 仅当 endPage<totalPages 时才渲染后置省略号及“末页”
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    page_list += `<li class="page-item disabled"><a class="page-link">…</a></li>`;
+                }
+                page_list += list_temp
+                    .replaceAll('@@page@@', totalPages)
+                    .replaceAll('@@active@@', page === totalPages ? 'active text-white' : '');
+            }
+
+            page_list += `<li class="page-item" id="next-page">
+                    <a class="page-link" href="javascript:next_page()">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                </li>`;
+
             $("#posts-list").html(list);
+            $("#page-changer").html(page_list);
             _page = page;
             if (page <= 1) {
                 $("#prev-page").addClass("disabled");

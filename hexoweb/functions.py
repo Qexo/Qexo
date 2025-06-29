@@ -1137,7 +1137,7 @@ def convert_to_kb_mb_gb(size_in_bytes):
 def get_domain_and_path(url):
     parsed = urlparse(url if "://" in url else "//" + url)
     domain = parsed.netloc
-    path = parsed.path
+    path = domain + parsed.path if domain else parsed.path
     return domain, path
 
 def get_db_config():

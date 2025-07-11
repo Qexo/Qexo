@@ -1,7 +1,7 @@
 import json
 import random
 
-QEXO_VERSION = "3.6.1"
+QEXO_VERSION = "3.6.2"
 QEXO_STATIC = "3.0.5"
 
 DEFAULT_EMOJI = {"微笑": "🙂", "撇嘴": "😦", "色": "😍", "发呆": "😍", "得意": "😎",
@@ -46,8 +46,8 @@ DEFAULT_CDN = [
 DEFAULT_UPDATES = [
     {"name": "master", "url": "https://github.com/Qexo/Qexo/tarball/master/"},
     {"name": "dev", "url": "https://github.com/Qexo/Qexo/tarball/dev/"},
-    {"name": "master_ghproxy", "url": "https://mirror.ghproxy.com/https://github.com/Qexo/Qexo/archive/master.tar.gz"},
-    {"name": "dev_ghproxy", "url": "https://mirror.ghproxy.com/https://github.com/Qexo/Qexo/archive/dev.tar.gz"}
+    {"name": "master_cnb", "url": "https://cnb.cool/qexo/Qexo/-/git/archive/master.tar.gz"},
+    {"name": "dev_cnb", "url": "https://cnb.cool/qexo/Qexo/-/git/archive/dev.tar.gz"}
 ]
 
 ALL_SETTINGS = [  # [名称, 默认值, 是否在尝试修复时重置, 简介]

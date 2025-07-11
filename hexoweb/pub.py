@@ -460,55 +460,35 @@ def status(request):
 @csrf_exempt
 def statistic(request):
     try:
-        url = str(request.META.get('HTTP_REFERER'))
+        referer = request.META.get('HTTP_REFERER', '')
         allow_domains = get_setting("STATISTIC_DOMAINS").split(",")
-        t, allow = get_domain(url), False
-        for allow_domain in allow_domains:
-            if allow_domain in t:
-                allow = True
-                break
-        if not (allow and (t and get_setting("STATISTIC_ALLOW") == "是")):
-            logging.error("域名未验证: " + url)
+        domain_name = get_domain(referer)
+        if not (domain_name and get_setting("STATISTIC_ALLOW") == "是" and any(d in domain_name for d in allow_domains)):
+            logging.error(f"域名未验证: {referer}")
             return HttpResponseForbidden()
-        domain, url = get_domain_and_path(url)
-        pv = StatisticPV.objects.filter(url=url)
-        if pv.count() == 1:
-            pv = StatisticPV.objects.get(url=url)
-            pv.number += 1
-            pv.save()
-        else:
-            for i in pv:
-                i.delete()
-            pv = StatisticPV()
-            pv.url = url
-            pv.number = 1
-            pv.save()
-        site_pv = StatisticPV.objects.filter(url=domain)
-        if site_pv.count() == 1:
-            site_pv = site_pv.first()
-            site_pv.number += 1
-            site_pv.save()
-        else:
-            for i in site_pv:
-                i.delete()
-            site_pv = StatisticPV()
-            site_pv.url = domain
-            site_pv.number = 1
-            site_pv.save()
-        logging.info("登记页面PV: {} => {}".format(url, pv.number))
-        ip = request.META['HTTP_X_FORWARDED_FOR'] if 'HTTP_X_FORWARDED_FOR' in request.META.keys() else request.META[
-            'REMOTE_ADDR']
-        uv = StatisticUV.objects.filter(ip=ip)
-        if uv.count() >= 1:
-            return JsonResponse(safe=False,
-                                data={"site_pv": site_pv.number, "page_pv": pv.number, "site_uv": StatisticUV.objects.all().count(),
-                                      "status": True})
-        uv = StatisticUV()
-        uv.ip = ip
-        uv.save()
-        logging.info("登记用户UV: " + ip)
-        return JsonResponse(safe=False, data={"site_pv": site_pv.number, "page_pv": pv.number, "site_uv": StatisticUV.objects.all().count(),
-                                              "status": True})
+
+        domain, path = get_domain_and_path(referer)
+        pv, _ = StatisticPV.objects.get_or_create(url=path, defaults={'number': 0})
+        pv.number += 1
+        pv.save()
+
+        site_pv, _ = StatisticPV.objects.get_or_create(url=domain, defaults={'number': 0})
+        site_pv.number += 1
+        site_pv.save()
+
+        logging.info(f"登记页面PV: {path} => {pv.number}")
+        ip = request.META.get('HTTP_X_FORWARDED_FOR') or request.META.get('REMOTE_ADDR', '')
+        uv, created = StatisticUV.objects.get_or_create(ip=ip)
+        if created:
+            logging.info(f"登记用户UV: {ip}")
+
+        total_uv = StatisticUV.objects.count()
+        return JsonResponse(safe=False, data={
+            "site_pv": site_pv.number,
+            "page_pv": pv.number,
+            "site_uv": total_uv,
+            "status": True
+        })
     except Exception as e:
         logging.error(repr(e))
         return JsonResponse(safe=False, data={"status": False, "error": repr(e)})

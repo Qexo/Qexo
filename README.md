@@ -19,7 +19,7 @@ Qexo 是一个快速、强大、美观的在线 静态博客编辑器。使用 G
 
 [请阅读文档](https://oplog.cn/qexo/)
 
-[Plese read Wiki first](https://oplog.cn/qexo/en/)
+[Please read Wiki first](https://oplog.cn/qexo/en/)
 ## Features 特性
 
 - **Article Management ~ New Interface**

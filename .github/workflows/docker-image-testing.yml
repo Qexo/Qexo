@@ -39,6 +39,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       -
+        name: Login to CNB Cool Registry
+        uses: docker/login-action@v3
+        with:
+          registry: docker.cnb.cool
+          username: cnb
+          password: ${{ secrets.CNB_PASSWORD }}
+      -
         name: Generate App Version
         run: echo APP_VERSION=`git rev-parse --short HEAD 2>/dev/null` >> $GITHUB_ENV
       -
@@ -61,5 +68,7 @@ jobs:
           tags: |
             ${{ env.DOCKERHUB_REPO }}:testing
             ghcr.io/qexo/qexo:testing
+            docker.cnb.cool/qexo/qexo:testing
             ${{ env.DOCKERHUB_REPO }}:${{ env.APP_VERSION }}
             ghcr.io/qexo/qexo:${{ env.APP_VERSION }}
+            docker.cnb.cool/qexo/qexo:${{ env.APP_VERSION }}

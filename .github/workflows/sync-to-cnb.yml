@@ -19,4 +19,5 @@ jobs:
             -e PLUGIN_USERNAME="cnb" \
             -e PLUGIN_PASSWORD=${{ secrets.CNB_PASSWORD }} \
             -e PLUGIN_SYNC_MODE="rebase" \
+            -e PLUGIN_PUSH_TAGS="true" \
             tencentcom/git-sync

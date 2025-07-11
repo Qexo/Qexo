@@ -1,7 +1,7 @@
 # Qexo
 [![GitHub Release](https://img.shields.io/github/release/qexo/qexo.svg?style=for-the-badge&logo=Qase&color=005AA4)](https://github.com/qexo/qexo/releases/latest)
 [![Docker Pulls](https://img.shields.io/docker/pulls/abudulin/qexo.svg?style=for-the-badge&logo=docker&logoColor=fff&color=005AA4&label=docker.io%20pulls)](https://hub.docker.com/r/abudulin/qexo)
-[![GHCR](https://img.shields.io/badge/ghcr.io-qexo%2Fqexo-blue?style=for-the-badge&logo=docker&logoColor=fff&color=005AA4&label=ghcr.io)](https://github.com/Qexo/Qexo/pkgs/container/qexo)<br>
+[![GHCR](https://img.shields.io/badge/ghcr.io-qexo%2Fqexo-blue?style=for-the-badge&logo=github&logoColor=fff&color=005AA4&label=ghcr.io)](https://github.com/Qexo/Qexo/pkgs/container/qexo)<br>
 [![Contributors](https://img.shields.io/github/contributors-anon/qexo/qexo.svg?style=flat-square&logo=Qase&color=005AA4)](https://github.com/qexo/qexo/graphs/contributors)
 [![Forks](https://img.shields.io/github/forks/qexo/qexo.svg?style=flat-square&logo=github&logoColor=fff&color=005AA4)](https://github.com/qexo/qexo/network/members)
 [![Stars](https://img.shields.io/github/stars/qexo/qexo.svg?style=flat-square&logo=github&logoColor=fff&color=005AA4)](https://github.com/qexo/qexo/stargazers)

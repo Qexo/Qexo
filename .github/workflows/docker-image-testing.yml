@@ -60,6 +60,6 @@ jobs:
             APP_VERSION=${{ env.APP_VERSION }}
           tags: |
             ${{ env.DOCKERHUB_REPO }}:testing
+            ghcr.io/qexo/qexo:testing
             ${{ env.DOCKERHUB_REPO }}:${{ env.APP_VERSION }}
-            ghcr.io/${{ github.repository_owner }}/qexo:testing
-            ghcr.io/${{ github.repository_owner }}/qexo:${{ env.APP_VERSION }}
+            ghcr.io/qexo/qexo:${{ env.APP_VERSION }}

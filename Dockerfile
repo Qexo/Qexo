@@ -27,6 +27,7 @@ WORKDIR /app
 COPY --from=build /app /app
 COPY --from=build /usr/local/lib/python3.11 /usr/local/lib/python3.11
 COPY --from=build /usr/local/bin /usr/local/bin
+RUN apk add --no-cache libpq
 
 EXPOSE 8000
 

@@ -87,3 +87,44 @@ class Github(Provider):
         self.repo.create_hook(active=True, config=config, events=["push"], name="web")
         logging.info("创建WebHook成功{}".format(config))
         return True
+
+    def get_tree(self, path, depth, exclude=None):
+        """
+        Use GitHub API to fetch directory tree via Git Trees endpoint.
+        """
+        if not depth:
+            return {"path": path, "data": []}
+        # get branch SHA
+        sha = self.repo.get_branch(self.branch).commit.sha
+        # fetch full tree recursively
+        tree = self.repo.get_git_tree(sha, recursive=True).tree
+        # normalize prefix without trailing slash
+        prefix = (self.path + path).rstrip('/')
+        results = []
+        for element in tree:
+            p = element.path
+            # filter by prefix
+            if prefix:
+                if not p.startswith(prefix + '/'):
+                    continue
+                rel = p[len(prefix) + 1:]
+            else:
+                rel = p
+            parts = rel.split('/') if rel else []
+            # respect depth
+            # if parts and len(parts) - len(path.split("/")) > depth: # no depth respect is a feature
+            #     continue
+            # filter excludes
+            if exclude and any(seg in exclude for seg in parts):
+                continue
+            name = parts[-1] if parts else ''
+            typ = 'file' if element.type == 'blob' else 'dir'
+            item = {"name": name,
+                    "path": p[len(self.path):] if p.startswith(self.path) else p,
+                    "type": typ}
+            if typ == 'file':
+                size = getattr(element, 'size', None)
+                if size is not None:
+                    item['size'] = size
+            results.append(item)
+        return results

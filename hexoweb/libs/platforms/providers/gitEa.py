@@ -131,3 +131,47 @@ class GitEa(Provider):
         self.request(url, "POST", data)
         logging.info("创建WebHook成功{}".format(data["config"]))
         return True
+
+    def get_tree(self, path, depth, exclude=None):
+        """
+        Use Gitea API to fetch directory tree via git/trees endpoint.
+        """
+        if not depth:
+            return {"path": path, "data": []}
+        if exclude is None:
+            exclude = []
+        # get branch SHA
+        branch_info = self.request(f"/repos/{self.repo}/branches/{self.branch}", "GET").json()
+        sha = branch_info.get("commit", {}).get("id")
+        # fetch full tree recursively
+        url = f"/repos/{self.repo}/git/trees/{sha}"
+        tree_data = self.request(url, "GET", data={"recursive": "true"}).json().get("tree", [])
+        prefix = (self.path + path).rstrip('/')
+        results = []
+        for element in tree_data:
+            p = element.get("path")
+            # filter by prefix
+            if prefix:
+                if not p.startswith(prefix + '/'):
+                    continue
+                rel = p[len(prefix) + 1:]
+            else:
+                rel = p
+            parts = rel.split('/') if rel else []
+            # respect depth
+            # if parts and len(parts) - len(path.split("/")) > depth: # no depth respect is a feature
+            #     continue
+            # filter by exclude patterns
+            if exclude and any(seg in exclude for seg in parts):
+                continue
+            name = parts[-1] if parts else ''
+            typ = 'file' if element.get('type') == 'blob' else 'dir'
+            item = {"name": name,
+                    "path": p[len(self.path):] if p.startswith(self.path) else p,
+                    "type": typ}
+            if typ == 'file':
+                size = element.get('size')
+                if size is not None:
+                    item['size'] = size
+            results.append(item)
+        return results

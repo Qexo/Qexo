@@ -8,6 +8,7 @@ from datetime import timezone, timedelta, date, datetime
 from html import escape
 from time import strftime, localtime, time, sleep
 from zlib import crc32 as zlib_crc32
+import hashlib
 
 import github
 import html2text as ht
@@ -252,6 +253,9 @@ def delete_all_caches():
 
 def save_setting(name, content):
     name = unicodedata.normalize('NFC', name)
+    # 对 WEBHOOK_APIKEY 进行哈希存储
+    if name == "WEBHOOK_APIKEY" and content is not None:
+        content = hashlib.sha256(content.encode('utf-8')).hexdigest()
     content = unicodedata.normalize('NFC', content)
     obj = SettingModel.objects.filter(name=name)
     if obj.count() == 1:
@@ -330,14 +334,15 @@ def get_latest_version():
 
 
 def check_if_api_auth(request):
-    if request.POST.get("token") == get_setting("WEBHOOK_APIKEY"):
-        return True
-    if request.GET.get("token") == get_setting("WEBHOOK_APIKEY"):
-        return True
+    import hashlib
+    token = request.POST.get("token") or request.GET.get("token")
+    if token:
+        token_hash = hashlib.sha256(token.encode('utf-8')).hexdigest()
+        if token_hash == get_setting("WEBHOOK_APIKEY"):
+            return True
     logging.info(
         request.path + ":" + gettext("API_VERIFY_FAILED").format(
-            request.META['HTTP_X_FORWARDED_FOR'] if 'HTTP_X_FORWARDED_FOR' in request.META.keys() else request.META[
-                'REMOTE_ADDR']))
+            request.META['HTTP_X_FORWARDED_FOR'] if 'HTTP_X_FORWARDED_FOR' in request.META.keys() else request.META['REMOTE_ADDR']))
     return False
 
 
@@ -1147,21 +1152,21 @@ def get_db_config():
 # print(" ......................阿弥陀佛......................\n" +
 #       "                       _oo0oo_                      \n" +
 #       "                      o8888888o                     \n" +
-#       "                      88\" . \"88                     \n" +
+#       "                      88" . "88                     \n" +
 #       "                      (| -_- |)                     \n" +
-#       "                      0\\  =  /0                     \n" +
-#       "                   ___/‘---’\\___                   \n" +
-#       "                  .' \\|       |/ '.                 \n" +
-#       "                 / \\\\|||  :  |||// \\                \n" +
-#       "                / _||||| -卍-|||||_ \\               \n" +
+#       "                      0\  =  /0                     \n" +
+#       "                   ___/‘---’\___                   \n" +
+#       "                  .' \|       |/ '.                 \n" +
+#       "                 / \\\\|||  :  |||// \                \n" +
+#       "                / _||||| -卍-|||||_ \               \n" +
 #       "               |   | \\\\\\  -  /// |   |              \n" +
-#       "               | \\_|  ''\\---/''  |_/ |              \n" +
-#       "               \\  .-\\__  '-'  ___/-. /              \n" +
-#       "             ___'. .'  /--.--\\  '. .'___            \n" +
-#       "         .\"\" ‘<  ‘.___\\_<|>_/___.’>’ \"\".          \n" +
-#       "       | | :  ‘- \\‘.;‘\\ _ /’;.’/ - ’ : | |        \n" +
-#       "         \\  \\ ‘_.   \\_ __\\ /__ _/   .-’ /  /        \n" +
-#       "    =====‘-.____‘.___ \\_____/___.-’___.-’=====     \n" +
+#       "               | \_|  ''\---/''  |_/ |              \n" +
+#       "               \  .-\__  '-'  ___/-. /              \n" +
+#       "             ___'. .'  /--.--\  '. .'___            \n" +
+#       "         ."" ‘<  ‘.___\_<|>_/___.’>’ "".          \n" +
+#       "       | | :  ‘- \‘.;‘\ _ /’;.’/ - ’ : | |        \n" +
+#       "         \  \ ‘_.   \_ __\ /__ _/   .-’ /  /        \n" +
+#       "    =====‘-.____‘.___ \_____/___.-’___.-’=====     \n" +
 #       "                       ‘=---=’                      \n" +
 #       "                                                    \n" +
 #       "....................佛祖保佑 ,永无BUG...................")

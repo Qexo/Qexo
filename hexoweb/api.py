@@ -712,16 +712,12 @@ def create_webhook_config(request):
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         try:
-            key = get_setting("WEBHOOK_APIKEY")
-            if key:
-                url = request.POST.get("uri") + "?token=" + key
-            else:
-                key = ''.join(random.choice("qwertyuiopasdfghjklzxcvbnm1234567890") for x in range(12))
-                save_setting("WEBHOOK_APIKEY", key)
-                url = request.POST.get("uri") + "?token=" + key
+            key_plain = ''.join(random.choice("qwertyuiopasdfghjklzxcvbnm1234567890") for x in range(12))
+            save_setting("WEBHOOK_APIKEY", key_plain)
+            url = request.POST.get("uri") + "?token=" + key_plain
             if Provider().delete_hooks():
                 Provider().create_hook(url)
-                context = {"msg": gettext("SAVE_SUCCESS"), "status": True}
+                context = {"msg": gettext("SAVE_SUCCESS"), "status": True, "token": key_plain, "webhook_url": url}
             else:
                 context = {"msg": gettext("PROVIDER_NO_SUPPORT"), "status": False}
         except Exception as error:
@@ -733,12 +729,18 @@ def create_webhook_config(request):
 # Webhook api/webhook
 @csrf_exempt
 def webhook(request):
+    import hashlib
     try:
-        if request.GET.get("token") == get_setting("WEBHOOK_APIKEY"):
-            delete_all_caches()
-            context = {"msg": "Done", "status": True}
+        token = request.GET.get("token")
+        if token:
+            token_hash = hashlib.sha256(token.encode('utf-8')).hexdigest()
+            if token_hash == get_setting("WEBHOOK_APIKEY"):
+                delete_all_caches()
+                context = {"msg": "Done", "status": True}
+            else:
+                context = {"msg": "No permission", "status": False}
         else:
-            context = {"msg": "No permission", "status": False}
+            context = {"msg": "No token", "status": False}
     except Exception as error:
         logging.error(repr(error))
         context = {"msg": repr(error), "status": False}

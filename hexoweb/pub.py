@@ -60,18 +60,17 @@ def create_webhook_config(request):
         try:
             key = get_setting("WEBHOOK_APIKEY")
             if key:
-                url = request.POST.get("uri") + "?token=" + key
+                context = {"msg": "APIKEY已存在，请先删除再生成", "status": False}
             else:
-                key = ''.join(random.choice("qwertyuiopasdfghjklzxcvbnm1234567890") for x in range(12))
-                save_setting("WEBHOOK_APIKEY", key)
-                url = request.POST.get("uri") + "?token=" + key
-            if Provider().delete_hooks():
-                Provider().create_hook(url)
-                context = {"msg": gettext("SAVE_SUCCESS"), "status": True}
-            else:
-                context = {"msg": gettext("PROVIDER_NO_SUPPORT"), "status": False}
+                key_plain = ''.join(random.choice("qwertyuiopasdfghjklzxcvbnm1234567890") for x in range(12))
+                save_setting("WEBHOOK_APIKEY", key_plain)
+                url = request.POST.get("uri") + "?token=" + key_plain
+                if Provider().delete_hooks():
+                    Provider().create_hook(url)
+                    context = {"msg": "保存成功", "status": True, "token": key_plain, "webhook_url": url}
+                else:
+                    context = {"msg": "平台不支持", "status": False}
         except Exception as error:
-            logging.error(repr(error))
             context = {"msg": repr(error), "status": False}
     return JsonResponse(safe=False, data=context)
 

@@ -188,7 +188,11 @@ class Provider(object):
                     else:
                         name = rel_path
                     name = name.rstrip("/")
-                    name_no_ext = name[:-len(matched_ext)]
+                    if len(matched_ext) < len(name):
+                        name_no_ext = name[:-len(matched_ext)]
+                    else:
+                        # Skip files where extension is not shorter than the name
+                        continue
                     results.append({"name": name_no_ext,
                                     "path": post["path"],
                                     "size": post["size"]})

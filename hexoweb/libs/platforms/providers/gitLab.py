@@ -78,3 +78,42 @@ class Gitlab(Provider):
                 self.delete(i["path"][len(self.path):], commitchange=commitchange)
             logging.info("删除目录{}成功".format(path))
         return False
+
+    def get_tree(self, path, depth, exclude=None):
+        """
+        Use GitLab API to fetch directory tree via repository_tree endpoint.
+        """
+        if not depth:
+            return {"path": path, "data": []}
+        if exclude is None:
+            exclude = []
+        # normalize prefix without trailing slash
+        prefix = (self.path + path).rstrip('/')
+        # fetch full tree recursively
+        tree = self.repo.repository_tree(path=prefix, ref=self.branch, recursive=True, get_all=True)
+        results = []
+        for element in tree:
+            p = element.get('path')
+            # filter by prefix
+            if prefix:
+                if not p.startswith(prefix + '/'):
+                    continue
+                rel = p[len(prefix) + 1:]
+            else:
+                rel = p
+            parts = rel.split('/') if rel else []
+            # respect depth
+            # if parts and len(parts) - len(path.split("/")) > depth: # no depth respect is a feature
+            #     continue
+            # filter excludes
+            if exclude and any(seg in exclude for seg in parts):
+                continue
+            name = parts[-1] if parts else ''
+            typ = 'file' if element.get('type') == 'blob' else 'dir'
+            item = {"name": name,
+                    "path": p[len(self.path):] if p.startswith(self.path) else p,
+                    "type": typ}
+            if typ == 'file':
+                item['size'] = 0
+            results.append(item)
+        return results

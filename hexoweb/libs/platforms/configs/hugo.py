@@ -18,7 +18,7 @@ config = {
     "pages": {
         "path": ["content"],
         "depth": [3],
-        "type": ["_index.md", "index.html", "index.md", ".md", ".html"],
+        "type": [".md", ".html"],
         "save_path": "content/${filename}/index.md",
         "scaffold": "archetypes/page.md",
         "excludes": ["post", "_drafts"]

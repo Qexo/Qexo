@@ -13,7 +13,11 @@ class Provider(object):
         ...
 
     def get_path(self, path):
-        ...
+        """
+        Abstract: should be implemented by subclasses. Return a dict with 'data' key.
+        Default returns empty directory.
+        """
+        return {"data": []}
 
     def save(self, file, content, commitchange="Update by Qexo", autobuild=True):
         ...
@@ -54,30 +58,31 @@ class Provider(object):
                 drafts = self.get_tree(
                     self.config["drafts"]["path"][path_index], self.config["drafts"]["depth"][path_index],
                     self.config["drafts"].get("excludes"))
-                for i in range(len(drafts)):
-                    flag = False
-                    for j in self.config["drafts"]["type"]:
-                        if drafts[i]["path"].endswith(j):
-                            flag = j
+                for post in drafts:
+                    if post["type"] != "file":
+                        continue
+                    matched_ext = None
+                    for ext in self.config["drafts"]["type"]:
+                        if post["path"].endswith(ext):
+                            matched_ext = ext
                             break
-                    if drafts[i]["type"] == "file" and flag:
-                        if self.config["drafts"]["path"][path_index] == "":
-                            name = drafts[i]["path"]
-                        else:
-                            name = drafts[i]["path"].split(
-                                self.config["drafts"]["path"][path_index] if self.config["drafts"]["path"][path_index][-1] == "/" else
-                                self.config["drafts"]["path"][path_index] + "/")[1]
-                        name = name[:-len(flag) - (1 if name[-1] == "/" else 0)]
-                        if name.endswith("/"):
-                            name = name[:-1]
-                        _drafts.append({"name": name,
-                                        "fullname": name + flag,
-                                        "path": drafts[i]["path"],
-                                        "size": drafts[i]["size"],
-                                        "status": False})
-
-                        names.append(drafts[i]["path"].split(
-                            self.config["drafts"]["path"][path_index])[1])
+                    if not matched_ext:
+                        continue
+                    rel_path = post["path"]
+                    prefix = self.config["drafts"]["path"][path_index]
+                    if prefix:
+                        prefix_slash = prefix if prefix.endswith("/") else prefix + "/"
+                        name = rel_path[len(prefix_slash):] if rel_path.startswith(prefix_slash) else rel_path
+                    else:
+                        name = rel_path
+                    name = name.rstrip("/")
+                    name_no_ext = name[:-len(matched_ext)]
+                    _drafts.append({"name": name_no_ext,
+                                    "fullname": name_no_ext + matched_ext,
+                                    "path": post["path"],
+                                    "size": post["size"],
+                                    "status": False})
+                    names.append(name_no_ext + matched_ext)
             except Exception as e:
                 logging.error("读取草稿目录 {} 错误: {}，跳过".format(self.config["drafts"]["path"][path_index], repr(e)))
         for path_index in range(len(self.config["posts"]["path"])):
@@ -85,29 +90,31 @@ class Provider(object):
                 posts = self.get_tree(
                     self.config["posts"]["path"][path_index], self.config["posts"]["depth"][path_index],
                     self.config["posts"].get("excludes"))
-                for i in range(len(posts)):
-                    flag = False
-                    for j in self.config["posts"]["type"]:
-                        if posts[i]["path"].endswith(j):
-                            flag = j
+                for post in posts:
+                    if post["type"] != "file":
+                        continue
+                    matched_ext = None
+                    for ext in self.config["posts"]["type"]:
+                        if post["path"].endswith(ext):
+                            matched_ext = ext
                             break
-                    if posts[i]["type"] == "file" and flag:
-                        if self.config["posts"]["path"][path_index] == "":
-                            name = posts[i]["path"]
-                        else:
-                            name = posts[i]["path"].split(
-                                self.config["posts"]["path"][path_index] if self.config["posts"]["path"][path_index][-1] == "/" else
-                                self.config["posts"]["path"][path_index] + "/")[1]
-                        name = name[:-len(flag) - (1 if name[-1] == "/" else 0)]
-                        if name.endswith("/"):
-                            name = name[:-1]
-                        _posts.append({"name": name,
-                                       "fullname": name + flag,
-                                       "path": posts[i]["path"],
-                                       "size": posts[i]["size"],
-                                       "status": True})
-                        names.append(posts[i]["path"].split(
-                            self.config["posts"]["path"][path_index])[1])
+                    if not matched_ext:
+                        continue
+                    rel_path = post["path"]
+                    prefix = self.config["posts"]["path"][path_index]
+                    if prefix:
+                        prefix_slash = prefix if prefix.endswith("/") else prefix + "/"
+                        name = rel_path[len(prefix_slash):] if rel_path.startswith(prefix_slash) else rel_path
+                    else:
+                        name = rel_path
+                    name = name.rstrip("/")
+                    name_no_ext = name[:-len(matched_ext)]
+                    _posts.append({"name": name_no_ext,
+                                   "fullname": name_no_ext + matched_ext,
+                                   "path": post["path"],
+                                   "size": post["size"],
+                                   "status": True})
+                    names.append(name_no_ext + matched_ext)
             except Exception as e:
                 logging.error("读取已发布目录 {} 错误: {}，跳过".format(self.config["posts"]["path"][path_index], repr(e)))
         posts = _posts + _drafts
@@ -122,24 +129,35 @@ class Provider(object):
                     self.config["pages"]["path"][path_index], self.config["pages"]["depth"][path_index],
                     self.config["pages"].get("excludes"))
                 for post in posts:
-                    flag = False
-                    for i in self.config["pages"]["type"]:
-                        if post["path"].endswith(i):
-                            flag = i
+                    # only files with configured extensions
+                    if post["type"] != "file":
+                        continue
+                    matched_ext = None
+                    for ext in self.config["pages"]["type"]:
+                        if post["path"].endswith(ext):
+                            matched_ext = ext
                             break
-                    if post["type"] == "file" and flag:
-                        if self.config["pages"]["path"][path_index] == "":
-                            name = post["path"]
+                    if not matched_ext:
+                        continue
+                    # remove prefix and extension to get display name
+                    rel_path = post["path"]
+                    prefix = self.config["pages"]["path"][path_index]
+                    if prefix:
+                        prefix_slash = prefix if prefix.endswith("/") else prefix + "/"
+                        if rel_path.startswith(prefix_slash):
+                            name = rel_path[len(prefix_slash):]
                         else:
-                            name = post["path"].split(
-                                self.config["pages"]["path"][path_index] if self.config["pages"]["path"][path_index][-1] == "/" else
-                                self.config["pages"]["path"][path_index] + "/")[1]
-                        name = name[:-len(flag) - (1 if name[-1] == "/" else 0)]
-                        if name.endswith("/"):
-                            name = name[:-1]
-                        results.append({"name": name,
-                                        "path": post["path"],
-                                        "size": post["size"]})
+                            name = rel_path
+                    else:
+                        name = rel_path
+                    # strip trailing slash if any
+                    if name.endswith("/"):
+                        name = name[:-1]
+                    # strip extension
+                    name = name[:-len(matched_ext)]
+                    results.append({"name": name,
+                                    "path": post["path"],
+                                    "size": post["size"]})
             except Exception as e:
                 logging.error("读取页面目录 {} 错误: {}，跳过".format(self.config["pages"]["path"][path_index], repr(e)))
         logging.info("读取页面列表成功")
@@ -153,17 +171,31 @@ class Provider(object):
                     self.config["configs"]["path"][path_index], self.config["configs"]["depth"][path_index],
                     self.config["configs"].get("excludes"))
                 for post in posts:
-                    flag = False
-                    for i in self.config["configs"]["type"]:
-                        if post["path"].endswith(i):
-                            flag = True
+                    if post["type"] != "file":
+                        continue
+                    matched_ext = None
+                    for ext in self.config["configs"]["type"]:
+                        if post["path"].endswith(ext):
+                            matched_ext = ext
                             break
-                    if post["type"] == "file" and flag:
-                        name = post["path"][len(self.config["configs"]["path"][path_index]):]
-                        name = name[1:] if name[0] == "/" else name
-                        results.append({"name": name,
-                                        "path": post["path"],
-                                        "size": post["size"]})
+                    if not matched_ext:
+                        continue
+                    rel_path = post["path"]
+                    prefix = self.config["configs"]["path"][path_index]
+                    if prefix:
+                        prefix_slash = prefix if prefix.endswith("/") else prefix + "/"
+                        name = rel_path[len(prefix_slash):] if rel_path.startswith(prefix_slash) else rel_path
+                    else:
+                        name = rel_path
+                    name = name.rstrip("/")
+                    if len(matched_ext) < len(name):
+                        name_no_ext = name[:-len(matched_ext)]
+                    else:
+                        # Skip files where extension is not shorter than the name
+                        continue
+                    results.append({"name": name_no_ext,
+                                    "path": post["path"],
+                                    "size": post["size"]})
             except Exception as e:
                 logging.error("读取配置 {} 错误: {}，跳过".format(self.config["configs"]["path"][path_index], repr(e)))
         logging.info("读取博客配置列表成功")

@@ -598,10 +598,7 @@ def LocalOnekeyUpdate(url):
     logging.info(gettext("DEL_TMP"))
     shutil.rmtree(tmpPath)
     logging.info(gettext("UPDATE_LIB"))
-    if check_if_docker():
-        pip_main(['install', '-r', 'requirements-slim.txt'])
-    else:
-        pip_main(['install', '-r', 'requirements.txt'])
+    pip_main(['install', '-r', 'requirements.txt'])
     logging.info(gettext("MIGRATE_DB"))
     execute_from_command_line(['manage.py', 'makemigrations'])
     execute_from_command_line(['manage.py', 'migrate'])

@@ -15,7 +15,7 @@ LOGIN_REDIRECT_URL = "home"  # Route defined in home/urls.py
 LOGOUT_REDIRECT_URL = "home"  # Route defined in home/urls.py
 
 # Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
+# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-mrf1flh+i8*!ao73h6)ne#%gowhtype!ld#+(j^r*!^11al2vz'
@@ -75,7 +75,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'core.wsgi.application'
 
 # Database
-# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
+# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 errors = ""
 
@@ -90,16 +90,15 @@ if os.environ.get("MONGODB_HOST"):  # 使用MONGODB
             errors += f"\"{env}\" "
     DATABASES = {
         'default': {
-            'ENGINE': 'djongo',
-            'ENFORCE_SCHEMA': False,
-            'NAME': 'django',
-            'CLIENT': {
-                'host': os.environ.get("MONGODB_HOST"),
-                'port': int(os.environ.get("MONGODB_PORT")),
-                'username': os.environ.get("MONGODB_USER") or os.environ.get("MONGODB_USERNAME") or "root",
-                'password': os.environ.get("MONGODB_PASS") or os.environ.get("MONGODB_PASSWORD"),
-                'authSource': os.environ.get("MONGODB_DB") or "root",
-                'authMechanism': 'SCRAM-SHA-1'
+            'ENGINE': 'django_mongodb_backend',
+            'NAME': os.environ.get("MONGODB_DB") or os.environ.get("MONGODB_NAME") or 'django',
+            'HOST': os.environ.get("MONGODB_HOST"),
+            'PORT': int(os.environ.get("MONGODB_PORT")) if os.environ.get("MONGODB_PORT") else 27017,
+            'USER': os.environ.get("MONGODB_USER") or os.environ.get("MONGODB_USERNAME") or "root",
+            'PASSWORD': os.environ.get("MONGODB_PASS") or os.environ.get("MONGODB_PASSWORD"),
+            'OPTIONS': {
+                'authSource': os.environ.get("MONGODB_AUTH_DB") or os.environ.get("MONGODB_AUTHDB") or "admin",
+                'authMechanism': os.environ.get("MONGODB_AUTH_MECHANISM") or 'SCRAM-SHA-1',
             }
         }
     }
@@ -186,7 +185,7 @@ else:
     ALLOWED_HOSTS = json.loads(os.environ.get("DOMAINS", False)) if os.environ.get("DOMAINS", False) else ["*"]
 
 # Password validation
-# https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
+# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -204,7 +203,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # Internationalization
-# https://docs.djangoproject.com/en/3.2/topics/i18n/
+# https://docs.djangoproject.com/en/5.2/topics/i18n/
 
 LANGUAGE_CODE = 'zh-Hans'
 
@@ -212,12 +211,11 @@ TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 
-USE_L10N = True
 
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.2/howto/static-files/
+# https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 # STATIC_URL = '/static/'
 # STATICFILES_DIRS = [
@@ -226,7 +224,7 @@ USE_TZ = True
 # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build', 'static')
 
 # Default primary key field type
-# https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
+# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

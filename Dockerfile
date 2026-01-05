@@ -1,4 +1,4 @@
-FROM python:3.11.11-alpine3.21 AS build
+FROM python:3.12.12-alpine3.23 AS build
 
 LABEL org.opencontainers.image.authors="abudulin@foxmail.com"
 
@@ -21,7 +21,7 @@ RUN python -m pip install --upgrade pip && \
     chmod +x /app/entrypoint.sh
 
 # 生产阶段
-FROM python:3.11.11-alpine3.21
+FROM python:3.12.12-alpine3.23
 
 WORKDIR /app
 COPY --from=build /app /app

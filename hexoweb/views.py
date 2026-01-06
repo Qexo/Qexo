@@ -116,7 +116,7 @@ def update_view(request):
 
 def init_view(request):
     msg = None
-    context = dict(all_languages=hexoweb.libs.i18n.all_languages())
+    context: dict = {"all_languages": hexoweb.libs.i18n.all_languages()}
     context.update(get_custom_config())
     step = get_setting("INIT")
     if not step:
@@ -176,7 +176,7 @@ def init_view(request):
                     context["repassword"] = repassword
                     context["apikey"] = apikey
                 else:
-                    User.objects.create_superuser(username=username, password=password)
+                    User.objects.create_superuser(username=username, password=password, email="")
                     save_setting("INIT", "3")
                     step = "3"
                     context["PROVIDER"] = get_setting("PROVIDER")
@@ -391,9 +391,12 @@ def index(request):
     context.update(get_custom_config())
     cache = Cache.objects.filter(name="posts")
     if cache.count():
-        posts = json.loads(cache.first().content)
+        cache_obj = cache.first()
+        posts = json.loads(cache_obj.content) if cache_obj else []
     else:
         posts = update_posts_cache()
+    if not posts:
+        posts = []
     _images = ImageModel.objects.all().order_by("-date")
     images = list()
     for i in _images:
@@ -408,7 +411,7 @@ def index(request):
         posts[item]["path"] = quote(posts[item]["path"])
         posts[item]["status"] = gettext("PUBLISHED") if posts[item]["status"] else gettext("DRAFT")
     context["posts"] = json.dumps(posts)
-    context["images"] = images
+    context["images"] = images  # type: ignore
     context = dict(context, **get_latest_version())
     context["version"] = QEXO_VERSION
     context["static_version"] = QEXO_STATIC
@@ -417,7 +420,7 @@ def index(request):
     context["breadcrumb"] = "Dashboard"
     context["breadcrumb_cn"] = gettext("DASHBOARD")
     _recent_posts = PostModel.objects.all().order_by("-date")
-    context["recent_posts"] = list()
+    context["recent_posts"] = list()  # type: ignore
     for i in _recent_posts:
         context["recent_posts"].append({
             "title": i.title,
@@ -433,7 +436,7 @@ def index(request):
 
 @login_required(login_url="/login/")
 def pages(request):
-    context = dict()
+    context: dict = {}
     try:
         if int(get_setting("INIT")) <= 5:
             logging.info(gettext("NOT_INIT"))

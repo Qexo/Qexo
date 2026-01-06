@@ -74,7 +74,10 @@ def Language():
 
 @register.filter
 def gettext(value):
-    return Language()["data"].get(value, value)
+    lang_data = Language()
+    if isinstance(lang_data, dict) and "data" in lang_data:
+        return lang_data["data"].get(value, value)
+    return value
 
 
 def update_provider():
@@ -140,8 +143,10 @@ def get_cdn():
 
 # 获取用户自定义的样式配置
 def get_custom_config():
+    lang_data = Language()
+    lang_name = lang_data.get("name", "zh_CN") if isinstance(lang_data, dict) else "zh_CN"
     context = {"cdn_prev": get_cdn(), "QEXO_NAME": get_setting("QEXO_NAME"),
-               "language": Language().get("name", "zh_CN"), "vditor_languages": VDITOR_LANGUAGES,
+               "language": lang_name, "vditor_languages": VDITOR_LANGUAGES,
                "all_languages": hexoweb.libs.i18n.all_languages()}
     if not context["QEXO_NAME"]:
         save_setting('QEXO_NAME', 'Hexo' + gettext("CONSOLE"))
@@ -205,10 +210,12 @@ def _get_cached_or_fresh_data(cache_name, provider_method, search_term=None):
         try:
             if old_cache.count():
                 # 有缓存但需要搜索，先尝试从缓存过滤
-                cached_data = json.loads(old_cache.first().content)
-                filtered_data = _filter_items_by_search(cached_data, search_term)
-                update_caches(f"{cache_name}.{search_term}", filtered_data)
-                return filtered_data
+                cache_obj = old_cache.first()
+                if cache_obj:
+                    cached_data = json.loads(cache_obj.content)
+                    filtered_data = _filter_items_by_search(cached_data, search_term)
+                    update_caches(f"{cache_name}.{search_term}", filtered_data)
+                    return filtered_data
         except Exception:
             pass
 
@@ -224,7 +231,9 @@ def _get_cached_or_fresh_data(cache_name, provider_method, search_term=None):
 
     # 直接返回缓存
     try:
-        return json.loads(old_cache.first().content)
+        cache_obj = old_cache.first()
+        if cache_obj:
+            return json.loads(cache_obj.content)
     except Exception:
         results = provider_method()
         update_caches(cache_name, results)
@@ -555,7 +564,7 @@ def pip_main(args):
     try:
         import pip
     except ImportError:
-        raise 'pip is not installed'
+        raise Exception('pip is not installed')
     try:
         func = pip.main
     except AttributeError:
@@ -769,7 +778,10 @@ def get_post_details(article, safe=True):
     dateformat = datetime.now(timezone.utc).astimezone().isoformat()
     try:
         if article[:3] == "---":
-            front_matter = re.search(r"---([\s\S]*?)---", article, flags=0).group()[3:-4]
+            match = re.search(r"---([\s\S]*?)---", article, flags=0)
+            if not match:
+                return {}, repr(article).replace("<", "\\<").replace(">", "\\>").replace("!", "\\!") if safe else article
+            front_matter = match.group()[3:-4]
             front_matter = front_matter.replace("{{ date }}", dateformat).replace("{{ abbrlink }}", abbrlink).replace(
                 "{{ slug }}",
                 abbrlink).replace("{",
@@ -777,8 +789,11 @@ def get_post_details(article, safe=True):
                 "}", "")
             front_matter = yaml.safe_load(front_matter)
         elif article[:3] == ";;;":
+            match = re.search(r";;;([\s\S]*?);;;", article, flags=0)
+            if not match:
+                return {}, repr(article).replace("<", "\\<").replace(">", "\\>").replace("!", "\\!") if safe else article
             front_matter = json.loads("{{{}}}".format(
-                re.search(r";;;([\s\S]*?);;;", article, flags=0).group()[3:-4].replace("{{ date }}",
+                match.group()[3:-4].replace("{{ date }}",
                                                                                        dateformat).replace(
                     "{{ abbrlink }}",
                     abbrlink).replace(
@@ -802,13 +817,14 @@ def get_post_details(article, safe=True):
             elif type(front_matter.get(key)) == date:
                 front_matter[key] = front_matter[key].isoformat()
         if safe:
-            passage = repr(re.search(r"[;-][;-][;-]([\s\S]*)", article[3:], flags=0).group()[3:]).replace("<",
-                                                                                                          "\\<").replace(
-                ">",
-                "\\>").replace(
-                "!", "\\!")
+            match = re.search(r"[;-][;-][;-]([\s\S]*)", article[3:], flags=0)
+            if match:
+                passage = repr(match.group()[3:]).replace("<", "\\<").replace(">", "\\>").replace("!", "\\!")
+            else:
+                passage = repr(article[3:]).replace("<", "\\<").replace(">", "\\>").replace("!", "\\!")
         else:
-            passage = re.search(r"[;-][;-][;-]([\s\S]*)", article[3:], flags=0).group()[3:]
+            match = re.search(r"[;-][;-][;-]([\s\S]*)", article[3:], flags=0)
+            passage = match.group()[3:] if match else article[3:]
     return front_matter, passage
 
 
@@ -1067,9 +1083,12 @@ def excerpt_post(content, length, mark=True):
     result, content = "", (markdown(content) if mark else content)
     soup = BeautifulSoup(content, 'html.parser')
     for dom in soup:
-        if dom.name and dom.name not in ["script", "style"]:
-            result += re.sub("{(.*?)}", '', dom.get_text()).replace("\n", " ")
-            result += "" if result.endswith(" ") else " "
+        try:
+            if hasattr(dom, 'name') and getattr(dom, 'name', None) and getattr(dom, 'name', None) not in ["script", "style"]:
+                result += re.sub("{(.*?)}", '', dom.get_text()).replace("\n", " ")
+                result += "" if result.endswith(" ") else " "
+        except (AttributeError, TypeError):
+            pass
     return result[:int(length)] + "..." if (len(result) if result else 0) > int(length) else result
 
 
@@ -1089,7 +1108,9 @@ def escapeString(_str):
 def mark_post(path, front_matter, status, filename):
     p = PostModel.objects.filter(path=path)
     if p:
-        p.first().delete()
+        post_obj = p.first()
+        if post_obj:
+            post_obj.delete()
         PostModel.objects.create(
             title=front_matter.get("title") if front_matter.get("title") else gettext("UNTITLED"),
             path=path,
@@ -1114,7 +1135,9 @@ def mark_post(path, front_matter, status, filename):
 def del_postmark(path):
     p = PostModel.objects.filter(path=path)
     if p:
-        p.first().delete()
+        post_obj = p.first()
+        if post_obj:
+            post_obj.delete()
         logging.info(f"{gettext('DEL_POST_INDEX')}：{path}")
 
 

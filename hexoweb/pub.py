@@ -85,13 +85,15 @@ def get_posts(request):
         if search:
             cache = Cache.objects.filter(name="posts." + search)
             if cache.count():
-                posts = json.loads(cache.first().content)
+                cache_obj = cache.first()
+                posts = json.loads(cache_obj.content) if cache_obj else []
             else:
                 posts = update_posts_cache(search)
         else:
             cache = Cache.objects.filter(name="posts")
             if cache.count():
-                posts = json.loads(cache.first().content)
+                cache_obj = cache.first()
+                posts = json.loads(cache_obj.content) if cache_obj else []
             else:
                 posts = update_posts_cache(search)
         context = {"status": True, "posts": posts}
@@ -110,13 +112,15 @@ def get_pages(request):
         if search:
             cache = Cache.objects.filter(name="pages." + search)
             if cache.count():
-                posts = json.loads(cache.first().content)
+                cache_obj = cache.first()
+                posts = json.loads(cache_obj.content) if cache_obj else []
             else:
                 posts = update_pages_cache(search)
         else:
             cache = Cache.objects.filter(name="pages")
             if cache.count():
-                posts = json.loads(cache.first().content)
+                cache_obj = cache.first()
+                posts = json.loads(cache_obj.content) if cache_obj else []
             else:
                 posts = update_pages_cache(search)
         context = {"status": True, "pages": posts}
@@ -135,13 +139,15 @@ def get_configs(request):
         if search:
             cache = Cache.objects.filter(name="configs." + search)
             if cache.count():
-                posts = json.loads(cache.first().content)
+                cache_obj = cache.first()
+                posts = json.loads(cache_obj.content) if cache_obj else []
             else:
                 posts = update_configs_cache(search)
         else:
             cache = Cache.objects.filter(name="configs")
             if cache.count():
-                posts = json.loads(cache.first().content)
+                cache_obj = cache.first()
+                posts = json.loads(cache_obj.content) if cache_obj else []
             else:
                 posts = update_configs_cache(search)
         context = {"status": True, "configs": posts}
@@ -443,9 +449,12 @@ def status(request):
     try:
         cache = Cache.objects.filter(name="posts")
         if cache.count():
-            posts = json.loads(cache.first().content)
+            cache_obj = cache.first()
+            posts = json.loads(cache_obj.content) if cache_obj else []
         else:
             posts = update_posts_cache()
+        if not posts:
+            posts = []
         posts_count = len(posts)
         last = get_setting("LAST_LOGIN")
         context = {"data": {"posts": str(posts_count), "last": last}, "status": True}

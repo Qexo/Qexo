@@ -287,7 +287,7 @@ def set_user(request):
                 return JsonResponse(safe=False, data=context)
             u = User.objects.get(username__exact=request.user.username)
             u.delete()
-            User.objects.create_superuser(username=username, password=newpassword)
+            User.objects.create_superuser(username=username, password=newpassword, email="")
             context = {"msg": gettext("SAVE_SUCCESS"), "status": True}
         else:
             context = {"msg": gettext("RESET_PASSWORD_NO_OLD"), "status": False}
@@ -755,8 +755,9 @@ def upload_img(request):
     if request.method == "POST":
         file = request.FILES.getlist('file[]')[0] if request.FILES.getlist('file[]') else request.FILES.getlist('file')[0]
         try:
+            from hexoweb.libs import image as image_lib
             image_host = json.loads(get_setting("IMG_HOST"))
-            if image_host["type"] in hexoweb.libs.image.all_providers():
+            if image_host["type"] in image_lib.all_providers():
                 res = get_image_host(image_host["type"], **image_host["params"]).upload(file)
                 context["url"] = res[0]
                 context["status"] = True
@@ -766,7 +767,7 @@ def upload_img(request):
                 image.url = context["url"]
                 image.size = file.size
                 image.type = file.content_type
-                image.date = time()
+                image.date = str(time())
                 image.deleteConfig = json.dumps(res[1])
                 image.save()
                 context["data"] = {"name": image.name, "size": convert_to_kb_mb_gb(int(image.size)), "url": escape(image.url),
@@ -854,7 +855,8 @@ def get_notifications(request):
         if latest["status"]:
             cache = Cache.objects.filter(name="update")
             if cache.count():
-                if (cache.first().content != latest["newer_time"]) and latest["hasNew"]:
+                cache_obj = cache.first()
+                if cache_obj and (cache_obj.content != latest["newer_time"]) and latest["hasNew"]:
                     CreateNotification(gettext("UPDATE_LABEL"), gettext("UPDATE_CONTENT").format(latest["newer"], latest["newer_text"]),
                                        time())
                     update_caches("update", latest["newer_time"], "text")

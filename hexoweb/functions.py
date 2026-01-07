@@ -203,19 +203,17 @@ def _filter_items_by_search(items, search_term):
 def _get_cached_or_fresh_data(cache_name, provider_method, search_term=None):
     """从缓存获取数据或通过provider获取新数据"""
     # 检查是否有现有缓存
-    old_cache = Cache.objects.filter(name=cache_name)
+    old_cache = Cache.objects.filter(name=cache_name).first()
 
     # 如果没有缓存或需要搜索，获取完整结果
-    if not old_cache.count() or search_term:
+    if not old_cache or search_term:
         try:
-            if old_cache.count():
+            if old_cache:
                 # 有缓存但需要搜索，先尝试从缓存过滤
-                cache_obj = old_cache.first()
-                if cache_obj:
-                    cached_data = json.loads(cache_obj.content)
-                    filtered_data = _filter_items_by_search(cached_data, search_term)
-                    update_caches(f"{cache_name}.{search_term}", filtered_data)
-                    return filtered_data
+                cached_data = json.loads(old_cache.content)
+                filtered_data = _filter_items_by_search(cached_data, search_term)
+                update_caches(f"{cache_name}.{search_term}", filtered_data)
+                return filtered_data
         except Exception:
             pass
 
@@ -231,9 +229,7 @@ def _get_cached_or_fresh_data(cache_name, provider_method, search_term=None):
 
     # 直接返回缓存
     try:
-        cache_obj = old_cache.first()
-        if cache_obj:
-            return json.loads(cache_obj.content)
+        return json.loads(old_cache.content)
     except Exception:
         results = provider_method()
         update_caches(cache_name, results)
@@ -266,12 +262,8 @@ def save_setting(name, content):
     if name == "WEBHOOK_APIKEY" and content is not None:
         content = hashlib.sha256(content.encode('utf-8')).hexdigest()
     content = unicodedata.normalize('NFC', content)
-    obj = SettingModel.objects.filter(name=name)
-    if obj.count() == 1:
-        obj.delete()
-    if obj.count() > 1:
-        for i in obj:
-            i.delete()
+    # 删除所有同名配置（确保唯一性）
+    SettingModel.objects.filter(name=name).delete()
     new_set = SettingModel()
     new_set.name = str(name)
     if content is not None:
@@ -286,12 +278,8 @@ def save_setting(name, content):
 def save_custom(name, content):
     name = unicodedata.normalize('NFC', name)
     content = unicodedata.normalize('NFC', content)
-    obj = CustomModel.objects.filter(name=name)
-    if obj.count() == 1:
-        obj.delete()
-    if obj.count() > 1:
-        for i in obj:
-            i.delete()
+    # 删除所有同名自定义字段（确保唯一性）
+    CustomModel.objects.filter(name=name).delete()
     new_set = CustomModel()
     new_set.name = str(name)
     if content is not None:

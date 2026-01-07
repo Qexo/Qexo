@@ -16,6 +16,7 @@ from hexoweb.libs.onepush import all_providers as onepush_providers
 from hexoweb.libs.onepush import get_notifier
 from hexoweb.libs.platforms import all_providers, get_params
 from hexoweb.libs.platforms import all_configs as platform_configs
+from hexoweb.decorators import staff_required
 from .api import *
 
 
@@ -62,10 +63,8 @@ def login_view(request):
 
 
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=True)
 def update_view(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return page_403(request, gettext("NO_PERMISSION"))
     try:
         if int(get_setting("INIT")) <= 5:
             logging.info(gettext("NOT_INIT"))
@@ -311,10 +310,8 @@ def logout_view(request):
 
 
 @login_required(login_url='/login/')
+@staff_required(redirect_to_login=True)
 def migrate_view(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return page_403(request, gettext("NO_PERMISSION"))
     context = {}
     if request.method == "POST":
         try:
@@ -389,10 +386,9 @@ def index(request):
         return redirect("/update/")
     context = {'segment': 'index'}
     context.update(get_custom_config())
-    cache = Cache.objects.filter(name="posts")
-    if cache.count():
-        cache_obj = cache.first()
-        posts = json.loads(cache_obj.content) if cache_obj else []
+    cache_obj = Cache.objects.filter(name="posts").first()
+    if cache_obj:
+        posts = json.loads(cache_obj.content)
     else:
         posts = update_posts_cache()
     if not posts:
@@ -596,15 +592,15 @@ def pages(request):
                 return page_403(request, gettext("NO_PERMISSION"))
             search = request.GET.get("s")
             if search:
-                cache = Cache.objects.filter(name="configs." + search)
-                if cache.count():
-                    posts = json.loads(cache.first().content)
+                cache_obj = Cache.objects.filter(name="configs." + search).first()
+                if cache_obj:
+                    posts = json.loads(cache_obj.content)
                 else:
                     posts = update_configs_cache(search)
             else:
-                cache = Cache.objects.filter(name="configs")
-                if cache.count():
-                    posts = json.loads(cache.first().content)
+                cache_obj = Cache.objects.filter(name="configs").first()
+                if cache_obj:
+                    posts = json.loads(cache_obj.content)
                 else:
                     posts = update_configs_cache(search)
             for item in range(len(posts)):

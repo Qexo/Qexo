@@ -447,10 +447,9 @@ def get_notifications(request):
 @csrf_exempt
 def status(request):
     try:
-        cache = Cache.objects.filter(name="posts")
-        if cache.count():
-            cache_obj = cache.first()
-            posts = json.loads(cache_obj.content) if cache_obj else []
+        cache_obj = Cache.objects.filter(name="posts").first()
+        if cache_obj:
+            posts = json.loads(cache_obj.content)
         else:
             posts = update_posts_cache()
         if not posts:

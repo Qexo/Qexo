@@ -11,6 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 import hexoweb.libs.image
 from hexoweb.libs.image import get_image_host, delete_image
+from hexoweb.decorators import staff_required
 from .functions import *
 
 
@@ -58,10 +59,8 @@ def auth(request):
 
 # 设置 Hexo Provider 配置 api/set_hexo
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def set_hexo(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         provider = unicodedata.normalize('NFC', request.POST.get('provider'))
         config = json.loads(provider)["params"]["config"]
@@ -112,10 +111,8 @@ def set_hexo(request):
 
 # 设置 OnePush api/set_onepush
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def set_onepush(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         onepush = request.POST.get("onepush")
         save_setting("ONEPUSH", onepush)
@@ -128,10 +125,8 @@ def set_onepush(request):
 
 # 测试 OnePush api/test_onepush
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def test_onepush(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         onepush = json.loads(request.POST.get("onepush"))
         ntfy = notify(onepush["notifier"], **onepush["params"], title="Qexo消息测试",
@@ -149,10 +144,8 @@ def test_onepush(request):
 
 # 设置API api/setapi
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def set_api(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         apikey = request.POST.get("apikey")
         if apikey:
@@ -173,10 +166,8 @@ def set_api(request):
 
 # 安全设置 api/et_security
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def set_security(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         save_setting("LOGIN_RECAPTCHA_SERVER_TOKEN", request.POST.get("server-token"))
         save_setting("LOGIN_RECAPTCHA_SITE_TOKEN", request.POST.get("site-token"))
@@ -191,10 +182,8 @@ def set_security(request):
 
 # 设置图床配置 api/set_image_host
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def set_image_host(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         image_host = request.POST.get("image_host")
         save_setting("IMG_HOST", image_host)
@@ -207,10 +196,8 @@ def set_image_host(request):
 
 # 设置 Abbrlink 配置 api/set_abbrlink
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def set_abbrlink(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         alg = request.POST.get("alg")
         rep = request.POST.get("rep")
@@ -225,10 +212,8 @@ def set_abbrlink(request):
 
 # 设置CDN api/set_cdn
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def set_cdn(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         cdn_prev = request.POST.get("cdn")
         save_setting("CDN_PREV", cdn_prev)
@@ -241,10 +226,8 @@ def set_cdn(request):
 
 # 设置自定义配置 api/set_cust
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def set_cust(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         site_name = request.POST.get("name")
         split_word = request.POST.get("split")
@@ -265,10 +248,8 @@ def set_cust(request):
 
 # 设置用户信息 api/set_user
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def set_user(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         password = request.POST.get("password")
         username = request.POST.get("username")
@@ -299,10 +280,8 @@ def set_user(request):
 
 # 设置统计配置 api/set_statistic
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def set_statistic(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         domains = request.POST.get("statistic_domains")
         allow = request.POST.get("allow_statistic")
@@ -317,10 +296,8 @@ def set_statistic(request):
 
 # 设置 CustomModel 的字段 api/set_custom
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def set_custom(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         save_custom(request.POST.get("name"), request.POST.get("content"))
         context = {"msg": gettext("SAVE_SUCCESS"), "status": True}
@@ -332,10 +309,8 @@ def set_custom(request):
 
 # 设置 CustomModel 的字段 api/del_custom
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def del_custom(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         CustomModel.objects.filter(name=request.POST.get("name")).delete()
         context = {"msg": "删除成功!", "status": True}
@@ -347,10 +322,8 @@ def del_custom(request):
 
 # 新建 CustomModel 的字段 api/new_custom
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def new_custom(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         save_custom(request.POST.get("name"), request.POST.get("content"))
         context = {"msg": gettext("SAVE_SUCCESS"), "status": True}
@@ -374,10 +347,8 @@ def set_value(request):
 
 # 设置 SettingsModel 的字段 api/del_value
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def del_value(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         SettingModel.objects.filter(name=request.POST.get("name")).delete()
         context = {"msg": gettext("DEL_SUCCESS"), "status": True}
@@ -389,10 +360,8 @@ def del_value(request):
 
 # 新建 SettingsModel 的字段 api/new_value
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def new_value(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         save_setting(request.POST.get("name"), request.POST.get("content"))
         context = {"msg": gettext("SAVE_SUCCESS"), "status": True}
@@ -404,10 +373,8 @@ def new_value(request):
 
 # 自动修复程序 api/fix
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def auto_fix(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         counter = fix_all()
         msg = gettext("FIX_DISPLAY").format(counter)
@@ -420,10 +387,8 @@ def auto_fix(request):
 
 # 执行更新 api/do_update
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def do_update(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     branch = request.POST.get("branch")
     try:
         url = get_update_url(branch)
@@ -705,10 +670,8 @@ def purge(request):
 
 # 自动设置 Webhook 事件 api/create_webhook
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def create_webhook_config(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         try:
@@ -972,10 +935,8 @@ def del_talk(request):
 
 # 运行云端命令
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def run_online_script(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         path = request.POST.get("path")
         if path:

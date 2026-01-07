@@ -164,19 +164,23 @@ def get_images(request):
     try:
         search = request.GET.get("s")
         posts = []
-        images = ImageModel.objects.all()
+        # 优化：只查询需要的字段
+        images = ImageModel.objects.only('name', 'size', 'url', 'date')
+        
+        # 优化：在数据库层面进行搜索过滤
+        if search:
+            from django.db.models import Q
+            images = images.filter(Q(name__icontains=search) | Q(url__icontains=search))
+        
         for i in images:
-            if not search:
-                posts.append({"name": i.name, "size": convert_to_kb_mb_gb(int(i.size)), "url": escape(i.url),
-                              "date": strftime("%Y-%m-%d %H:%M:%S",
-                                               localtime(float(i.date))),
-                              "time": i.date})
-            else:
-                if search.upper() in i.name.upper() or search.upper() in i.url.upper():
-                    posts.append({"name": i.name, "size": convert_to_kb_mb_gb(int(i.size)), "url": escape(i.url),
-                                  "date": strftime("%Y-%m-%d %H:%M:%S",
-                                                   localtime(float(i.date))),
-                                  "time": i.date})
+            posts.append({
+                "name": i.name,
+                "size": convert_to_kb_mb_gb(int(i.size)),
+                "url": escape(i.url),
+                "date": strftime("%Y-%m-%d %H:%M:%S", localtime(float(i.date))),
+                "time": i.date
+            })
+        
         posts.sort(key=lambda x: x["time"])
         context = {"status": True, "images": posts}
     except Exception as error:
@@ -308,12 +312,12 @@ def del_friend(request):
 @csrf_exempt
 def ask_friend(request):
     try:
-        if get_setting("ALLOW_FRIEND") != "是":
+        if get_setting_cached("ALLOW_FRIEND") != "是":
             return HttpResponseForbidden()
         # 人机验证
         verify = request.POST.get("verify")
-        token = get_setting("RECAPTCHA_TOKEN")
-        typ = get_setting("FRIEND_RECAPTCHA")
+        token = get_setting_cached("RECAPTCHA_TOKEN")
+        typ = get_setting_cached("FRIEND_RECAPTCHA")
         if typ == "v3":
             if verify:
                 captcha = requests.get(
@@ -455,7 +459,7 @@ def status(request):
         if not posts:
             posts = []
         posts_count = len(posts)
-        last = get_setting("LAST_LOGIN")
+        last = get_setting_cached("LAST_LOGIN")
         context = {"data": {"posts": str(posts_count), "last": last}, "status": True}
     except Exception as error:
         logging.error(repr(error))
@@ -468,9 +472,9 @@ def status(request):
 def statistic(request):
     try:
         referer = request.META.get('HTTP_REFERER', '')
-        allow_domains = get_setting("STATISTIC_DOMAINS").split(",")
+        allow_domains = get_setting_cached("STATISTIC_DOMAINS").split(",")
         domain_name = get_domain(referer)
-        if not (domain_name and get_setting("STATISTIC_ALLOW") == "是" and any(d in domain_name for d in allow_domains)):
+        if not (domain_name and get_setting_cached("STATISTIC_ALLOW") == "是" and any(d in domain_name for d in allow_domains)):
             logging.error(f"域名未验证: {referer}")
             return HttpResponseForbidden()
 

@@ -23,7 +23,7 @@ def auth(request):
         password = request.POST.get("password")
         verify = request.POST.get("verify")
         if request.POST.get("type") == "v3":
-            token = get_setting("LOGIN_RECAPTCHA_SERVER_TOKEN")
+            token = get_setting_cached("LOGIN_RECAPTCHA_SERVER_TOKEN")
             if verify:
                 captcha = requests.get(
                     "https://recaptcha.google.cn/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
@@ -34,7 +34,7 @@ def auth(request):
                 logging.info(gettext("CAPTCHA_NO"))
                 return JsonResponse(safe=False, data={"msg": gettext("CAPTCHA_FAILED"), "status": False})
         elif request.POST.get("type") == "v2":
-            token = get_setting("LOGIN_RECAPTCHAV2_SERVER_TOKEN")
+            token = get_setting_cached("LOGIN_RECAPTCHAV2_SERVER_TOKEN")
             if verify:
                 captcha = requests.get(
                     "https://recaptcha.google.cn/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
@@ -719,7 +719,7 @@ def upload_img(request):
         file = request.FILES.getlist('file[]')[0] if request.FILES.getlist('file[]') else request.FILES.getlist('file')[0]
         try:
             from hexoweb.libs import image as image_lib
-            image_host = json.loads(get_setting("IMG_HOST"))
+            image_host = json.loads(get_setting_cached("IMG_HOST"))
             if image_host["type"] in image_lib.all_providers():
                 res = get_image_host(image_host["type"], **image_host["params"]).upload(file)
                 context["url"] = res[0]

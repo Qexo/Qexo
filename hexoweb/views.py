@@ -39,7 +39,7 @@ def page_500(request):
 
 def login_view(request):
     try:
-        if int(get_setting("INIT")) <= 5:
+        if int(get_setting_cached("INIT")) <= 5:
             logging.info(gettext("NOT_INIT"))
             return redirect("/init/")
     except Exception:
@@ -51,10 +51,10 @@ def login_view(request):
         else:
             return redirect(unquote(request.GET.get("next")))
     context = get_custom_config()
-    site_token = get_setting("LOGIN_RECAPTCHA_SITE_TOKEN")
-    server_token = get_setting("LOGIN_RECAPTCHA_SERVER_TOKEN")
-    site_token_v2 = get_setting("LOGIN_RECAPTCHAV2_SITE_TOKEN")
-    server_token_v2 = get_setting("LOGIN_RECAPTCHAV2_SERVER_TOKEN")
+    site_token = get_setting_cached("LOGIN_RECAPTCHA_SITE_TOKEN")
+    server_token = get_setting_cached("LOGIN_RECAPTCHA_SERVER_TOKEN")
+    site_token_v2 = get_setting_cached("LOGIN_RECAPTCHAV2_SITE_TOKEN")
+    server_token_v2 = get_setting_cached("LOGIN_RECAPTCHAV2_SERVER_TOKEN")
     if site_token and server_token:
         context["site_token"] = site_token
     if site_token_v2 and server_token_v2 and not context.get("site_token"):
@@ -66,7 +66,7 @@ def login_view(request):
 @staff_required(redirect_to_login=True)
 def update_view(request):
     try:
-        if int(get_setting("INIT")) <= 5:
+        if int(get_setting_cached("INIT")) <= 5:
             logging.info(gettext("NOT_INIT"))
             return redirect("/init/")
     except Exception:
@@ -90,10 +90,10 @@ def update_view(request):
         if setting[0] not in already:
             if setting[0] == "PROVIDER":  # migrate from 1.x
                 _provider = {"provider": "github",
-                             "params": {"token": get_setting("GH_TOKEN"),
-                                        "branch": get_setting("GH_REPO_BRANCH"),
-                                        "repo": get_setting("GH_REPO"),
-                                        "path": get_setting("GH_PATH")}}
+                             "params": {"token": get_setting_cached("GH_TOKEN"),
+                                        "branch": get_setting_cached("GH_REPO_BRANCH"),
+                                        "repo": get_setting_cached("GH_REPO"),
+                                        "path": get_setting_cached("GH_PATH")}}
                 context["settings"].append(dict(name=setting[0], value=json.dumps(_provider),
                                                 placeholder=setting[3]))
                 if verify_provider(_provider)["status"] == 1:
@@ -117,7 +117,7 @@ def init_view(request):
     msg = None
     context: dict = {"all_languages": hexoweb.libs.i18n.all_languages()}
     context.update(get_custom_config())
-    step = get_setting("INIT")
+    step = get_setting_cached("INIT")
     if not step:
         save_setting("INIT", "1")
         step = "1"
@@ -135,7 +135,7 @@ def init_view(request):
                 step = "2"
             else:
                 step = "3"
-                context["PROVIDER"] = get_setting("PROVIDER")
+                context["PROVIDER"] = get_setting_cached("PROVIDER")
                 # Get Provider Settings
                 all_provider = all_providers()
                 context["all_providers"] = dict()
@@ -178,7 +178,7 @@ def init_view(request):
                     User.objects.create_superuser(username=username, password=password, email="")
                     save_setting("INIT", "3")
                     step = "3"
-                    context["PROVIDER"] = get_setting("PROVIDER")
+                    context["PROVIDER"] = get_setting_cached("PROVIDER")
                     # Get Provider Settings
                     all_provider = all_providers()
                     context["all_providers"] = dict()
@@ -260,7 +260,7 @@ def init_view(request):
             except Exception as e:
                 msg = repr(e)
                 logging.error(gettext("INIT_PROVIDER_FAILED").format(repr(e)))
-                context["PROVIDER"] = json.dumps(get_setting("PROVIDER") if not provider else provider)
+                context["PROVIDER"] = json.dumps(get_setting_cached("PROVIDER") if not provider else provider)
                 # Get Provider Settings
                 all_provider = all_providers()
                 context["all_providers"] = dict()
@@ -290,7 +290,7 @@ def init_view(request):
         return redirect("/")
     else:
         if int(step) == 3:
-            context["PROVIDER"] = get_setting("PROVIDER")
+            context["PROVIDER"] = get_setting_cached("PROVIDER")
             # Get Provider Settings
             all_provider = all_providers()
             context["all_providers"] = dict()
@@ -371,14 +371,14 @@ def migrate_view(request):
 @login_required(login_url="/login/")
 def index(request):
     try:
-        if int(get_setting("INIT")) <= 5:
+        if int(get_setting_cached("INIT")) <= 5:
             logging.info(gettext("NOT_INIT"))
             return redirect("/init/")
     except Exception:
         logging.info(gettext("NOT_INIT"))
         return redirect("/init/")
     try:
-        if get_setting("JUMP_UPDATE") != "false":
+        if get_setting_cached("JUMP_UPDATE") != "false":
             logging.info(gettext("JUMP_UPDATE"))
             return redirect("/update/")
     except Exception:
@@ -393,7 +393,8 @@ def index(request):
         posts = update_posts_cache()
     if not posts:
         posts = []
-    _images = ImageModel.objects.all().order_by("-date")
+    # 优化：只查询需要的字段，减少内存占用和数据传输
+    _images = ImageModel.objects.only('name', 'size', 'url', 'date').order_by("-date")
     images = list()
     for i in _images:
         images.append({
@@ -434,14 +435,14 @@ def index(request):
 def pages(request):
     context: dict = {}
     try:
-        if int(get_setting("INIT")) <= 5:
+        if int(get_setting_cached("INIT")) <= 5:
             logging.info(gettext("NOT_INIT"))
             return redirect("/init/")
     except Exception:
         logging.info(gettext("NOT_INIT"))
         return redirect("/init/")
     try:
-        if get_setting("JUMP_UPDATE") != "false":
+        if get_setting_cached("JUMP_UPDATE") != "false":
             logging.info(gettext("JUMP_UPDATE"))
             return redirect("/update/")
     except Exception:
@@ -460,14 +461,14 @@ def pages(request):
             context["content"] = repr("")
             context["tags"] = "[]"
             context["values"] = "{}"
-            context["sidebar"] = get_setting("TALK_SIDEBAR")
+            context["sidebar"] = get_setting_cached("TALK_SIDEBAR")
             if talk_id:
                 Talk = TalkModel.objects.get(id=uuid.UUID(hex=talk_id))
                 context["content"] = repr(Talk.content)
                 context["tags"] = Talk.tags
                 context["id"] = talk_id
                 context["values"] = Talk.values
-            if json.loads(get_setting("IMG_HOST")).get("type") in hexoweb.libs.image.all_providers():
+            if json.loads(get_setting_cached("IMG_HOST")).get("type") in hexoweb.libs.image.all_providers():
                 context["img_bed"] = True
         elif "edit_page" in load_template:
             context["breadcrumb"] = "PageEditor"
@@ -477,11 +478,11 @@ def pages(request):
             context["front_matter"] = json.dumps(context["front_matter"])
             context['filename'] = file_path.split("/")[-1]
             context["file_path"] = file_path
-            context["emoji"] = get_setting("VDITOR_EMOJI")
-            context["sidebar"] = get_setting("PAGE_SIDEBAR")
-            if json.loads(get_setting("IMG_HOST")).get("type") in hexoweb.libs.image.all_providers():
+            context["emoji"] = get_setting_cached("VDITOR_EMOJI")
+            context["sidebar"] = get_setting_cached("PAGE_SIDEBAR")
+            if json.loads(get_setting_cached("IMG_HOST")).get("type") in hexoweb.libs.image.all_providers():
                 context["img_bed"] = True
-            context["AUTO_EXCERPT_CONFIG"] = get_setting("AUTO_EXCERPT_CONFIG")
+            context["AUTO_EXCERPT_CONFIG"] = get_setting_cached("AUTO_EXCERPT_CONFIG")
             context["breadcrumb_cn"] = gettext("EDIT_PAGE") + ": " + context['filename']
         elif "edit_config" in load_template:
             context["breadcrumb"] = "ConfigEditor"
@@ -499,17 +500,17 @@ def pages(request):
             context['filename'] = request.GET.get("postname")
             context["breadcrumb_cn"] = gettext("EDIT_POST") + ": " + context['filename']
             context['fullname'] = file_path
-            context["emoji"] = get_setting("VDITOR_EMOJI")
-            context["sidebar"] = get_setting("POST_SIDEBAR")
+            context["emoji"] = get_setting_cached("VDITOR_EMOJI")
+            context["sidebar"] = get_setting_cached("POST_SIDEBAR")
             context["config"] = Provider().config
-            if json.loads(get_setting("IMG_HOST")).get("type") in hexoweb.libs.image.all_providers():
+            if json.loads(get_setting_cached("IMG_HOST")).get("type") in hexoweb.libs.image.all_providers():
                 context["img_bed"] = True
-            context["AUTO_EXCERPT_CONFIG"] = get_setting("AUTO_EXCERPT_CONFIG")
+            context["AUTO_EXCERPT_CONFIG"] = get_setting_cached("AUTO_EXCERPT_CONFIG")
         elif "new_page" in load_template:
             context["breadcrumb"] = "NewPage"
             context["breadcrumb_cn"] = gettext("NEW_PAGE")
-            context["emoji"] = get_setting("VDITOR_EMOJI")
-            context["sidebar"] = get_setting("PAGE_SIDEBAR")
+            context["emoji"] = get_setting_cached("VDITOR_EMOJI")
+            context["sidebar"] = get_setting_cached("PAGE_SIDEBAR")
             try:
                 context["front_matter"], context["file_content"] = get_post_details(
                     (Provider().get_scaffold("pages")))
@@ -518,14 +519,14 @@ def pages(request):
                 logging.error(gettext("GET_PAGE_SCAFFOLD_FAILED").format(repr(error)))
                 # context["error"] = repr(error)
                 context["front_matter"], context["file_content"] = {}, ""
-            if json.loads(get_setting("IMG_HOST")).get("type") in hexoweb.libs.image.all_providers():
+            if json.loads(get_setting_cached("IMG_HOST")).get("type") in hexoweb.libs.image.all_providers():
                 context["img_bed"] = True
-            context["AUTO_EXCERPT_CONFIG"] = get_setting("AUTO_EXCERPT_CONFIG")
+            context["AUTO_EXCERPT_CONFIG"] = get_setting_cached("AUTO_EXCERPT_CONFIG")
         elif "new" in load_template:
             context["breadcrumb"] = "NewPost"
             context["breadcrumb_cn"] = gettext("NEW_POST")
-            context["emoji"] = get_setting("VDITOR_EMOJI")
-            context["sidebar"] = get_setting("POST_SIDEBAR")
+            context["emoji"] = get_setting_cached("VDITOR_EMOJI")
+            context["sidebar"] = get_setting_cached("POST_SIDEBAR")
             context["config"] = Provider().config
             try:
                 context["front_matter"], context["file_content"] = get_post_details(
@@ -535,9 +536,9 @@ def pages(request):
                 logging.error(gettext("GET_POST_SCAFFOLD_FAILED").format(repr(error)))
                 # context["error"] = repr(error)
                 context["front_matter"], context["file_content"] = {}, ""
-            if json.loads(get_setting("IMG_HOST")).get("type") in hexoweb.libs.image.all_providers():
+            if json.loads(get_setting_cached("IMG_HOST")).get("type") in hexoweb.libs.image.all_providers():
                 context["img_bed"] = True
-            context["AUTO_EXCERPT_CONFIG"] = get_setting("AUTO_EXCERPT_CONFIG")
+            context["AUTO_EXCERPT_CONFIG"] = get_setting_cached("AUTO_EXCERPT_CONFIG")
         elif "posts" in load_template:
             context["breadcrumb"] = "Posts"
             context["breadcrumb_cn"] = gettext("POSTS_LIST")
@@ -643,19 +644,23 @@ def pages(request):
             context["breadcrumb_cn"] = gettext("IMAGES_LIST")
             search = request.GET.get("s")
             posts = []
-            images = ImageModel.objects.all()
+            # 优化：只查询需要的字段
+            images = ImageModel.objects.only('name', 'size', 'url', 'date')
+            
+            # 优化：在数据库层面进行搜索过滤，而非在Python中过滤
+            if search:
+                from django.db.models import Q
+                images = images.filter(Q(name__icontains=search) | Q(url__icontains=search))
+            
             for i in images:
-                if not search:
-                    posts.append({"name": i.name, "size": convert_to_kb_mb_gb(int(i.size)), "url": escape(i.url),
-                                  "date": strftime("%Y-%m-%d %H:%M:%S",
-                                                   localtime(float(i.date))),
-                                  "time": i.date})
-                else:
-                    if search.upper() in i.name.upper() or search.upper() in i.url.upper():
-                        posts.append({"name": i.name, "size": convert_to_kb_mb_gb(int(i.size)), "url": escape(i.url),
-                                      "date": strftime("%Y-%m-%d %H:%M:%S",
-                                                       localtime(float(i.date))),
-                                      "time": i.date})
+                posts.append({
+                    "name": i.name,
+                    "size": convert_to_kb_mb_gb(int(i.size)),
+                    "url": escape(i.url),
+                    "date": strftime("%Y-%m-%d %H:%M:%S", localtime(float(i.date))),
+                    "time": i.date
+                })
+            
             posts.sort(key=lambda x: x["time"])
             context["posts"] = json.dumps(posts[::-1])
             context["post_number"] = len(posts)
@@ -691,26 +696,26 @@ def pages(request):
                 logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
                 return page_403(request, gettext("NO_PERMISSION"))
             try:
-                context['ABBRLINK_ALG'] = get_setting("ABBRLINK_ALG")
-                context['ABBRLINK_REP'] = get_setting("ABBRLINK_REP")
-                context["ALLOW_FRIEND"] = get_setting("ALLOW_FRIEND")
-                context["STATISTIC_DOMAINS"] = get_setting("STATISTIC_DOMAINS")
-                context["STATISTIC_ALLOW"] = get_setting("STATISTIC_ALLOW")
-                context["FRIEND_RECAPTCHA"] = get_setting("FRIEND_RECAPTCHA")
-                context["RECAPTCHA_TOKEN"] = get_setting("RECAPTCHA_TOKEN")
-                context["LOGIN_RECAPTCHA_SITE_TOKEN"] = get_setting("LOGIN_RECAPTCHA_SITE_TOKEN")
-                context["LOGIN_RECAPTCHA_SERVER_TOKEN"] = get_setting("LOGIN_RECAPTCHA_SERVER_TOKEN")
-                context["LOGIN_RECAPTCHAV2_SITE_TOKEN"] = get_setting("LOGIN_RECAPTCHAV2_SITE_TOKEN")
-                context["LOGIN_RECAPTCHAV2_SERVER_TOKEN"] = get_setting("LOGIN_RECAPTCHAV2_SERVER_TOKEN")
+                context['ABBRLINK_ALG'] = get_setting_cached("ABBRLINK_ALG")
+                context['ABBRLINK_REP'] = get_setting_cached("ABBRLINK_REP")
+                context["ALLOW_FRIEND"] = get_setting_cached("ALLOW_FRIEND")
+                context["STATISTIC_DOMAINS"] = get_setting_cached("STATISTIC_DOMAINS")
+                context["STATISTIC_ALLOW"] = get_setting_cached("STATISTIC_ALLOW")
+                context["FRIEND_RECAPTCHA"] = get_setting_cached("FRIEND_RECAPTCHA")
+                context["RECAPTCHA_TOKEN"] = get_setting_cached("RECAPTCHA_TOKEN")
+                context["LOGIN_RECAPTCHA_SITE_TOKEN"] = get_setting_cached("LOGIN_RECAPTCHA_SITE_TOKEN")
+                context["LOGIN_RECAPTCHA_SERVER_TOKEN"] = get_setting_cached("LOGIN_RECAPTCHA_SERVER_TOKEN")
+                context["LOGIN_RECAPTCHAV2_SITE_TOKEN"] = get_setting_cached("LOGIN_RECAPTCHAV2_SITE_TOKEN")
+                context["LOGIN_RECAPTCHAV2_SERVER_TOKEN"] = get_setting_cached("LOGIN_RECAPTCHAV2_SERVER_TOKEN")
                 # Get Provider Settings
-                context["PROVIDER"] = get_setting("PROVIDER")
+                context["PROVIDER"] = get_setting_cached("PROVIDER")
                 all_provider = all_providers()
                 context["all_providers"] = dict()
                 for provider in all_provider:
                     params = get_params(provider)
                     context["all_providers"][provider] = params
                 # Get OnePush Settings
-                context["ONEPUSH"] = get_setting("ONEPUSH")
+                context["ONEPUSH"] = get_setting_cached("ONEPUSH")
                 all_pusher = onepush_providers()
                 context["all_pushers"] = dict()
                 for pusher in all_pusher:
@@ -727,22 +732,22 @@ def pages(request):
                         params["optional"].append("mdFormat")
                     context["all_pushers"][pusher] = params
                 # GET Image Host Settings
-                context["IMG_HOST"] = get_setting("IMG_HOST")
+                context["IMG_HOST"] = get_setting_cached("IMG_HOST")
                 all_provider = all_image_providers()
                 context["all_image_hosts"] = dict()
                 for provider in all_provider:
                     params = get_image_params(provider)
                     context["all_image_hosts"][provider] = params
                 # CDNs
-                context["ALL_CDN"] = json.loads(get_setting("ALL_CDN_PREV"))
-                context["NOW_CDN"] = get_setting("CDN_PREV")
+                context["ALL_CDN"] = json.loads(get_setting_cached("ALL_CDN_PREV"))
+                context["NOW_CDN"] = get_setting_cached("CDN_PREV")
                 context["static_version"] = QEXO_STATIC
                 # 更新通道
-                context["ALL_UPDATES"] = json.loads(get_setting("ALL_UPDATES"))
+                context["ALL_UPDATES"] = json.loads(get_setting_cached("ALL_UPDATES"))
                 context["ALL_PLATFORM_CONFIGS"] = platform_configs()
                 context["NOW_PLATFORM_CONFIG"] = Provider().config["name"]
                 # Get Auto Excerpt Settings
-                context["AUTO_EXCERPT_CONFIG"] = get_setting("AUTO_EXCERPT_CONFIG")
+                context["AUTO_EXCERPT_CONFIG"] = get_setting_cached("AUTO_EXCERPT_CONFIG")
                 context["AUTO_EXCERPT_SAVE_KEY"] = json.loads(context["AUTO_EXCERPT_CONFIG"]).get("save_key", "excerpt")
                 context["AUTO_EXCERPT"] = json.loads(context["AUTO_EXCERPT_CONFIG"]).get("auto", "关闭")
             except Exception:

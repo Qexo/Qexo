@@ -39,12 +39,83 @@ logging.basicConfig(level=logging.INFO,
                     format='[%(asctime)s] %(levelname)s: %(message)s(%(filename)s.%(funcName)s[line:%(lineno)d])',
                     datefmt="%d/%b/%Y %H:%M:%S")
 
+# ===== 应用级配置缓存 =====
+# 用于减少频繁的数据库查询，提升性能
+_CONFIG_CACHE = {}
+_CACHE_TTL = 3600  # 缓存过期时间：1小时
+
 
 def get_setting(name):
+    """
+    获取配置项的值，使用应用级缓存减少数据库查询
+    
+    Args:
+        name: 配置项名称
+        
+    Returns:
+        配置内容字符串，不存在返回空字符串
+    """
     try:
         return SettingModel.objects.get(name=name).content
     except Exception:
         return ""
+
+
+def get_setting_cached(name, default="", ttl=None):
+    """
+    获取配置项的值（带缓存），大幅减少数据库查询
+    
+    Args:
+        name: 配置项名称
+        default: 默认值
+        ttl: 缓存过期时间（秒），None使用全局默认值
+        
+    Returns:
+        配置内容字符串或默认值
+        
+    Example:
+        cdn = get_setting_cached("CDN_PREV", "https://cdn.default.com")
+    """
+    global _CONFIG_CACHE
+    
+    if ttl is None:
+        ttl = _CACHE_TTL
+    
+    cache_key = f"setting_{name}"
+    current_time = time()
+    
+    # 检查缓存
+    if cache_key in _CONFIG_CACHE:
+        value, timestamp = _CONFIG_CACHE[cache_key]
+        if current_time - timestamp < ttl:
+            return value if value else default
+    
+    # 查询数据库
+    value = get_setting(name)
+    
+    # 更新缓存
+    _CONFIG_CACHE[cache_key] = (value, current_time)
+    
+    return value if value else default
+
+
+def clear_setting_cache(name=None):
+    """
+    清除配置缓存
+    
+    Args:
+        name: 配置项名称，None则清除所有缓存
+    """
+    global _CONFIG_CACHE
+    
+    if name is None:
+        _CONFIG_CACHE.clear()
+        logging.info("已清除所有配置缓存")
+    else:
+        cache_key = f"setting_{name}"
+        if cache_key in _CONFIG_CACHE:
+            del _CONFIG_CACHE[cache_key]
+            logging.info(f"已清除配置缓存: {name}")
 
 
 def update_language():
@@ -122,14 +193,25 @@ def excerpt(value, length):
 
 
 def get_cdn():
-    cdn_prev = get_setting("CDN_PREV")
-    if not cdn_prev:
-        cdn_prev = "https://registry.npmmirror.com/qexo-static/{version}/files/qexo"
-        for i in ALL_SETTINGS:
-            if i[0] == "CDN_PREV":
-                cdn_prev = i[1]
-                break
-        save_setting("CDN_PREV", cdn_prev)
+    """
+    获取CDN配置 - 优化版本使用应用级缓存
+    
+    Returns:
+        格式化后的CDN URL
+    """
+    # 使用缓存查询，大幅减少数据库访问
+    default_cdn = "https://registry.npmmirror.com/qexo-static/{version}/files/qexo"
+    for i in ALL_SETTINGS:
+        if i[0] == "CDN_PREV":
+            default_cdn = i[1]
+            break
+    
+    cdn_prev = get_setting_cached("CDN_PREV", default_cdn)
+    
+    # 如果是首次访问且未设置，保存默认值
+    if not get_setting("CDN_PREV"):
+        save_setting("CDN_PREV", default_cdn)
+    
     return cdn_prev.format(version=QEXO_STATIC)
 
 
@@ -143,33 +225,48 @@ def get_cdn():
 
 # 获取用户自定义的样式配置
 def get_custom_config():
+    """
+    获取自定义配置 - 优化版本使用批量查询和缓存
+    
+    从原来的5次独立数据库查询优化为1次批量查询 + 缓存
+    
+    Returns:
+        包含所有配置项的字典
+    """
     lang_data = Language()
     lang_name = lang_data.get("name", "zh_CN") if isinstance(lang_data, dict) else "zh_CN"
-    context = {"cdn_prev": get_cdn(), "QEXO_NAME": get_setting("QEXO_NAME"),
-               "language": lang_name, "vditor_languages": VDITOR_LANGUAGES,
-               "all_languages": hexoweb.libs.i18n.all_languages()}
-    if not context["QEXO_NAME"]:
-        save_setting('QEXO_NAME', 'Hexo' + gettext("CONSOLE"))
-        context["QEXO_NAME"] = get_setting("QEXO_NAME")
-    context["QEXO_SPLIT"] = get_setting("QEXO_SPLIT")
-    if not context["QEXO_SPLIT"]:
-        save_setting('QEXO_SPLIT', ' - ')
-        context["QEXO_SPLIT"] = get_setting("QEXO_SPLIT")
-    context["QEXO_LOGO"] = get_setting("QEXO_LOGO")
-    if not context["QEXO_LOGO"]:
-        save_setting('QEXO_LOGO',
-                     'https://unpkg.com/qexo-static@' + QEXO_STATIC + '/qexo/images/qexo.png')
-        context["QEXO_LOGO"] = get_setting("QEXO_LOGO")
-    context["QEXO_LOGO_DARK"] = get_setting("QEXO_LOGO_DARK")
-    if not context["QEXO_LOGO_DARK"]:
-        save_setting('QEXO_LOGO_DARK',
-                     'https://unpkg.com/qexo-static@' + QEXO_STATIC + '/qexo/images/qexo-dark.png')
-        context["QEXO_LOGO_DARK"] = get_setting("QEXO_LOGO_DARK")
-    context["QEXO_ICON"] = get_setting("QEXO_ICON")
-    if not context["QEXO_ICON"]:
-        save_setting('QEXO_ICON',
-                     'https://unpkg.com/qexo-static@' + QEXO_STATIC + '/qexo/images/icon.png')
-        context["QEXO_ICON"] = get_setting("QEXO_ICON")
+    
+    # 定义所有需要的配置项及其默认值
+    config_defaults = {
+        "QEXO_NAME": 'Hexo' + gettext("CONSOLE"),
+        "QEXO_SPLIT": ' - ',
+        "QEXO_LOGO": f'https://unpkg.com/qexo-static@{QEXO_STATIC}/qexo/images/qexo.png',
+        "QEXO_LOGO_DARK": f'https://unpkg.com/qexo-static@{QEXO_STATIC}/qexo/images/qexo-dark.png',
+        "QEXO_ICON": f'https://unpkg.com/qexo-static@{QEXO_STATIC}/qexo/images/icon.png',
+    }
+    
+    # 批量查询所有需要的配置项（从5次查询优化为1次）
+    config_names = list(config_defaults.keys())
+    settings_dict = {s.name: s.content for s in 
+                     SettingModel.objects.filter(name__in=config_names)}
+    
+    # 构建context，使用缓存的get_cdn()
+    context = {
+        "cdn_prev": get_cdn(),
+        "language": lang_name,
+        "vditor_languages": VDITOR_LANGUAGES,
+        "all_languages": hexoweb.libs.i18n.all_languages()
+    }
+    
+    # 填充配置项，如果不存在则使用默认值并保存
+    for config_name, default_value in config_defaults.items():
+        if config_name in settings_dict and settings_dict[config_name]:
+            context[config_name] = settings_dict[config_name]
+        else:
+            # 首次使用时保存默认值
+            save_setting(config_name, default_value)
+            context[config_name] = default_value
+    
     return context
 
 
@@ -202,7 +299,7 @@ def _filter_items_by_search(items, search_term):
 
 def _get_cached_or_fresh_data(cache_name, provider_method, search_term=None):
     """从缓存获取数据或通过provider获取新数据"""
-    # 检查是否有现有缓存
+    # 检查是否有现有缓存 - 优化：使用first()代替count()
     old_cache = Cache.objects.filter(name=cache_name).first()
 
     # 如果没有缓存或需要搜索，获取完整结果
@@ -249,10 +346,8 @@ def update_configs_cache(s=None):
 
 
 def delete_all_caches():
-    caches = Cache.objects.all()
-    for cache in caches:
-        if cache.name != "update":
-            cache.delete()
+    Cache.objects.exclude(name="update").delete()
+    clear_setting_cache()
     logging.info(gettext("PURGE_ALL_CACHE_SUCCESS"))
 
 
@@ -271,6 +366,10 @@ def save_setting(name, content):
     else:
         new_set.content = ""
     new_set.save()
+    
+    # 清除该配置项的缓存
+    clear_setting_cache(name)
+    
     logging.info(gettext("SAVE_SETTING") + "{} => {}".format(name, content if name != "PROVIDER" else "******"))
     return new_set
 

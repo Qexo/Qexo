@@ -177,12 +177,49 @@ if errors:
     logging.error(f"{errors}未设置, 请查看: https://www.oplog.cn/qexo/start/build.html")
     raise exceptions.InitError(f"{errors}未设置, 请查看: https://www.oplog.cn/qexo/start/build.html")
 
-if LOCAL_CONFIG:
-    logging.info("获取本地配置文件成功, 使用本地配置部署")
-    ALLOWED_HOSTS = configs.DOMAINS
-else:
-    logging.info("未检测到本地配置, 使用环境变量获取配置")  # Serverless部署
-    ALLOWED_HOSTS = json.loads(os.environ.get("DOMAINS", False)) if os.environ.get("DOMAINS", False) else ["*"]
+def _load_allowed_hosts(local_config):
+    source = "本地配置" if local_config else "环境变量 DOMAINS"
+
+    if local_config:
+        try:
+            hosts = configs.DOMAINS
+        except AttributeError:
+            raise exceptions.InitError('本地 configs.py 缺少 DOMAINS, 请设置为 ["example.com"]')
+    else:
+        domains_raw = os.environ.get("DOMAINS")
+        if not domains_raw:
+            raise exceptions.InitError('DOMAINS 未设置, 请填写实际域名, 例如 ["example.com"]')
+        try:
+            hosts = json.loads(domains_raw)
+        except json.JSONDecodeError as exc:
+            raise exceptions.InitError(f"DOMAINS 解析失败: {exc}")
+
+    if not isinstance(hosts, (list, tuple)):
+        raise exceptions.InitError(f"{source} DOMAINS 必须为列表, 例如 [\"example.com\"]")
+
+    if (not hosts) or hosts == ["*"]:
+        raise exceptions.InitError(f"{source} DOMAINS 未配置有效域名, 请填写实际域名, 例如 [\"example.com\"]")
+
+    logging.info(f"从{source}获取域名: {hosts}")
+    return hosts
+
+
+def _build_csrf_trusted_origins(hosts):
+    origins = []
+    for host in hosts:
+        if (not host) or host == "*":
+            continue
+        host = host.rstrip("/")
+        if "://" in host:
+            origins.append(host)
+        else:
+            origins.append(f"https://{host}")
+            origins.append(f"http://{host}")
+    return origins
+
+
+ALLOWED_HOSTS = _load_allowed_hosts(LOCAL_CONFIG)
+CSRF_TRUSTED_ORIGINS = _build_csrf_trusted_origins(ALLOWED_HOSTS)
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

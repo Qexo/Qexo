@@ -21,6 +21,7 @@ class Main(Language):
             "ADVANCED_SETTINGS": "高級設置",
             "ADVANCED_SETTINGS_LABEL": "高級設置",
             "API_VERIFY_FAILED": "API鑒權失敗, 訪問IP: {}",
+            "AUTH_FAILED": "鑒權錯誤！",
             "AUTHOR": "作者",
             "AUTO_PROVIDER_FAILED": "自動生成PROVIDER錯誤，請檢查配置並提交",
             "BACKUP": "備份文件",
@@ -460,10 +461,15 @@ class Main(Language):
             "VALUE": "字段",
             "VALUE_NAME": "字段名",
             "VERIFY_FAILED": "校驗失敗",
+            "VERIFY_SUCCESS": "校驗成功",
             "WARN": "警告",
             "WARN_RESET": "確定要重置自定義配置嗎？該操作不可回退",
             "WARN_WEBHOOK": "確定要自動創建Webhook事件嗎？這會清除您原倉庫的所有Webhook事件",
+            "WEBHOOK_APIKEY_EXISTS": "APIKey已存在！",
+            "WEBHOOK_CREATE_SUCCESS": "Webhook創建成功！",
+            "WEBHOOK_NOT_SUPPORT": "該Provider不支持Webhook！",
             "WELCOME": "歡迎",
-            "WIKI_LABEL": "查看文檔"
+            "WIKI_LABEL": "查看文檔",
+            "GET_SUCCESS": "獲取成功"
         }
     }

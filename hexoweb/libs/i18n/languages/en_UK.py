@@ -21,6 +21,7 @@ class Main(Language):
             "ADVANCED_SETTINGS": "Advanced Settings",
             "ADVANCED_SETTINGS_LABEL": "Advanced Settings",
             "API_VERIFY_FAILED": "API verification failed, access IP: {}",
+            "AUTH_FAILED": "Authentication Failed！",
             "AUTHOR": "Author",
             "AUTO_PROVIDER_FAILED": "Error in automatic generation of PROVIDER, please check the configuration and submit",
             "BACKUP": "Backup File",
@@ -460,10 +461,15 @@ class Main(Language):
             "VALUE": "Field",
             "VALUE_NAME": "Field Name",
             "VERIFY_FAILED": "Verification failed",
+            "VERIFY_SUCCESS": "Verification successful",
             "WARN": "Warning",
             "WARN_RESET": "Are you sure you want to reset the custom configuration? This operation is irreversible",
             "WARN_WEBHOOK": "Are you sure you want to automatically create Webhook events? This will clear all your original repository's Webhook events",
+            "WEBHOOK_APIKEY_EXISTS": "APIKey already exists！",
+            "WEBHOOK_CREATE_SUCCESS": "Webhook Created Successfully！",
+            "WEBHOOK_NOT_SUPPORT": "This Provider does not support Webhooks！",
             "WELCOME": "Welcome",
-            "WIKI_LABEL": "View Documentation"
+            "WIKI_LABEL": "View Documentation",
+            "GET_SUCCESS": "Retrieved Successfully"
         }
     }

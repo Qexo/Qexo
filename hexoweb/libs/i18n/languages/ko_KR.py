@@ -21,6 +21,7 @@ class Main(Language):
             "ADVANCED_SETTINGS": "고급 설정",
             "ADVANCED_SETTINGS_LABEL": "고급 설정",
             "API_VERIFY_FAILED": "API 인증 실패, 액세스 IP: {}",
+            "AUTH_FAILED": "인증 오류！",
             "AUTHOR": "작성자",
             "AUTO_PROVIDER_FAILED": "PROVIDER 자동 생성 오류, 설정을 확인하고 제출하세요",
             "BACKUP": "백업 파일",
@@ -455,10 +456,15 @@ class Main(Language):
             "VALUE": "필드",
             "VALUE_NAME": "필드 이름",
             "VERIFY_FAILED": "검증 실패",
+            "VERIFY_SUCCESS": "검증 성공",
             "WARN": "경고",
             "WARN_RESET": "사용자 정의 설정을 재설정하시겠습니까? 이 작업은 되돌릴 수 없습니다",
             "WARN_WEBHOOK": "WEBHOOK 이벤트를 자동으로 생성하시겠습니까? 이 작업은 원래 저장소의 모든 WEBHOOK 이벤트를 지웁니다",
+            "WEBHOOK_APIKEY_EXISTS": "API 키가 이미 존재합니다！",
+            "WEBHOOK_CREATE_SUCCESS": "Webhook 생성 성공！",
+            "WEBHOOK_NOT_SUPPORT": "이 Provider는 Webhook을 지원하지 않습니다！",
             "WELCOME": "환영합니다",
-            "WIKI_LABEL": "문서 보기"
+            "WIKI_LABEL": "문서 보기",
+            "GET_SUCCESS": "가져오기 성공"
         }
     }

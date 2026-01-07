@@ -21,6 +21,7 @@ class Main(Language):
             "ADVANCED_SETTINGS": "Paramètres avancés",
             "ADVANCED_SETTINGS_LABEL": "Paramètres avancés",
             "API_VERIFY_FAILED": "Échec de la vérification de l'API, IP d'accès: {}",
+            "AUTH_FAILED": "Échec de l'authentification！",
             "AUTHOR": "Auteur",
             "AUTO_PROVIDER_FAILED": "Erreur lors de la génération automatique du PROVIDER, veuillez vérifier la configuration et soumettre",
             "BACKUP": "Sauvegarde",
@@ -455,10 +456,15 @@ class Main(Language):
             "VALUE": "Champ",
             "VALUE_NAME": "Nom du champ",
             "VERIFY_FAILED": "Échec de la vérification",
+            "VERIFY_SUCCESS": "Vérification réussie",
             "WARN": "Avertissement",
             "WARN_RESET": "Êtes-vous sûr de vouloir réinitialiser la configuration personnalisée ? Cette opération est irréversible",
             "WARN_WEBHOOK": "Êtes-vous sûr de vouloir créer automatiquement un événement Webhook ? Cela supprimera tous les événements Webhook de votre dépôt d'origine",
+            "WEBHOOK_APIKEY_EXISTS": "La clé API existe déjà！",
+            "WEBHOOK_CREATE_SUCCESS": "Webhook créé avec succès！",
+            "WEBHOOK_NOT_SUPPORT": "Ce Provider ne prend pas en charge les Webhooks！",
             "WELCOME": "Bienvenue",
-            "WIKI_LABEL": "Voir la documentation"
+            "WIKI_LABEL": "Voir la documentation",
+            "GET_SUCCESS": "Récupération réussie"
         }
     }

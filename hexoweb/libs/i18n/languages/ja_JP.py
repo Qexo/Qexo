@@ -21,6 +21,7 @@ class Main(Language):
             "ADVANCED_SETTINGS": "高度な設定",
             "ADVANCED_SETTINGS_LABEL": "高度な設定",
             "API_VERIFY_FAILED": "API認証失敗、アクセスIP: {}",
+            "AUTH_FAILED": "認証エラー！",
             "AUTHOR": "作者",
             "AUTO_PROVIDER_FAILED": "PROVIDERの自動生成エラー、設定を確認して提出してください",
             "BACKUP": "バックアップファイル",
@@ -455,10 +456,15 @@ class Main(Language):
             "VALUE": "フィールド",
             "VALUE_NAME": "フィールド名",
             "VERIFY_FAILED": "検証失敗",
+            "VERIFY_SUCCESS": "検証成功",
             "WARN": "警告",
             "WARN_RESET": "カスタム設定をリセットしてもよろしいですか？この操作は元に戻せません",
             "WARN_WEBHOOK": "WEBHOOKイベントを自動作成してもよろしいですか？これにより、元のリポジトリのすべてのWEBHOOKイベントがクリアされます",
+            "WEBHOOK_APIKEY_EXISTS": "APIキーが既に存在します！",
+            "WEBHOOK_CREATE_SUCCESS": "Webhook作成成功！",
+            "WEBHOOK_NOT_SUPPORT": "このProviderはWebhookをサポートしていません！",
             "WELCOME": "ようこそ",
-            "WIKI_LABEL": "ドキュメントを見る"
+            "WIKI_LABEL": "ドキュメントを見る",
+            "GET_SUCCESS": "取得成功"
         }
     }

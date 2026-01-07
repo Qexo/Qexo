@@ -345,6 +345,65 @@ def update_configs_cache(s=None):
     return _get_cached_or_fresh_data("configs", Provider().get_configs, s)
 
 
+def get_cached_list(cache_name, update_func, search=None):
+    """
+    通用缓存列表查询函数
+    
+    Args:
+        cache_name: 缓存名称（"posts", "pages", "configs"）
+        update_func: 更新缓存的函数（update_posts_cache, update_pages_cache, etc.）
+        search: 搜索关键词（可选）
+        
+    Returns:
+        列表数据（已从JSON解析）
+        
+    Example:
+        posts = get_cached_list("posts", update_posts_cache, search)
+    """
+    if search:
+        cache = Cache.objects.filter(name=f"{cache_name}.{search}").first()
+        if cache:
+            return json.loads(cache.content) if cache.content else []
+        else:
+            return update_func(search)
+    else:
+        cache = Cache.objects.filter(name=cache_name).first()
+        if cache:
+            return json.loads(cache.content) if cache.content else []
+        else:
+            return update_func()
+
+
+def validate_statistic_domain(request):
+    """
+    验证统计API的域名权限
+    
+    Args:
+        request: Django request对象
+        
+    Returns:
+        (is_valid: bool, domain_name: str, referer: str)
+        
+    Example:
+        is_valid, domain, referer = validate_statistic_domain(request)
+        if not is_valid:
+            return HttpResponseForbidden()
+    """
+    referer = request.META.get('HTTP_REFERER', '')
+    allow_domains = get_setting_cached("STATISTIC_DOMAINS", "").split(",")
+    domain_name = get_domain(referer)
+    
+    # 检查：域名存在 && 统计功能开启 && 域名在白名单中
+    is_allowed = get_setting_cached("STATISTIC_ALLOW") == "是"
+    is_valid = (
+        domain_name and 
+        is_allowed and 
+        any(d.strip() in domain_name for d in allow_domains if d.strip())
+    )
+    
+    return is_valid, domain_name, referer
+
+
 def delete_all_caches():
     Cache.objects.exclude(name="update").delete()
     clear_setting_cache()

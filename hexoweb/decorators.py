@@ -57,3 +57,29 @@ def staff_required(redirect_to_login=True):
             return func(request, *args, **kwargs)
         return wrapper
     return decorator
+
+
+def api_auth_required(func):
+    """
+    检查API Token鉴权的装饰器（用于公共API）
+    
+    验证请求中的token参数（GET或POST），使用SHA-256哈希比对
+    用于 /pub/* 等公共API接口
+    
+    Usage:
+        @api_auth_required
+        def my_public_api(request):
+            ...
+    """
+    @wraps(func)
+    def wrapper(request, *args, **kwargs):
+        from hexoweb.functions import check_if_api_auth, gettext
+        
+        if not check_if_api_auth(request):
+            return JsonResponse(
+                safe=False, 
+                data={"msg": gettext("AUTH_FAILED"), "status": False}
+            )
+        
+        return func(request, *args, **kwargs)
+    return wrapper

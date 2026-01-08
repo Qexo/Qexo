@@ -93,7 +93,7 @@ if os.environ.get("MONGODB_HOST"):  # 使用MONGODB
             'ENGINE': 'django_mongodb_backend',
             'NAME': os.environ.get("MONGODB_DB") or os.environ.get("MONGODB_NAME") or 'django',
             'HOST': os.environ.get("MONGODB_HOST"),
-            'PORT': int(os.environ.get("MONGODB_PORT")) if os.environ.get("MONGODB_PORT") else 27017,
+            'PORT': int(os.environ.get("MONGODB_PORT", "27017")),
             'USER': os.environ.get("MONGODB_USER") or os.environ.get("MONGODB_USERNAME") or "root",
             'PASSWORD': os.environ.get("MONGODB_PASS") or os.environ.get("MONGODB_PASSWORD"),
             'OPTIONS': {

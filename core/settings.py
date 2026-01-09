@@ -36,7 +36,7 @@ INSTALLED_APPS = [
     # 'django.contrib.staticfiles',
     'hexoweb.apps.ConsoleConfig',
     'corsheaders',
-    # "passkeys"
+    'passkeys',
 ]
 
 MIDDLEWARE = [
@@ -53,6 +53,12 @@ MIDDLEWARE = [
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
+
+# WebAuthn / Passkeys Configuration
+AUTHENTICATION_BACKENDS = [
+    'passkeys.backend.PasskeyModelBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 ROOT_URLCONF = 'core.urls'
 
@@ -254,11 +260,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-# STATIC_URL = '/static/'
+# STATIC_URL = 'static/'
 # STATICFILES_DIRS = [
 #     os.path.join(BASE_DIR, "static"),
 # ]
-# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build', 'static')
+# STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -266,3 +272,34 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SESSION_COOKIE_AGE = 86400
+
+# Passkeys / WebAuthn Configuration
+def get_fido_server_id(request=None):
+    """动态获取FIDO Server ID（RP ID），与当前访问域名保持一致。"""
+    host = None
+
+    # 优先使用实际请求域名（包含端口时去掉端口）
+    if request:
+        try:
+            host = request.get_host()
+        except Exception:
+            host = None
+
+    # 回退到ALLOWED_HOSTS配置
+    if not host:
+        host = (ALLOWED_HOSTS[0] if ALLOWED_HOSTS else "localhost")
+
+    # 清理协议和端口
+    if "://" in host:
+        host = host.split("://", 1)[1]
+    host = host.split(":", 1)[0].strip()
+
+    # FIDO要求RP ID是有效的注册域或localhost
+    if not host:
+        return "localhost"
+
+    return host
+
+FIDO_SERVER_ID = get_fido_server_id
+FIDO_SERVER_NAME = "Qexo"
+KEY_ATTACHMENT = None  # 允许任何类型的认证器（平台或跨平台）

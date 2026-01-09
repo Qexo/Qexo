@@ -59,6 +59,14 @@ def login_view(request):
         context["site_token"] = site_token
     if site_token_v2 and server_token_v2 and not context.get("site_token"):
         context["site_token_v2"] = site_token_v2
+    
+    # Check if any user has registered passkey
+    try:
+        from passkeys.models import UserPasskey
+        context["passkey_available"] = UserPasskey.objects.exists()
+    except Exception:
+        context["passkey_available"] = False
+    
     return render(request, "accounts/login.html", context)
 
 
@@ -639,6 +647,9 @@ def pages(request):
             context["post_number"] = len(posts)
             context["page_number"] = ceil(context["post_number"] / 15)
             context["search"] = search
+        elif "passkey_manager" in load_template:
+            context["breadcrumb"] = "Passkey Manager"
+            context["breadcrumb_cn"] = gettext("PASSKEY_MANAGER")
         elif "images" in load_template:
             context["breadcrumb"] = "Gallery"
             context["breadcrumb_cn"] = gettext("IMAGES_LIST")

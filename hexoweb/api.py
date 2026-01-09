@@ -21,7 +21,17 @@ def auth(request):
     try:
         username = request.POST.get("username")
         password = request.POST.get("password")
+        passkeys_payload = request.POST.get("passkeys")
         verify = request.POST.get("verify")
+
+        # 优先处理 Passkey 登录（无需验证码与密码）
+        if passkeys_payload:
+            user = authenticate(request, passkeys=passkeys_payload, username=username)
+            if user is not None:
+                login(request, user)
+                return JsonResponse(safe=False, data={"msg": gettext("LOGIN_SUCCESS"), "status": True})
+            else:
+                return JsonResponse(safe=False, data={"msg": gettext("LOGIN_FAILED"), "status": False})
         if request.POST.get("type") == "v3":
             token = get_setting_cached("LOGIN_RECAPTCHA_SERVER_TOKEN")
             if verify:
@@ -44,7 +54,8 @@ def auth(request):
             else:
                 logging.info(gettext("CAPTCHA_NO"))
                 return JsonResponse(safe=False, data={"msg": gettext("CAPTCHA_FAILED"), "status": False})
-        user = authenticate(username=username, password=password)
+        # Passkey backend requires request to be provided
+        user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
             context = {"msg": gettext("LOGIN_SUCCESS"), "status": True}
@@ -255,7 +266,8 @@ def set_user(request):
         username = request.POST.get("username")
         newpassword = request.POST.get("newpassword")
         repassword = request.POST.get("repassword")
-        user = authenticate(username=request.user.username, password=password)
+        # Passkey backend requires request to be provided
+        user = authenticate(request, username=request.user.username, password=password)
         if user is not None:
             if repassword != newpassword:
                 context = {"msg": gettext("RESET_PASSWORD_NO_MATCH"), "status": False}
@@ -968,4 +980,103 @@ def change_lang(request):
     except Exception as error:
         logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
+    return JsonResponse(safe=False, data=context)
+
+# Passkey管理API - 获取设备列表 api/passkey_devices
+@login_required(login_url="/login/")
+def passkey_devices(request):
+    """
+    获取当前用户的所有已注册Passkey设备
+    返回设备列表，包括设备名称、创建时间、最后使用时间等
+    """
+    context = dict(msg="Error!", status=False, devices=[])
+    try:
+        from passkeys.models import UserPasskey
+
+        user = request.user
+        # 获取当前用户的passkey设备列表
+        passkeys = UserPasskey.objects.filter(user=user)
+
+        devices = []
+        for pk in passkeys:
+            devices.append({
+                'id': pk.id , # type: ignore
+                'name': pk.name or f"Device {pk.id }", # type: ignore
+                'created_at': pk.added_on.isoformat() if pk.added_on else None,
+                'last_used': pk.last_used.isoformat() if pk.last_used else None,
+                'platform': pk.platform or pk.credential_id or 'Unknown',
+            })
+        
+        context['devices'] = devices
+        context['status'] = True
+        context['msg'] = gettext("GET_SUCCESS")
+    except Exception as error:
+        logging.error(repr(error))
+        context["msg"] = repr(error)
+    
+    return JsonResponse(safe=False, data=context)
+
+
+# Passkey管理API - 删除设备 api/passkey_delete
+@login_required(login_url="/login/")
+def passkey_delete(request):
+    """
+    删除用户的一个Passkey设备
+    用户只能删除自己的设备
+    """
+    context = dict(msg="Error!", status=False)
+    if request.method == "POST":
+        try:
+            from passkeys.models import UserPasskey
+            
+            device_id = request.POST.get("device_id")
+            user = request.user
+            
+            if not device_id:
+                context["msg"] = gettext("PASSKEY_DEVICE_ID_REQUIRED")
+                return JsonResponse(safe=False, data=context)
+            
+            # 验证该设备属于当前用户
+            passkey = UserPasskey.objects.get(id=device_id, user=user)
+            passkey.delete()
+            
+            logging.info(gettext("PASSKEY_DEVICE_DELETED").format(user.username, device_id))
+            context["msg"] = gettext("DEL_SUCCESS")
+            context["status"] = True
+            
+        except UserPasskey.DoesNotExist:
+            logging.warning(f"用户{request.user.username}尝试删除不属于自己的Passkey设备")
+            context["msg"] = gettext("PASSKEY_DEVICE_NOT_FOUND")
+        except Exception as error:
+            logging.error(repr(error))
+            context["msg"] = repr(error)
+    
+    return JsonResponse(safe=False, data=context)
+
+
+# Passkey管理API - 重命名设备 api/passkey_rename
+@login_required(login_url="/login/")
+def passkey_rename(request):
+    context = dict(msg="Error!", status=False)
+    if request.method == "POST":
+        try:
+            from passkeys.models import UserPasskey
+            device_id = request.POST.get("device_id")
+            name = request.POST.get("name", "").strip()
+            user = request.user
+
+            if not device_id or not name:
+                context["msg"] = gettext("NEW_NAME")
+                return JsonResponse(safe=False, data=context)
+
+            passkey = UserPasskey.objects.get(id=device_id, user=user)
+            passkey.name = name
+            passkey.save()
+            context["msg"] = gettext("EDIT_SUCCESS")
+            context["status"] = True
+        except UserPasskey.DoesNotExist:
+            context["msg"] = gettext("PASSKEY_DEVICE_NOT_FOUND")
+        except Exception as error:
+            logging.error(repr(error))
+            context["msg"] = repr(error)
     return JsonResponse(safe=False, data=context)

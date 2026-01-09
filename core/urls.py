@@ -2,16 +2,17 @@ from hexoweb.views import *
 from django.urls import path, re_path, include
 # from django.contrib import admin
 from django.views.static import serve
-# from django.conf import settings
+from django.conf import settings
 import hexoweb.pub as pub
 from django.views.generic import TemplateView
 
 urlpatterns = [
     # path('admin/', admin.site.urls),
-    re_path(r'^static/(?P<path>.*)$', serve, {'document_root': "static"},
-            name='static'),
+    # re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT},
+    #         name='static'),
 
-    # url(r'^passkeys/', include('passkeys.urls')),
+    # Passkeys URLs
+    path('passkeys/', include('passkeys.urls')),
 
     path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain')),
 
@@ -70,6 +71,9 @@ urlpatterns = [
     path('api/del_talk/', del_talk, name='del_talk'),
     path('api/run_online_script/', run_online_script, name='run_online_script'),
     path('api/change_lang/', change_lang, name='change_lang'),
+    path('api/passkey_devices/', passkey_devices, name='passkey_devices'),
+    path('api/passkey_delete/', passkey_delete, name='passkey_delete'),
+    path('api/passkey_rename/', passkey_rename, name='passkey_rename'),
 
     path('pub/save/', pub.save, name='pub_save'),
     path('pub/delete/', pub.delete, name='pub_delete'),

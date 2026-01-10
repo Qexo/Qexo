@@ -460,6 +460,7 @@ class Main(Language):
             "UPLOAD": "上傳",
             "UPLOAD_FAILED": "上傳失敗！",
             "UPLOAD_SUCCESS": "上傳成功！",
+            "UPLOADING": "上傳中...",
             "UPLOAD_TIP": "上傳圖片",
             "USERNAME": "用戶名",
             "USER_IS_NOT_STAFF": "子用戶{}嘗試訪問{}被拒絕",

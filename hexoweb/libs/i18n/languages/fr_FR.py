@@ -460,6 +460,7 @@ class Main(Language):
             "UPLOAD": "Télécharger",
             "UPLOAD_FAILED": "Échec du téléchargement !",
             "UPLOAD_SUCCESS": "Téléchargement réussi !",
+            "UPLOADING": "Téléchargement en cours...",
             "UPLOAD_TIP": "Télécharger une image",
             "USERNAME": "Nom d'utilisateur",
             "USER_IS_NOT_STAFF": "L'utilisateur secondaire {} a tenté d'accéder à {} sans autorisation",

@@ -461,6 +461,7 @@ class Main(Language):
             "UPLOAD": "Upload",
             "UPLOAD_FAILED": "Upload Failed!",
             "UPLOAD_SUCCESS": "Upload Successful!",
+            "UPLOADING": "Uploading...",
             "UPLOAD_TIP": "Upload Image",
             "USERNAME": "Username",
             "USER_IS_NOT_STAFF": "Sub-user {} Attempted to Access {} Denied",

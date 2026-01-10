@@ -460,6 +460,7 @@ class Main(Language):
             "UPLOAD": "アップロード",
             "UPLOAD_FAILED": "アップロード失敗！",
             "UPLOAD_SUCCESS": "アップロード成功！",
+            "UPLOADING": "アップロード中...",
             "UPLOAD_TIP": "画像アップロード",
             "USERNAME": "ユーザー名",
             "USER_IS_NOT_STAFF": "サブユーザー{}が{}にアクセスしようとしましたが、拒否されました",

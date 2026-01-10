@@ -460,6 +460,7 @@ class Main(Language):
             "UPLOAD": "업로드",
             "UPLOAD_FAILED": "업로드 실패!",
             "UPLOAD_SUCCESS": "업로드 성공!",
+            "UPLOADING": "업로드 중...",
             "UPLOAD_TIP": "이미지 업로드",
             "USERNAME": "사용자 이름",
             "USER_IS_NOT_STAFF": "서브 사용자 {}가 {}에 액세스하려고 했지만 거부되었습니다",

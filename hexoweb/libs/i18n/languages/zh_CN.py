@@ -461,6 +461,7 @@ class Main(Language):
             "UPLOAD": "上传",
             "UPLOAD_FAILED": "上传失败！",
             "UPLOAD_SUCCESS": "上传成功！",
+            "UPLOADING": "上传中...",
             "UPLOAD_TIP": "上传图片",
             "USERNAME": "用户名",
             "USER_IS_NOT_STAFF": "子用户{}尝试访问{}被拒绝",

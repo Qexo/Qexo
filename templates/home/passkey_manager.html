@@ -19,7 +19,7 @@
                                 <div class="card border border-info h-100 w-100">
                                     <div class="card-body">
                                         <h5 class="card-title">{{ "PASSKEY_REGISTER" | gettext }}</h5>
-                                        <p class="text-sm text-secondary mb-3">{{ "PASSKEY_REGISTER_DESC" | gettext }}</p>
+                                        <p class="text-sm mb-3">{{ "PASSKEY_REGISTER_DESC" | gettext }}</p>
                                         <div class="form-group mb-3">
                                             <label class="form-control-label">{{ "PASSKEY_DEVICE_NAME" | gettext }}</label>
                                             <input type="text" id="passkey-device-name" class="form-control bg-white text-dark" placeholder="{{ "PASSKEY_DEVICE_NAME" | gettext }}" />
@@ -36,16 +36,14 @@
                                         <h5 class="card-title d-flex align-items-center mb-3">
                                             {{ "PASSKEY_MANAGER" | gettext }}
                                         </h5>
-                                        <p class="text-sm text-secondary mb-3">{{ "PASSKEY_MANAGER_DESC" | gettext }}</p>
+                                        <p class="text-sm mb-3">{{ "PASSKEY_MANAGER_DESC" | gettext }}</p>
 
-                                        <div class="mb-3">
-                                            <ul class="mb-0 text-sm text-secondary ps-3">
+                                        <ul class="mb-0 text-sm ps-3">
                                                 <li>{{ "PASSKEY_TIP_BROWSERS" | gettext }}</li>
                                                 <li>{{ "PASSKEY_TIP_PLATFORM_AUTHENTICATOR" | gettext }}</li>
                                                 <li>{{ "PASSKEY_TIP_FALLBACK_PASSWORD" | gettext }}</li>
                                                 <li>{{ "PASSKEY_TIP_LOST_REMOVE" | gettext }}</li>
                                             </ul>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -67,7 +65,7 @@
                                 </thead>
                                 <tbody id="devices-list">
                                     <tr>
-                                        <td colspan="5" class="text-center text-secondary">{{ "PASSKEY_NO_DEVICES" | gettext }}</td>
+                                        <td colspan="5" class="text-center">{{ "PASSKEY_NO_DEVICES" | gettext }}</td>
                                     </tr>
                                 </tbody>
                             </table>

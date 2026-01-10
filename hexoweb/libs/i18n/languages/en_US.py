@@ -9,7 +9,7 @@ from ..core import Language
 
 class Main(Language):
     name = 'en_US'
-    name_local = "English(United States)"
+    name_local = "English (United States)"
     default = {
         "name": name,
         "data": {
@@ -103,6 +103,14 @@ class Main(Language):
             "EXCERPT_TIANLI_KEY_PH": "User Key obtained from Aifadian",
             "EXCERPT_TIANLI_LENGTH": "Send Length",
             "EXCERPT_TIANLI_LENGTH_PH": "Length of content sent to the server",
+            "EXCERPT_CHATGPT_API_KEY": "ChatGPT API Key",
+            "EXCERPT_CHATGPT_API_KEY_PH": "Please enter your ChatGPT API key",
+            "EXCERPT_CHATGPT_LENGTH": "Send Length",
+            "EXCERPT_CHATGPT_LENGTH_PH": "Length of content sent to the server",
+            "EXCERPT_CHATGPT_MODEL": "Model Selection",
+            "EXCERPT_CHATGPT_MODEL_PH": "e.g., text-davinci-003",
+            "EXCERPT_CHATGPT_API": "ChatGPT API URL",
+            "EXCERPT_CHATGPT_API_PH": "Please enter the ChatGPT API URL",
             "EXPORT": "Export",
             "FIND_INDEX_FAILED": "Update Failed: Index Directory Not Found",
             "FIND_INDEX_SUCCESS": "Index Directory Found",
@@ -256,10 +264,10 @@ class Main(Language):
             "NEW_POST": "New Post",
             "NEW_POST_LABEL": "New Post",
             "NEW_VALUE": "New Field",
+            "NEW": "New",
+            "NEW_PH": "The file will be saved as",
             "NEXT": "Next",
             "NEXT_PAGE": "Next Page",
-            "NEW ": " New",
-            "NEW_PH ": " The file will be saved as",
             "NOT_INIT": "Initialization Configuration Not Completed, Redirecting to Initialization Page",
             "NO_MSG_TIP": "You currently have no messages~",
             "NO_NEXT_PAGE": "This is the last page",

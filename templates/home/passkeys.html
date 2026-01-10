@@ -56,11 +56,11 @@
                             <table class="table align-items-center mb-0">
                                 <thead>
                                     <tr>
-                                        <th class="text-secondary text-xxs font-weight-bolder opacity-7"><span class="px-1 text-secondary">{{ "PASSKEY_DEVICE_NAME" | gettext }}</span></th>
-                                        <th class="text-secondary text-xxs font-weight-bolder opacity-7"><span class="text-secondary">{{ "PASSKEY_CREATED_AT" | gettext }}</span></th>
-                                        <th class="text-center text-secondary text-xxs font-weight-bolder opacity-7"><span class="text-secondary">{{ "PASSKEY_LAST_USED" | gettext }}</span></th>
-                                        <th class="text-secondary text-xxs font-weight-bolder opacity-7"><span class="text-secondary">{{ "PASSKEY_TYPE" | gettext }}</span></th>
-                                        <th class="text-secondary text-xxs font-weight-bolder opacity-7"><span class="text-secondary">{{ "OPERATION" | gettext }}</span></th>
+                                        <th class="text-xxs font-weight-bolder opacity-7"><span class="px-1">{{ "PASSKEY_DEVICE_NAME" | gettext }}</span></th>
+                                        <th class="text-xxs font-weight-bolder opacity-7"><span>{{ "PASSKEY_CREATED_AT" | gettext }}</span></th>
+                                        <th class="text-center text-xxs font-weight-bolder opacity-7"><span class="">{{ "PASSKEY_LAST_USED" | gettext }}</span></th>
+                                        <th class="text-xxs font-weight-bolder opacity-7"><span>{{ "PASSKEY_TYPE" | gettext }}</span></th>
+                                        <th class="text-xxs font-weight-bolder opacity-7"><span>{{ "OPERATION" | gettext }}</span></th>
                                     </tr>
                                 </thead>
                                 <tbody id="devices-list">
@@ -213,7 +213,7 @@
     function render_devices_table(devices) {
         let html = '';
         if (devices.length === 0) {
-            html = '<tr><td colspan="5" class="text-center text-secondary">{{ "PASSKEY_NO_DEVICES" | gettext }}</td></tr>';
+            html = '<tr><td colspan="5" class="text-center ">{{ "PASSKEY_NO_DEVICES" | gettext }}</td></tr>';
         } else {
             devices.forEach(function(device) {
                 const createdAt = new Date(device.created_at).toLocaleDateString();
@@ -232,10 +232,10 @@
                         <td class="align-middle text-sm"><span class="badge bg-info">${deviceType}</span></td>
                         <td class="align-middle text-sm">
                             <a href="javascript:void(0);" onclick="show_rename_modal('${device.id}', '${device.name}')">
-                                <i class="fa-solid fa-edit me-2 text-primary text-xxs"></i>
+                                <i class="fa-solid fa-edit me-2 text-xxs text-primary"></i>
                             </a> |
                             <a href="javascript:void(0);" onclick="show_delete_modal('${device.id}', '${device.name}')">
-                                <i class="fa-solid fa-trash me-2 text-primary text-xxs"></i>
+                                <i class="fa-solid fa-trash me-2 text-xxs text-primary"></i>
                             </a>
                         </td>
                     </tr>

@@ -647,7 +647,7 @@ def pages(request):
             context["post_number"] = len(posts)
             context["page_number"] = ceil(context["post_number"] / 15)
             context["search"] = search
-        elif "passkey_manager" in load_template:
+        elif "passkeys" in load_template:
             context["breadcrumb"] = "Passkey Manager"
             context["breadcrumb_cn"] = gettext("PASSKEY_MANAGER")
         elif "images" in load_template:

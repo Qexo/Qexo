@@ -17,6 +17,7 @@ from hexoweb.libs.onepush import get_notifier
 from hexoweb.libs.platforms import all_providers, get_params
 from hexoweb.libs.platforms import all_configs as platform_configs
 from hexoweb.decorators import staff_required
+from hexoweb.services.init_service import InitService
 from .api import *
 
 
@@ -122,192 +123,48 @@ def update_view(request):
 
 
 def init_view(request):
+    service = InitService()
     msg = None
     context: dict = {"all_languages": hexoweb.libs.i18n.all_languages()}
     context.update(get_custom_config())
-    step = get_setting_cached("INIT")
-    if not step:
+    raw_step = get_setting_cached("INIT")
+    if not raw_step:
         save_setting("INIT", "1")
-        step = "1"
-    provider = False
-    if step == "2" and User.objects.all():
+        raw_step = "1"
+    step = service.normalize_step(raw_step)
+
+    if step == "2" and service.User.objects.all():
         step = "3"
         save_setting("INIT", "3")
     if request.method == "POST":
+        outcome = None
         if request.POST.get("step") == "1":
-            fix_all()
-            save_setting("INIT", "2")
-            save_setting("LANGUAGE", request.POST.get("language"))
-            update_language()
-            if not User.objects.all():
-                step = "2"
-            else:
-                step = "3"
-                context["PROVIDER"] = get_setting_cached("PROVIDER")
-                # Get Provider Settings
-                all_provider = all_providers()
-                context["all_providers"] = dict()
-                for provider in all_provider:
-                    params = get_params(provider)
-                    context["all_providers"][provider] = params
-                context["all_platform_configs"] = platform_configs()
-        if request.POST.get("step") == "2":
-            username = request.POST.get("username")
-            password = request.POST.get("password")
-            repassword = request.POST.get("repassword")
-            apikey = request.POST.get("apikey")
-            try:
-                if apikey:
-                    save_setting("WEBHOOK_APIKEY", apikey)
-                else:
-                    if not SettingModel.objects.filter(name="WEBHOOK_APIKEY").count():
-                        save_setting("WEBHOOK_APIKEY", ''.join(
-                            random.choice("qwertyuiopasdfghjklzxcvbnm1234567890") for x in
-                            range(12)))
-                if repassword != password:
-                    msg = gettext("RESET_PASSWORD_NO_MATCH")
-                    context["username"] = username
-                    context["password"] = password
-                    context["repassword"] = repassword
-                    context["apikey"] = apikey
-                elif not password:
-                    msg = gettext("RESET_PASSWORD_NO")
-                    context["username"] = username
-                    context["password"] = password
-                    context["repassword"] = repassword
-                    context["apikey"] = apikey
-                elif not username:
-                    msg = gettext("RESET_PASSWORD_NO_USERNAME")
-                    context["username"] = username
-                    context["password"] = password
-                    context["repassword"] = repassword
-                    context["apikey"] = apikey
-                else:
-                    User.objects.create_superuser(username=username, password=password, email="")
-                    save_setting("INIT", "3")
-                    step = "3"
-                    context["PROVIDER"] = get_setting_cached("PROVIDER")
-                    # Get Provider Settings
-                    all_provider = all_providers()
-                    context["all_providers"] = dict()
-                    for provider in all_provider:
-                        params = get_params(provider)
-                        context["all_providers"][provider] = params
-                    context["all_platform_configs"] = platform_configs()
-            except Exception as e:
-                logging.error(gettext("INIT_USER_FAILED").foramt(repr(e)))
-                msg = repr(e)
-                context["username"] = username
-                context["password"] = password
-                context["repassword"] = repassword
-        if request.POST.get("step") == "3":
-            try:
-                provider = {
-                    "provider": request.POST.get("provider"),
-                    "params": dict(request.POST)
-                }
-                if "provider" in provider["params"]:
-                    del provider["params"]["provider"]
-                if "step" in provider["params"]:
-                    del provider["params"]["step"]
-                if "csrfmiddlewaretoken" in provider["params"]:
-                    del provider["params"]["csrfmiddlewaretoken"]
-                for key in provider["params"].keys():
-                    provider["params"][key] = provider["params"][key][0]
-                if provider["params"]["config"] != "Hexo":
-                    provider["params"]["_force"] = True
-                if provider["params"].get("_force") is None:
-                    verify = verify_provider(provider)
-                    if verify["status"] and verify["status"] != -1:
-                        save_setting("PROVIDER", json.dumps(provider))
-                        update_provider()
-                        step = "5" if check_if_vercel() else "6"
-                        if step == "5":
-                            context["project_id"] = get_setting_cached("PROJECT_ID") or os.environ.get("PROJECT_ID")
-                        save_setting("INIT", step)
-                    else:
-                        msg = ""
-                        if verify["status"] == -1:
-                            msg = "远程连接错误!请检查Token或分支是否正确"
-                        else:
-                            if verify["hexo"]:
-                                msg += gettext("HEXO_VERSION").format(verify["hexo"])
-                            else:
-                                msg += gettext("HEXO_VERSION_FAILED")
-                            if verify["indexhtml"]:
-                                msg += gettext("HEXO_INDEX_FAILED")
-                            if verify["config_hexo"]:
-                                msg += gettext("HEXO_CONFIG_FAILED")
-                            else:
-                                msg += gettext("HEXO_CONFIG_FAILED")
-                            if verify["theme_dir"]:
-                                msg += gettext("HEXO_THEME")
-                            else:
-                                msg += gettext("HEXO_THEME_FAILED")
-                            if verify["package"]:
-                                msg += gettext("HEXO_PACKAGE")
-                            else:
-                                msg += gettext("HEXO_PACKAGE_FAILED")
-                            if verify["source"]:
-                                msg += gettext("HEXO_SOURCE")
-                            else:
-                                msg += gettext("HEXO_SOURCE_FAILED")
-                        msg = msg.replace("\n", "<br>")
-                        context["PROVIDER"] = json.dumps(provider)
-                        # Get Provider Settings
-                        all_provider = all_providers()
-                        context["all_providers"] = dict()
-                        for provider in all_provider:
-                            params = get_params(provider)
-                            context["all_providers"][provider] = params
-                        context["all_platform_configs"] = platform_configs()
-                else:
-                    del provider["params"]["_force"]
-                    save_setting("PROVIDER", json.dumps(provider))
-                    update_provider()
-                    step = "5" if check_if_vercel() else "6"
-                    save_setting("INIT", step)
-            except Exception as e:
-                msg = repr(e)
-                logging.error(gettext("INIT_PROVIDER_FAILED").format(repr(e)))
-                context["PROVIDER"] = json.dumps(get_setting_cached("PROVIDER") if not provider else provider)
-                # Get Provider Settings
-                all_provider = all_providers()
-                context["all_providers"] = dict()
-                for provider in all_provider:
-                    params = get_params(provider)
-                    context["all_providers"][provider] = params
-                context["all_platform_configs"] = platform_configs()
-        if request.POST.get("step") == "5":
-            project_id = request.POST.get("id")
-            vercel_token = request.POST.get("token")
-            try:
-                checkBuilding(project_id, vercel_token)
-                save_setting("VERCEL_TOKEN", vercel_token)
-                save_setting("PROJECT_ID", project_id)
-                save_setting("INIT", "6")
-                step = "6"
-            except Exception as e:
-                logging.error(gettext("INIT_VERCEL_FAILED").format(repr(e)))
-                context["project_id"] = project_id
-                context["vercel_token"] = vercel_token
-                msg = gettext("VERIFY_FAILED")
-        if step == "6":
-            user = User.objects.all()[0]
+            outcome = service.handle_language_step(request.POST.get("language"), service.User.objects.exists())
+        elif request.POST.get("step") == "2":
+            outcome = service.handle_user_step(
+                request.POST.get("username"),
+                request.POST.get("password"),
+                request.POST.get("repassword"),
+                request.POST.get("apikey"),
+            )
+        elif request.POST.get("step") == "3":
+            outcome = service.handle_provider_step(dict(request.POST))
+        elif request.POST.get("step") == "5":
+            outcome = service.handle_vercel_step(request.POST.get("id"), request.POST.get("token"))
+
+        if outcome:
+            step = outcome.step
+            msg = outcome.msg
+            context.update(outcome.context)
+        if step == "6" and service.User.objects.all():
+            user = service.User.objects.all()[0]
             context["username"] = user.username
     elif int(step) >= 6:
         logging.info(gettext("INIT_SUCCESS"))
         return redirect("/")
     else:
         if int(step) == 3:
-            context["PROVIDER"] = get_setting_cached("PROVIDER")
-            # Get Provider Settings
-            all_provider = all_providers()
-            context["all_providers"] = dict()
-            for provider in all_provider:
-                params = get_params(provider)
-                context["all_providers"][provider] = params
-            context["all_platform_configs"] = platform_configs()
+            context.update(service.build_provider_context(get_setting_cached("PROVIDER")))
         if int(step) == 5:
             context["project_id"] = get_setting_cached("PROJECT_ID") or os.environ.get("PROJECT_ID")
             context["vercel_token"] = get_setting_cached("VERCEL_TOKEN")

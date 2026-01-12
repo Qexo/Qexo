@@ -222,6 +222,8 @@ def init_view(request):
                         save_setting("PROVIDER", json.dumps(provider))
                         update_provider()
                         step = "5" if check_if_vercel() else "6"
+                        if step == "5":
+                            context["project_id"] = get_setting_cached("PROJECT_ID") or os.environ.get("PROJECT_ID")
                         save_setting("INIT", step)
                     else:
                         msg = ""
@@ -306,6 +308,9 @@ def init_view(request):
                 params = get_params(provider)
                 context["all_providers"][provider] = params
             context["all_platform_configs"] = platform_configs()
+        if int(step) == 5:
+            context["project_id"] = get_setting_cached("PROJECT_ID") or os.environ.get("PROJECT_ID")
+            context["vercel_token"] = get_setting_cached("VERCEL_TOKEN")
     context["msg"] = msg
     context["step"] = step
     return render(request, "accounts/init.html", context)

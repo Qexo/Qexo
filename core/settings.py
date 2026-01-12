@@ -206,6 +206,13 @@ def _load_allowed_hosts(local_config):
     if (not hosts) or hosts == ["*"]:
         raise exceptions.InitError(f"{source} DOMAINS 未配置有效域名, 请填写实际域名, 例如 [\"example.com\"]")
 
+    # 添加 Vercel 环境变量的 URL
+    hosts = list(hosts)
+    for env_var in ["VERCEL_URL", "VERCEL_BRANCH_URL", "VERCEL_PROJECT_PRODUCTION_URL"]:
+        url = os.environ.get(env_var)
+        if url and url not in hosts:
+            hosts.append(url)
+
     logging.info(f"从{source}获取域名: {hosts}")
     return hosts
 

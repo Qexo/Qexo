@@ -17,7 +17,7 @@ from hexoweb.libs.onepush import get_notifier
 from hexoweb.libs.platforms import all_providers, get_params
 from hexoweb.libs.platforms import all_configs as platform_configs
 from hexoweb.decorators import staff_required
-from hexoweb.services.init_service import InitService
+from hexoweb.init import InitService
 from .api import *
 
 

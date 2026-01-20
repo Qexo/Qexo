@@ -127,6 +127,14 @@ def init_view(request):
     msg = None
     context: dict = {"all_languages": hexoweb.libs.i18n.all_languages()}
     context.update(get_custom_config())
+    
+    # 获取当前语言
+    current_language = get_setting_cached("LANGUAGE") or "zh_CN"
+    context["current_language"] = current_language
+    
+    # 始终提供all_providers和all_platform_configs供JavaScript使用
+    context.update(service.build_provider_context(get_setting_cached("PROVIDER")))
+    
     raw_step = get_setting_cached("INIT")
     if not raw_step:
         save_setting("INIT", "1")
@@ -149,7 +157,7 @@ def init_view(request):
             )
         elif request.POST.get("step") == "3":
             outcome = service.handle_provider_step(dict(request.POST))
-        elif request.POST.get("step") == "5":
+        elif request.POST.get("step") == "4":
             outcome = service.handle_vercel_step(request.POST.get("id"), request.POST.get("token"))
 
         if outcome:
@@ -162,12 +170,8 @@ def init_view(request):
     elif int(step) >= 6:
         logging.info(gettext("INIT_SUCCESS"))
         return redirect("/")
-    else:
-        if int(step) == 3:
-            context.update(service.build_provider_context(get_setting_cached("PROVIDER")))
-        if int(step) == 5:
-            context["project_id"] = get_setting_cached("PROJECT_ID") or os.environ.get("PROJECT_ID")
-            context["vercel_token"] = get_setting_cached("VERCEL_TOKEN")
+    context["project_id"] = get_setting_cached("PROJECT_ID") or os.environ.get("PROJECT_ID")
+    context["vercel_token"] = get_setting_cached("VERCEL_TOKEN")
     context["msg"] = msg
     context["step"] = step
     return render(request, "accounts/init.html", context)

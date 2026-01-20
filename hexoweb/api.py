@@ -68,6 +68,57 @@ def auth(request):
     return JsonResponse(safe=False, data=context)
 
 
+# 初始化步骤API api/init_step
+def init_step_api(request):
+    """统一的初始化步骤API端点"""
+    from hexoweb.init import InitService
+    try:
+        step = request.POST.get("step")
+        service = InitService()
+        outcome = None
+        
+        if step == "1":
+            outcome = service.handle_language_step(
+                request.POST.get("language"), 
+                service.User.objects.exists()
+            )
+        elif step == "2":
+            outcome = service.handle_user_step(
+                request.POST.get("username"),
+                request.POST.get("password"),
+                request.POST.get("repassword"),
+                request.POST.get("apikey")
+            )
+        elif step == "3":
+            outcome = service.handle_provider_step(dict(request.POST))
+        elif step == "4":
+            outcome = service.handle_vercel_step(
+                request.POST.get("id"), 
+                request.POST.get("token")
+            )
+        
+        if outcome and outcome.success:
+            return JsonResponse(safe=False, data={
+                "msg": outcome.msg or gettext("SUCCESS"),
+                "status": True,
+                "next_step": outcome.step,
+                "context": outcome.context
+            })
+        else:
+            return JsonResponse(safe=False, data={
+                "msg": outcome.msg if outcome else gettext("UNKNOWN_ERROR"),
+                "status": False,
+                "current_step": outcome.step if outcome else step,
+                "context": outcome.context if outcome else {}
+            })
+    except Exception as e:
+        logging.error(repr(e))
+        return JsonResponse(safe=False, data={
+            "msg": repr(e), 
+            "status": False
+        })
+
+
 # 设置 Hexo Provider 配置 api/set_hexo
 @login_required(login_url="/login/")
 @staff_required(redirect_to_login=False)

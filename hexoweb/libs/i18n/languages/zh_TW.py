@@ -278,6 +278,7 @@ class Main(Language):
             "NO_PERMISSION": "子用戶不支持此操作！",
             "NO_POST_NAME": "請在頂欄輸入正確的文章名！",
             "NO_PREV_PAGE": "已是第一頁",
+            "PREV": "上一步",
             "ONEKEY_UPDATE": "一鍵更新",
             "OPERATION": "操作",
             "OPERATION_SUCCESS": "操作成功!",

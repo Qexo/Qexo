@@ -278,6 +278,7 @@ class Main(Language):
             "NO_PERMISSION": "L'utilisateur secondaire ne supporte pas cette opération !",
             "NO_POST_NAME": "Veuillez entrer un nom d'article correct dans la barre supérieure !",
             "NO_PREV_PAGE": "Première page",
+            "PREV": "Précédent",
             "ONEKEY_UPDATE": "Mise à jour en un clic",
             "OPERATION": "Opération",
             "OPERATION_SUCCESS": "Opération réussie !",

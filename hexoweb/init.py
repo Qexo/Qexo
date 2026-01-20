@@ -1,5 +1,6 @@
 import json
 import random
+import os
 from dataclasses import dataclass, field
 from typing import Any, Dict, Optional
 
@@ -178,33 +179,36 @@ class InitService:
             return StepOutcome(False, "3", gettext("PROVIDER_REQUIRED"), context)
 
         params = provider_payload.get("params", {})
-        if params.get("config") != "Hexo":
-            params["_force"] = True
-        is_force = self._boolish(params.get("_force"))
+        config_type = params.get("config")
+        # 非Hexo配置或明确强制时，自动进行强制提交
+        is_force = self._boolish(params.get("_force")) or (config_type != "Hexo")
         provider_payload["params"] = params
 
         context = self.build_provider_context(provider_payload)
-        if not is_force:
-            verify = verify_provider(provider_payload)
-            if verify.get("status") != 1:
-                msg = self._build_verify_error(verify)
-                return StepOutcome(False, "3", msg, context)
-
+        # 移除内部标记字段
         if "_force" in params:
             params.pop("_force", None)
-        save_setting("PROVIDER", json.dumps(provider_payload))
-        update_provider()
-        step = "5" if check_if_vercel() else "6"
+        try:
+            if not is_force:
+                verify = verify_provider(provider_payload)
+                if verify.get("status") != 1:
+                    msg = self._build_verify_error(verify)
+                    return StepOutcome(False, "3", msg, context)
+            save_setting("PROVIDER", json.dumps(provider_payload))
+            update_provider()
+        except Exception as e:
+            return StepOutcome(False, "3", str(e), context)
+        step = "4" if check_if_vercel() else "6"
         save_setting("INIT", step)
 
-        if step == "5":
-            context["project_id"] = get_setting_cached("PROJECT_ID") or None
+        if step == "4":
+            context["project_id"] = get_setting_cached("PROJECT_ID") or os.environ.get("PROJECT_ID")
             context["vercel_token"] = get_setting_cached("VERCEL_TOKEN") or None
         return StepOutcome(True, step, None, context)
 
     def handle_vercel_step(self, project_id: Optional[str], vercel_token: Optional[str]) -> StepOutcome:
         if not project_id or not vercel_token:
-            return StepOutcome(False, "5", gettext("VERIFY_FAILED"), {
+            return StepOutcome(False, "4", gettext("VERIFY_FAILED"), {
                 "project_id": project_id,
                 "vercel_token": vercel_token,
             })
@@ -215,7 +219,7 @@ class InitService:
             save_setting("INIT", "6")
             return StepOutcome(True, "6", None, {})
         except Exception:
-            return StepOutcome(False, "5", gettext("VERIFY_FAILED"), {
+            return StepOutcome(False, "4", gettext("VERIFY_FAILED"), {
                 "project_id": project_id,
                 "vercel_token": vercel_token,
             })

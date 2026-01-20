@@ -274,6 +274,7 @@ class Main(Language):
             "NO_PERMISSION": "サブユーザーはこの操作をサポートしていません！",
             "NO_POST_NAME": "上部のバーに正しい記事名を入力してください！",
             "NO_PREV_PAGE": "最初のページです",
+            "PREV": "前へ",
             "ONEKEY_UPDATE": "ワンクリック更新",
             "OPERATION": "操作",
             "OPERATION_SUCCESS": "操作成功！",

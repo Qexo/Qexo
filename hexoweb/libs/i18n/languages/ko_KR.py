@@ -274,6 +274,7 @@ class Main(Language):
             "NO_PERMISSION": "서브 사용자는 이 작업을 지원하지 않습니다!",
             "NO_POST_NAME": "상단 바에 올바른 게시물 이름을 입력하세요!",
             "NO_PREV_PAGE": "첫 페이지입니다",
+            "PREV": "이전",
             "ONEKEY_UPDATE": "원클릭 업데이트",
             "OPERATION": "작업",
             "OPERATION_SUCCESS": "작업 성공!",

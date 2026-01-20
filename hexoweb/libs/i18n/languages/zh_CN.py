@@ -278,6 +278,7 @@ class Main(Language):
             "NO_PAGE_NAME": "请在顶栏输入正确的页面名！",
             "NO_PERMISSION": "子用户不支持此操作！",
             "NO_POST_NAME": "请在顶栏输入正确的文章名！",
+            "PREV": "上一步",
             "NO_PREV_PAGE": "已是第一页",
             "ONEKEY_UPDATE": "一键更新",
             "OPERATION": "操作",

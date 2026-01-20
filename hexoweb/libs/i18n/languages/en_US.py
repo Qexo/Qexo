@@ -278,6 +278,7 @@ class Main(Language):
             "NO_PAGE_NAME": "Please enter the correct page name in the top bar!",
             "NO_PERMISSION": "Sub-user does not support this operation!",
             "NO_POST_NAME": "Please enter the correct post name in the top bar!",
+            "PREV": "Previous",
             "NO_PREV_PAGE": "This is the first page",
             "ONEKEY_UPDATE": "One-click Update",
             "OPERATION": "Operation",

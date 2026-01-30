@@ -204,6 +204,10 @@ class InitService:
         if step == "4":
             context["project_id"] = get_setting_cached("PROJECT_ID") or os.environ.get("VERCEL_PROJECT_ID")
             context["vercel_token"] = get_setting_cached("VERCEL_TOKEN") or None
+        else:
+            user = self.User.objects.first()
+            if user:
+                context["username"] = user.username
         return StepOutcome(True, step, None, context)
 
     def handle_vercel_step(self, project_id: Optional[str], vercel_token: Optional[str]) -> StepOutcome:
@@ -217,7 +221,12 @@ class InitService:
             save_setting("VERCEL_TOKEN", vercel_token)
             save_setting("PROJECT_ID", project_id)
             save_setting("INIT", "6")
-            return StepOutcome(True, "6", None, {})
+            # Get username for final step context
+            context = {}
+            user = self.User.objects.first()
+            if user:
+                context["username"] = user.username
+            return StepOutcome(True, "6", None, context)
         except Exception:
             return StepOutcome(False, "4", gettext("VERIFY_FAILED"), {
                 "project_id": project_id,

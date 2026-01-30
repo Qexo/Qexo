@@ -202,7 +202,7 @@ class InitService:
         save_setting("INIT", step)
 
         if step == "4":
-            context["project_id"] = get_setting_cached("PROJECT_ID") or os.environ.get("PROJECT_ID")
+            context["project_id"] = get_setting_cached("PROJECT_ID") or os.environ.get("VERCEL_PROJECT_ID")
             context["vercel_token"] = get_setting_cached("VERCEL_TOKEN") or None
         return StepOutcome(True, step, None, context)
 

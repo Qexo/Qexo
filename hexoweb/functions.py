@@ -592,23 +592,36 @@ def checkBuilding(projectId, token):
 
 
 def file_get_contents(file):
-    with open(file, 'r', encoding="utf8") as f:
-        logging.info(gettext("READ_FILE") + ": " + file)
-        content = f.read()
-    return content
+    try:
+        with open(file, 'r', encoding="utf8") as f:
+            # logging.info(gettext("READ_FILE") + ": " + file)
+            content = f.read()
+        return content
+    except (OSError, UnicodeDecodeError) as e:
+        logging.warning(gettext("READ_FILE") + ": " + file + " -> " + repr(e))
+        return False
 
 
 def getEachFiles(base, path=""):
     file = list()
-    handler = os.listdir(base + "/" + path)
+    current_dir = os.path.join(base, path)
+    try:
+        handler = os.listdir(current_dir)
+    except OSError as e:
+        logging.warning(gettext("READ_FILE") + ": " + current_dir + " -> " + repr(e))
+        return file
     for item in handler:
         if item != '.git':
-            fromfile = base + "/" + path + "/" + item
+            fromfile = os.path.join(current_dir, item)
+            rel_path = os.path.join(path, item)
             if os.path.isdir(fromfile):
-                file += getEachFiles(base, path + "/" + item)
+                file += getEachFiles(base, rel_path)
             else:
-                file.append({"file": path + "/" + item,
-                             "data": file_get_contents(fromfile)})
+                content = file_get_contents(fromfile)
+                if content is False:
+                    continue
+                file.append({"file": rel_path,
+                             "data": content})
     return file
 
 
@@ -1349,7 +1362,7 @@ print(gettext("CURRENT_ENV") + ": " + ("Vercel" if check_if_vercel() else gettex
     "Docker" if check_if_docker() else pf.system()) + " / Qexo " + QEXO_VERSION + " / Python " + pf.python_version() + " / " + get_db_config())
 
 if check_if_vercel():
-    logging.info = logging.warn
+    logging.info = logging.warning
 
 UPDATE_FROM = get_setting("UPDATE_FROM")
 if UPDATE_FROM != "false" and UPDATE_FROM != "true" and UPDATE_FROM != QEXO_VERSION and UPDATE_FROM:

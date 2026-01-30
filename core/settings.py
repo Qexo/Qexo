@@ -184,37 +184,56 @@ if errors:
     raise exceptions.InitError(f"{errors}未设置, 请查看: https://www.oplog.cn/qexo/start/build.html")
 
 def _load_allowed_hosts(local_config):
-    source = "本地配置" if local_config else "环境变量 DOMAINS"
-
     if local_config:
+        # 本地配置模式：必须设置 DOMAINS
         try:
             hosts = configs.DOMAINS
         except AttributeError:
             raise exceptions.InitError('本地 configs.py 缺少 DOMAINS, 请设置为 ["example.com"]')
+        
+        if not isinstance(hosts, (list, tuple)):
+            raise exceptions.InitError('本地配置 DOMAINS 必须为列表, 例如 ["example.com"]')
+        
+        if (not hosts) or hosts == ["*"]:
+            raise exceptions.InitError('本地配置 DOMAINS 未配置有效域名, 请填写实际域名, 例如 ["example.com"]')
+        
+        logging.info(f"从本地配置获取域名: {list(hosts)}")
+        return list(hosts)
+    
     else:
+        # 环境变量模式：收集 DOMAINS 和 Vercel 环境变量
+        domains_hosts = []
+        vercel_hosts = []
+        
+        # 解析 DOMAINS 环境变量
         domains_raw = os.environ.get("DOMAINS")
-        if not domains_raw:
-            raise exceptions.InitError('DOMAINS 未设置, 请填写实际域名, 例如 ["example.com"]')
-        try:
-            hosts = json.loads(domains_raw)
-        except json.JSONDecodeError as exc:
-            raise exceptions.InitError(f"DOMAINS 解析失败: {exc}")
-
-    if not isinstance(hosts, (list, tuple)):
-        raise exceptions.InitError(f"{source} DOMAINS 必须为列表, 例如 [\"example.com\"]")
-
-    if (not hosts) or hosts == ["*"]:
-        raise exceptions.InitError(f"{source} DOMAINS 未配置有效域名, 请填写实际域名, 例如 [\"example.com\"]")
-
-    # 添加 Vercel 环境变量的 URL
-    hosts = list(hosts)
-    for env_var in ["VERCEL_URL", "VERCEL_BRANCH_URL", "VERCEL_PROJECT_PRODUCTION_URL"]:
-        url = os.environ.get(env_var)
-        if url and url not in hosts:
-            hosts.append(url)
-
-    logging.info(f"从{source}获取域名: {hosts}")
-    return hosts
+        if domains_raw:
+            try:
+                parsed = json.loads(domains_raw)
+                if not isinstance(parsed, (list, tuple)):
+                    raise exceptions.InitError('环境变量 DOMAINS 必须为列表, 例如 ["example.com"]')
+                domains_hosts = [h for h in parsed if h and h != "*"]
+            except json.JSONDecodeError as exc:
+                raise exceptions.InitError(f"DOMAINS 环境变量解析失败: {exc}")
+        
+        # 收集 Vercel 环境变量
+        for env_var in ["VERCEL_URL", "VERCEL_BRANCH_URL", "VERCEL_PROJECT_PRODUCTION_URL"]:
+            url = os.environ.get(env_var)
+            if url and url not in vercel_hosts:
+                vercel_hosts.append(url)
+        
+        # 确定最终 hosts
+        if domains_hosts and vercel_hosts:
+            # 两者都有：取交集，交集为空则用并集
+            hosts = [h for h in domains_hosts if h in vercel_hosts] or list(set(domains_hosts + vercel_hosts))
+            logging.info(f"从 DOMAINS 和 Vercel 环境变量获取域名: {hosts}")
+        else:
+            hosts = domains_hosts or vercel_hosts
+            if not hosts:
+                raise exceptions.InitError('DOMAINS 未设置且未检测到 Vercel 环境变量, 请为 DOMAINS 环境变量填写实际域名, 例如 ["example.com"]')
+            logging.info(f"从{'环境变量 DOMAINS' if domains_hosts else 'Vercel 环境变量'}获取域名: {hosts}")
+        
+        return hosts
 
 
 def _build_csrf_trusted_origins(hosts):

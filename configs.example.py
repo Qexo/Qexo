@@ -1,6 +1,8 @@
 from pathlib import Path
+import os
+import json
 
-DOMAINS = ["*"]
+DOMAINS = json.loads(os.environ.get("DOMAINS", "[]")) or ["example.com"]
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',

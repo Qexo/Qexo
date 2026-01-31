@@ -266,7 +266,7 @@ def all_providers():
 
 
 def all_configs():
-    return configs.keys()
+    return list(configs.keys())
 
 
 def get_params(provider_name):

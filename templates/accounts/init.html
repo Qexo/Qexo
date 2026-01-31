@@ -21,168 +21,33 @@
     <!-- Page content -->
     <div class="container" style="margin-top: -8rem!important;padding-bottom: 3rem!important;">
         <div class="row justify-content-center">
-            {% if step == "4" or step == "2" or step == "3" %}
-                <div class="col-lg-8 col-md-5">
-            {% else %}
-                <div class="col-lg-5 col-md-5">
-            {% endif %}
+            <div class="col-lg-8 col-md-10" id="main-col">
             <div class="card z-index-0">
                 <div class="card-body">
-                    <div class="text-center text-muted mb-4">
-                        {% if step == "1" %}
-                            <h4>{{ "INIT_WELCOME" | gettext }}</h4>
-                        {% endif %}
-                        {% if step == "2" %}
-                            <h5>{{ "INIT_USER" | gettext }}</h5>
-                        {% endif %}
-                        {% if step == "3" %}
-                            <h4>{{ "INIT_BLOG" | gettext }}</h4>
-                        {% endif %}
-                        {% if step == "4" %}
-                            <h5>{{ "INIT_IMAGE" | gettext }}</h5>
-                        {% endif %}
-                        {% if step == "5" %}
-                            <h5>{{ "INIT_VERCEL" | gettext }}</h5>
-                        {% endif %}
-                        {% if step == "6" %}
-                            <h5>{{ "INIT_FINISH" | gettext }}</h5>
-                        {% endif %}
+                    <div class="text-center text-muted mb-4" id="step-title">
+                        <h4>{{ "INIT_WELCOME" | gettext }}</h4>
                     </div>
-                    {% if step == "6" %}
-                        <ul>{{ "INIT_LOGIN_MSG_1" | gettext }}
-                            <li>{{ "INIT_LOGIN_MSG_2" | gettext }}{{ username }}</li>
-                            <li>{{ "INIT_LOGIN_MSG_3" | gettext }}</li>
-                            <a class="btn btn-primary my-4 text-white" href="/">
-                                {{ "INIT_LOGIN_MSG_4" | gettext }}
-                            </a>
-                        </ul>
-                    {% endif %}
-                    <form method="POST" id="main-form">
-                        {% if step == "1" %}
-                            <div class="text-center">
-                                <select name="language" id="config-container"
-                                        class="form-control">
-                                    {% for i in all_languages %}
-                                        <option value="{{ i.name }}">{{ i.name_local }}</option>
-                                    {% endfor %}
-                                </select>
-                                <button type="submit" class="btn btn-primary my-4">
-                                    {{ "START" | gettext }}</button>
-                            </div>
-                        {% endif %}
-                        <input type="hidden" name="step"
-                               value="{{ step }}">
-                        {% csrf_token %}
-                        {% if step == "2" %}
-                            <hr class="my-4"/>
-                            <div class="row">
-                                <div class="col-lg-6">
-                                    <div class="form-group">
-                                        <label class="form-control-label">{{ "INIT_2_1" | gettext }}</label>
-                                        <input type="text" name="apikey" class="form-control"
-                                               placeholder="{{ "INIT_2_1_PH" | gettext }}"
-                                               value="{{ apikey }}">
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="form-group">
-                                        <label class="form-control-label">
-                                            {{ "INIT_2_2" | gettext }}</label>
-                                        <input type="text" name="username"
-                                               class="form-control"
-                                               placeholder="{{ "INIT_2_2_PH" | gettext }}"
-                                               value="{{ username }}">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-lg-6">
-                                    <div class="form-group">
-                                        <label class="form-control-label">
-                                            {{ "INIT_2_3" | gettext }}</label>
-                                        <input type="text" name="password" class="form-control"
-                                               placeholder="{{ "INIT_2_3_PH" | gettext }}"
-                                               value="{{ password }}">
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="form-group">
-                                        <label class="form-control-label">
-                                            {{ "INIT_2_4" | gettext }}</label>
-                                        <input type="text" name="repassword" class="form-control"
-                                               placeholder="{{ "INIT_2_4_PH" | gettext }}"
-                                               value="{{ repassword }}">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="text-center">
-                                <button type="submit" class="btn btn-primary my-4">
-                                    {{ "NEXT" | gettext }}</button>
-                            </div>
-                        {% endif %}
-                        {% if step == "3" %}
-                            <hr class="my-4"/>
-                            <div class="pl-lg-4">
-                                <div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">
-                                                {{ "INIT_3_1" | gettext }}</label>
-                                            <select name="provider" id="provider-container"
-                                                    class="form-control"
-                                                    onchange="change_provider(this.value)">
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            <label class="form-control-label">
-                                                {{ "INIT_3_2" | gettext }}</label>
-                                            <select name="config" id="config-container"
-                                                    class="form-control">
-                                                {% for config in all_platform_configs %}
-                                                    <option value="{{ config }}">{{ config }}</option>
-                                                {% endfor %}
-                                            </select>
-
-                                        </div>
-                                    </div>
-                                </div>
-                                <div id="hexo-settings-container"></div>
-                            </div>
-                            <div class="text-center" id="submit-button">
-                                {% if PROVIDER %}
-                                    <input type="button" class="btn btn-secondary my-4"
-                                           value="{{ "FORCE_SUBMIT" | gettext }}"
-                                           onclick="query_force()">
-                                {% endif %}
-                                <button type="submit" class="btn btn-primary my-4">下一步</button>
-                            </div>
-                        {% endif %}
-                        {% if step == "5" %}
-                            <hr class="my-4"/>
-                            <div class="form-group">
-                                <label class="form-control-label">{{ "INIT_4_1" | gettext }}</label>
-                                <input type="text" name="token" class="form-control"
-                                       placeholder="Vercel Token" value="{{ vercel_token }}">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-control-label">{{ "INIT_4_2" | gettext }}</label>
-                                <input type="text" name="id" class="form-control"
-                                       placeholder="Project ID"
-                                       value="{{ project_id }}">
-                            </div>
-                            <div class="text-center">
-                                <button type="submit" class="btn btn-primary my-4">
-                                    {{ "FINISH" | gettext }}</button>
-                            </div>
-                        {% endif %}
-                    </form>
+                    
+                    <div id="form-content">
+                        <!-- 动态内容将在这里渲染 -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Progress Bar at bottom -->
+            <div class="mt-3">
+                <div class="progress">
+                    <div class="progress-bar bg-gradient-primary progress-bar-animated" 
+                         role="progressbar" 
+                         id="progress-bar"
+                         aria-valuenow="20" 
+                         aria-valuemin="0" 
+                         aria-valuemax="100" 
+                         style="width: 20%;">
+                    </div>
                 </div>
             </div>
             </div>
-            </div>
-        </div>
     </div>
 
     <div class="modal fade" id="queryModal" tabindex="-1" aria-labelledby="queryModalLabel"
@@ -204,138 +69,455 @@
         </div>
     </div>
 
+    <!-- Hidden templates for each step -->
+    <script type="text/template" id="step-1-template">
+        <div class="text-center">
+            <select name="language" id="language-select" class="form-control" onchange="selectLanguage(this.value)">
+                {% for i in all_languages %}
+                    <option value="{{ i.name }}">{{ i.name_local }}</option>
+                {% endfor %}
+            </select>
+            <button type="button" class="btn btn-primary my-4" onclick="submitStep('1')">
+                {{ "START" | gettext }}
+            </button>
+        </div>
+    </script>
+
 {% endblock content %}
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
 
     <script>
-        {% if msg %}
-            notyf.error(`{{ msg|safe }}`);
+        // ========== 全局状态管理 ==========
+        let currentStep = "{{ step }}";
+        let currentLanguage = "{{ current_language }}";
+        const allProviders = {{ all_providers | safe | default:"{}"|safe }};
+        const allPlatformConfigs = {{ all_platform_configs | safe | default:"[]"|safe }};
+        const allLanguages = {{ all_languages | safe | default:"[]"|safe }};
+        {% if PROVIDER %}
+        let nowProvider = {{ PROVIDER | safe }};
+        {% else %}
+        let nowProvider = {};
         {% endif %}
+        const csrfToken = "{{ csrf_token }}";
+        
+        // 初始上下文数据
+        const initialContext = {
+            {% if username %}username: "{{ username }}",{% endif %}
+            {% if password %}password: "{{ password }}",{% endif %}
+            {% if repassword %}repassword: "{{ repassword }}",{% endif %}
+            {% if apikey %}apikey: "{{ apikey }}",{% endif %}
+            {% if vercel_token %}vercel_token: "{{ vercel_token }}",{% endif %}
+            {% if project_id %}project_id: "{{ project_id }}",{% endif %}
+            all_platform_configs: allPlatformConfigs,
+            all_languages: allLanguages
+        };
 
-        function skip() {
-            let temp = document.createElement("form");
-            temp.action = "";
-            temp.method = "post";
-            temp.hidden = true;
-            let opt = document.createElement("textarea");
-            opt.name = "csrfmiddlewaretoken";
-            opt.value = "{{ csrf_token }}";
-            temp.appendChild(opt);
-            opt = document.createElement("textarea");
-            opt.name = "step";
-            opt.value = "{{ step }}";
-            temp.appendChild(opt);
-            document.body.appendChild(temp);
-            temp.submit();
+        // ========== 步骤配置 ==========
+        const stepConfig = {
+            "1": { progress: 20, title: "{{ 'INIT_WELCOME' | gettext }}", titleTag: "h4" },
+            "2": { progress: 40, title: "{{ 'INIT_USER' | gettext }}", titleTag: "h5" },
+            "3": { progress: 60, title: "{{ 'INIT_BLOG' | gettext }}", titleTag: "h4" },
+            "4": { progress: 80, title: "{{ 'INIT_VERCEL' | gettext }}", titleTag: "h5" },
+            "6": { progress: 100, title: "{{ 'INIT_FINISH' | gettext }}", titleTag: "h5" }
+        };
+
+
+
+        // ========== 进度条更新 ==========
+        function updateProgress(step) {
+            const config = stepConfig[step];
+            if (config) {
+                const percent = config.progress;
+                $("#progress-bar").css("width", percent + "%").attr("aria-valuenow", percent);
+            }
         }
 
+        // ========== 步骤标题更新 ==========
+        function updateStepTitle(step) {
+            const config = stepConfig[step];
+            if (config) {
+                $("#step-title").html(`<${config.titleTag}>${config.title}</${config.titleTag}>`);
+            }
+        }
 
-        {% if step == "3" %}
-            const all_providers = {{ all_providers | safe }};
-            {% if PROVIDER %}
-                var now_provider = {{ PROVIDER | safe }};
-                function query_force() {
-                    $("#question").html("{{ "FORCE_MSG" | gettext }}");
-                    $("#query-footer").html(
-                        `<button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                                onclick="force_submit()">{{ "CONFIRM" | gettext }}
-                        </button>
-                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">{{ "CANCEL" | gettext }}
-                        </button>`
-                    );
-                    $("#queryModal").modal("show");
+        // ========== 步骤渲染函数 ==========
+        function renderStep1(context) {
+            return $("#step-1-template").html();
+        }
+
+        function renderStep2(context) {
+            const apikey = context.apikey || '';
+            const username = context.username || '';
+            const password = context.password || '';
+            const repassword = context.repassword || '';
+            
+            return `
+                <hr class="my-4"/>
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="form-group">
+                            <label class="form-control-label">{{ "INIT_2_1" | gettext }}</label>
+                            <input type="text" id="apikey" class="form-control"
+                                   placeholder="{{ "INIT_2_1_PH" | gettext }}"
+                                   value="${apikey}">
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="form-group">
+                            <label class="form-control-label">{{ "INIT_2_2" | gettext }}</label>
+                            <input type="text" id="username" class="form-control"
+                                   placeholder="{{ "INIT_2_2_PH" | gettext }}"
+                                   value="${username}">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="form-group">
+                            <label class="form-control-label">{{ "INIT_2_3" | gettext }}</label>
+                            <input type="password" id="password" class="form-control"
+                                   placeholder="{{ "INIT_2_3_PH" | gettext }}"
+                                   value="${password}">
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="form-group">
+                            <label class="form-control-label">{{ "INIT_2_4" | gettext }}</label>
+                            <input type="password" id="repassword" class="form-control"
+                                   placeholder="{{ "INIT_2_4_PH" | gettext }}"
+                                   value="${repassword}">
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <button type="button" class="btn btn-secondary my-4" onclick="prevStep('2')">
+                        {{ "PREV" | gettext }}
+                    </button>
+                    <button type="button" class="btn btn-primary my-4" onclick="submitStep('2')">
+                        {{ "NEXT" | gettext }}
+                    </button>
+                </div>
+            `;
+        }
+
+        function renderStep3(context) {
+            const configs = context.all_platform_configs || allPlatformConfigs;
+            const configOptions = configs.map(cfg => 
+                `<option value="${cfg}">${cfg}</option>`
+            ).join('');
+            
+            return `
+                <hr class="my-4"/>
+                <div class="pl-lg-4">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                                <label class="form-control-label">{{ "INIT_3_1" | gettext }}</label>
+                                <select id="provider-select" class="form-control"
+                                        onchange="changeProviderDynamic(this.value)">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                                <label class="form-control-label">{{ "INIT_3_2" | gettext }}</label>
+                                <select id="config-select" class="form-control">
+                                    ${configOptions}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="hexo-settings-container"></div>
+                </div>
+                <div class="text-center">
+                    <button type="button" class="btn btn-secondary my-4" onclick="prevStep('3')">
+                        {{ "PREV" | gettext }}
+                    </button>
+                    <button type="button" class="btn btn-primary my-4" onclick="submitStep('3')">
+                        {{ "NEXT" | gettext }}
+                    </button>
+                </div>
+            `;
+        }
+
+        function renderStep4(context) {
+            const vercelToken = context.vercel_token || '';
+            const projectId = context.project_id || '';
+            
+            return `
+                <hr class="my-4"/>
+                <div class="form-group">
+                    <label class="form-control-label">{{ "INIT_4_1" | gettext }}</label>
+                    <input type="text" id="vercel-token" class="form-control"
+                           placeholder="Vercel Token" value="${vercelToken}">
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label">{{ "INIT_4_2" | gettext }}</label>
+                    <input type="text" id="project-id" class="form-control"
+                           placeholder="Project ID" value="${projectId}">
+                </div>
+                <div class="text-center">
+                    <button type="button" class="btn btn-secondary my-4" onclick="prevStep('4')">
+                        {{ "PREV" | gettext }}
+                    </button>
+                    <button type="button" class="btn btn-primary my-4" onclick="submitStep('4')">
+                        {{ "FINISH" | gettext }}
+                    </button>
+                </div>
+            `;
+        }
+
+        function renderStep6(context) {
+            const username = context.username || '';
+            return `
+                <ul>{{ "INIT_LOGIN_MSG_1" | gettext }}
+                    <li>{{ "INIT_LOGIN_MSG_2" | gettext }}${username}</li>
+                    <li>{{ "INIT_LOGIN_MSG_3" | gettext }}</li>
+                    <a class="btn btn-primary my-4 text-white" href="/">
+                        {{ "INIT_LOGIN_MSG_4" | gettext }}
+                    </a>
+                </ul>
+            `;
+        }
+
+        // ========== 加载步骤内容 ==========
+        function loadStep(step, context = {}, skipHistory = false) {
+            currentStep = step;
+            updateProgress(step);
+            updateStepTitle(step);
+            
+            // 如果context包含PROVIDER数据，更新nowProvider全局变量
+            if (context.PROVIDER) {
+                try {
+                    nowProvider = typeof context.PROVIDER === 'string' 
+                        ? JSON.parse(context.PROVIDER) 
+                        : context.PROVIDER;
+                } catch (e) {
+                    console.warn('Failed to parse PROVIDER:', e);
                 }
-                function force_submit() {
-                    $("#main-form").append("<input type='hidden' name='_force' value='1'>");
-                    $("#main-form").submit();
+            }
+            
+            let html = '';
+            switch(step) {
+                case "1": html = renderStep1(context); break;
+                case "2": html = renderStep2(context); break;
+                case "3": html = renderStep3(context); break;
+                case "4": html = renderStep4(context); break;
+                case "6": html = renderStep6(context); break;
+            }
+            
+            // 淡出淡入效果
+            $("#form-content").fadeOut(200, function() {
+                $(this).html(html).fadeIn(200, function() {
+                    // 步骤1：确保下拉框选中当前语言后再展示
+                    if (step === "1" && currentLanguage) {
+                        $("#language-select").val(currentLanguage);
+                    }
+                });
+                
+                // 步骤3特殊处理
+                if (step === "3") {
+                    initializeStep3(context);
                 }
-            {% else %}
-                var now_provider = {};
+            });
+            
+            // 更新History API
+            if (!skipHistory) {
+                const url = new URL(window.location);
+                url.searchParams.set('step', step);
+                history.pushState({ step: step, context: context }, '', url);
+            }
+        }
+
+        // ========== AJAX提交函数 ==========
+        function submitStep(step) {
+            // 禁用所有按钮
+            const $buttons = $("button");
+            $buttons.prop("disabled", true).addClass("disabled");
+            
+            let formData = {
+                step: step,
+                csrfmiddlewaretoken: csrfToken
+            };
+            
+            // 收集各步骤的表单数据
+            if (step === "1") {
+                formData.language = $("#language-select").val();
+            } else if (step === "2") {
+                formData.username = $("#username").val();
+                formData.password = $("#password").val();
+                formData.repassword = $("#repassword").val();
+                formData.apikey = $("#apikey").val();
+            } else if (step === "3") {
+                formData.provider = $("#provider-select").val();
+                const configValue = $("#config-select").val();
+                formData.config = configValue;
+                // 收集动态provider参数
+                $("#hexo-settings-container input").each(function() {
+                    const name = $(this).attr('name');
+                    if (name) {
+                        formData[name] = $(this).val();
+                    }
+                });
+            } else if (step === "4") {
+                formData.token = $("#vercel-token").val();
+                formData.id = $("#project-id").val();
+            }
+            
+            $.ajax({
+                url: "/api/init_step/",
+                type: "POST",
+                dataType: "JSON",
+                data: formData,
+                success: function(res) {
+                    // 重新启用按钮
+                    $("button").prop("disabled", false).removeClass("disabled");
+                    
+                    if (res.status) {
+                        // 加载下一步
+                        loadStep(res.next_step, res.context || {});
+                    } else {
+                        notyf.error(res.msg || '操作失败');
+                        // 重新渲染当前步骤（带错误数据）
+                        if (res.context) {
+                            loadStep(res.current_step, res.context, true);
+                        }
+                    }
+                },
+                error: function(xhr, status, error) {
+                    // 重新启用按钮
+                    $("button").prop("disabled", false).removeClass("disabled");
+                    
+                    notyf.error('网络错误');
+                    console.error('AJAX Error:', error);
+                }
+            });
+        }
+
+        // ========== 上一步函数 ==========
+        const prevStepMap = {
+            "2": "1",
+            "3": "1",
+            "4": "3",
+            "6": "4"
+        };
+        
+        function prevStep(currentStep) {
+            const prevStepNum = prevStepMap[currentStep];
+            if (prevStepNum) {
+                loadStep(prevStepNum, initialContext, false);
+            }
+        }
+
+        // ========== Step 3特殊处理（动态provider） ==========
+        function initializeStep3(context) {
+            // 填充provider选项
+            let providerHtml = '';
+            const selectedProvider = nowProvider.provider || Object.keys(allProviders)[0];
+            
+            for (let key in allProviders) {
+                const selected = selectedProvider === key ? 'selected' : '';
+                providerHtml += `<option ${selected}>${key}</option>`;
+            }
+            $("#provider-select").html(providerHtml).val(selectedProvider);
+            
+            // 恢复config选项选择
+            if (nowProvider.params && nowProvider.params.config) {
+                $("#config-select").val(nowProvider.params.config);
+            }
+            
+            // provider选择改变时更新provider参数
+            $("#provider-select").off("change").on("change", function() {
+                changeProviderDynamic(this.value);
+            });
+            
+            // 初始化对应的provider表单
+            changeProviderDynamic(selectedProvider);
+        }
+        
+        function changeProviderDynamic(provider) {
+            const params = allProviders[provider];
+            if (!params) return;
+            
+            let html = '';
+            let t = 0;
+            
+            for (let key in params) {
+                const value = (nowProvider.provider === provider && nowProvider.params) 
+                    ? escapeString(nowProvider.params[key] || '') : '';
+                
+                const fieldHtml = `
+                    <div class="form-group">
+                        <label class="form-control-label">${params[key].description}</label>
+                        <input type="text" name="${key}" class="form-control"
+                               placeholder="${params[key].placeholder}"
+                               value="${value}">
+                    </div>
+                `;
+                
+                if (t % 2 === 0) {
+                    html += `<div class="row"><div class="col-lg-6">${fieldHtml}</div>`;
+                } else {
+                    html += `<div class="col-lg-6">${fieldHtml}</div></div>`;
+                }
+                t++;
+            }
+            if (t % 2 === 1) html += '</div>';
+            
+            $("#hexo-settings-container").html(html);
+        }
+
+        // ========== 语言选择处理 ==========
+        function selectLanguage(language) {
+            // 始终提交语言选择并刷新，以便服务端保存语言并返回下一步
+            const formData = {
+                step: '1',
+                language: language,
+                csrfmiddlewaretoken: csrfToken
+            };
+            
+            $.ajax({
+                url: "/api/init_step/",
+                type: "POST",
+                dataType: "JSON",
+                data: formData,
+                success: function(res) {
+                    if (res.status) {
+                        // 语言保存后刷新页面，后端会根据 INIT 状态直接进入下一步
+                        window.location.reload();
+                    } else {
+                        notyf.error(res.msg || '语言选择失败');
+                    }
+                },
+                error: function() {
+                    notyf.error('网络错误');
+                }
+            });
+        }
+
+        // ========== 浏览器后退支持 ==========
+        window.addEventListener('popstate', function(event) {
+            if (event.state && event.state.step) {
+                loadStep(event.state.step, event.state.context || {}, true);
+            }
+        });
+
+        // ========== 页面加载时初始化 ==========
+        $(document).ready(function() {
+            // 初始化第一步或当前步骤
+            {% if msg %}
+            notyf.error(`{{ msg|safe }}`);
             {% endif %}
-            function change_provider(provider) {
-                let params = all_providers[provider];
-                let t = 0;
-                let html = '';
-                if (provider === now_provider["provider"]) {
-                    for (let key in params) {
-                        if (t % 2 === 0) {  // first param
-                            html += `<div class="row">
-                                <div class="col-lg-6">
-                                    <div class="form-group">
-                                        <label class="form-control-label">` +
-                                params[key]["description"] +
-                                `</label>
-                                        <input type="text" name="` + key + `" class="form-control"
-                                               placeholder="` + params[key]["placeholder"] + `"
-                                               value="` + escapeString(now_provider["params"][key]) + `">
-                                    </div>
-                                </div>`
-                            t += 1;
-                        } else {
-                            html += `<div class="col-lg-6">
-                                <div class="form-group">
-                                    <label class="form-control-label">` + params[key]["description"] + `</label>
-                                    <input type="text" name="` + key + `" class="form-control"
-                                           placeholder="` + params[key]["placeholder"] + `"
-                                           value="` + escapeString(now_provider["params"][key]) + `">
-                                </div>
-                            </div>
-                        </div>`
-                            t += 1;
-                        }
-                    }
-                    if (t % 2 === 1) {
-                        html += '</div>';
-                    }
-                } else {
-                    for (let key in params) {
-                        if (t % 2 === 0) {  // first param
-                            html += `<div class="row">
-                                <div class="col-lg-6">
-                                    <div class="form-group">
-                                        <label class="form-control-label">` + params[key]["description"] + `</label>
-                                        <input type="text" name="` + key + `" class="form-control"
-                                               placeholder="` + params[key]["placeholder"] + `"
-                                               value="">
-                                    </div>
-                                </div>`
-                            t += 1;
-                        } else {
-                            html += `<div class="col-lg-6">
-                                <div class="form-group">
-                                    <label class="form-control-label">` + params[key]["description"] + `</label>
-                                    <input type="text" name="` + key + `" class="form-control"
-                                           placeholder="` + params[key]["placeholder"] + `"
-                                           value="">
-                                </div>
-                            </div>
-                        </div>`
-                            t += 1;
-                        }
-                    }
-                    if (t % 2 === 1) {
-                        html += '</div>';
-                    }
-                }
-                $("#hexo-settings-container").html(html);
-            }
-
-            let provider_container = "";
-            for (let key in all_providers) {
-                if (now_provider["provider"] === key) {
-                    provider_container += `<option selected>` + key + `</option>`;
-                    change_provider(key);
-                } else {
-                    provider_container += `<option>` + key + `</option>`;
-                }
-            }
-            if (!now_provider["provider"]) {
-                change_provider("github");
-            }
-            $("#provider-container").html(provider_container);
-        {% endif %}
-
+            
+            // 设置初始History状态
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlStep = urlParams.get('step');
+            const initStep = urlStep || currentStep;
+            
+            // 加载初始步骤
+            loadStep(initStep, initialContext, false);
+        });
     </script>
 {% endblock javascripts %}

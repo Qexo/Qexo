@@ -1,0 +1,460 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} {{ "PASSKEY_MANAGER" | gettext }} {% endblock title %}
+
+{% block content %}
+    <!-- Page content -->
+    <div class="container-fluid py-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card mb-4">
+                    <div class="card-header pb-0">
+                        <h6>{{ "PASSKEY_MANAGER" | gettext }}</h6>
+                        <p class="text-sm mb-0">{{ "PASSKEY_MANAGER_DESC" | gettext }}</p>
+                    </div>
+                    <div class="card-body">
+                        <!-- Passkey注册区域 -->
+                        <div class="row mb-4">
+                            <div class="col-md-6 d-flex">
+                                <div class="card border border-info h-100 w-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ "PASSKEY_REGISTER" | gettext }}</h5>
+                                        <p class="text-sm mb-3">{{ "PASSKEY_REGISTER_DESC" | gettext }}</p>
+                                        <div class="form-group mb-3">
+                                            <label class="form-control-label">{{ "PASSKEY_DEVICE_NAME" | gettext }}</label>
+                                            <input type="text" id="passkey-device-name" class="form-control bg-white text-dark" placeholder="{{ "PASSKEY_DEVICE_NAME" | gettext }}" />
+                                        </div>
+                                        <button class="btn btn-sm btn-info shadow-none" id="passkey-register-button" onclick="register_passkey()">
+                                            <i class="ni ni-fat-add"></i> {{ "PASSKEY_ADD_DEVICE" | gettext }}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 d-flex">
+                                <div class="card border border-warning h-100 w-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title d-flex align-items-center mb-3">
+                                            {{ "PASSKEY_MANAGER" | gettext }}
+                                        </h5>
+                                        <p class="text-sm mb-3">{{ "PASSKEY_MANAGER_DESC" | gettext }}</p>
+
+                                        <ul class="mb-0 text-sm ps-3">
+                                                <li>{{ "PASSKEY_TIP_BROWSERS" | gettext }}</li>
+                                                <li>{{ "PASSKEY_TIP_PLATFORM_AUTHENTICATOR" | gettext }}</li>
+                                                <li>{{ "PASSKEY_TIP_FALLBACK_PASSWORD" | gettext }}</li>
+                                                <li>{{ "PASSKEY_TIP_LOST_REMOVE" | gettext }}</li>
+                                            </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        
+
+                        <!-- 已注册设备列表 -->
+                        <div class="table-responsive p-0">
+                            <table class="table align-items-center mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="text-xxs font-weight-bolder opacity-7"><span class="px-1">{{ "PASSKEY_DEVICE_NAME" | gettext }}</span></th>
+                                        <th class="text-xxs font-weight-bolder opacity-7"><span>{{ "PASSKEY_CREATED_AT" | gettext }}</span></th>
+                                        <th class="text-center text-xxs font-weight-bolder opacity-7"><span class="">{{ "PASSKEY_LAST_USED" | gettext }}</span></th>
+                                        <th class="text-xxs font-weight-bolder opacity-7"><span>{{ "PASSKEY_TYPE" | gettext }}</span></th>
+                                        <th class="text-xxs font-weight-bolder opacity-7"><span>{{ "OPERATION" | gettext }}</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="devices-list">
+                                    <tr>
+                                        <td colspan="5" class="text-center">{{ "PASSKEY_NO_DEVICES" | gettext }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% include "includes/footer.html" %}
+        <style>
+            /* 去除注册按钮的焦点视觉（阴影/轮廓） */
+            #passkey-register-button:focus {
+                box-shadow: none !important;
+                outline: none !important;
+            }
+        </style>
+    </div>
+
+    <!-- 删除设备确认模态框 -->
+    <div class="modal fade" id="deleteDeviceModal" tabindex="-1" aria-labelledby="deleteDeviceLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-white">
+                <div class="modal-header" style="border: none;">
+                    <h5 class="modal-title fs-5" id="deleteDeviceLabel">{{ "PASSKEY_DELETE_DEVICE" | gettext }}</h5>
+                    <button type="button" data-bs-dismiss="modal" aria-label="Close" style="box-sizing: content-box;width: 1em;height: 1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem; opacity: .5;background: none">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p id="delete-confirm-text"></p>
+                </div>
+                <div class="modal-footer" style="border: none;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ "CANCEL" | gettext }}</button>
+                    <button type="button" class="btn btn-danger" onclick="confirm_delete_device()" data-bs-dismiss="modal">{{ "DELETE" | gettext }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 重命名设备模态框 -->
+    <div class="modal fade" id="renameDeviceModal" tabindex="-1" aria-labelledby="renameDeviceLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-white">
+                <div class="modal-header" style="border: none;">
+                    <h5 class="modal-title fs-5" id="renameDeviceLabel">{{ "RENAME" | gettext }}</h5>
+                    <button type="button" data-bs-dismiss="modal" aria-label="Close" style="box-sizing: content-box;width: 1em;height: 1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem; opacity: .5;background: none">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group"><label class="form-control-label">{{ "NEW_NAME" | gettext }}</label><input type="text" id="rename-device-name" class="form-control bg-white text-dark" value="" /></div>
+                </div>
+                <div class="modal-footer" style="border: none;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ "CANCEL" | gettext }}</button>
+                    <button type="button" class="btn btn-primary" onclick="confirm_rename()" data-bs-dismiss="modal">{{ "CONFIRM" | gettext }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE -->
+{% block javascripts %}
+<script>
+    let currentDeviceId = null;
+
+    // 页面加载时获取设备列表
+    document.addEventListener('DOMContentLoaded', function() {
+        load_passkey_devices();
+
+        // 检测浏览器是否支持Passkey注册，不支持则隐藏注册按钮
+        try {
+            var regBtn = document.getElementById('passkey-register-button');
+            if (regBtn) {
+                var basicSupport = !!(window.PublicKeyCredential && navigator.credentials && typeof navigator.credentials.create === 'function');
+                if (!basicSupport) {
+                    regBtn.style.display = 'none';
+                } else if (typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable === 'function') {
+                    PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()
+                        .then(function(available){ if (!available) regBtn.style.display = 'none'; })
+                        .catch(function(){ /* ignore */ });
+                }
+            }
+        } catch (e) { /* ignore */ }
+    });
+
+    // Base64URL helpers for WebAuthn
+    function bufferToBase64Url(buffer) {
+        const bytes = new Uint8Array(buffer);
+        let binary = '';
+        bytes.forEach(b => binary += String.fromCharCode(b));
+        return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+
+    function base64UrlToBuffer(base64url) {
+        let padded = base64url.replace(/-/g, '+').replace(/_/g, '/');
+        while (padded.length % 4) padded += '=';
+        const binary = atob(padded);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        return bytes.buffer;
+    }
+
+    function preformatMakeCredReq(options) {
+        const publicKey = Object.assign({}, options);
+        publicKey.challenge = base64UrlToBuffer(options.challenge);
+        if (publicKey.user && publicKey.user.id) {
+            publicKey.user = Object.assign({}, publicKey.user, { id: base64UrlToBuffer(options.user.id) });
+        }
+        if (publicKey.excludeCredentials) {
+            publicKey.excludeCredentials = publicKey.excludeCredentials.map((cred) => ({
+                type: cred.type || 'public-key',
+                id: base64UrlToBuffer(cred.id),
+                transports: cred.transports || undefined,
+            }));
+        }
+        return publicKey;
+    }
+
+    function getCsrfToken() {
+        // 从 CSRF cookie 中读取令牌（Django 标准方式）
+        const cookies = document.cookie.split('; ');
+        for (let cookie of cookies) {
+            if (cookie.startsWith('csrftoken=')) {
+                return decodeURIComponent(cookie.substring(10));
+            }
+        }
+        return '';
+    }
+
+    // 加载设备列表
+    function load_passkey_devices() {
+        $.ajax({
+            url: '/api/passkey_devices/',
+            method: 'get',
+            dataType: 'json',
+            success: function(res) {
+                if (res.status && res.devices) {
+                    render_devices_table(res.devices);
+                } else {
+                    notyf.error(res.msg || "{{ "PASSKEY_LOAD_FAILED" | gettext }}");
+                }
+            },
+            error: function() {
+                notyf.error("{{ "NETWORK_ERROR" | gettext }}");
+            }
+        });
+    }
+
+    // 渲染设备表格
+    function render_devices_table(devices) {
+        const listElement = $('#devices-list');
+        listElement.empty();
+        
+        if (devices.length === 0) {
+            const emptyRow = document.createElement('tr');
+            const emptyCell = document.createElement('td');
+            emptyCell.setAttribute('colspan', '5');
+            emptyCell.className = 'text-center';
+            emptyCell.textContent = '{{ "PASSKEY_NO_DEVICES" | gettext }}';
+            emptyRow.appendChild(emptyCell);
+            listElement.append(emptyRow);
+        } else {
+            devices.forEach(function(device) {
+                const createdAt = new Date(device.created_at).toLocaleDateString();
+                const lastUsed = device.last_used ? new Date(device.last_used).toLocaleDateString() : "{{ "PASSKEY_NEVER" | gettext }}";
+                const deviceType = device.platform || "{{ "PASSKEY_UNKNOWN" | gettext }}";
+
+                const row = document.createElement('tr');
+                row.setAttribute('data-device-id', device.id);
+                
+                const nameCell = document.createElement('td');
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'd-flex px-4 py-1';
+                const nameHeading = document.createElement('h6');
+                nameHeading.className = 'mb-0 text-sm';
+                nameHeading.textContent = device.name; // 使用 textContent 防止 XSS
+                nameDiv.appendChild(nameHeading);
+                nameCell.appendChild(nameDiv);
+                row.appendChild(nameCell);
+
+                const createdCell = document.createElement('td');
+                const createdSpan = document.createElement('span');
+                createdSpan.className = 'text-xs font-weight-bold opacity-8 text-dark';
+                createdSpan.textContent = createdAt;
+                createdCell.appendChild(createdSpan);
+                row.appendChild(createdCell);
+
+                const lastUsedCell = document.createElement('td');
+                lastUsedCell.className = 'text-center';
+                const lastUsedSpan = document.createElement('span');
+                lastUsedSpan.className = 'text-xs font-weight-bold opacity-8 text-dark';
+                lastUsedSpan.textContent = lastUsed;
+                lastUsedCell.appendChild(lastUsedSpan);
+                row.appendChild(lastUsedCell);
+
+                const typeCell = document.createElement('td');
+                typeCell.className = 'align-middle text-sm';
+                const typeBadge = document.createElement('span');
+                typeBadge.className = 'badge bg-info';
+                typeBadge.textContent = deviceType;
+                typeCell.appendChild(typeBadge);
+                row.appendChild(typeCell);
+
+                const actionCell = document.createElement('td');
+                actionCell.className = 'align-middle text-sm';
+                
+                const editLink = document.createElement('a');
+                editLink.href = 'javascript:void(0);';
+                editLink.setAttribute('data-device-id', device.id);
+                editLink.className = 'edit-device';
+                editLink.innerHTML = '<i class="fa-solid fa-edit me-2 text-xxs text-primary"></i>';
+                editLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    show_rename_modal(device.id, device.name);
+                });
+                actionCell.appendChild(editLink);
+                
+                const separator = document.createElement('span');
+                separator.textContent = ' | ';
+                actionCell.appendChild(separator);
+                
+                const deleteLink = document.createElement('a');
+                deleteLink.href = 'javascript:void(0);';
+                deleteLink.setAttribute('data-device-id', device.id);
+                deleteLink.className = 'delete-device';
+                deleteLink.innerHTML = '<i class="fa-solid fa-trash me-2 text-xxs text-primary"></i>';
+                deleteLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    show_delete_modal(device.id, device.name);
+                });
+                actionCell.appendChild(deleteLink);
+                
+                row.appendChild(actionCell);
+                listElement.append(row);
+            });
+        }
+    }
+
+    // 显示删除确认模态框
+    function show_delete_modal(deviceId, deviceName) {
+        currentDeviceId = deviceId;
+        const confirmText = "{{ "PASSKEY_DELETE_CONFIRM" | gettext }}".replace('{}', '');
+        const messageElement = document.getElementById('delete-confirm-text');
+        messageElement.textContent = confirmText; // 文本节点中的设备名称不需要转义
+        // 如果需要在消息中显示设备名称，使用 textContent：
+        const parts = confirmText.split('{}');
+        if (parts.length === 2) {
+            messageElement.textContent = parts[0] + deviceName + parts[1];
+        }
+        var deleteModal = new bootstrap.Modal(document.getElementById('deleteDeviceModal'));
+        deleteModal.show();
+    }
+
+    // 确认删除设备
+    function confirm_delete_device() {
+        if (!currentDeviceId) return;
+
+        let loading = new KZ_Loading('{{ "DELETING" | gettext }}');
+        loading.show();
+
+        $.ajax({
+            url: '/api/passkey_delete/',
+            method: 'post',
+            headers: {
+                'X-CSRFToken': getCsrfToken()
+            },
+            data: {
+                'device_id': currentDeviceId
+            },
+            dataType: 'json',
+            success: function(res) {
+                if (res.status) {
+                    notyf.success(res.msg || "{{ "DEL_SUCCESS" | gettext }}");
+                    bootstrap.Modal.getInstance(document.getElementById('deleteDeviceModal')).hide();
+                    load_passkey_devices();
+                } else {
+                    notyf.error(res.msg || "{{ "DEL_FAILED" | gettext }}");
+                }
+            },
+            error: function() {
+                notyf.error("{{ "NETWORK_ERROR" | gettext }}");
+            },
+            complete: function() {
+                loading.destroy();
+            }
+        });
+    }
+
+    // 注册Passkey（直接调用注册接口，避免跳转）
+    async function register_passkey() {
+        let loading = new KZ_Loading('{{ "PASSKEY_REGISTRATION_STARTING" | gettext }}');
+        loading.show();
+        try {
+            const beginResp = await fetch('/passkeys/reg/begin', { credentials: 'include' });
+            if (!beginResp.ok) throw new Error('Begin failed');
+            const raw = await beginResp.json();
+            const options = raw.publicKey || raw; // 兼容 { publicKey: {...} }
+
+            // 防御：确保challenge和user.id存在且为字符串
+            if (!options || !options.challenge) throw new Error('Missing challenge from server');
+            if (!options.user || !options.user.id) throw new Error('Missing user id from server');
+
+            options.challenge = String(options.challenge);
+            options.user.id = String(options.user.id);
+
+            const publicKey = preformatMakeCredReq(options);
+
+            const credential = await navigator.credentials.create({ publicKey });
+            if (!credential) throw new Error('Credential creation aborted');
+
+            const keyNameInput = document.getElementById('passkey-device-name');
+            const keyName = (keyNameInput && keyNameInput.value) ? keyNameInput.value : ('Passkey ' + new Date().toLocaleString());
+            const attestation = {
+                id: credential.id,
+                rawId: bufferToBase64Url(credential.rawId),
+                type: credential.type,
+                response: {
+                    clientDataJSON: bufferToBase64Url(credential.response.clientDataJSON),
+                    attestationObject: bufferToBase64Url(credential.response.attestationObject),
+                },
+                clientExtensionResults: credential.getClientExtensionResults(),
+                key_name: keyName,
+            };
+
+            const completeResp = await fetch('/passkeys/reg/complete', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken(),
+                },
+                body: JSON.stringify(attestation),
+            });
+
+            const result = await completeResp.json();
+            if (result.status === 'OK') {
+                notyf.success("{{ "PASSKEY_REGISTER_SUCCESS" | gettext }}");
+                load_passkey_devices();
+            } else {
+                throw new Error(result.message || 'Registration failed');
+            }
+        } catch (err) {
+            notyf.error(err.message || err || "{{ "PASSKEY_REGISTRATION_FAILED" | gettext }}");
+        } finally {
+            loading.destroy();
+        }
+    }
+
+    // 重命名设备（模态框）
+    let renameTargetId = null;
+    function show_rename_modal(id, currentName) {
+        renameTargetId = id;
+        const input = document.getElementById('rename-device-name');
+        if (input) input.value = currentName || '';
+        const modal = new bootstrap.Modal(document.getElementById('renameDeviceModal'));
+        modal.show();
+    }
+    function confirm_rename() {
+        const input = document.getElementById('rename-device-name');
+        const newName = (input ? input.value : '').trim();
+        if (!renameTargetId) return;
+        if (!newName) { notyf.error("{{ "NEW_NAME" | gettext }}"); return; }
+        let loading = new KZ_Loading('{{ "LOADING" | gettext }}');
+        loading.show();
+        $.ajax({
+            url: '/api/passkey_rename/',
+            method: 'post',
+            data: {
+                'device_id': renameTargetId,
+                'name': newName,
+                'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
+            },
+            dataType: 'json',
+            success: function(res) {
+                if (res.status) {
+                    notyf.success(res.msg || "{{ "EDIT_SUCCESS" | gettext }}");
+                    bootstrap.Modal.getInstance(document.getElementById('renameDeviceModal')).hide();
+                    load_passkey_devices();
+                } else {
+                    notyf.error(res.msg || "{{ "LOGIN_FAILED" | gettext }}");
+                }
+            },
+            error: function() { notyf.error("{{ "NETWORK_ERROR" | gettext }}"); },
+            complete: function() { loading.destroy(); }
+        });
+    }
+
+    
+</script>
+{% endblock javascripts %}

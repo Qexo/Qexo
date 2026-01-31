@@ -11,6 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 import hexoweb.libs.image
 from hexoweb.libs.image import get_image_host, delete_image
+from hexoweb.decorators import staff_required
 from .functions import *
 
 
@@ -20,9 +21,19 @@ def auth(request):
     try:
         username = request.POST.get("username")
         password = request.POST.get("password")
+        passkeys_payload = request.POST.get("passkeys")
         verify = request.POST.get("verify")
+
+        # 优先处理 Passkey 登录（无需验证码与密码）
+        if passkeys_payload:
+            user = authenticate(request, passkeys=passkeys_payload, username=username)
+            if user is not None:
+                login(request, user)
+                return JsonResponse(safe=False, data={"msg": gettext("LOGIN_SUCCESS"), "status": True})
+            else:
+                return JsonResponse(safe=False, data={"msg": gettext("LOGIN_FAILED"), "status": False})
         if request.POST.get("type") == "v3":
-            token = get_setting("LOGIN_RECAPTCHA_SERVER_TOKEN")
+            token = get_setting_cached("LOGIN_RECAPTCHA_SERVER_TOKEN")
             if verify:
                 captcha = requests.get(
                     "https://recaptcha.google.cn/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
@@ -33,7 +44,7 @@ def auth(request):
                 logging.info(gettext("CAPTCHA_NO"))
                 return JsonResponse(safe=False, data={"msg": gettext("CAPTCHA_FAILED"), "status": False})
         elif request.POST.get("type") == "v2":
-            token = get_setting("LOGIN_RECAPTCHAV2_SERVER_TOKEN")
+            token = get_setting_cached("LOGIN_RECAPTCHAV2_SERVER_TOKEN")
             if verify:
                 captcha = requests.get(
                     "https://recaptcha.google.cn/recaptcha/api/siteverify?secret=" + token + "&response=" + verify).json()
@@ -43,7 +54,8 @@ def auth(request):
             else:
                 logging.info(gettext("CAPTCHA_NO"))
                 return JsonResponse(safe=False, data={"msg": gettext("CAPTCHA_FAILED"), "status": False})
-        user = authenticate(username=username, password=password)
+        # Passkey backend requires request to be provided
+        user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
             context = {"msg": gettext("LOGIN_SUCCESS"), "status": True}
@@ -56,12 +68,61 @@ def auth(request):
     return JsonResponse(safe=False, data=context)
 
 
+# 初始化步骤API api/init_step
+def init_step_api(request):
+    """统一的初始化步骤API端点"""
+    from hexoweb.init import InitService
+    try:
+        step = request.POST.get("step")
+        service = InitService()
+        outcome = None
+        
+        if step == "1":
+            outcome = service.handle_language_step(
+                request.POST.get("language"), 
+                service.User.objects.exists()
+            )
+        elif step == "2":
+            outcome = service.handle_user_step(
+                request.POST.get("username"),
+                request.POST.get("password"),
+                request.POST.get("repassword"),
+                request.POST.get("apikey")
+            )
+        elif step == "3":
+            outcome = service.handle_provider_step(dict(request.POST))
+        elif step == "4":
+            outcome = service.handle_vercel_step(
+                request.POST.get("id"), 
+                request.POST.get("token")
+            )
+        
+        if outcome and outcome.success:
+            return JsonResponse(safe=False, data={
+                "msg": outcome.msg or gettext("OPERATION_SUCCESS"),
+                "status": True,
+                "next_step": outcome.step,
+                "context": outcome.context
+            })
+        else:
+            return JsonResponse(safe=False, data={
+                "msg": outcome.msg if outcome else gettext("OPERATION_FAILED"),
+                "status": False,
+                "current_step": outcome.step if outcome else step,
+                "context": outcome.context if outcome else {}
+            })
+    except Exception as e:
+        logging.error(repr(e))
+        return JsonResponse(safe=False, data={
+            "msg": repr(e), 
+            "status": False
+        })
+
+
 # 设置 Hexo Provider 配置 api/set_hexo
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def set_hexo(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         provider = unicodedata.normalize('NFC', request.POST.get('provider'))
         config = json.loads(provider)["params"]["config"]
@@ -112,10 +173,8 @@ def set_hexo(request):
 
 # 设置 OnePush api/set_onepush
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def set_onepush(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         onepush = request.POST.get("onepush")
         save_setting("ONEPUSH", onepush)
@@ -128,10 +187,8 @@ def set_onepush(request):
 
 # 测试 OnePush api/test_onepush
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def test_onepush(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         onepush = json.loads(request.POST.get("onepush"))
         ntfy = notify(onepush["notifier"], **onepush["params"], title="Qexo消息测试",
@@ -149,10 +206,8 @@ def test_onepush(request):
 
 # 设置API api/setapi
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def set_api(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         apikey = request.POST.get("apikey")
         if apikey:
@@ -173,10 +228,8 @@ def set_api(request):
 
 # 安全设置 api/et_security
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def set_security(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         save_setting("LOGIN_RECAPTCHA_SERVER_TOKEN", request.POST.get("server-token"))
         save_setting("LOGIN_RECAPTCHA_SITE_TOKEN", request.POST.get("site-token"))
@@ -191,10 +244,8 @@ def set_security(request):
 
 # 设置图床配置 api/set_image_host
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def set_image_host(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         image_host = request.POST.get("image_host")
         save_setting("IMG_HOST", image_host)
@@ -207,10 +258,8 @@ def set_image_host(request):
 
 # 设置 Abbrlink 配置 api/set_abbrlink
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def set_abbrlink(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         alg = request.POST.get("alg")
         rep = request.POST.get("rep")
@@ -225,10 +274,8 @@ def set_abbrlink(request):
 
 # 设置CDN api/set_cdn
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def set_cdn(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         cdn_prev = request.POST.get("cdn")
         save_setting("CDN_PREV", cdn_prev)
@@ -241,10 +288,8 @@ def set_cdn(request):
 
 # 设置自定义配置 api/set_cust
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def set_cust(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         site_name = request.POST.get("name")
         split_word = request.POST.get("split")
@@ -265,16 +310,15 @@ def set_cust(request):
 
 # 设置用户信息 api/set_user
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def set_user(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         password = request.POST.get("password")
         username = request.POST.get("username")
         newpassword = request.POST.get("newpassword")
         repassword = request.POST.get("repassword")
-        user = authenticate(username=request.user.username, password=password)
+        # Passkey backend requires request to be provided
+        user = authenticate(request, username=request.user.username, password=password)
         if user is not None:
             if repassword != newpassword:
                 context = {"msg": gettext("RESET_PASSWORD_NO_MATCH"), "status": False}
@@ -287,7 +331,7 @@ def set_user(request):
                 return JsonResponse(safe=False, data=context)
             u = User.objects.get(username__exact=request.user.username)
             u.delete()
-            User.objects.create_superuser(username=username, password=newpassword)
+            User.objects.create_superuser(username=username, password=newpassword, email="")
             context = {"msg": gettext("SAVE_SUCCESS"), "status": True}
         else:
             context = {"msg": gettext("RESET_PASSWORD_NO_OLD"), "status": False}
@@ -299,10 +343,8 @@ def set_user(request):
 
 # 设置统计配置 api/set_statistic
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def set_statistic(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         domains = request.POST.get("statistic_domains")
         allow = request.POST.get("allow_statistic")
@@ -317,10 +359,8 @@ def set_statistic(request):
 
 # 设置 CustomModel 的字段 api/set_custom
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def set_custom(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         save_custom(request.POST.get("name"), request.POST.get("content"))
         context = {"msg": gettext("SAVE_SUCCESS"), "status": True}
@@ -332,10 +372,8 @@ def set_custom(request):
 
 # 设置 CustomModel 的字段 api/del_custom
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def del_custom(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         CustomModel.objects.filter(name=request.POST.get("name")).delete()
         context = {"msg": "删除成功!", "status": True}
@@ -347,10 +385,8 @@ def del_custom(request):
 
 # 新建 CustomModel 的字段 api/new_custom
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def new_custom(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         save_custom(request.POST.get("name"), request.POST.get("content"))
         context = {"msg": gettext("SAVE_SUCCESS"), "status": True}
@@ -374,10 +410,8 @@ def set_value(request):
 
 # 设置 SettingsModel 的字段 api/del_value
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def del_value(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         SettingModel.objects.filter(name=request.POST.get("name")).delete()
         context = {"msg": gettext("DEL_SUCCESS"), "status": True}
@@ -389,10 +423,8 @@ def del_value(request):
 
 # 新建 SettingsModel 的字段 api/new_value
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def new_value(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         save_setting(request.POST.get("name"), request.POST.get("content"))
         context = {"msg": gettext("SAVE_SUCCESS"), "status": True}
@@ -404,10 +436,8 @@ def new_value(request):
 
 # 自动修复程序 api/fix
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def auto_fix(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         counter = fix_all()
         msg = gettext("FIX_DISPLAY").format(counter)
@@ -420,10 +450,8 @@ def auto_fix(request):
 
 # 执行更新 api/do_update
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def do_update(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     branch = request.POST.get("branch")
     try:
         url = get_update_url(branch)
@@ -705,23 +733,17 @@ def purge(request):
 
 # 自动设置 Webhook 事件 api/create_webhook
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def create_webhook_config(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     context = dict(msg="Error!", status=False)
     if request.method == "POST":
         try:
-            key = get_setting("WEBHOOK_APIKEY")
-            if key:
-                url = request.POST.get("uri") + "?token=" + key
-            else:
-                key = ''.join(random.choice("qwertyuiopasdfghjklzxcvbnm1234567890") for x in range(12))
-                save_setting("WEBHOOK_APIKEY", key)
-                url = request.POST.get("uri") + "?token=" + key
+            key_plain = ''.join(random.choice("qwertyuiopasdfghjklzxcvbnm1234567890") for x in range(12))
+            save_setting("WEBHOOK_APIKEY", key_plain)
+            url = request.POST.get("uri") + "?token=" + key_plain
             if Provider().delete_hooks():
                 Provider().create_hook(url)
-                context = {"msg": gettext("SAVE_SUCCESS"), "status": True}
+                context = {"msg": gettext("SAVE_SUCCESS"), "status": True, "token": key_plain, "webhook_url": url}
             else:
                 context = {"msg": gettext("PROVIDER_NO_SUPPORT"), "status": False}
         except Exception as error:
@@ -733,12 +755,18 @@ def create_webhook_config(request):
 # Webhook api/webhook
 @csrf_exempt
 def webhook(request):
+    import hashlib
     try:
-        if request.GET.get("token") == get_setting("WEBHOOK_APIKEY"):
-            delete_all_caches()
-            context = {"msg": "Done", "status": True}
+        token = request.GET.get("token")
+        if token:
+            token_hash = hashlib.sha256(token.encode('utf-8')).hexdigest()
+            if token_hash == get_setting("WEBHOOK_APIKEY"):
+                delete_all_caches()
+                context = {"msg": "Done", "status": True}
+            else:
+                context = {"msg": "No permission", "status": False}
         else:
-            context = {"msg": "No permission", "status": False}
+            context = {"msg": "No token", "status": False}
     except Exception as error:
         logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
@@ -753,8 +781,9 @@ def upload_img(request):
     if request.method == "POST":
         file = request.FILES.getlist('file[]')[0] if request.FILES.getlist('file[]') else request.FILES.getlist('file')[0]
         try:
-            image_host = json.loads(get_setting("IMG_HOST"))
-            if image_host["type"] in hexoweb.libs.image.all_providers():
+            from hexoweb.libs import image as image_lib
+            image_host = json.loads(get_setting_cached("IMG_HOST"))
+            if image_host["type"] in image_lib.all_providers():
                 res = get_image_host(image_host["type"], **image_host["params"]).upload(file)
                 context["url"] = res[0]
                 context["status"] = True
@@ -764,7 +793,7 @@ def upload_img(request):
                 image.url = context["url"]
                 image.size = file.size
                 image.type = file.content_type
-                image.date = time()
+                image.date = str(time())
                 image.deleteConfig = json.dumps(res[1])
                 image.save()
                 context["data"] = {"name": image.name, "size": convert_to_kb_mb_gb(int(image.size)), "url": escape(image.url),
@@ -852,7 +881,8 @@ def get_notifications(request):
         if latest["status"]:
             cache = Cache.objects.filter(name="update")
             if cache.count():
-                if (cache.first().content != latest["newer_time"]) and latest["hasNew"]:
+                cache_obj = cache.first()
+                if cache_obj and (cache_obj.content != latest["newer_time"]) and latest["hasNew"]:
                     CreateNotification(gettext("UPDATE_LABEL"), gettext("UPDATE_CONTENT").format(latest["newer"], latest["newer_text"]),
                                        time())
                     update_caches("update", latest["newer_time"], "text")
@@ -968,10 +998,8 @@ def del_talk(request):
 
 # 运行云端命令
 @login_required(login_url="/login/")
+@staff_required(redirect_to_login=False)
 def run_online_script(request):
-    if not request.user.is_staff:
-        logging.info(gettext("USER_IS_NOT_STAFF").format(request.user.username, request.path))
-        return JsonResponse(safe=False, data={"msg": gettext("NO_PERMISSION"), "status": False})
     try:
         path = request.POST.get("path")
         if path:
@@ -1003,4 +1031,103 @@ def change_lang(request):
     except Exception as error:
         logging.error(repr(error))
         context = {"msg": repr(error), "status": False}
+    return JsonResponse(safe=False, data=context)
+
+# Passkey管理API - 获取设备列表 api/passkey_devices
+@login_required(login_url="/login/")
+def passkey_devices(request):
+    """
+    获取当前用户的所有已注册Passkey设备
+    返回设备列表，包括设备名称、创建时间、最后使用时间等
+    """
+    context = dict(msg="Error!", status=False, devices=[])
+    try:
+        from passkeys.models import UserPasskey
+
+        user = request.user
+        # 获取当前用户的passkey设备列表
+        passkeys = UserPasskey.objects.filter(user=user)
+
+        devices = []
+        for pk in passkeys:
+            devices.append({
+                'id': pk.id , # type: ignore
+                'name': pk.name or f"Device {pk.id }", # type: ignore
+                'created_at': pk.added_on.isoformat() if pk.added_on else None,
+                'last_used': pk.last_used.isoformat() if pk.last_used else None,
+                'platform': pk.platform or pk.credential_id or 'Unknown',
+            })
+        
+        context['devices'] = devices
+        context['status'] = True
+        context['msg'] = gettext("GET_SUCCESS")
+    except Exception as error:
+        logging.error(repr(error))
+        context["msg"] = repr(error)
+    
+    return JsonResponse(safe=False, data=context)
+
+
+# Passkey管理API - 删除设备 api/passkey_delete
+@login_required(login_url="/login/")
+def passkey_delete(request):
+    """
+    删除用户的一个Passkey设备
+    用户只能删除自己的设备
+    """
+    context = dict(msg="Error!", status=False)
+    if request.method == "POST":
+        try:
+            from passkeys.models import UserPasskey
+            
+            device_id = request.POST.get("device_id")
+            user = request.user
+            
+            if not device_id:
+                context["msg"] = gettext("PASSKEY_DEVICE_ID_REQUIRED")
+                return JsonResponse(safe=False, data=context)
+            
+            # 验证该设备属于当前用户
+            passkey = UserPasskey.objects.get(id=device_id, user=user)
+            passkey.delete()
+            
+            logging.info(gettext("PASSKEY_DEVICE_DELETED").format(user.username, device_id))
+            context["msg"] = gettext("DEL_SUCCESS")
+            context["status"] = True
+            
+        except UserPasskey.DoesNotExist:
+            logging.warning(f"用户{request.user.username}尝试删除不属于自己的Passkey设备")
+            context["msg"] = gettext("PASSKEY_DEVICE_NOT_FOUND")
+        except Exception as error:
+            logging.error(repr(error))
+            context["msg"] = repr(error)
+    
+    return JsonResponse(safe=False, data=context)
+
+
+# Passkey管理API - 重命名设备 api/passkey_rename
+@login_required(login_url="/login/")
+def passkey_rename(request):
+    context = dict(msg="Error!", status=False)
+    if request.method == "POST":
+        try:
+            from passkeys.models import UserPasskey
+            device_id = request.POST.get("device_id")
+            name = request.POST.get("name", "").strip()
+            user = request.user
+
+            if not device_id or not name:
+                context["msg"] = gettext("NEW_NAME")
+                return JsonResponse(safe=False, data=context)
+
+            passkey = UserPasskey.objects.get(id=device_id, user=user)
+            passkey.name = name
+            passkey.save()
+            context["msg"] = gettext("EDIT_SUCCESS")
+            context["status"] = True
+        except UserPasskey.DoesNotExist:
+            context["msg"] = gettext("PASSKEY_DEVICE_NOT_FOUND")
+        except Exception as error:
+            logging.error(repr(error))
+            context["msg"] = repr(error)
     return JsonResponse(safe=False, data=context)

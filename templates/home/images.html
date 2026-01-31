@@ -13,12 +13,22 @@
                         <h6>{% if search %}{{ "SEARCH_IMAGE" | gettext }}:{{ search }}{% else %}
                             {{ "IMAGE_LABEL" | gettext }}{% endif %}
                             (<span id="post-number">{{ post_number }}</span>{{ "MEASURE_IMAGE" | gettext }})
-                            <a href="javascript:show_upload()" class="text-primary text-lg">
-                                <i class="fa-solid fa-plus"></i>
-                            </a>
                         </h6>
                     </div>
                     <div class="card-body px-0 pt-0 pb-2">
+                        <div class="upload-section">
+                            <form id="uploadForm" enctype="multipart/form-data" class="px-4">
+                                <div class="upload-area" id="dropZone">
+                                    <input type="file" class="form-control d-none" id="imageInput" name="file" accept="image/*">
+                                    <div class="upload-content text-center py-4">
+                                        <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                                        <p class="upload-text mt-3 mb-1">{{ "UPLOAD_TIP" | gettext }}</p>
+                                        <small class="text-muted d-block">{{ "CLICK_TO_SELECT" | gettext }}</small>
+                                    </div>
+                                </div>
+                            </form>
+                            <div id="showurl" class="px-4 pt-3"></div>
+                        </div>
                         <div class="table-responsive p-0">
                             <table class="table align-items-center mb-0">
                                 <thead>
@@ -86,42 +96,6 @@
                     <button type="button" class="btn btn-primary" onclick="delete_file()"
                             data-bs-dismiss="modal">{{ "CONFIRM" | gettext }}
                     </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel"
-         aria-hidden="false">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content bg-white">
-                <div class="modal-header" style="border: none;">
-                    <h5 class="modal-title fs-5" id="uploadModalLabel">{{ "UPLOAD" | gettext }}</h5>
-                    <button type="button" data-bs-dismiss="modal"
-                            aria-label="Close" style="box-sizing: content-box;width: 1em;height:
-                            1em;padding: .25em;color: #8392ab;border: 0;border-radius: .375rem;
-                            opacity: .5;background: none">
-                        <span aria-hidden="true">×</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="uploadForm" enctype="multipart/form-data">
-                        <div class="mb-3">
-                            <label for="imageInput"
-                                   class="form-label">{{ "UPLOAD_TIP" | gettext }}</label>
-                            <input type="file" class="form-control" id="imageInput" name="file">
-                        </div>
-                    </form>
-                    <div id="showurl"></div>
-                </div>
-                <div class="modal-footer" style="border: none;">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        {{ "CLOSE" | gettext }}
-                    </button>
-                    <div id="uploadButton">
-                        <button type="button" class="btn btn-primary" onclick="upload_file()">
-                            {{ "UPLOAD" | gettext }}
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -299,6 +273,56 @@
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
         });
 
+        // 拖拽上传功能
+        const dropZone = document.getElementById('dropZone');
+        const imageInput = document.getElementById('imageInput');
+
+        if (dropZone) {
+            // 点击上传区域打开文件选择
+            dropZone.addEventListener('click', function() {
+                imageInput.click();
+            });
+
+            // 文件选择后上传
+            imageInput.addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    upload_file();
+                }
+            });
+
+            // 拖拽事件
+            dropZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.add('dragover');
+            });
+
+            dropZone.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.remove('dragover');
+            });
+
+            dropZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.remove('dragover');
+                
+                if (e.dataTransfer.files.length > 0) {
+                    imageInput.files = e.dataTransfer.files;
+                    upload_file();
+                }
+            });
+
+            // 防止页面默认的拖拽行为
+            document.addEventListener('dragover', function(e) {
+                e.preventDefault();
+            });
+
+            document.addEventListener('drop', function(e) {
+                e.preventDefault();
+            });
+        }
 
         function query_delete(name, time) {
             del_file = time;
@@ -365,15 +389,10 @@
             }
         }
 
-
-        function show_upload() {
-            $("#showurl").html("");
-            $("#uploadModal").modal("show");
-        }
-
         function upload_file() {
             let formData = new FormData($("#uploadForm")[0]);
-            $("#uploadButton").html("<button class=\"btn btn-white\" disabled>······</button>");
+            let uploadProgress = $("<div class='upload-progress text-center py-3'><i class='fa-solid fa-spinner fa-spin me-2'></i><span id='uploadMsg'>{{ "UPLOADING" | gettext }}</span></div>");
+            $("#showurl").html(uploadProgress);
             $.ajax({
                 url: '/api/upload/',
                 method: 'post',
@@ -403,8 +422,7 @@
                                                             <label class="form-control-label" style="margin-bottom:0">HTML</label>
                                                             <input class="form-control"
                                                             type="text" onclick="this.select();"
-                                                            value='<a href="${res.data.url}"><img
-                                                            src="${res.data.url}"></a>'>
+                                                            value='<a href="${res.data.url}"><img src="${res.data.url}"></a>'>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -444,15 +462,20 @@
                         posts.unshift(res.data);
                         $("#post-number").html(posts.length);
                         change_page(_page);
-                        $("#uploadButton").html(`<button type="button" class="btn btn-primary" onclick="upload_file()" >{{ "UPLOAD" | gettext }}</button>`);
+                        // 重置上传表单
+                        $("#uploadForm")[0].reset();
                     } else {
                         notyf.error(res.msg);
-                        $("#uploadButton").html(`<button type="button" class="btn btn-primary" onclick="upload_file()" >{{ "UPLOAD" | gettext }}</button>`);
+                        // 清除上传进度提示并重置表单
+                        $("#showurl").html("");
+                        $("#uploadForm")[0].reset();
                     }
                 },
                 error: function (res) {
                     notyf.error("{{ "NETWORK_ERROR" | gettext }}");
-                    $("#uploadButton").html(`<button type="button" class="btn btn-primary" onclick="upload_file()" >{{ "UPLOAD" | gettext }}</button>`);
+                    // 清除上传进度提示并重置表单
+                    $("#showurl").html("");
+                    $("#uploadForm")[0].reset();
                 }
             })
         }
@@ -460,6 +483,89 @@
 
     {% block stylesheets %}
         <style>
+            /* 上传区域样式 */
+            .upload-section {
+                padding: 1rem;
+            }
+
+            .upload-area {
+                border: 2px dashed #d2d6da;
+                border-radius: 8px;
+                background: transparent;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                position: relative;
+                margin-bottom: 1rem;
+            }
+
+            .upload-area:hover {
+                border-color: #667eea;
+                background: rgba(102, 126, 234, 0.02);
+            }
+
+            .upload-area.dragover {
+                border-color: #667eea;
+                background: rgba(102, 126, 234, 0.05);
+            }
+
+            .upload-content {
+                color: #4a5568;
+            }
+
+            .upload-icon {
+                font-size: 42px;
+                color: #667eea;
+            }
+
+            .upload-text {
+                font-size: 15px;
+                font-weight: 500;
+                color: #4a5568;
+            }
+
+            /* 暗黑模式适配 */
+            .dark-version .upload-area {
+                border-color: #8392ab;
+            }
+
+            .dark-version .upload-area:hover {
+                border-color: #667eea;
+                background: rgba(102, 126, 234, 0.08);
+            }
+
+            .dark-version .upload-area.dragover {
+                border-color: #667eea;
+                background: rgba(102, 126, 234, 0.12);
+            }
+
+            .dark-version .upload-content {
+                color: #cad3db;
+            }
+
+            .dark-version .upload-icon {
+                color: #667eea;
+            }
+
+            .dark-version .upload-text {
+                color: #cad3db;
+            }
+
+            /* 上传进度提示样式 */
+            .upload-progress {
+                border: 2px dashed #667eea;
+                border-radius: 8px;
+                background: rgba(102, 126, 234, 0.03);
+                color: #667eea;
+                font-size: 15px;
+                font-weight: 500;
+            }
+
+            .dark-version .upload-progress {
+                border-color: #667eea;
+                background: rgba(102, 126, 234, 0.1);
+                color: #667eea;
+            }
+
             @media (max-width: 992px) {
                 .tab-pane td {
                     display: block;
@@ -478,6 +584,18 @@
             @media (max-width: 768px) {
                 table td {
                     white-space: nowrap !important;
+                }
+
+                .upload-icon {
+                    font-size: 36px;
+                }
+
+                .upload-text {
+                    font-size: 14px;
+                }
+
+                .upload-section {
+                    padding: 0.75rem;
                 }
             }
 

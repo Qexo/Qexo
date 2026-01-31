@@ -52,7 +52,7 @@ Qexo 是一个快速、强大、美观的在线 静态博客编辑器。使用 G
 - [Bootstrap](https://getbootstrap.com/)
 - [Notyf](https://github.com/caroso1222/notyf)
 - [Django](https://github.com/django/django)
-- [Djongo](https://github.com/nesdis/djongo)
+- [django-mongodb-backend](https://github.com/mongodb-labs/django-mongodb-backend)
 - [HexoPlusPlus](https://github.com/HexoPlusPlus/HexoPlusPlus)
 - [jQuery](https://jquery.com/)
 - [OnePush](https://github.com/y1ndan/onepush)

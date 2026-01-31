@@ -430,7 +430,7 @@
         const newName = (input ? input.value : '').trim();
         if (!renameTargetId) return;
         if (!newName) { notyf.error("{{ "NEW_NAME" | gettext }}"); return; }
-        let loading = new KZ_Loading('{{ "EDIT" | gettext }}');
+        let loading = new KZ_Loading('{{ "LOADING" | gettext }}');
         loading.show();
         $.ajax({
             url: '/api/passkey_rename/',

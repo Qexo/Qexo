@@ -467,6 +467,7 @@ class Main(Language):
             "UPLOAD_SUCCESS": "アップロード成功！",
             "UPLOADING": "アップロード中...",
             "UPLOAD_TIP": "画像アップロード",
+            "CLICK_TO_SELECT": "またはクリックしてファイルを選択",
             "USERNAME": "ユーザー名",
             "USER_IS_NOT_STAFF": "サブユーザー{}が{}にアクセスしようとしましたが、拒否されました",
             "USER_IS_NOT_STAFF_DEL": "サブユーザー{}が{}を削除しようとしましたが、拒否されました",

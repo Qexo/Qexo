@@ -467,6 +467,7 @@ class Main(Language):
             "UPLOAD_SUCCESS": "Téléchargement réussi !",
             "UPLOADING": "Téléchargement en cours...",
             "UPLOAD_TIP": "Télécharger une image",
+            "CLICK_TO_SELECT": "Ou cliquez pour sélectionner un fichier",
             "USERNAME": "Nom d'utilisateur",
             "USER_IS_NOT_STAFF": "L'utilisateur secondaire {} a tenté d'accéder à {} sans autorisation",
             "USER_IS_NOT_STAFF_DEL": "L'utilisateur secondaire {} a tenté de supprimer {} sans autorisation",

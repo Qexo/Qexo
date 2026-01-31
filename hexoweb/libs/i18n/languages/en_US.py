@@ -468,6 +468,7 @@ class Main(Language):
             "UPLOAD_SUCCESS": "Upload Successful!",
             "UPLOADING": "Uploading...",
             "UPLOAD_TIP": "Upload Image",
+            "CLICK_TO_SELECT": "Or click to select file",
             "USERNAME": "Username",
             "USER_IS_NOT_STAFF": "Sub-user {} Attempted to Access {} Denied",
             "USER_IS_NOT_STAFF_DEL": "Sub-user {} Attempted to Delete {} Denied",

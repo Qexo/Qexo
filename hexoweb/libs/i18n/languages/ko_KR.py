@@ -465,6 +465,7 @@ class Main(Language):
             "UPLOAD_SUCCESS": "업로드 성공!",
             "UPLOADING": "업로드 중...",
             "UPLOAD_TIP": "이미지 업로드",
+            "CLICK_TO_SELECT": "또는 클릭하여 파일 선택",
             "USERNAME": "사용자 이름",
             "USER_IS_NOT_STAFF": "서브 사용자 {}가 {}에 액세스하려고 했지만 거부되었습니다",
             "USER_IS_NOT_STAFF_DEL": "서브 사용자 {}가 {}를 삭제하려고 했지만 거부되었습니다",

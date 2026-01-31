@@ -467,6 +467,7 @@ class Main(Language):
             "UPLOAD_SUCCESS": "上传成功！",
             "UPLOADING": "上传中...",
             "UPLOAD_TIP": "上传图片",
+            "CLICK_TO_SELECT": "或点击选择文件",
             "USERNAME": "用户名",
             "USER_IS_NOT_STAFF": "子用户{}尝试访问{}被拒绝",
             "USER_IS_NOT_STAFF_DEL": "子用户{}尝试删除{}被拒绝",

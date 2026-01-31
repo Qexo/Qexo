@@ -489,7 +489,6 @@ def get_latest_version():
 
 
 def check_if_api_auth(request):
-    import hashlib
     token = request.POST.get("token") or request.GET.get("token")
     if token:
         token_hash = hashlib.sha256(token.encode('utf-8')).hexdigest()

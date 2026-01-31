@@ -187,7 +187,14 @@
     }
 
     function getCsrfToken() {
-        return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+        // 从 CSRF cookie 中读取令牌（Django 标准方式）
+        const cookies = document.cookie.split('; ');
+        for (let cookie of cookies) {
+            if (cookie.startsWith('csrftoken=')) {
+                return decodeURIComponent(cookie.substring(10));
+            }
+        }
+        return '';
     }
 
     // 加载设备列表
@@ -211,45 +218,105 @@
 
     // 渲染设备表格
     function render_devices_table(devices) {
-        let html = '';
+        const listElement = $('#devices-list');
+        listElement.empty();
+        
         if (devices.length === 0) {
-            html = '<tr><td colspan="5" class="text-center ">{{ "PASSKEY_NO_DEVICES" | gettext }}</td></tr>';
+            const emptyRow = document.createElement('tr');
+            const emptyCell = document.createElement('td');
+            emptyCell.setAttribute('colspan', '5');
+            emptyCell.className = 'text-center';
+            emptyCell.textContent = '{{ "PASSKEY_NO_DEVICES" | gettext }}';
+            emptyRow.appendChild(emptyCell);
+            listElement.append(emptyRow);
         } else {
             devices.forEach(function(device) {
                 const createdAt = new Date(device.created_at).toLocaleDateString();
                 const lastUsed = device.last_used ? new Date(device.last_used).toLocaleDateString() : "{{ "PASSKEY_NEVER" | gettext }}";
                 const deviceType = device.platform || "{{ "PASSKEY_UNKNOWN" | gettext }}";
 
-                html += `
-                    <tr>
-                        <td>
-                            <div class="d-flex px-4 py-1">
-                                    <h6 class="mb-0 text-sm">${device.name}</h6>
-                            </div>
-                        </td>
-                        <td><span class="text-xs font-weight-bold opacity-8 text-dark">${createdAt}</span></td>
-                        <td class="text-center"><span class="text-xs font-weight-bold opacity-8 text-dark">${lastUsed}</span></td>
-                        <td class="align-middle text-sm"><span class="badge bg-info">${deviceType}</span></td>
-                        <td class="align-middle text-sm">
-                            <a href="javascript:void(0);" onclick="show_rename_modal('${device.id}', '${device.name}')">
-                                <i class="fa-solid fa-edit me-2 text-xxs text-primary"></i>
-                            </a> |
-                            <a href="javascript:void(0);" onclick="show_delete_modal('${device.id}', '${device.name}')">
-                                <i class="fa-solid fa-trash me-2 text-xxs text-primary"></i>
-                            </a>
-                        </td>
-                    </tr>
-                `;
+                const row = document.createElement('tr');
+                row.setAttribute('data-device-id', device.id);
+                
+                const nameCell = document.createElement('td');
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'd-flex px-4 py-1';
+                const nameHeading = document.createElement('h6');
+                nameHeading.className = 'mb-0 text-sm';
+                nameHeading.textContent = device.name; // 使用 textContent 防止 XSS
+                nameDiv.appendChild(nameHeading);
+                nameCell.appendChild(nameDiv);
+                row.appendChild(nameCell);
+
+                const createdCell = document.createElement('td');
+                const createdSpan = document.createElement('span');
+                createdSpan.className = 'text-xs font-weight-bold opacity-8 text-dark';
+                createdSpan.textContent = createdAt;
+                createdCell.appendChild(createdSpan);
+                row.appendChild(createdCell);
+
+                const lastUsedCell = document.createElement('td');
+                lastUsedCell.className = 'text-center';
+                const lastUsedSpan = document.createElement('span');
+                lastUsedSpan.className = 'text-xs font-weight-bold opacity-8 text-dark';
+                lastUsedSpan.textContent = lastUsed;
+                lastUsedCell.appendChild(lastUsedSpan);
+                row.appendChild(lastUsedCell);
+
+                const typeCell = document.createElement('td');
+                typeCell.className = 'align-middle text-sm';
+                const typeBadge = document.createElement('span');
+                typeBadge.className = 'badge bg-info';
+                typeBadge.textContent = deviceType;
+                typeCell.appendChild(typeBadge);
+                row.appendChild(typeCell);
+
+                const actionCell = document.createElement('td');
+                actionCell.className = 'align-middle text-sm';
+                
+                const editLink = document.createElement('a');
+                editLink.href = 'javascript:void(0);';
+                editLink.setAttribute('data-device-id', device.id);
+                editLink.className = 'edit-device';
+                editLink.innerHTML = '<i class="fa-solid fa-edit me-2 text-xxs text-primary"></i>';
+                editLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    show_rename_modal(device.id, device.name);
+                });
+                actionCell.appendChild(editLink);
+                
+                const separator = document.createElement('span');
+                separator.textContent = ' | ';
+                actionCell.appendChild(separator);
+                
+                const deleteLink = document.createElement('a');
+                deleteLink.href = 'javascript:void(0);';
+                deleteLink.setAttribute('data-device-id', device.id);
+                deleteLink.className = 'delete-device';
+                deleteLink.innerHTML = '<i class="fa-solid fa-trash me-2 text-xxs text-primary"></i>';
+                deleteLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    show_delete_modal(device.id, device.name);
+                });
+                actionCell.appendChild(deleteLink);
+                
+                row.appendChild(actionCell);
+                listElement.append(row);
             });
         }
-        $('#devices-list').html(html);
     }
 
     // 显示删除确认模态框
     function show_delete_modal(deviceId, deviceName) {
         currentDeviceId = deviceId;
-        const confirmText = "{{ "PASSKEY_DELETE_CONFIRM" | gettext }}".replace('{}', deviceName);
-        $('#delete-confirm-text').text(confirmText);
+        const confirmText = "{{ "PASSKEY_DELETE_CONFIRM" | gettext }}".replace('{}', '');
+        const messageElement = document.getElementById('delete-confirm-text');
+        messageElement.textContent = confirmText; // 文本节点中的设备名称不需要转义
+        // 如果需要在消息中显示设备名称，使用 textContent：
+        const parts = confirmText.split('{}');
+        if (parts.length === 2) {
+            messageElement.textContent = parts[0] + deviceName + parts[1];
+        }
         var deleteModal = new bootstrap.Modal(document.getElementById('deleteDeviceModal'));
         deleteModal.show();
     }
@@ -264,9 +331,11 @@
         $.ajax({
             url: '/api/passkey_delete/',
             method: 'post',
+            headers: {
+                'X-CSRFToken': getCsrfToken()
+            },
             data: {
-                'device_id': currentDeviceId,
-                'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
+                'device_id': currentDeviceId
             },
             dataType: 'json',
             success: function(res) {

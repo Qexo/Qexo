@@ -282,6 +282,7 @@ class Main(Language):
             "NO_PREV_PAGE": "This is the first page",
             "ONEKEY_UPDATE": "One-click Update",
             "OPERATION": "Operation",
+            "OPERATION_FAILED": "Operation Failed!",
             "OPERATION_SUCCESS": "Operation Successful!",
             "OTHER_ARGV": "Other Parameters",
             "PAGE": "Page",

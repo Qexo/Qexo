@@ -279,6 +279,7 @@ class Main(Language):
             "NO_POST_NAME": "Please enter a correct post name in the top bar!",            "PREV": "Previous",            "NO_PREV_PAGE": "This is the first page",
             "ONEKEY_UPDATE": "One-click Update",
             "OPERATION": "Operation",
+            "OPERATION_FAILED": "Operation failed!",
             "OPERATION_SUCCESS": "Operation successful!",
             "OTHER_ARGV": "Other Parameters",
             "PAGE": "Page",

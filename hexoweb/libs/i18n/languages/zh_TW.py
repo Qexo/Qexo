@@ -281,6 +281,7 @@ class Main(Language):
             "PREV": "上一步",
             "ONEKEY_UPDATE": "一鍵更新",
             "OPERATION": "操作",
+            "OPERATION_FAILED": "操作失败!",
             "OPERATION_SUCCESS": "操作成功!",
             "OTHER_ARGV": "其他參數",
             "PAGE": "頁面",

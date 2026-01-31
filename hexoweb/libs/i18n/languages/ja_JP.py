@@ -277,6 +277,7 @@ class Main(Language):
             "PREV": "前へ",
             "ONEKEY_UPDATE": "ワンクリック更新",
             "OPERATION": "操作",
+            "OPERATION_FAILED": "操作失敗！",
             "OPERATION_SUCCESS": "操作成功！",
             "OTHER_ARGV": "その他のパラメータ",
             "PAGE": "ページ",

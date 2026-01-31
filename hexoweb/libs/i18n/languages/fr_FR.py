@@ -281,6 +281,7 @@ class Main(Language):
             "PREV": "Précédent",
             "ONEKEY_UPDATE": "Mise à jour en un clic",
             "OPERATION": "Opération",
+            "OPERATION_FAILED": "L'opération a échoué !",
             "OPERATION_SUCCESS": "Opération réussie !",
             "OTHER_ARGV": "Autres paramètres",
             "PAGE": "Page",

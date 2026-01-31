@@ -99,14 +99,14 @@ def init_step_api(request):
         
         if outcome and outcome.success:
             return JsonResponse(safe=False, data={
-                "msg": outcome.msg or gettext("SUCCESS"),
+                "msg": outcome.msg or gettext("OPERATION_SUCCESS"),
                 "status": True,
                 "next_step": outcome.step,
                 "context": outcome.context
             })
         else:
             return JsonResponse(safe=False, data={
-                "msg": outcome.msg if outcome else gettext("UNKNOWN_ERROR"),
+                "msg": outcome.msg if outcome else gettext("OPERATION_FAILED"),
                 "status": False,
                 "current_step": outcome.step if outcome else step,
                 "context": outcome.context if outcome else {}

@@ -65,8 +65,9 @@ class InitService:
             if isinstance(provider_value, str):
                 try:
                     provider_value = json.loads(provider_value)
-                except Exception:
+                except (ValueError, TypeError):
                     pass
+                    # 如果 provider_value 不是有效的 JSON，保留原始字符串
             context["PROVIDER"] = json.dumps(provider_value)
         return context
 

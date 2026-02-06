@@ -1,0 +1,22 @@
+{
+  "OAUTH_IDENTITY_BIND_SUCCESS": "Account linked successfully",
+  "OAUTH_IDENTITY_ALREADY_EXISTED": "This account is already linked to another user",
+  "OAUTH_LOGIN_SUCCESS": "Login successful",
+  "OAUTH_UNKNOWN_IDENTITY": "No linked account found. Please log in to an existing account to link it first",
+  "OAUTH_DENIED_AUTHORIZATION": "User cancelled or denied the authorisation request",
+  "OAUTH_UNKNOWN_PROVIDER": "Unsupported third-party login method",
+  "OAUTH_UNBIND_SUCCESS": "Account unlinked successfully",
+  "OAUTH_UNBIND_FAILED": "Failed to unlink account, please try again later",
+  "OAUTH_ONLY_ONE_IDENTITY_EXIST": "Cannot unlink the last identity when SSO Only is enabled",
+  "OAUTH_OR_CONNECT_WITH": "Or continue with",
+  "OAUTH_CONNECT_WITH": "Continue with",
+  "OAUTH_USE": "Use",
+  "OAUTH_CONTINUE": "to Continue",
+  "SSO_ONLY_ENABLED": "Please log in via SSO",
+  "MANAGE_OAUTH_LINKS": "Manage third-party account links",
+  "OAUTH_LINKED": "Linked",
+  "OAUTH_UNLINKED": "Not linked",
+  "OAUTH_LINK": "Link",
+  "OAUTH_UNLINK": "Unlink",
+  "OAUTH_NO_PROVIDER": "No third-party services available"
+}

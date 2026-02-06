@@ -13,9 +13,11 @@ import hexoweb.libs.image
 from hexoweb.libs.image import get_image_host, delete_image
 from hexoweb.decorators import staff_required
 from .functions import *
+from hexoweb.libs.oauth.decorators import check_if_sso_only
 
 
 # 登录验证API api/auth
+@check_if_sso_only
 def auth(request):
     captcha = gettext("CAPTCHA_GET_FAILED")
     try:

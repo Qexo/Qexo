@@ -1,0 +1,22 @@
+{
+  "OAUTH_IDENTITY_BIND_SUCCESS": "帳號綁定成功",
+  "OAUTH_IDENTITY_ALREADY_EXISTED": "該帳號已被其他使用者綁定",
+  "OAUTH_LOGIN_SUCCESS": "登入成功",
+  "OAUTH_UNKNOWN_IDENTITY": "未找到關聯帳號，請先登入現有帳號進行綁定",
+  "OAUTH_DENIED_AUTHORIZATION": "使用者取消或拒絕了授權請求",
+  "OAUTH_UNKNOWN_PROVIDER": "不支援的第三方登入方式",
+  "OAUTH_UNBIND_SUCCESS": "已成功解除帳號綁定",
+  "OAUTH_UNBIND_FAILED": "解除綁定失敗，請稍後重試",
+  "OAUTH_ONLY_ONE_IDENTITY_EXIST": "使用 SSO Only 時不允許解綁最後一個身份",
+  "OAUTH_OR_CONNECT_WITH": "或使用以下方式繼續",
+  "OAUTH_CONNECT_WITH": "使用以下方式繼續",
+  "OAUTH_USE": "使用",
+  "OAUTH_CONTINUE": "繼續",
+  "SSO_ONLY_ENABLED": "請使用 SSO 登入",
+  "MANAGE_OAUTH_LINKS": "管理第三方帳號綁定",
+  "OAUTH_LINKED": "已綁定",
+  "OAUTH_UNLINKED": "未綁定",
+  "OAUTH_LINK": "去綁定",
+  "OAUTH_UNLINK": "解綁",
+  "OAUTH_NO_PROVIDER": "暫無可用的第三方服務"
+}

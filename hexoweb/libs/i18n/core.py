@@ -5,6 +5,7 @@
 """
 
 from .exceptions import NoSuchLanguageError
+from hexoweb.libs.oauth.decorators import mixin_oauth_languages
 
 
 class Language(object):
@@ -22,6 +23,7 @@ def all_languages():
     return languages
 
 
+@mixin_oauth_languages
 def get_language(language_name: str):
     if language_name not in _all_languages:
         raise NoSuchLanguageError(language_name)

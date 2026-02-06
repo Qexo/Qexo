@@ -67,7 +67,10 @@ def login_view(request):
         context["passkey_available"] = UserPasskey.objects.exists()
     except Exception:
         context["passkey_available"] = False
-    
+    from hexoweb.libs.oauth.functions import get_oauth_providers_list,check_sso_only
+    if get_oauth_providers_list():
+        context['oauth_providers'] = get_oauth_providers_list()
+        context['sso_only'] = check_sso_only()
     return render(request, "accounts/login.html", context)
 
 

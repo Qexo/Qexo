@@ -102,7 +102,7 @@ urlpatterns = [
     path('pub/save_talk/', pub.save_talk, name='pub_save_talk'),
     path('pub/del_talk/', pub.del_talk, name='pub_del_talk'),
     path('pub/get_all_talks/', pub.get_all_talks, name='pub_get_all_talks'),
-
+    path('', include('hexoweb.libs.oauth.urls')),
     re_path(r'^(?!api)^(?!static)^(?!pub).*$\.*', pages, name='pages'),
 ]
 

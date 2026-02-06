@@ -1,0 +1,22 @@
+{
+  "OAUTH_IDENTITY_BIND_SUCCESS": "账户绑定成功",
+  "OAUTH_IDENTITY_ALREADY_EXISTED": "该账户已被其他用户绑定",
+  "OAUTH_LOGIN_SUCCESS": "登录成功",
+  "OAUTH_UNKNOWN_IDENTITY": "未找到关联账户，请先登录现有账户进行绑定",
+  "OAUTH_DENIED_AUTHORIZATION": "用户取消或拒绝了授权请求",
+  "OAUTH_UNKNOWN_PROVIDER": "不支持的第三方登录方式",
+  "OAUTH_UNBIND_SUCCESS": "已成功解除账户绑定",
+  "OAUTH_UNBIND_FAILED": "解除绑定失败，请稍后重试",
+  "OAUTH_ONLY_ONE_IDENTITY_EXIST": "使用SSO Only时不允许解绑最后一个身份",
+  "OAUTH_OR_CONNECT_WITH": "或使用以下方式继续",
+  "OAUTH_CONNECT_WITH": "使用以下方式继续",
+  "OAUTH_USE": "使用",
+  "OAUTH_CONTINUE": "继续",
+  "SSO_ONLY_ENABLED": "请使用SSO登录",
+  "MANAGE_OAUTH_LINKS": "管理第三方账户绑定",
+  "OAUTH_LINKED": "已绑定",
+  "OAUTH_UNLINKED": "未绑定",
+  "OAUTH_LINK": "去绑定",
+  "OAUTH_UNLINK": "解绑",
+  "OAUTH_NO_PROVIDER": "暂无可用的第三方服务"
+}

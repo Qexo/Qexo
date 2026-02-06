@@ -57,6 +57,7 @@
                                 {{ "PASSKEY_LOGIN" | gettext }}
                             </button>
                         </div>
+                        {% include 'oauth/oauth_login_button.html' %}
                     </div>
                 </div>
             </div>
@@ -72,7 +73,7 @@
 
 <!-- Specific JS goes HERE -->
 {% block javascripts %}
-
+    {% include 'oauth/oauth_login_script.html' %}
     <script>
         function get_direct_link() {
             let reg = new RegExp("(^|&)next=([^&]*)(&|$)");

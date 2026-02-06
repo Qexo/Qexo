@@ -1,0 +1,79 @@
+{% if oauth_providers %}
+    <style>
+        /* 分界线容器 */
+        .oauth-divider {
+            position: relative;
+            text-align: center;
+            margin: 2rem 0; /* 增加上下间距 */
+            border-bottom: 2px solid #e9ecef; /* 这就是那根明显的灰色线 */
+            line-height: 0.1em; /* 压缩行高，让文字压在线上 */
+        }
+
+        /* 中间的文字 */
+        .oauth-divider span {
+            background: #fff; /* 这里的颜色必须和你的 Card 背景色一致，用来遮挡细线 */
+            padding: 0 15px; /* 文字左右的留白 */
+            color: #8898aa;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* 按钮和裁切圆样式 */
+        .oauth-btn {
+            border: 1px solid #e9ecef !important;
+            color: #525f7f !important;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .oauth-btn:hover {
+            background-color: #f8f9fe !important;
+        }
+
+        .oauth-icon-circle {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-right: 10px;
+            flex-shrink: 0;
+            border: 1px solid #eee;
+        }
+
+        .oauth-icon-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* 完美裁切 */
+            display: block;
+        }
+    </style>
+
+
+    {% if not sso_only %}
+        <div class="oauth-divider">
+            <span>{{ "OAUTH_OR_CONNECT_WITH" | gettext }}</span>
+        </div>
+    {% endif %}
+
+    {% if sso_only %}
+        {% include 'oauth/oauth_login_sso_only.html' %}
+    {% endif %}
+
+    <div id="oauth-wrapper" class="d-flex flex-column">
+        {% for slug, info in oauth_providers.items %}
+            <button type="button"
+                    onclick="openOAuth('{% url 'oauth_login' slug %}')"
+                    class="btn btn-outline-primary oauth-btn w-100 d-flex align-items-center justify-content-center mb-2">
+                {% if info.icon %}
+                    <div class="oauth-icon-circle">
+                        <img src="{{ info.icon }}" alt="{{ slug }}">
+                    </div>
+                {% endif %}
+                <span>{{ "OAUTH_USE" | gettext }} {{ info.friendly_name | default:slug }} {{ "OAUTH_CONTINUE" | gettext }}</span>
+            </button>
+        {% endfor %}
+    </div>
+
+{% endif %}

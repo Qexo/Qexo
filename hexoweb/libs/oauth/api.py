@@ -151,14 +151,14 @@ def oauth_unlink(request, provider_name):
 
 # api/oauth/login/<provider_name>
 def oauth_login(request, provider_name):
-    from django.urls import reverse
-    from django.utils.http import urlencode
-    from .functions import get_oauth_providers_object, create_oauth_callback_action
     """
     Use OAuth/OIDC identity to login user
     :param request: Django request object
     :param provider_name: OAuth Provider name, please make sure it exists
     """
+    from django.urls import reverse
+    from django.utils.http import urlencode
+    from .functions import get_oauth_providers_object, create_oauth_callback_action
     oauth_providers = get_oauth_providers_object()
     if oauth_providers and oauth_providers.get(provider_name):
         try:

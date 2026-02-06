@@ -25,19 +25,36 @@ DEBUG = False
 
 LOCAL_CONFIG = False
 
+# Detect if MongoDB is being used (before INSTALLED_APPS)
+USE_MONGODB = bool(os.environ.get("MONGODB_HOST"))
+
 # Application definition
 
-INSTALLED_APPS = [
-    # 'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    # 'django.contrib.staticfiles',
-    'hexoweb.apps.ConsoleConfig',
-    'corsheaders',
-    'passkeys',
-]
+# Use MongoDB-compatible app configs when using MongoDB
+if USE_MONGODB:
+    INSTALLED_APPS = [
+        # 'django.contrib.admin',
+        'core.mongodb_apps.MongoAuthConfig',  # Custom config for MongoDB
+        'core.mongodb_apps.MongoContentTypesConfig',  # Custom config for MongoDB
+        'django.contrib.sessions',
+        'django.contrib.messages',
+        # 'django.contrib.staticfiles',
+        'hexoweb.apps.ConsoleConfig',
+        'corsheaders',
+        'passkeys',
+    ]
+else:
+    INSTALLED_APPS = [
+        # 'django.contrib.admin',
+        'django.contrib.auth',
+        'django.contrib.contenttypes',
+        'django.contrib.sessions',
+        'django.contrib.messages',
+        # 'django.contrib.staticfiles',
+        'hexoweb.apps.ConsoleConfig',
+        'corsheaders',
+        'passkeys',
+    ]
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',

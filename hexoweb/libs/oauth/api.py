@@ -107,12 +107,12 @@ def oauth_list(request):
 # api/oauth/link/<provider_name>
 @login_required(login_url="/login/")
 def oauth_link(request, provider_name):
-    from django.urls import reverse
-    from django.utils.http import urlencode
-    from .functions import get_oauth_providers_object, create_oauth_callback_action
     """
     Bind a third-party identity to user
     """
+    from django.urls import reverse
+    from django.utils.http import urlencode
+    from .functions import get_oauth_providers_object, create_oauth_callback_action
     oauth_providers = get_oauth_providers_object()
     if oauth_providers and oauth_providers.get(provider_name):
         # Make sure provider is existing

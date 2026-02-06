@@ -1,12 +1,19 @@
 {{ payload|json_script:"callback-data" }}
 <script>
     (function () {
-        const data = JSON.parse(document.getElementById('callback-data').textContent);
-        const oauthChannel = new BroadcastChannel('oauth_channel');
-        console.log(data)
-        oauthChannel.postMessage(data);
-        setTimeout(() => {
-            window.close();
-        }, 50);
-    })();
+            try {
+                const data = JSON.parse(document.getElementById('callback-data').textContent);
+                const oauthChannel = new BroadcastChannel('oauth_channel');
+                console.log(data)
+                oauthChannel.postMessage(data);
+                setTimeout(() => {
+                    window.close();
+                }, 50);
+            } catch (e) {
+                //If this browse does`t support BroadcastChannel
+                window.opener.location.reload()
+                window.close()
+            }
+        }
+    )();
 </script>

@@ -14,7 +14,7 @@ if os.environ.get("OAUTH_PROVIDERS"):
     try:
         __provider_configs = json.loads(os.environ["OAUTH_PROVIDERS"])
     except json.decoder.JSONDecodeError:
-        logging.error(f"OAUTH_PROVIDERS environment variable not found or format")
+        logging.error("OAUTH_PROVIDERS environment variable contains invalid JSON format")
 
 __sso_only: bool = os.environ.get("SSO_ONLY") in ['1', 'true', 'True']
 

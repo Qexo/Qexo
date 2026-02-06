@@ -1,0 +1,26 @@
+{% if oauth_providers %}
+    <script>
+        const oauthChannel = new BroadcastChannel('oauth_channel');
+        oauthChannel.onmessage = function (event) {
+            const response = event.data;
+            setTimeout(() => {
+                if (response.action === "refresh") {
+                    window.location.reload();
+                }
+            }, 1000);
+            if (response.status === true) {
+                notyf.success(response.message);
+            } else {
+                notyf.error(response.message);
+            }
+        }
+
+        function openOAuth(url) {
+            if (!url) return;
+            const w = 600, h = 700;
+            const left = (window.screen.width - w) / 2;
+            const top = (window.screen.height - h) / 2;
+            window.open(url, 'oauth_window', `width=${w},height=${h},left=${left},top=${top}`);
+        }
+    </script>
+{% endif %}

@@ -1,0 +1,22 @@
+{
+  "OAUTH_IDENTITY_BIND_SUCCESS": "アカウントの連携に成功しました",
+  "OAUTH_IDENTITY_ALREADY_EXISTED": "このアカウントは既に他のユーザーに連携されています",
+  "OAUTH_LOGIN_SUCCESS": "ログインに成功しました",
+  "OAUTH_UNKNOWN_IDENTITY": "関連付けられたアカウントが見つかりません。まず既存のアカウントにログインして連携を行ってください",
+  "OAUTH_DENIED_AUTHORIZATION": "ユーザーが認可リクエストをキャンセルまたは拒否しました",
+  "OAUTH_UNKNOWN_PROVIDER": "サポートされていないサードパーティログイン方式です",
+  "OAUTH_UNBIND_SUCCESS": "アカウントの連携を解除しました",
+  "OAUTH_UNBIND_FAILED": "連携解除に失敗しました。後でもう一度お試しください",
+  "OAUTH_ONLY_ONE_IDENTITY_EXIST": "SSO限定が有効な場合、最後のIDを解除することはできません",
+  "OAUTH_OR_CONNECT_WITH": "または以下で続行",
+  "OAUTH_CONNECT_WITH": "以下で続行",
+  "OAUTH_USE": "使用",
+  "OAUTH_CONTINUE": "続行",
+  "SSO_ONLY_ENABLED": "SSOを使用してログインしてください",
+  "MANAGE_OAUTH_LINKS": "サードパーティアカウント連携の管理",
+  "OAUTH_LINKED": "連携済み",
+  "OAUTH_UNLINKED": "未連携",
+  "OAUTH_LINK": "連携する",
+  "OAUTH_UNLINK": "解除",
+  "OAUTH_NO_PROVIDER": "利用可能なサードパーティサービスがありません"
+}

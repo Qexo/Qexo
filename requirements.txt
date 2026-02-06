@@ -17,3 +17,4 @@ psycopg2-binary==2.9.11
 django-mongodb-backend==5.2.3
 RestrictedPython==8.1
 django-passkeys==1.3.0.1
+authlib==1.6.6

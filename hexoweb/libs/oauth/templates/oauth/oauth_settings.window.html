@@ -1,0 +1,95 @@
+<button type="button" class="btn bg-gradient-info d-flex align-items-center"
+        data-bs-toggle="modal"
+        data-bs-target="#oauthModal"
+        onclick="loadOAuthStatus()">
+    <i class="ni ni-key-25 me-2"></i>
+    {{ "MANAGE_OAUTH_LINKS" | gettext }}
+</button>
+
+<div class="modal fade" id="oauthModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ "MANAGE_OAUTH_LINKS" | gettext }}</h5>
+                <button type="button" class="btn-close text-dark" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="oauth-list-container">
+                <div class="text-center p-4">
+                    <div class="spinner-border text-primary" role="status"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .oauth-icon-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin-right: 10px;
+        flex-shrink: 0;
+        border: 1px solid #eee;
+    }
+
+    .oauth-icon-circle img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* 完美裁切 */
+        display: block;
+    }
+
+    /* 管理面板列表容器 */
+    .oauth-manage-list {
+        padding: 0 0.5rem;
+    }
+
+    /* 每一行的容器 */
+    .oauth-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-bottom: 1rem;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid #f8f9fe;
+    }
+
+    /* 文字区域布局 */
+    .oauth-info {
+        line-height: 1.2;
+    }
+
+    .oauth-name {
+        color: #525f7f;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .oauth-status-text {
+        font-size: 0.85rem;
+    }
+
+    .oauth-username {
+        font-size: 0.75rem;
+        color: #8898aa;
+    }
+
+    /* 操作按钮（文字链风格） */
+    .btn-oauth-action {
+        background: none;
+        border: none;
+        padding: 0;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+
+    .btn-oauth-action:hover {
+        opacity: 0.8;
+        text-decoration: underline;
+    }
+</style>

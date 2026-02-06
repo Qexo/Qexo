@@ -1,0 +1,22 @@
+{
+  "OAUTH_IDENTITY_BIND_SUCCESS": "Compte lié avec succès",
+  "OAUTH_IDENTITY_ALREADY_EXISTED": "Ce compte est déjà lié à un autre utilisateur",
+  "OAUTH_LOGIN_SUCCESS": "Connexion réussie",
+  "OAUTH_UNKNOWN_IDENTITY": "Aucun compte associé trouvé. Veuillez d'abord vous connecter à un compte existant pour le lier",
+  "OAUTH_DENIED_AUTHORIZATION": "L'utilisateur a annulé ou refusé la demande d'autorisation",
+  "OAUTH_UNKNOWN_PROVIDER": "Méthode de connexion tierce non supportée",
+  "OAUTH_UNBIND_SUCCESS": "Compte délié avec succès",
+  "OAUTH_UNBIND_FAILED": "Échec de la déliaison du compte, veuillez réessayer plus tard",
+  "OAUTH_ONLY_ONE_IDENTITY_EXIST": "Impossible de délier la dernière identité lorsque SSO Only est activé",
+  "OAUTH_OR_CONNECT_WITH": "Ou continuer avec",
+  "OAUTH_CONNECT_WITH": "Continuer avec",
+  "OAUTH_USE": "Utiliser",
+  "OAUTH_CONTINUE": "Continuer",
+  "SSO_ONLY_ENABLED": "Veuillez vous connecter via SSO",
+  "MANAGE_OAUTH_LINKS": "Gérer les liaisons de comptes tiers",
+  "OAUTH_LINKED": "Lié",
+  "OAUTH_UNLINKED": "Non lié",
+  "OAUTH_LINK": "Lier",
+  "OAUTH_UNLINK": "Délier",
+  "OAUTH_NO_PROVIDER": "Aucun service tiers disponible"
+}

@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'hexoweb.apps.ConsoleConfig',
     'corsheaders',
     'passkeys',
+    'authlib.integrations.django_client',
+    'hexoweb.libs.oauth'
 ]
 
 MIDDLEWARE = [

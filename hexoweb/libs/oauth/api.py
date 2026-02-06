@@ -137,10 +137,11 @@ def oauth_unlink(request, provider_name):
     context = dict(msg="Error!", status=False)
     from .functions import check_sso_only
     if request.method == "GET":
+        identity = request.user.oauth_identities.filter(provider_name=provider_name).first()
         if check_sso_only() and request.user.oauth_identities.count() <= 1:
             context['msg'] = gettext("OAUTH_ONLY_ONE_IDENTITY_EXIST")
-        elif request.user.oauth_identities.filter(provider_name=provider_name).first():
-            request.user.oauth_identities.filter(provider_name=provider_name).first().delete()
+        elif identity:
+            identity.delete()
             context['msg'] = gettext("OAUTH_UNBIND_SUCCESS")
             context['status'] = True
         else:

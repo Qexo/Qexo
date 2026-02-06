@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .api import *
+from .api import oauth_callback, oauth_list, oauth_link, oauth_unlink, oauth_login
 
 urlpatterns = [
     path('api/oauth/callback/<str:provider_name>', oauth_callback, name='oauth_callback'),

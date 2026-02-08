@@ -91,6 +91,6 @@ class GitHub(OAuthProvider):
 
 
 SUPPORTED_TYPES: Dict[str, Type[OAuthProvider]] = {
-    "github": GitHub,
-    "oidc": OIDC
+    GitHub.__name__: GitHub,
+    OIDC.__name__: OIDC
 }

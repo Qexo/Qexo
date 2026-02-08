@@ -1,10 +1,9 @@
-<button type="button" class="btn bg-gradient-info d-flex align-items-center"
-        data-bs-toggle="modal"
-        data-bs-target="#oauthModal"
-        onclick="loadOAuthStatus()">
-    <i class="ni ni-key-25 me-2"></i>
-    {{ "MANAGE_OAUTH_LINKS" | gettext }}
-</button>
+<input type="button" class="btn btn-info"
+       value="{{ "MANAGE_OAUTH_LINKS" | gettext }}"
+       onclick="loadOAuthStatus()"
+       data-bs-toggle="modal"
+       data-bs-target="#oauthModal">
+
 
 <div class="modal fade" id="oauthModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">

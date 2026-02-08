@@ -36,7 +36,6 @@
                                 onclick="location.href='/migrate/'">
                             {{ "MIGRATE" | gettext }}
                         </button>
-                    {% include 'oauth/oauth_settings.window.html' %}
                         <form id="apikey-settings" onsubmit="return false;">
                             <hr class="my-4"/>
                             <h6 class="heading-small text-muted mb-4">{{ "SET_API" | gettext }}</h6>
@@ -193,6 +192,7 @@
                                         <input type="button" class="btn btn-info"
                                                value="{{ "MANAGE_PASSKEYS" | gettext }}"
                                                onclick="location.href='/passkeys.html'">
+                                        {% include 'oauth/oauth_settings.window.html' %}
                                     </div>
                                 </div>
                             </div>

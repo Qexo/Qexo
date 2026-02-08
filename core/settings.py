@@ -25,19 +25,36 @@ DEBUG = False
 
 LOCAL_CONFIG = False
 
+# Detect if MongoDB is being used (before INSTALLED_APPS)
+USE_MONGODB = bool(os.environ.get("MONGODB_HOST"))
+
 # Application definition
 
-INSTALLED_APPS = [
-    # 'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    # 'django.contrib.staticfiles',
-    'hexoweb.apps.ConsoleConfig',
-    'corsheaders',
-    'passkeys',
-]
+# Use MongoDB-compatible app configs when using MongoDB
+if USE_MONGODB:
+    INSTALLED_APPS = [
+        # 'django.contrib.admin',
+        'core.mongodb_apps.MongoAuthConfig',  # Custom config for MongoDB
+        'core.mongodb_apps.MongoContentTypesConfig',  # Custom config for MongoDB
+        'django.contrib.sessions',
+        'django.contrib.messages',
+        # 'django.contrib.staticfiles',
+        'hexoweb.apps.ConsoleConfig',
+        'corsheaders',
+        'passkeys',
+    ]
+else:
+    INSTALLED_APPS = [
+        # 'django.contrib.admin',
+        'django.contrib.auth',
+        'django.contrib.contenttypes',
+        'django.contrib.sessions',
+        'django.contrib.messages',
+        # 'django.contrib.staticfiles',
+        'hexoweb.apps.ConsoleConfig',
+        'corsheaders',
+        'passkeys',
+    ]
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -295,7 +312,11 @@ USE_TZ = True
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# Use ObjectIdAutoField for MongoDB, BigAutoField for other databases
+if USE_MONGODB:
+    DEFAULT_AUTO_FIELD = 'django_mongodb_backend.fields.ObjectIdAutoField'
+else:
+    DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SESSION_COOKIE_AGE = 86400
 

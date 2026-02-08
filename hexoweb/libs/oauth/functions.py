@@ -1,52 +1,77 @@
-import copy
-import logging
-from typing import Optional, Literal, Dict
+from typing import Literal, Dict
 
-from authlib.integrations.base_client import OAuthError
+from django.template.defaulttags import register
 
-from . import __oauth_manager, __provider_objects, SUPPORTED_TYPES, __provider_configs, __sso_only
-from .OAuthProvider import OAuthProvider
-from .models import OAuthIdentity
+from . import __oauth_manager, __sso_only
+from .OAuthProvider import OAuthProvider, SUPPORTED_TYPES
+from .models import OAuthIdentity, OAuthProviderModel
 
 
-def get_oauth_providers_object() -> Optional[Dict[str, OAuthProvider]]:
+def get_oauth_providers_object() -> Dict[str, OAuthProvider]:
+    providers = OAuthProviderModel.objects.all()
+    provider_objects: Dict[str, OAuthProvider] = {}
+    for provider in providers:
+        provider_objects[provider.name] = SUPPORTED_TYPES[provider.type](__oauth_manager, provider)
+    return provider_objects
+
+
+@register.filter
+def get_oauth_providers_list(include_configs=False) -> Dict[str, Dict[str, str]]:
     """
-    Obtain OAuth providers object for authorization
+    :param include_configs: Whether to include provider`s config in the output
+
+    Obtain configured OAuth providers list
+    Like this:
+    {
+    "provider_name": {
+        "friendly_name": "Friendly Name",
+        "icon": "http://icon.url/icon.png",
+        "client_id": "xxxx",            # Only when include_configs is True
+        "client_secret": "******",    # Only when include_configs is True, it`s always '******'
+        "type": "Type",                # Only when include_configs is True
+        "scope": "Scope",              # Only when include_configs is True
+        "server_metadata_url": "URL"   # Only when include_configs is True
+        },
+    }
     """
-
-    if __provider_objects != {}:
-        return __provider_objects
-
-    if __provider_configs != {}:
-        try:
-            providers_config = __provider_configs
-            for provider_name in providers_config:
-                provider_config = providers_config[provider_name]
-                __provider_objects[provider_name] = SUPPORTED_TYPES[provider_config['type']](__oauth_manager,
-                                                                                             provider_name,
-                                                                                             **provider_config['info'])
-            return __provider_objects
-
-        except Exception as error:
-            logging.error(f"{repr(error)}")
-            raise OAuthError(repr(error))
-
-    else:
-        return None
+    providers = OAuthProviderModel.objects.all()
+    providers_list: Dict[str, Dict[str, str]] = {}
+    for provider in providers:
+        providers_list[provider.name] = {
+            'friendly_name': provider.friendly_name,
+            'icon': provider.icon
+        }
+        if include_configs: providers_list[provider.name] = {
+            **providers_list[provider.name],
+            'client_id': provider.client_id,
+            'client_secret': '******',
+            'type': provider.type,
+            'scope': provider.scope,
+            'server_metadata_url': provider.server_metadata_url
+        }
+    return providers_list
 
 
-def get_oauth_providers_list() -> Dict[Optional[str], Optional[str]]:
+@register.filter
+def get_oauth_supported_provider_types() -> Dict[str, Dict[str, str]]:
     """
-    Obtain OAuth Providers for html
+    Obtain supported OAuth provider types and their all required settings
+    Like this:
+    {
+    "GitHub": {
+        "name": "Name",
+        "friendly_name": "Friendly Name",
+        "icon": "Icon",
+        "client_id": "Client ID",
+        "client_secret": "Client Secret",
+        "scope": "Scope"
+        },
+    }
     """
-    if __provider_configs != {}:
-        provider_data = copy.deepcopy(__provider_configs)
-        for provider_name in provider_data:
-            del provider_data[provider_name]['info']
-            del provider_data[provider_name]['type']
-        return provider_data
-    else:
-        return {}
+    supported_provider_types: Dict[str, Dict[str, str]] = {}
+    for provider_type in OAuthProvider.__subclasses__():
+        supported_provider_types[provider_type.__name__] = provider_type.SETTINGS
+    return supported_provider_types
 
 
 def create_oauth_callback_action(request, status: bool, message: str, action: Literal['refresh', 'none']):

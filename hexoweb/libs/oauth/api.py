@@ -1,3 +1,4 @@
+import json
 import logging
 
 from django.contrib.auth import login
@@ -18,7 +19,8 @@ def oauth_callback(request, provider_name: str):
     from .models import OAuthIdentity
     from django.db import IntegrityError
     from django.utils.timezone import now
-    from .functions import create_oauth_callback_action, get_oauth_providers_object, OAuthError
+    from .functions import create_oauth_callback_action, get_oauth_providers_object
+    from authlib.integrations.django_client import OAuthError
 
     @login_required(login_url="/login/")
     # Ensure the signature of __handle_bind is match to decorator`s design
@@ -172,3 +174,44 @@ def oauth_login(request, provider_name):
             return create_oauth_callback_action(request, False, repr(error), 'none')
     else:
         return create_oauth_callback_action(request, False, gettext('OAUTH_UNKNOWN_PROVIDER'), 'none')
+
+
+@login_required(login_url="/login/")
+def set_oauth_providers(request):
+    context = dict(msg="Error!", status=False)
+    if request.method == "POST":
+        payload = json.loads(request.POST)
+        from .models import OAuthProviderModel
+        try:
+            for provider_name in payload:
+                OAuthProviderModel.objects.filter(provider_name=provider_name).delete()
+                OAuthProviderModel(
+                    name=provider_name,
+                    client_id=payload[provider_name]['client_id'],
+                    client_secret=payload[provider_name]['client_secret'],
+                    type=payload[provider_name]['type'],
+                    friendly_name=payload[provider_name]['friendly_name'],
+                    icon=payload[provider_name]['icon'],
+                    scope=payload[provider_name].get('scope', ''),
+                    server_metadata_url=payload[provider_name].get('server_metadata_url', '')
+                ).save()
+        except KeyError:
+            context['msg'] = gettext("OAUTH_NO_REQUIRED_FIELD")
+        except Exception as error:
+            logging.error(repr(error))
+            context['msg'] = repr(error)
+    return JsonResponse(safe=False, data=context)
+
+@login_required(login_url="/login/")
+def get_oauth_providers(request):
+    context = dict(msg="Error!", status=False, data={})
+    if request.method == "GET":
+        try:
+            from .functions import get_oauth_providers_list
+            context['msg'] = 'OK'
+            context['status'] = True
+            context['data'] = get_oauth_providers_list(include_configs=True)
+        except Exception as error:
+            logging.error(repr(error))
+            context['msg'] = repr(error)
+    return JsonResponse(safe=False, data=context)

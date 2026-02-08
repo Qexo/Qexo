@@ -14,8 +14,7 @@ class OAuthIdentity(models.Model):
 
 
 class OAuthProviderModel(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=50, blank=False)
+    name = models.CharField(max_length=50, blank=False, primary_key=True)
     type = models.CharField(max_length=50, blank=False)
     client_id = models.CharField(max_length=255, blank=False)
     client_secret = models.CharField(max_length=255, blank=False)

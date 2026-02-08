@@ -179,28 +179,43 @@ def oauth_login(request, provider_name):
 @login_required(login_url="/login/")
 def set_oauth_providers(request):
     context = dict(msg="Error!", status=False)
+    from django.db import IntegrityError
     if request.method == "POST":
         payload = json.loads(request.POST)
         from .models import OAuthProviderModel
         try:
             for provider_name in payload:
-                OAuthProviderModel.objects.filter(provider_name=provider_name).delete()
-                OAuthProviderModel(
-                    name=provider_name,
-                    client_id=payload[provider_name]['client_id'],
-                    client_secret=payload[provider_name]['client_secret'],
-                    type=payload[provider_name]['type'],
-                    friendly_name=payload[provider_name]['friendly_name'],
-                    icon=payload[provider_name]['icon'],
-                    scope=payload[provider_name].get('scope', ''),
-                    server_metadata_url=payload[provider_name].get('server_metadata_url', '')
-                ).save()
+                query = OAuthProviderModel.objects.filter(name=provider_name).first()
+                if query:
+                    # Update existing provider config
+                    query.type = payload[provider_name]['type']
+                    query.client_id = payload[provider_name]['client_id']
+                    query.client_secret = payload[provider_name]['client_secret']
+                    query.server_metadata_url = payload[provider_name].get('server_metadata_url', '')
+                    query.scope = payload[provider_name].get('scope', '')
+                    query.friendly_name = payload[provider_name]['friendly_name']
+                    query.icon = payload[provider_name]['icon']
+                    query.save()
+                else:
+                    OAuthProviderModel(
+                        name=provider_name,
+                        client_id=payload[provider_name]['client_id'],
+                        client_secret=payload[provider_name]['client_secret'],
+                        type=payload[provider_name]['type'],
+                        friendly_name=payload[provider_name]['friendly_name'],
+                        icon=payload[provider_name]['icon'],
+                        scope=payload[provider_name].get('scope', ''),
+                        server_metadata_url=payload[provider_name].get('server_metadata_url', '')
+                    ).save()
         except KeyError:
             context['msg'] = gettext("OAUTH_NO_REQUIRED_FIELD")
+        except IntegrityError:
+            context['msg'] = gettext("OAUTH_PROVIDER_NAME_EXIST")
         except Exception as error:
             logging.error(repr(error))
             context['msg'] = repr(error)
     return JsonResponse(safe=False, data=context)
+
 
 @login_required(login_url="/login/")
 def get_oauth_providers(request):

@@ -75,7 +75,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
             ],
         },
-    },
+    },mongodb+srv://
 ]
 
 WSGI_APPLICATION = 'core.wsgi.application'
@@ -329,3 +329,4 @@ def get_fido_server_id(request=None):
 FIDO_SERVER_ID = get_fido_server_id
 FIDO_SERVER_NAME = "Qexo"
 KEY_ATTACHMENT = None  # 允许任何类型的认证器（平台或跨平台）
+DEFAULT_AUTO_FIELD = 'django_mongodb_backend.fields.ObjectIdAutoField'

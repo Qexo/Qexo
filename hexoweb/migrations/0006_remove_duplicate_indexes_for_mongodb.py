@@ -11,7 +11,6 @@
 # For MongoDB users, this is a complete no-op since those indexes never existed.
 
 from django.db import migrations, models
-import os
 
 
 def remove_redundant_indexes_if_needed(apps, schema_editor):

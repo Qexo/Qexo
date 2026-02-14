@@ -79,11 +79,6 @@ class Cache(models.Model):
 
     objects = NameBasedManager()
 
-    class Meta:
-        indexes = [
-            models.Index(fields=['name']),
-        ]
-
 
 class SettingModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -91,11 +86,6 @@ class SettingModel(models.Model):
     content = models.TextField(blank=True)
 
     objects = NameBasedManager()
-
-    class Meta:
-        indexes = [
-            models.Index(fields=['name']),
-        ]
 
 
 class ImageModel(models.Model):
@@ -109,7 +99,7 @@ class ImageModel(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=['name']),
+            # Note: 'name' field already has db_index=True, no need for explicit index
             models.Index(fields=['-date']),  # 倒序索引，常用于按时间倒序查询
         ]
 
@@ -123,11 +113,7 @@ class FriendModel(models.Model):
     description = models.TextField()
     status = models.BooleanField(default=True, db_index=True)
 
-    class Meta:
-        indexes = [
-            models.Index(fields=['time']),
-            models.Index(fields=['status']),
-        ]
+    # Note: 'time' and 'status' fields already have db_index=True, no need for explicit indexes
 
 
 class NotificationModel(models.Model):
@@ -144,20 +130,14 @@ class CustomModel(models.Model):
 
     objects = NameBasedManager()
 
-    class Meta:
-        indexes = [
-            models.Index(fields=['name']),
-        ]
+    # Note: 'name' field already has db_index=True, no need for explicit index
 
 
 class StatisticUV(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     ip = models.GenericIPAddressField(db_index=True)
 
-    class Meta:
-        indexes = [
-            models.Index(fields=['ip']),
-        ]
+    # Note: 'ip' field already has db_index=True, no need for explicit index
 
 
 class StatisticPV(models.Model):
@@ -165,10 +145,7 @@ class StatisticPV(models.Model):
     url = models.URLField(db_index=True)
     number = models.IntegerField(default=0)
 
-    class Meta:
-        indexes = [
-            models.Index(fields=['url']),
-        ]
+    # Note: 'url' field already has db_index=True, no need for explicit index
 
 
 class TalkModel(models.Model):
@@ -181,7 +158,7 @@ class TalkModel(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=['time']),
+            # Note: 'time' field already has db_index=True for forward index
             models.Index(fields=['-time']),  # 倒序索引
         ]
 
@@ -197,7 +174,6 @@ class PostModel(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=['path']),
+            # Note: 'path', 'date', and 'status' fields already have db_index=True for forward indexes
             models.Index(fields=['-date']),  # 倒序索引，用于按日期倒序查询
-            models.Index(fields=['status']),
         ]

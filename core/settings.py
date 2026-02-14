@@ -26,7 +26,34 @@ DEBUG = False
 LOCAL_CONFIG = False
 
 # Detect if MongoDB is being used (before INSTALLED_APPS)
-USE_MONGODB = bool(os.environ.get("MONGODB_HOST"))
+# This checks multiple sources to ensure accurate detection before DATABASES is configured
+def _detect_use_mongodb():
+    """
+    Determine whether MongoDB is being used.
+    
+    Priority:
+    1. Explicit MONGODB_HOST environment variable
+    2. Database engine hint from configs.py containing 'mongo'
+    """
+    # Primary signal: environment variable
+    if os.environ.get("MONGODB_HOST"):
+        return True
+    
+    # Fallback: inspect configs.py if available
+    if os.path.exists(BASE_DIR / "configs.py"):
+        try:
+            import configs
+            # Check if configs defines DATABASES with MongoDB ENGINE
+            if hasattr(configs, 'DATABASES'):
+                engine = configs.DATABASES.get('default', {}).get('ENGINE', '')
+                if 'mongodb' in engine.lower():
+                    return True
+        except Exception:
+            pass
+    
+    return False
+
+USE_MONGODB = _detect_use_mongodb()
 
 # Application definition
 
@@ -199,6 +226,10 @@ else:
 if errors:
     logging.error(f"{errors}未设置, 请查看: https://www.oplog.cn/qexo/start/build.html")
     raise exceptions.InitError(f"{errors}未设置, 请查看: https://www.oplog.cn/qexo/start/build.html")
+
+# Update USE_MONGODB based on actual database backend ENGINE
+# This ensures compatibility with both environment variable and local config.py deployments
+USE_MONGODB = 'mongodb' in DATABASES.get('default', {}).get('ENGINE', '').lower()
 
 def _load_allowed_hosts(local_config):
     if local_config:

@@ -25,9 +25,35 @@ DEBUG = False
 
 LOCAL_CONFIG = False
 
-# Initial MongoDB detection for INSTALLED_APPS configuration (before DATABASES is set)
-# This will be updated after DATABASES is configured to check the actual ENGINE
-USE_MONGODB = bool(os.environ.get("MONGODB_HOST"))
+# Detect if MongoDB is being used (before INSTALLED_APPS)
+# This checks multiple sources to ensure accurate detection before DATABASES is configured
+def _detect_use_mongodb():
+    """
+    Determine whether MongoDB is being used.
+    
+    Priority:
+    1. Explicit MONGODB_HOST environment variable
+    2. Database engine hint from configs.py containing 'mongo'
+    """
+    # Primary signal: environment variable
+    if os.environ.get("MONGODB_HOST"):
+        return True
+    
+    # Fallback: inspect configs.py if available
+    if os.path.exists(BASE_DIR / "configs.py"):
+        try:
+            import configs
+            # Check if configs defines DATABASES with MongoDB ENGINE
+            if hasattr(configs, 'DATABASES'):
+                engine = configs.DATABASES.get('default', {}).get('ENGINE', '')
+                if 'mongodb' in engine.lower():
+                    return True
+        except Exception:
+            pass
+    
+    return False
+
+USE_MONGODB = _detect_use_mongodb()
 
 # Application definition
 

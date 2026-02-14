@@ -1,28 +1,78 @@
 # Generated manually to fix MongoDB index conflicts (issue #681)
 #
-# This migration removes redundant explicit indexes for non-MongoDB databases
-# that were created by the original version of migration 0004.
+# This migration removes redundant explicit indexes for non-MongoDB databases.
 #
-# Background:
-# - Modified migration 0004 now conditionally creates indexes based on database backend
-# - MongoDB users: Only reverse indexes (-date, -time) are created explicitly
-# - Non-MongoDB users: All indexes were created explicitly in the original migration 0004
+# Context:
+# - Modified migration 0004 conditionally creates indexes based on MONGODB_HOST
+# - Non-MongoDB: Creates all 14 explicit indexes
+# - MongoDB: Creates only 3 reverse indexes (forward ones from db_index=True)
 #
-# This migration:
-# - Removes the redundant forward indexes for non-MongoDB users (db_index=True provides these)
-# - Is a no-op for MongoDB users (these indexes were never created)
-# - Keeps reverse indexes which can't be expressed by db_index=True alone
+# This migration removes the 11 redundant forward indexes for non-MongoDB users.
+# For MongoDB users, this is a complete no-op since those indexes never existed.
 
 from django.db import migrations
 import os
 
 
-def should_remove_indexes(apps, schema_editor):
+def remove_redundant_indexes_if_needed(apps, schema_editor):
     """
-    Check if we should remove the redundant indexes.
-    Returns True for non-MongoDB databases that had migration 0004 applied before the fix.
+    Remove redundant forward indexes only for non-MongoDB databases.
+    MongoDB users never had these indexes, so we skip the removal entirely.
     """
-    return not bool(os.environ.get("MONGODB_HOST"))
+    # Check if MongoDB is being used
+    use_mongodb = bool(os.environ.get("MONGODB_HOST"))
+    
+    if use_mongodb:
+        # MongoDB users never had these forward indexes created
+        # Skip all RemoveIndex operations
+        return
+    
+    # For non-MongoDB databases, remove the redundant forward indexes
+    # These will be replaced by the db_index=True implicit indexes
+    from django.db import connection
+    
+    # Get model metadata
+    Cache = apps.get_model('hexoweb', 'Cache')
+    CustomModel = apps.get_model('hexoweb', 'CustomModel')
+    FriendModel = apps.get_model('hexoweb', 'FriendModel')
+    ImageModel = apps.get_model('hexoweb', 'ImageModel')
+    PostModel = apps.get_model('hexoweb', 'PostModel')
+    SettingModel = apps.get_model('hexoweb', 'SettingModel')
+    StatisticPV = apps.get_model('hexoweb', 'StatisticPV')
+    StatisticUV = apps.get_model('hexoweb', 'StatisticUV')
+    TalkModel = apps.get_model('hexoweb', 'TalkModel')
+    
+    # List of (model, index_name) to remove
+    indexes_to_remove = [
+        (Cache, 'hexoweb_cac_name_393d54_idx'),
+        (CustomModel, 'hexoweb_cus_name_5ca240_idx'),
+        (FriendModel, 'hexoweb_fri_time_a9636e_idx'),
+        (FriendModel, 'hexoweb_fri_status_efb727_idx'),
+        (ImageModel, 'hexoweb_ima_name_6a60d9_idx'),
+        (PostModel, 'hexoweb_pos_path_3952f0_idx'),
+        (PostModel, 'hexoweb_pos_status_989f04_idx'),
+        (SettingModel, 'hexoweb_set_name_3e7cb3_idx'),
+        (StatisticPV, 'hexoweb_sta_url_a0e580_idx'),
+        (StatisticUV, 'hexoweb_sta_ip_b9eddf_idx'),
+        (TalkModel, 'hexoweb_tal_time_a7d991_idx'),
+    ]
+    
+    # Remove each index
+    for model, index_name in indexes_to_remove:
+        try:
+            # Find the index in the model's Meta.indexes
+            for index in model._meta.indexes:
+                if index.name == index_name:
+                    schema_editor.remove_index(model, index)
+                    break
+        except Exception as e:
+            # Index might not exist or already removed - that's okay
+            pass
+
+
+def reverse_noop(apps, schema_editor):
+    """No-op reverse migration"""
+    pass
 
 
 class Migration(migrations.Migration):
@@ -32,55 +82,14 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # Remove redundant forward indexes for non-MongoDB databases
-        # These are now provided by db_index=True on the model fields
-        # MongoDB users never had these indexes created, so RemoveIndex will be a no-op
-        
-        migrations.RemoveIndex(
-            model_name='cache',
-            name='hexoweb_cac_name_393d54_idx',
-        ),
-        migrations.RemoveIndex(
-            model_name='custommodel',
-            name='hexoweb_cus_name_5ca240_idx',
-        ),
-        migrations.RemoveIndex(
-            model_name='friendmodel',
-            name='hexoweb_fri_time_a9636e_idx',
-        ),
-        migrations.RemoveIndex(
-            model_name='friendmodel',
-            name='hexoweb_fri_status_efb727_idx',
-        ),
-        migrations.RemoveIndex(
-            model_name='imagemodel',
-            name='hexoweb_ima_name_6a60d9_idx',
-        ),
-        migrations.RemoveIndex(
-            model_name='postmodel',
-            name='hexoweb_pos_path_3952f0_idx',
-        ),
-        migrations.RemoveIndex(
-            model_name='postmodel',
-            name='hexoweb_pos_status_989f04_idx',
-        ),
-        migrations.RemoveIndex(
-            model_name='settingmodel',
-            name='hexoweb_set_name_3e7cb3_idx',
-        ),
-        migrations.RemoveIndex(
-            model_name='statisticpv',
-            name='hexoweb_sta_url_a0e580_idx',
-        ),
-        migrations.RemoveIndex(
-            model_name='statisticuv',
-            name='hexoweb_sta_ip_b9eddf_idx',
-        ),
-        migrations.RemoveIndex(
-            model_name='talkmodel',
-            name='hexoweb_tal_time_a7d991_idx',
+        # Use RunPython to conditionally remove indexes only for non-MongoDB
+        migrations.RunPython(
+            remove_redundant_indexes_if_needed,
+            reverse_noop,
         ),
     ]
+
+
 
 
 

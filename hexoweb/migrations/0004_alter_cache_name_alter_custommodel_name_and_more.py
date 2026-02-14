@@ -5,16 +5,16 @@ from django.db import migrations, models
 import os
 
 
-class Migration(migrations.Migration):
-
-    dependencies = [
-        ('hexoweb', '0003_imagemodel_deleteconfig'),
-    ]
-
-    # Check if using MongoDB
-    _use_mongodb = bool(os.environ.get("MONGODB_HOST"))
-
-    operations = [
+def get_conditional_operations():
+    """
+    Generate migration operations based on database backend.
+    This is evaluated at import time but checks environment, which is acceptable
+    for this use case since MONGODB_HOST is set before migrations run.
+    """
+    use_mongodb = bool(os.environ.get("MONGODB_HOST"))
+    
+    # Base operations (AlterField with db_index=True)
+    base_ops = [
         migrations.AlterField(
             model_name='cache',
             name='name',
@@ -77,10 +77,10 @@ class Migration(migrations.Migration):
         ),
     ]
     
-    # Add explicit indexes only for non-MongoDB databases
-    # MongoDB already creates indexes from db_index=True, so AddIndex would conflict
-    if not _use_mongodb:
-        operations.extend([
+    # Add explicit indexes based on database backend
+    if not use_mongodb:
+        # For non-MongoDB databases, create all indexes explicitly
+        base_ops.extend([
             migrations.AddIndex(
                 model_name='cache',
                 index=models.Index(fields=['name'], name='hexoweb_cac_name_393d54_idx'),
@@ -139,8 +139,8 @@ class Migration(migrations.Migration):
             ),
         ])
     else:
-        # For MongoDB, only add the reverse indexes (which can't be expressed by db_index=True)
-        operations.extend([
+        # For MongoDB, only add reverse indexes (which can't be expressed by db_index=True)
+        base_ops.extend([
             migrations.AddIndex(
                 model_name='imagemodel',
                 index=models.Index(fields=['-date'], name='hexoweb_ima_date_dee9c4_idx'),
@@ -154,3 +154,14 @@ class Migration(migrations.Migration):
                 index=models.Index(fields=['-time'], name='hexoweb_tal_time_7eb94e_idx'),
             ),
         ])
+    
+    return base_ops
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('hexoweb', '0003_imagemodel_deleteconfig'),
+    ]
+
+    operations = get_conditional_operations()

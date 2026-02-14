@@ -19,6 +19,8 @@ def remove_redundant_indexes_if_needed(apps, schema_editor):
     Remove redundant forward indexes only for non-MongoDB databases.
     MongoDB users never had these indexes, so we skip the removal entirely.
     """
+    from django.db.utils import ProgrammingError, OperationalError
+    
     # Check if MongoDB is being used
     use_mongodb = bool(os.environ.get("MONGODB_HOST"))
     
@@ -65,8 +67,9 @@ def remove_redundant_indexes_if_needed(apps, schema_editor):
                 if index.name == index_name:
                     schema_editor.remove_index(model, index)
                     break
-        except Exception as e:
-            # Index might not exist or already removed - that's okay
+        except (ProgrammingError, OperationalError):
+            # Index might not exist, already removed, or database-specific error
+            # This is acceptable - we just want to ensure it's not there
             pass
 
 

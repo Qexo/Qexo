@@ -10,7 +10,7 @@
 # This migration removes the 11 redundant forward indexes for non-MongoDB users.
 # For MongoDB users, this is a complete no-op since those indexes never existed.
 
-from django.db import migrations
+from django.db import migrations, models
 import os
 
 
@@ -30,9 +30,6 @@ def remove_redundant_indexes_if_needed(apps, schema_editor):
         return
     
     # For non-MongoDB databases, remove the redundant forward indexes
-    # These will be replaced by the db_index=True implicit indexes
-    from django.db import connection
-    
     # Get model metadata
     Cache = apps.get_model('hexoweb', 'Cache')
     CustomModel = apps.get_model('hexoweb', 'CustomModel')
@@ -44,29 +41,28 @@ def remove_redundant_indexes_if_needed(apps, schema_editor):
     StatisticUV = apps.get_model('hexoweb', 'StatisticUV')
     TalkModel = apps.get_model('hexoweb', 'TalkModel')
     
-    # List of (model, index_name) to remove
+    # List of (model, index_name, fields) to remove
+    # We need to construct index objects since historical models don't have current Meta.indexes
     indexes_to_remove = [
-        (Cache, 'hexoweb_cac_name_393d54_idx'),
-        (CustomModel, 'hexoweb_cus_name_5ca240_idx'),
-        (FriendModel, 'hexoweb_fri_time_a9636e_idx'),
-        (FriendModel, 'hexoweb_fri_status_efb727_idx'),
-        (ImageModel, 'hexoweb_ima_name_6a60d9_idx'),
-        (PostModel, 'hexoweb_pos_path_3952f0_idx'),
-        (PostModel, 'hexoweb_pos_status_989f04_idx'),
-        (SettingModel, 'hexoweb_set_name_3e7cb3_idx'),
-        (StatisticPV, 'hexoweb_sta_url_a0e580_idx'),
-        (StatisticUV, 'hexoweb_sta_ip_b9eddf_idx'),
-        (TalkModel, 'hexoweb_tal_time_a7d991_idx'),
+        (Cache, 'hexoweb_cac_name_393d54_idx', ['name']),
+        (CustomModel, 'hexoweb_cus_name_5ca240_idx', ['name']),
+        (FriendModel, 'hexoweb_fri_time_a9636e_idx', ['time']),
+        (FriendModel, 'hexoweb_fri_status_efb727_idx', ['status']),
+        (ImageModel, 'hexoweb_ima_name_6a60d9_idx', ['name']),
+        (PostModel, 'hexoweb_pos_path_3952f0_idx', ['path']),
+        (PostModel, 'hexoweb_pos_status_989f04_idx', ['status']),
+        (SettingModel, 'hexoweb_set_name_3e7cb3_idx', ['name']),
+        (StatisticPV, 'hexoweb_sta_url_a0e580_idx', ['url']),
+        (StatisticUV, 'hexoweb_sta_ip_b9eddf_idx', ['ip']),
+        (TalkModel, 'hexoweb_tal_time_a7d991_idx', ['time']),
     ]
     
-    # Remove each index
-    for model, index_name in indexes_to_remove:
+    # Remove each index by constructing the index object
+    for model, index_name, fields in indexes_to_remove:
         try:
-            # Find the index in the model's Meta.indexes
-            for index in model._meta.indexes:
-                if index.name == index_name:
-                    schema_editor.remove_index(model, index)
-                    break
+            # Construct the index object with the expected name and fields
+            index = models.Index(fields=fields, name=index_name)
+            schema_editor.remove_index(model, index)
         except (ProgrammingError, OperationalError):
             # Index might not exist, already removed, or database-specific error
             # This is acceptable - we just want to ensure it's not there
@@ -91,10 +87,6 @@ class Migration(migrations.Migration):
             reverse_noop,
         ),
     ]
-
-
-
-
 
 
 

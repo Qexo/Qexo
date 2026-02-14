@@ -6,6 +6,11 @@
 # - Set MONGODB_HOST=<your_mongodb_connection_string> for MongoDB deployments
 # - Leave MONGODB_HOST unset for PostgreSQL, MySQL, or SQLite deployments
 #
+# Note: We use the environment variable instead of schema_editor.connection.vendor because:
+# 1. The operations list must be determined at import time (before database connection)
+# 2. Django migrations don't support runtime evaluation of the operations list
+# 3. MONGODB_HOST is the standard way this application detects MongoDB configuration
+#
 # The migration creates different indexes based on the database backend:
 # - MongoDB: Only creates reverse indexes (-date, -time) since forward indexes 
 #            are automatically created by db_index=True
@@ -20,10 +25,11 @@ def get_conditional_operations():
     Generate migration operations based on database backend.
     
     This checks MONGODB_HOST environment variable at import time to determine
-    which indexes to create. This is acceptable because:
+    which indexes to create. This is the correct approach because:
     1. The environment variable is set before Django starts
     2. It remains constant throughout the application lifecycle
     3. Migration files are not shared between different deployment types
+    4. The operations list must be available at import time
     """
     use_mongodb = bool(os.environ.get("MONGODB_HOST"))
     

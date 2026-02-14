@@ -21,10 +21,11 @@ def remove_redundant_indexes_if_needed(apps, schema_editor):
     """
     from django.db.utils import ProgrammingError, OperationalError
     
-    # Check if MongoDB is being used
-    use_mongodb = bool(os.environ.get("MONGODB_HOST"))
+    # Check if MongoDB is being used by examining the actual database connection
+    # This is more reliable than checking environment variables
+    is_mongodb = 'mongodb' in schema_editor.connection.vendor.lower() if hasattr(schema_editor.connection, 'vendor') else bool(os.environ.get("MONGODB_HOST"))
     
-    if use_mongodb:
+    if is_mongodb:
         # MongoDB users never had these forward indexes created
         # Skip all RemoveIndex operations
         return

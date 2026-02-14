@@ -3,7 +3,7 @@
 # This migration removes redundant explicit indexes for non-MongoDB databases.
 #
 # Context:
-# - Modified migration 0004 conditionally creates indexes based on MONGODB_HOST
+# - Modified migration 0004 conditionally creates indexes based on database backend
 # - Non-MongoDB: Creates all 14 explicit indexes
 # - MongoDB: Creates only 3 reverse indexes (forward ones from db_index=True)
 #
@@ -22,8 +22,14 @@ def remove_redundant_indexes_if_needed(apps, schema_editor):
     from django.db.utils import ProgrammingError, OperationalError
     
     # Check if MongoDB is being used by examining the actual database connection
-    # This is more reliable than checking environment variables
-    is_mongodb = 'mongodb' in schema_editor.connection.vendor.lower() if hasattr(schema_editor.connection, 'vendor') else bool(os.environ.get("MONGODB_HOST"))
+    # This is more reliable than checking environment variables and works with
+    # both environment-based and local config.py deployments
+    is_mongodb = 'mongodb' in schema_editor.connection.vendor.lower() if hasattr(schema_editor.connection, 'vendor') else False
+    
+    # Fallback check for edge cases where vendor is not set
+    if not is_mongodb and hasattr(schema_editor.connection, 'settings_dict'):
+        engine = schema_editor.connection.settings_dict.get('ENGINE', '')
+        is_mongodb = 'mongodb' in engine.lower()
     
     if is_mongodb:
         # MongoDB users never had these forward indexes created

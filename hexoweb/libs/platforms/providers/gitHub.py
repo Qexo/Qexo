@@ -11,7 +11,7 @@ class Github(Provider):
         self.token = token
         self._repo = repo
         self.branch = branch
-        self.path = path if path != "/" else ""
+        self.path = f"{path.strip('/')}/" if path and path != "/" else ""
         self.repo = github.Github(self.token).get_repo(self._repo)
 
     params = {'token': {"description": "Github 密钥", "placeholder": "token"},

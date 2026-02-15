@@ -13,7 +13,7 @@ class GitEa(Provider):
         self.token = token
         self.repo = repo
         self.branch = branch
-        self.path = path if path != "/" else ""
+        self.path = f"{path.strip('/')}/" if path and path != "/" else ""
 
     params = {'url': {"description": "Gitea 地址", "placeholder": "https://git.example.com"},
               'token': {"description": "Gitea 密钥", "placeholder": "token"},

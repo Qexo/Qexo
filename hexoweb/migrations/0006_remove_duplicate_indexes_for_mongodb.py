@@ -3,9 +3,9 @@
 # This migration removes redundant explicit forward indexes that were created
 # by earlier versions of migration 0004 for non-MongoDB databases.
 #
-# This uses SeparateDatabaseAndState to:
+# This migration uses a DB-only cleanup operation:
 # 1. Conditionally remove indexes from the database (only for non-MongoDB)
-# 2. Update migration state to reflect that these indexes are gone
+# 2. Keep migration state unchanged to stay consistent with current 0004 state
 #
 # For MongoDB users, this is a complete no-op (indexes were never created).
 
@@ -78,61 +78,9 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.SeparateDatabaseAndState(
-            database_operations=[
-                # Conditionally remove indexes from database
-                migrations.RunPython(
-                    remove_redundant_indexes_if_needed,
-                    reverse_noop,
-                ),
-            ],
-            state_operations=[
-                # Update migration state to reflect that these indexes are gone
-                migrations.RemoveIndex(
-                    model_name='cache',
-                    name='hexoweb_cac_name_393d54_idx',
-                ),
-                migrations.RemoveIndex(
-                    model_name='custommodel',
-                    name='hexoweb_cus_name_5ca240_idx',
-                ),
-                migrations.RemoveIndex(
-                    model_name='friendmodel',
-                    name='hexoweb_fri_time_a9636e_idx',
-                ),
-                migrations.RemoveIndex(
-                    model_name='friendmodel',
-                    name='hexoweb_fri_status_efb727_idx',
-                ),
-                migrations.RemoveIndex(
-                    model_name='imagemodel',
-                    name='hexoweb_ima_name_6a60d9_idx',
-                ),
-                migrations.RemoveIndex(
-                    model_name='postmodel',
-                    name='hexoweb_pos_path_3952f0_idx',
-                ),
-                migrations.RemoveIndex(
-                    model_name='postmodel',
-                    name='hexoweb_pos_status_989f04_idx',
-                ),
-                migrations.RemoveIndex(
-                    model_name='settingmodel',
-                    name='hexoweb_set_name_3e7cb3_idx',
-                ),
-                migrations.RemoveIndex(
-                    model_name='statisticpv',
-                    name='hexoweb_sta_url_a0e580_idx',
-                ),
-                migrations.RemoveIndex(
-                    model_name='statisticuv',
-                    name='hexoweb_sta_ip_b9eddf_idx',
-                ),
-                migrations.RemoveIndex(
-                    model_name='talkmodel',
-                    name='hexoweb_tal_time_a7d991_idx',
-                ),
-            ],
+        migrations.RunPython(
+            remove_redundant_indexes_if_needed,
+            reverse_noop,
         ),
     ]
 

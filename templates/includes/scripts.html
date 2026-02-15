@@ -99,7 +99,7 @@
 
     function showNotifications() {
         if (!notifications.length) {
-            $("#notification-board").html(notificationTemp.replace('<span class="font-weight-bold">@@lebel@@<br></span><br>', '').replace("@@herf@@", "#")
+            $("#notification-board").html(notificationTemp.replace('<span class="font-weight-bold">@@label@@<br></span><br>', '').replace("@@herf@@", "#")
                 .replace('@@content@@', '{{ "NO_MSG_TIP" | gettext }}').replace('@@time@@', 'Now')
                 .replace('@@fore@@',
                     '<i class="fas fa-check"></i>').replace("@@label@@", "{{ "TIPS" | gettext }}"));
@@ -136,7 +136,7 @@
                 notifications = data["data"];
                 showNotifications();
             } else {
-                $("#notification-board").html(notificationTemp.replace('@@lebel@@', '{{ "TIPS" | gettext }}')
+                $("#notification-board").html(notificationTemp.replace('@@label@@', '{{ "TIPS" | gettext }}')
                     .replace("@@herf@@", "#").replace('@@content@@', '{{ "MSG_LOAD_ERROR" | gettext }}')
                     .replace('@@time@@', 'Error')
                     .replace('@@fore@@', '<i class="fa-solid fa-blender"></i>'));

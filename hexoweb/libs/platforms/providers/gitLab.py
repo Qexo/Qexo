@@ -11,7 +11,8 @@ class Gitlab(Provider):
         self.token = token
         self._repo = repo
         self.branch = branch
-        self.path = path if path != "/" else ""
+        normalized_path = (path or "").strip("/")
+        self.path = f"{normalized_path}/" if normalized_path else ""
         self.repo = (gitlab.Gitlab(url=url, private_token=token) if url else gitlab.Gitlab(private_token=token)).projects.get(repo)
 
     params = {'url': {"description": "Gitlab 地址", "placeholder": "留空为官网"},

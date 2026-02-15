@@ -25,63 +25,11 @@ DEBUG = False
 
 LOCAL_CONFIG = False
 
-# Detect if MongoDB is being used (before INSTALLED_APPS)
-# This checks multiple sources to ensure accurate detection before DATABASES is configured
-def _detect_use_mongodb():
-    """
-    Determine whether MongoDB is being used.
-    
-    Priority:
-    1. Explicit MONGODB_HOST environment variable
-    2. Database engine hint from configs.py containing 'mongo'
-    """
-    # Primary signal: environment variable
-    if os.environ.get("MONGODB_HOST"):
-        return True
-    
-    # Fallback: inspect configs.py if available
-    if os.path.exists(BASE_DIR / "configs.py"):
-        try:
-            import configs
-            # Check if configs defines DATABASES with MongoDB ENGINE
-            if hasattr(configs, 'DATABASES'):
-                engine = configs.DATABASES.get('default', {}).get('ENGINE', '')
-                if 'mongodb' in engine.lower():
-                    return True
-        except Exception:
-            pass
-    
-    return False
-
-USE_MONGODB = _detect_use_mongodb()
-
 # Application definition
-
-# Use MongoDB-compatible app configs when using MongoDB
-if USE_MONGODB:
-    INSTALLED_APPS = [
-        # 'django.contrib.admin',
-        'core.mongodb_apps.MongoAuthConfig',  # Custom config for MongoDB
-        'core.mongodb_apps.MongoContentTypesConfig',  # Custom config for MongoDB
-        'django.contrib.sessions',
-        'django.contrib.messages',
-        # 'django.contrib.staticfiles',
-        'hexoweb.apps.ConsoleConfig',
-        'corsheaders',
-        'passkeys',
-    ]
-else:
-    INSTALLED_APPS = [
-        # 'django.contrib.admin',
-        'django.contrib.auth',
-        'django.contrib.contenttypes',
-        'django.contrib.sessions',
-        'django.contrib.messages',
-        # 'django.contrib.staticfiles',
-        'hexoweb.apps.ConsoleConfig',
-        'corsheaders',
-        'passkeys',
-    ]
+# NOTE:
+# INSTALLED_APPS depends on the final DATABASES backend, so it is assigned
+# after DATABASES and USE_MONGODB are fully resolved.
+INSTALLED_APPS = []
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -230,6 +178,36 @@ if errors:
 # Update USE_MONGODB based on actual database backend ENGINE
 # This ensures compatibility with both environment variable and local config.py deployments
 USE_MONGODB = 'mongodb' in DATABASES.get('default', {}).get('ENGINE', '').lower()
+
+
+def _build_installed_apps(use_mongodb):
+    if use_mongodb:
+        return [
+            # 'django.contrib.admin',
+            'core.mongodb_apps.MongoAuthConfig',  # Custom config for MongoDB
+            'core.mongodb_apps.MongoContentTypesConfig',  # Custom config for MongoDB
+            'django.contrib.sessions',
+            'django.contrib.messages',
+            # 'django.contrib.staticfiles',
+            'hexoweb.apps.ConsoleConfig',
+            'corsheaders',
+            'passkeys',
+        ]
+
+    return [
+        # 'django.contrib.admin',
+        'django.contrib.auth',
+        'django.contrib.contenttypes',
+        'django.contrib.sessions',
+        'django.contrib.messages',
+        # 'django.contrib.staticfiles',
+        'hexoweb.apps.ConsoleConfig',
+        'corsheaders',
+        'passkeys',
+    ]
+
+
+INSTALLED_APPS = _build_installed_apps(USE_MONGODB)
 
 def _load_allowed_hosts(local_config):
     if local_config:

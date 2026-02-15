@@ -180,23 +180,54 @@
                         <div id="msg-point" style=""></div>
                     </a>
                     <style>
-                        @media (min-width: 992px) {
+                        #notification-board {
+                            width: fit-content;
+                            min-width: 18rem;
+                            max-width: min(90vw, 32rem);
+                        }
+
+                        @media (min-width: 1200px) {
                             #notification-board {
-                                width: 350px;
+                                min-width: 24rem;
+                                max-width: min(80vw, 46rem);
+                            }
+                        }
+
+                        #notification-board .dropdown-item,
+                        #notification-board .notification-item {
+                            white-space: normal;
+                        }
+
+                        #notification-board .notification-content {
+                            min-width: 0;
+                            flex: 1;
+                        }
+
+                        #notification-board .notification-label,
+                        #notification-board .notification-text,
+                        #notification-board .notification-time {
+                            overflow-wrap: anywhere;
+                            word-break: break-word;
+                        }
+
+                        @media (max-width: 991.98px) {
+                            #notification-board {
+                                min-width: min(18rem, 90vw);
+                                max-width: 90vw;
                             }
                         }
                     </style>
                     <ul class="dropdown-menu  dropdown-menu-end  px-2 py-3 me-sm-n4"
                         aria-labelledby="dropdownMenuButton" id="notification-board">
                         <li class="mb-2">
-                            <a class="dropdown-item border-radius-md" href="#">
+                            <a class="dropdown-item border-radius-md notification-item" href="#">
                                 <div class="d-flex py-1">
                                     <div class="avatar avatar-sm me-3 my-auto"
                                          style="color: #172b4d;">
                                         <i class="fa-solid fa-cloud"></i>
                                     </div>
-                                    <div class="d-flex flex-column justify-content-center">
-                                        <span class="text-sm mb-1">
+                                    <div class="d-flex flex-column justify-content-center notification-content">
+                                        <span class="text-sm mb-1 notification-text">
                                             {{ "MSG_LOADING" | gettext }}
                                         </span>
                                     </div>

@@ -79,17 +79,17 @@
         }
     }
 
-    var notificationTemp = `<a class="dropdown-item border-radius-md" href="@@herf@@" style="white-space: inherit;">
+    var notificationTemp = `<a class="dropdown-item border-radius-md notification-item" href="@@herf@@">
                                 <div class="d-flex py-1">
                                     <div class="avatar avatar-sm me-3 my-auto" style="color: #172b4d;">
                                       @@fore@@
                                     </div>
-                                    <div class="d-flex flex-column justify-content-center">
+                                    <div class="d-flex flex-column justify-content-center notification-content">
                                         <span class="text-sm font-weight-normal mb-1">
-                                        <span class="font-weight-bold">@@label@@</span><br>
-                                            @@content@@
+                                        <span class="font-weight-bold notification-label">@@label@@</span><br>
+                                        <span class="notification-text">@@content@@</span>
                                         </span>
-                                        <p class="text-xs text-secondary mb-0">
+                                        <p class="text-xs text-secondary mb-0 notification-time">
                                             <i class="fa fa-clock me-1"></i>
                                             @@time@@
                                         </p>
@@ -99,7 +99,7 @@
 
     function showNotifications() {
         if (!notifications.length) {
-            $("#notification-board").html(notificationTemp.replace('<span class="font-weight-bold">@@lebel@@<br></span><br>', '').replace("@@herf@@", "#")
+            $("#notification-board").html(notificationTemp.replace('<span class="font-weight-bold">@@label@@<br></span><br>', '').replace("@@herf@@", "#")
                 .replace('@@content@@', '{{ "NO_MSG_TIP" | gettext }}').replace('@@time@@', 'Now')
                 .replace('@@fore@@',
                     '<i class="fas fa-check"></i>').replace("@@label@@", "{{ "TIPS" | gettext }}"));
@@ -136,7 +136,7 @@
                 notifications = data["data"];
                 showNotifications();
             } else {
-                $("#notification-board").html(notificationTemp.replace('@@lebel@@', '{{ "TIPS" | gettext }}')
+                $("#notification-board").html(notificationTemp.replace('@@label@@', '{{ "TIPS" | gettext }}')
                     .replace("@@herf@@", "#").replace('@@content@@', '{{ "MSG_LOAD_ERROR" | gettext }}')
                     .replace('@@time@@', 'Error')
                     .replace('@@fore@@', '<i class="fa-solid fa-blender"></i>'));

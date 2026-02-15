@@ -26,18 +26,10 @@ DEBUG = False
 LOCAL_CONFIG = False
 
 # Application definition
-
-INSTALLED_APPS = [
-    # 'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    # 'django.contrib.staticfiles',
-    'hexoweb.apps.ConsoleConfig',
-    'corsheaders',
-    'passkeys',
-]
+# NOTE:
+# INSTALLED_APPS depends on the final DATABASES backend, so it is assigned
+# after DATABASES and USE_MONGODB are fully resolved.
+INSTALLED_APPS = []
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -183,6 +175,40 @@ if errors:
     logging.error(f"{errors}未设置, 请查看: https://www.oplog.cn/qexo/start/build.html")
     raise exceptions.InitError(f"{errors}未设置, 请查看: https://www.oplog.cn/qexo/start/build.html")
 
+# Update USE_MONGODB based on actual database backend ENGINE
+# This ensures compatibility with both environment variable and local config.py deployments
+USE_MONGODB = 'mongodb' in DATABASES.get('default', {}).get('ENGINE', '').lower()
+
+
+def _build_installed_apps(use_mongodb):
+    if use_mongodb:
+        return [
+            # 'django.contrib.admin',
+            'core.mongodb_apps.MongoAuthConfig',  # Custom config for MongoDB
+            'core.mongodb_apps.MongoContentTypesConfig',  # Custom config for MongoDB
+            'django.contrib.sessions',
+            'django.contrib.messages',
+            # 'django.contrib.staticfiles',
+            'hexoweb.apps.ConsoleConfig',
+            'corsheaders',
+            'passkeys',
+        ]
+
+    return [
+        # 'django.contrib.admin',
+        'django.contrib.auth',
+        'django.contrib.contenttypes',
+        'django.contrib.sessions',
+        'django.contrib.messages',
+        # 'django.contrib.staticfiles',
+        'hexoweb.apps.ConsoleConfig',
+        'corsheaders',
+        'passkeys',
+    ]
+
+
+INSTALLED_APPS = _build_installed_apps(USE_MONGODB)
+
 def _load_allowed_hosts(local_config):
     if local_config:
         # 本地配置模式：必须设置 DOMAINS
@@ -295,7 +321,11 @@ USE_TZ = True
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# Use ObjectIdAutoField for MongoDB, BigAutoField for other databases
+if USE_MONGODB:
+    DEFAULT_AUTO_FIELD = 'django_mongodb_backend.fields.ObjectIdAutoField'
+else:
+    DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SESSION_COOKIE_AGE = 86400
 

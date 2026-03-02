@@ -5,6 +5,7 @@ import random
 import hexoweb.exceptions as exceptions
 import logging
 import urllib3
+from core.session_engine import get_session_engine
 
 urllib3.disable_warnings()
 
@@ -328,6 +329,7 @@ else:
     DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SESSION_COOKIE_AGE = 86400
+SESSION_ENGINE = get_session_engine(bool(os.environ.get("VERCEL")))
 
 # Passkeys / WebAuthn Configuration
 def get_fido_server_id(request=None):

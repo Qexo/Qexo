@@ -1,5 +1,6 @@
 from hexoweb.views import *
 from django.urls import path, re_path, include
+from passkeys import FIDO2
 # from django.contrib import admin
 from django.views.static import serve
 import hexoweb.pub as pub
@@ -12,6 +13,11 @@ urlpatterns = [
 
     # Passkeys URLs
     path('passkeys/', include('passkeys.urls')),
+    # 兼容 Vercel trailingSlash=true 将无斜杠 URL 重写为带斜杠 URL 的场景
+    path('passkeys/auth/begin/', FIDO2.auth_begin),
+    path('passkeys/auth/complete/', FIDO2.auth_complete),
+    path('passkeys/reg/begin/', FIDO2.reg_begin),
+    path('passkeys/reg/complete/', FIDO2.reg_complete),
 
     path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain')),
 

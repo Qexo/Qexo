@@ -16,6 +16,5 @@
       "source": "(.*)",
       "destination": "core/wsgi.py"
     }
-  ],
-  "trailingSlash": true
+  ]
 }

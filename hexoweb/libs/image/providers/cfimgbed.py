@@ -9,7 +9,7 @@ import requests
 import logging
 
 from ..core import Provider
-from ..replace import replace_path
+from ..replace import replace_folder_path
 
 
 def delete(config):
@@ -22,13 +22,13 @@ class Main(Provider):
 
     params = {
         'api': {'description': 'API 地址', 'placeholder': '图床图片上传的 API，例如：https://example.com/upload'},
-        'post_params': {'description': 'POST 参数名', 'placeholder': '图床图片上传 API 参数中图片文件的参数名'},
-        'json_path': {'description': 'JSON 路径', 'placeholder': '返回数据中图片 URL 所在的路径'},
+        'post_params': {'description': 'POST 参数名', 'placeholder': '请填写file'},
+        'json_path': {'description': 'JSON 路径', 'placeholder': '请填写0.src'},
         'api_key': {'description': 'API 密钥', 'placeholder': '例如：imgbed_XXXXXXXXX'},
-        'custom_url': {'description': '自定义前缀', 'placeholder': '返回 URL 所需要添加的前缀'},
-        'delete_url': {'description': '删除 API 地址', 'placeholder': '例如：https://example.com/api/delete/'},
-        'upload_folder': {'description': '上传的文件夹', 'placeholder': '图床保存的文件夹，支持 {YYYY} {MM} 等通配符'},
-        'upload_name_type': {'description': '命名规则', 'placeholder': '可选：default, index, origin, short (默认: default)'}
+        'custom_url': {'description': '自定义前缀', 'placeholder': '例如：https://example.com'},
+        'delete_url': {'description': '删除 API 地址', 'placeholder': '例如：https://example.com/api/manage/delete'},
+        'upload_folder': {'description': '上传的文件夹', 'placeholder': '图床保存的文件夹'},
+        'upload_name_type': {'description': '文件命名规则', 'placeholder': '可选：default, index, origin, short (默认: default)'}
     }
 
     def __init__(self, api, post_params, json_path, api_key, custom_url, delete_url, upload_folder="", upload_name_type="default"):
@@ -51,7 +51,7 @@ class Main(Provider):
         # Prepare query parameters
         query_params = []
         if self.upload_folder:
-            folder_path = replace_path(self.upload_folder)
+            folder_path = replace_folder_path(self.upload_folder)
             query_params.append(f"uploadFolder={folder_path}")
 
         if self.upload_name_type:

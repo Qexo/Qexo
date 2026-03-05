@@ -25,3 +25,21 @@ def replace_path(path: str, file, file_md5, now=datetime.now()):
         "{DAY}", str(now.day).zfill(2))
 
     return path
+
+def replace_folder_path(path: str, now=None):
+    """仅替换文件夹url的日期通配符的函数"""
+    if now is None:
+        now = datetime.now()
+    now_date = now.date()
+    
+    # {year} 23
+    # {month} 6
+    # {day}   3
+    path = path.replace("{year}", str(now_date.year)[-2:]).replace("{month}", str(now_date.month)).replace("{day}", str(now_date.day))
+    
+    # {YEAR} 2023
+    # {MONTH} 06
+    # {DAY}   03
+    path = path.replace("{YEAR}", str(now_date.year)).replace("{MONTH}", str(now_date.month).zfill(2)).replace("{DAY}", str(now_date.day).zfill(2))
+
+    return path

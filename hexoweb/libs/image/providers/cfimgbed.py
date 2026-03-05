@@ -13,7 +13,10 @@ from ..replace import replace_folder_path
 
 
 def delete(config):
-    response = requests.get(config.get("delete_url"))
+    headers = {}
+    if config.get("api_key"):
+        headers['Authorization'] = f"Bearer {config.get('api_key')}"
+    response = requests.get(config.get("delete_url"), headers=headers)
     return response.text
 
 
@@ -88,6 +91,6 @@ class Main(Provider):
             d_path = str(url).lstrip('/')
             delete_full_url = d_url + d_path
             
-            return [str(self.custom_url) + str(url), {"provider": Main.name, "delete_url": delete_full_url}]
+            return [str(self.custom_url) + str(url), {"provider": Main.name, "delete_url": delete_full_url, "api_key": self.api_key}]
 
-        return [str(self.custom_url) + str(url), {}]
+        return [str(self.custom_url) + str(url), {"provider": Main.name, "api_key": self.api_key}] if self.api_key else [str(self.custom_url) + str(url), {}]

@@ -16,7 +16,7 @@ def delete(config):
     headers = {}
     if config.get("api_key"):
         headers['Authorization'] = f"Bearer {config.get('api_key')}"
-    response = requests.get(config.get("delete_url"), headers=headers)
+    response = requests.delete(config.get("delete_url"), headers=headers)
     return response.text
 
 
@@ -88,7 +88,14 @@ class Main(Provider):
         if self.delete_url:
             # Remove trailing slash from delete_url or leading slash from url to avoid double slashes
             d_url = self.delete_url if self.delete_url.endswith('/') else self.delete_url + '/'
-            d_path = str(url).lstrip('/')
+            d_path = str(url)
+            
+            if d_path.startswith('/file/'):
+                d_path = d_path[6:]
+            elif d_path.startswith('/file'):
+                d_path = d_path[5:]
+                
+            d_path = d_path.lstrip('/')
             delete_full_url = d_url + d_path
             
             return [str(self.custom_url) + str(url), {"provider": Main.name, "delete_url": delete_full_url, "api_key": self.api_key}]

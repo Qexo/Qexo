@@ -106,4 +106,5 @@ class Main(Provider):
             
             return [str(self.custom_url) + str(url), {"provider": Main.name, "delete_url": delete_full_url, "api_key": self.api_key}]
 
-        return [str(self.custom_url) + str(url), {"provider": Main.name, "api_key": self.api_key}] if self.api_key else [str(self.custom_url) + str(url), {}]
+        # 当未配置 delete_url 时，不返回删除配置，避免后续删除时因缺少 delete_url 失败
+        return [str(self.custom_url) + str(url), {}]

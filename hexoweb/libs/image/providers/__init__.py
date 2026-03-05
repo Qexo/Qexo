@@ -4,6 +4,7 @@
 @Blog      : https://www.oplog.cn
 """
 from . import custom
+from . import cfimgbed
 from . import s3
 from . import ftp
 from . import dogecloudoss
@@ -13,6 +14,7 @@ from . import upyun_storage
 
 _all_providers = {
     custom.Main.name: custom,
+    cfimgbed.Main.name: cfimgbed,
     s3.Main.name: s3,
     ftp.Main.name: ftp,
     dogecloudoss.Main.name: dogecloudoss,

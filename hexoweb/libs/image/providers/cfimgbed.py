@@ -54,29 +54,22 @@ class Main(Provider):
         headers = {}
         if self.api_key:
             headers['Authorization'] = f"Bearer {self.api_key}"
-            
-        upload_api_url = self.api
-        
-        # Prepare query parameters
-        query_params = []
+
+        # 使用 requests 的 params 参数构造并编码查询参数，避免手写字符串拼接
+        params = {}
         if self.upload_folder:
             folder_path = replace_folder_path(self.upload_folder)
-            query_params.append(f"uploadFolder={folder_path}")
+            params["uploadFolder"] = folder_path
 
         if self.upload_name_type:
-            query_params.append(f"uploadNameType={self.upload_name_type}")
-            
-        if query_params:
-            if '?' in upload_api_url:
-                if not upload_api_url.endswith('?'):
-                    upload_api_url += "&"
-                upload_api_url += "&".join(query_params)
-            else:
-                upload_api_url += "?" + "&".join(query_params)
-            
-        response = requests.post(upload_api_url, headers=headers,
-                                 files={self.post_params: [file.name, file.read(),
-                                                           file.content_type]})
+            params["uploadNameType"] = self.upload_name_type
+
+        response = requests.post(
+            self.api,
+            headers=headers,
+            params=params or None,
+            files={self.post_params: [file.name, file.read(), file.content_type]},
+        )
         data = response.text
         logging.info(data)
         if self.json_path:

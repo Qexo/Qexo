@@ -112,9 +112,6 @@ class FriendModel(models.Model):
     description = models.TextField()
     status = models.BooleanField(default=True, db_index=True)
 
-    # Note: 'status' field already has db_index=True, no need for explicit indexes
-
-
 class NotificationModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     time = models.TextField()
@@ -169,6 +166,5 @@ class PostModel(models.Model):
 
     class Meta:
         indexes = [
-            # Note: 'date' and 'status' fields already have db_index=True for forward indexes
             models.Index(fields=['-date']),  # 倒序索引，用于按日期倒序查询
         ]

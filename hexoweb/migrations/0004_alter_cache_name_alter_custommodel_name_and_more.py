@@ -5,9 +5,8 @@
 # Database indexes may be created conditionally based on the active database backend.
 #
 # The intended index behavior is:
-# - MongoDB: Only creates reverse indexes (-date, -time) since forward indexes
-#            are automatically created by db_index=True
-# - Other DBs: Only creates reverse indexes (forward indexes come from db_index=True)
+# - MongoDB: Only creates reverse indexes (-date, -time)
+# - Other DBs: Only creates reverse indexes
 
 from django.db import migrations, models
 
@@ -80,7 +79,7 @@ class Migration(migrations.Migration):
             name='time',
             field=models.TextField(max_length=2147483647),
         ),
-        # Add only reverse indexes (forward indexes come from db_index=True)
+        # Add reverse indexes used by ordering queries
         migrations.AddIndex(
             model_name='imagemodel',
             index=models.Index(fields=['-date'], name='hexoweb_ima_date_dee9c4_idx'),

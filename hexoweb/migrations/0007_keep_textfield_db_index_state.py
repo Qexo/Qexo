@@ -7,7 +7,12 @@
 # - Backends that reject TEXT/BLOB indexes (for example MySQL without key length)
 #   should not fail the whole migration chain.
 
+import logging
+
 from django.db import migrations, models
+
+
+logger = logging.getLogger(__name__)
 
 
 def _is_mongodb_backend(schema_editor):
@@ -47,9 +52,9 @@ def add_text_db_indexes_if_supported(apps, schema_editor):
     for model, index in indexes:
         try:
             schema_editor.add_index(model, index)
-        except DatabaseError:
+        except DatabaseError as exc:
             # Some backends do not support indexing these TEXT/BLOB columns.
-            pass
+            logger.warning("Skip creating index %s on %s due to backend limitation: %s", index.name, model._meta.db_table, exc)
 
 
 def remove_text_db_indexes_if_present(apps, schema_editor):
@@ -79,8 +84,8 @@ def remove_text_db_indexes_if_present(apps, schema_editor):
     for model, index in indexes:
         try:
             schema_editor.remove_index(model, index)
-        except DatabaseError:
-            pass
+        except DatabaseError as exc:
+            logger.warning("Skip removing index %s on %s because it is unavailable: %s", index.name, model._meta.db_table, exc)
 
 
 class Migration(migrations.Migration):

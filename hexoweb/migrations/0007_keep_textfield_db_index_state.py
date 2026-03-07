@@ -1,4 +1,10 @@
-# Generated manually to preserve model db_index metadata without MySQL DDL changes
+# Manually generated to preserve db_index state while avoiding MySQL DDL errors.
+#
+# Why SeparateDatabaseAndState:
+# - MySQL cannot create an index directly on TEXT without key length and may fail
+#   with OperationalError 1170 during online upgrade.
+# - We only need to keep Django model/migration state aligned with db_index=True.
+# - Database-level index DDL is intentionally skipped here.
 
 from django.db import migrations, models
 
@@ -16,37 +22,37 @@ class Migration(migrations.Migration):
                 migrations.AlterField(
                     model_name='cache',
                     name='name',
-                    field=models.TextField(db_index=True),
+                    field=models.TextField(blank=False, db_index=True),
                 ),
                 migrations.AlterField(
                     model_name='custommodel',
                     name='name',
-                    field=models.TextField(db_index=True),
+                    field=models.TextField(blank=False, db_index=True),
                 ),
                 migrations.AlterField(
                     model_name='friendmodel',
                     name='time',
-                    field=models.TextField(db_index=True),
+                    field=models.TextField(blank=False, db_index=True),
                 ),
                 migrations.AlterField(
                     model_name='imagemodel',
                     name='name',
-                    field=models.TextField(db_index=True),
+                    field=models.TextField(blank=False, db_index=True),
                 ),
                 migrations.AlterField(
                     model_name='postmodel',
                     name='path',
-                    field=models.TextField(db_index=True),
+                    field=models.TextField(blank=False, db_index=True),
                 ),
                 migrations.AlterField(
                     model_name='settingmodel',
                     name='name',
-                    field=models.TextField(db_index=True),
+                    field=models.TextField(blank=False, db_index=True),
                 ),
                 migrations.AlterField(
                     model_name='talkmodel',
                     name='time',
-                    field=models.TextField(db_index=True),
+                    field=models.TextField(blank=False, db_index=True),
                 ),
             ],
         ),

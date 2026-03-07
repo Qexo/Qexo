@@ -489,7 +489,7 @@ def pages(request):
             context["breadcrumb_cn"] = gettext("TALKS_LIST")
             search = request.GET.get("s")
             posts = []
-            talks = TalkModel.objects.all()
+            talks = TalkModel.objects.all().order_by("-time")
             for i in talks:
                 t = json.loads(i.like)
                 try:
@@ -509,7 +509,7 @@ def pages(request):
                                       "time": strtime,
                                       "like": len(t) if t else 0,
                                       "id": i.id.hex})
-            context["posts"] = json.dumps(sorted(posts, key=lambda x: x["time"], reverse=True))
+            context["posts"] = json.dumps(posts)
             context["post_number"] = len(posts)
             context["page_number"] = ceil(context["post_number"] / 15)
             context["search"] = search

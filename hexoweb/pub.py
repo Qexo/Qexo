@@ -800,7 +800,7 @@ def get_talks(request):
             limit = 10
         all_talks = TalkModel.objects.all()
         count = all_talks.count()
-        all_talks = all_talks.order_by("time")[::-1][(page - 1) * limit:page * limit]
+        all_talks = all_talks.order_by("-time")[(page - 1) * limit:page * limit]
         talks = []
         for i in all_talks:
             t = json.loads(i.like)
@@ -940,7 +940,7 @@ def get_all_talks(request):
     try:
         search = request.GET.get("s")
         posts = []
-        talks = TalkModel.objects.all()
+        talks = TalkModel.objects.all().order_by("-time")
         for i in talks:
             t = json.loads(i.like)
             try:
@@ -960,7 +960,7 @@ def get_all_talks(request):
                                   "time": strtime,
                                   "like": len(t) if t else 0,
                                   "id": i.id.hex})
-        context = {"msg": gettext("GET_SUCCESS"), "status": True, "data": sorted(posts, key=lambda x: x["time"], reverse=True)}
+        context = {"msg": gettext("GET_SUCCESS"), "status": True, "data": posts}
         logging.info(f"获取全部说说成功, 数量: {len(posts)}")
     except Exception as error:
         logging.error(repr(error))

@@ -97,6 +97,11 @@ class ImageModel(models.Model):
     type = models.TextField()
     deleteConfig = models.TextField(default="{}")
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['-date']),  # 倒序索引用于按日期倒序查询
+        ]
+
 class FriendModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.TextField(blank=False)
@@ -142,6 +147,11 @@ class TalkModel(models.Model):
     time = models.TextField(blank=False, db_index=True)
     like = models.TextField(blank=True, default="[]")
     values = models.TextField(default="{}")
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['-time']),  # 倒序索引用于按时间倒序查询
+        ]
 
 class PostModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

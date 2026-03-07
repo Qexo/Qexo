@@ -15,21 +15,8 @@ from django.db import migrations, models
 logger = logging.getLogger(__name__)
 
 
-def _is_mongodb_backend(schema_editor):
-    vendor = getattr(schema_editor.connection, 'vendor', '')
-    if 'mongodb' in vendor.lower():
-        return True
-    if hasattr(schema_editor.connection, 'settings_dict'):
-        engine = schema_editor.connection.settings_dict.get('ENGINE', '')
-        return 'mongodb' in engine.lower()
-    return False
-
-
 def add_text_db_indexes_if_supported(apps, schema_editor):
     from django.db.utils import DatabaseError
-
-    if _is_mongodb_backend(schema_editor):
-        return
 
     Cache = apps.get_model('hexoweb', 'Cache')
     CustomModel = apps.get_model('hexoweb', 'CustomModel')
@@ -59,9 +46,6 @@ def add_text_db_indexes_if_supported(apps, schema_editor):
 
 def remove_text_db_indexes_if_present(apps, schema_editor):
     from django.db.utils import DatabaseError
-
-    if _is_mongodb_backend(schema_editor):
-        return
 
     Cache = apps.get_model('hexoweb', 'Cache')
     CustomModel = apps.get_model('hexoweb', 'CustomModel')

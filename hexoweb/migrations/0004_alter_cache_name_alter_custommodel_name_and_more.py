@@ -9,21 +9,8 @@ from django.db import migrations, models
 logger = logging.getLogger(__name__)
 
 
-def _is_mongodb_backend(schema_editor):
-    vendor = getattr(schema_editor.connection, 'vendor', '')
-    if 'mongodb' in vendor.lower():
-        return True
-    if hasattr(schema_editor.connection, 'settings_dict'):
-        engine = schema_editor.connection.settings_dict.get('ENGINE', '')
-        return 'mongodb' in engine.lower()
-    return False
-
-
 def add_reverse_text_indexes_if_supported(apps, schema_editor):
     from django.db.utils import DatabaseError
-
-    if _is_mongodb_backend(schema_editor):
-        return
 
     ImageModel = apps.get_model('hexoweb', 'ImageModel')
     TalkModel = apps.get_model('hexoweb', 'TalkModel')
@@ -42,9 +29,6 @@ def add_reverse_text_indexes_if_supported(apps, schema_editor):
 
 def remove_reverse_text_indexes_if_present(apps, schema_editor):
     from django.db.utils import DatabaseError
-
-    if _is_mongodb_backend(schema_editor):
-        return
 
     ImageModel = apps.get_model('hexoweb', 'ImageModel')
     TalkModel = apps.get_model('hexoweb', 'TalkModel')

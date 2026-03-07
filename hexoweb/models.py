@@ -74,7 +74,7 @@ class NameBasedManager(models.Manager):
 
 class Cache(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.TextField()
+    name = models.TextField(db_index=True)
     content = models.TextField(blank=True)
 
     objects = NameBasedManager()
@@ -82,7 +82,7 @@ class Cache(models.Model):
 
 class SettingModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.TextField()
+    name = models.TextField(db_index=True)
     content = models.TextField(blank=True)
 
     objects = NameBasedManager()
@@ -90,7 +90,7 @@ class SettingModel(models.Model):
 
 class ImageModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.TextField()
+    name = models.TextField(db_index=True)
     url = models.TextField()
     size = models.TextField()
     date = models.TextField()
@@ -108,7 +108,7 @@ class FriendModel(models.Model):
     name = models.TextField(blank=False)
     url = models.TextField(blank=False)
     imageUrl = models.TextField()
-    time = models.TextField(blank=False)
+    time = models.TextField(blank=False, db_index=True)
     description = models.TextField()
     status = models.BooleanField(default=True, db_index=True)
 
@@ -121,7 +121,7 @@ class NotificationModel(models.Model):
 
 class CustomModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.TextField()
+    name = models.TextField(db_index=True)
     content = models.TextField(blank=True)
 
     objects = NameBasedManager()
@@ -145,7 +145,7 @@ class TalkModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     content = models.TextField(blank=True)
     tags = models.TextField(blank=True)
-    time = models.TextField()
+    time = models.TextField(db_index=True)
     like = models.TextField(blank=True, default="[]")
     values = models.TextField(default="{}")
 
@@ -159,7 +159,7 @@ class PostModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.TextField(blank=False)
     filename = models.TextField(blank=False)
-    path = models.TextField(blank=False)
+    path = models.TextField(blank=False, db_index=True)
     date = models.FloatField(db_index=True)
     front_matter = models.TextField(blank=True, default="{}")
     status = models.BooleanField(default=True, db_index=True)

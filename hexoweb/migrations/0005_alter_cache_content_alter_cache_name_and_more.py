@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='cache',
             name='name',
-            field=models.TextField(db_index=True),
+            field=models.TextField(),
         ),
         migrations.AlterField(
             model_name='custommodel',
@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='custommodel',
             name='name',
-            field=models.TextField(db_index=True),
+            field=models.TextField(),
         ),
         migrations.AlterField(
             model_name='friendmodel',
@@ -48,7 +48,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='friendmodel',
             name='time',
-            field=models.TextField(db_index=True),
+            field=models.TextField(),
         ),
         migrations.AlterField(
             model_name='friendmodel',
@@ -68,7 +68,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='imagemodel',
             name='name',
-            field=models.TextField(db_index=True),
+            field=models.TextField(),
         ),
         migrations.AlterField(
             model_name='imagemodel',
@@ -113,7 +113,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='postmodel',
             name='path',
-            field=models.TextField(db_index=True),
+            field=models.TextField(),
         ),
         migrations.AlterField(
             model_name='postmodel',
@@ -128,7 +128,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='settingmodel',
             name='name',
-            field=models.TextField(db_index=True),
+            field=models.TextField(),
         ),
         migrations.AlterField(
             model_name='talkmodel',
@@ -148,7 +148,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='talkmodel',
             name='time',
-            field=models.TextField(db_index=True),
+            field=models.TextField(),
         ),
         migrations.AlterField(
             model_name='talkmodel',

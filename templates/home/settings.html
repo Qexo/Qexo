@@ -245,6 +245,26 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">cf-turnstile站点密钥</label>
+                                            <input type="text" name="turnstile-site-token"
+                                                   class="form-control"
+                                                   placeholder="cf-turnstile站点密钥"
+                                                   value="{{ LOGIN_TURNSTILE_SITE_TOKEN }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">cf-turnstile密钥</label>
+                                            <input type="text" name="turnstile-server-token"
+                                                   class="form-control"
+                                                   placeholder="cf-turnstile密钥"
+                                                   value="{{ LOGIN_TURNSTILE_SERVER_TOKEN }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
                                         <input type="button" class="btn btn-primary"
                                                value="{{ "SUBMIT" | gettext }}"
                                                onclick="submit_security_config()">

@@ -248,6 +248,8 @@ def set_security(request):
         save_setting("LOGIN_RECAPTCHA_SITE_TOKEN", request.POST.get("site-token"))
         save_setting("LOGIN_RECAPTCHAV2_SERVER_TOKEN", request.POST.get("server-token-v2"))
         save_setting("LOGIN_RECAPTCHAV2_SITE_TOKEN", request.POST.get("site-token-v2"))
+        save_setting("LOGIN_TURNSTILE_SERVER_TOKEN", request.POST.get("turnstile-server-token"))
+        save_setting("LOGIN_TURNSTILE_SITE_TOKEN", request.POST.get("turnstile-site-token"))
         context = {"msg": gettext("SAVE_SUCCESS"), "status": True}
     except Exception as e:
         logging.error(repr(e))

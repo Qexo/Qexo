@@ -10,6 +10,15 @@
         box-shadow: none !important;
         outline: none !important;
     }
+
+    .captcha-wrap {
+        margin-top: 1rem;
+        width: 100%;
+    }
+
+    .captcha-wrap .cf-turnstile {
+        width: 100%;
+    }
 </style>
 {% endblock stylesheets %}
 
@@ -46,7 +55,9 @@
                                 <div class="g-recaptcha" data-sitekey="{{ site_token_v2 }}"></div>
                             {% endif %}
                             {% if turnstile_site_token %}
-                                <div class="cf-turnstile" data-sitekey="{{ turnstile_site_token }}"></div>
+                                <div class="captcha-wrap">
+                                    <div class="cf-turnstile" data-sitekey="{{ turnstile_site_token }}" data-size="flexible"></div>
+                                </div>
                             {% endif %}
                             <input type="hidden" name="passkeys" id="passkeys"/>
                         </form>

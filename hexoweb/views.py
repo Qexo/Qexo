@@ -56,10 +56,14 @@ def login_view(request):
     server_token = get_setting_cached("LOGIN_RECAPTCHA_SERVER_TOKEN")
     site_token_v2 = get_setting_cached("LOGIN_RECAPTCHAV2_SITE_TOKEN")
     server_token_v2 = get_setting_cached("LOGIN_RECAPTCHAV2_SERVER_TOKEN")
+    turnstile_site_token = get_setting_cached("LOGIN_TURNSTILE_SITE_TOKEN")
+    turnstile_server_token = get_setting_cached("LOGIN_TURNSTILE_SERVER_TOKEN")
     if site_token and server_token:
         context["site_token"] = site_token
     if site_token_v2 and server_token_v2 and not context.get("site_token"):
         context["site_token_v2"] = site_token_v2
+    if turnstile_site_token and turnstile_server_token and not context.get("site_token") and not context.get("site_token_v2"):
+        context["turnstile_site_token"] = turnstile_site_token
     
     # Check if any user has registered passkey
     try:
@@ -584,6 +588,8 @@ def pages(request):
                 context["LOGIN_RECAPTCHA_SERVER_TOKEN"] = get_setting_cached("LOGIN_RECAPTCHA_SERVER_TOKEN")
                 context["LOGIN_RECAPTCHAV2_SITE_TOKEN"] = get_setting_cached("LOGIN_RECAPTCHAV2_SITE_TOKEN")
                 context["LOGIN_RECAPTCHAV2_SERVER_TOKEN"] = get_setting_cached("LOGIN_RECAPTCHAV2_SERVER_TOKEN")
+                context["LOGIN_TURNSTILE_SITE_TOKEN"] = get_setting_cached("LOGIN_TURNSTILE_SITE_TOKEN")
+                context["LOGIN_TURNSTILE_SERVER_TOKEN"] = get_setting_cached("LOGIN_TURNSTILE_SERVER_TOKEN")
                 # Get Provider Settings
                 context["PROVIDER"] = get_setting_cached("PROVIDER")
                 all_provider = all_providers()

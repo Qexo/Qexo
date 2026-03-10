@@ -54,6 +54,19 @@ def auth(request):
             else:
                 logging.info(gettext("CAPTCHA_NO"))
                 return JsonResponse(safe=False, data={"msg": gettext("CAPTCHA_FAILED"), "status": False})
+        elif request.POST.get("type") == "turnstile":
+            token = get_setting_cached("LOGIN_TURNSTILE_SERVER_TOKEN")
+            if verify:
+                captcha = requests.post(
+                    "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+                    data={"secret": token, "response": verify}
+                ).json()
+                if not captcha.get("success"):
+                    logging.info(gettext("CAPTCHA_RESULT").format("turnstile", str(captcha)))
+                    return JsonResponse(safe=False, data={"msg": gettext("CAPTCHA_FAILED"), "status": False})
+            else:
+                logging.info(gettext("CAPTCHA_NO"))
+                return JsonResponse(safe=False, data={"msg": gettext("CAPTCHA_FAILED"), "status": False})
         # Passkey backend requires request to be provided
         user = authenticate(request, username=username, password=password)
         if user is not None:

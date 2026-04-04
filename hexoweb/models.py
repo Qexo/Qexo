@@ -99,7 +99,8 @@ class ImageModel(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=['-date']),  # 倒序索引用于按日期倒序查询
+            # Note: 'name' field already has db_index=True, no need for explicit index
+            models.Index(fields=['-date']),  # 倒序索引，常用于按时间倒序查询
         ]
 
 class FriendModel(models.Model):
@@ -110,6 +111,9 @@ class FriendModel(models.Model):
     time = models.TextField(blank=False, db_index=True)
     description = models.TextField()
     status = models.BooleanField(default=True, db_index=True)
+
+    # Note: 'time' and 'status' fields already have db_index=True, no need for explicit indexes
+
 
 class NotificationModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -124,6 +128,9 @@ class CustomModel(models.Model):
     content = models.TextField(blank=True)
 
     objects = NameBasedManager()
+
+    # Note: 'name' field already has db_index=True, no need for explicit index
+
 
 class StatisticUV(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -150,7 +157,8 @@ class TalkModel(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=['-time']),  # 倒序索引用于按时间倒序查询
+            # Note: 'time' field already has db_index=True for forward index
+            models.Index(fields=['-time']),  # 倒序索引
         ]
 
 class PostModel(models.Model):
@@ -164,5 +172,6 @@ class PostModel(models.Model):
 
     class Meta:
         indexes = [
+            # Note: 'path', 'date', and 'status' fields already have db_index=True for forward indexes
             models.Index(fields=['-date']),  # 倒序索引，用于按日期倒序查询
         ]

@@ -10,6 +10,68 @@
 # - Other DBs: Only creates reverse indexes (forward indexes come from db_index=True)
 
 from django.db import migrations, models
+import logging
+
+
+logger = logging.getLogger(__name__)
+
+
+def is_mongodb_backend(schema_editor):
+    """Use the same MongoDB detection approach as later migrations."""
+    is_mongodb = (
+        'mongodb' in schema_editor.connection.vendor.lower()
+        if hasattr(schema_editor.connection, 'vendor')
+        else False
+    )
+
+    if not is_mongodb and hasattr(schema_editor.connection, 'settings_dict'):
+        engine = schema_editor.connection.settings_dict.get('ENGINE', '')
+        is_mongodb = 'mongodb' in engine.lower()
+
+    return is_mongodb
+
+
+def add_reverse_text_indexes_if_supported(apps, schema_editor):
+    from django.db.utils import DatabaseError, NotSupportedError
+
+    if is_mongodb_backend(schema_editor):
+        logger.info("Skip adding reverse TEXT indexes on MongoDB backend.")
+        return
+
+    ImageModel = apps.get_model('hexoweb', 'ImageModel')
+    TalkModel = apps.get_model('hexoweb', 'TalkModel')
+    indexes = [
+        (ImageModel, models.Index(fields=['-date'], name='hexoweb_ima_date_dee9c4_idx')),
+        (TalkModel, models.Index(fields=['-time'], name='hexoweb_tal_time_7eb94e_idx')),
+    ]
+
+    for model, index in indexes:
+        try:
+            schema_editor.add_index(model, index)
+        except (DatabaseError, NotSupportedError, NotImplementedError) as exc:
+            # Some backends (e.g. MySQL on TEXT/BLOB) cannot create these indexes.
+            logger.warning("Skip creating index %s on %s due to backend limitation: %s", index.name, model._meta.db_table, exc)
+
+
+def remove_reverse_text_indexes_if_present(apps, schema_editor):
+    from django.db.utils import DatabaseError, NotSupportedError
+
+    if is_mongodb_backend(schema_editor):
+        logger.info("Skip removing reverse TEXT indexes on MongoDB backend.")
+        return
+
+    ImageModel = apps.get_model('hexoweb', 'ImageModel')
+    TalkModel = apps.get_model('hexoweb', 'TalkModel')
+    indexes = [
+        (ImageModel, models.Index(fields=['-date'], name='hexoweb_ima_date_dee9c4_idx')),
+        (TalkModel, models.Index(fields=['-time'], name='hexoweb_tal_time_7eb94e_idx')),
+    ]
+
+    for model, index in indexes:
+        try:
+            schema_editor.remove_index(model, index)
+        except (DatabaseError, NotSupportedError, NotImplementedError) as exc:
+            logger.warning("Skip removing index %s on %s because it is unavailable: %s", index.name, model._meta.db_table, exc)
 
 
 class Migration(migrations.Migration):
@@ -23,12 +85,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='cache',
             name='name',
-            field=models.TextField(db_index=True, max_length=2147483647),
+            field=models.TextField(max_length=2147483647),
         ),
         migrations.AlterField(
             model_name='custommodel',
             name='name',
-            field=models.TextField(db_index=True, max_length=2147483647),
+            field=models.TextField(max_length=2147483647),
         ),
         migrations.AlterField(
             model_name='friendmodel',
@@ -38,12 +100,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='friendmodel',
             name='time',
-            field=models.TextField(db_index=True, max_length=2147483647),
+            field=models.TextField(max_length=2147483647),
         ),
         migrations.AlterField(
             model_name='imagemodel',
             name='name',
-            field=models.TextField(db_index=True, max_length=2147483647),
+            field=models.TextField(max_length=2147483647),
         ),
         migrations.AlterField(
             model_name='postmodel',
@@ -53,7 +115,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='postmodel',
             name='path',
-            field=models.TextField(db_index=True, max_length=2147483647),
+            field=models.TextField(max_length=2147483647),
         ),
         migrations.AlterField(
             model_name='postmodel',
@@ -63,7 +125,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='settingmodel',
             name='name',
-            field=models.TextField(db_index=True, max_length=2147483647),
+            field=models.TextField(max_length=2147483647),
         ),
         migrations.AlterField(
             model_name='statisticpv',
@@ -82,15 +144,25 @@ class Migration(migrations.Migration):
         ),
         # Add only reverse indexes (forward indexes come from db_index=True)
         migrations.AddIndex(
-            model_name='imagemodel',
-            index=models.Index(fields=['-date'], name='hexoweb_ima_date_dee9c4_idx'),
-        ),
-        migrations.AddIndex(
             model_name='postmodel',
             index=models.Index(fields=['-date'], name='hexoweb_pos_date_38e4f3_idx'),
         ),
-        migrations.AddIndex(
-            model_name='talkmodel',
-            index=models.Index(fields=['-time'], name='hexoweb_tal_time_7eb94e_idx'),
+        migrations.SeparateDatabaseAndState(
+            database_operations=[
+                migrations.RunPython(
+                    add_reverse_text_indexes_if_supported,
+                    remove_reverse_text_indexes_if_present,
+                ),
+            ],
+            state_operations=[
+                migrations.AddIndex(
+                    model_name='imagemodel',
+                    index=models.Index(fields=['-date'], name='hexoweb_ima_date_dee9c4_idx'),
+                ),
+                migrations.AddIndex(
+                    model_name='talkmodel',
+                    index=models.Index(fields=['-time'], name='hexoweb_tal_time_7eb94e_idx'),
+                ),
+            ],
         ),
     ]

@@ -74,7 +74,7 @@ class NameBasedManager(models.Manager):
 
 class Cache(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.TextField(db_index=True)
+    name = models.TextField(blank=False, db_index=True)
     content = models.TextField(blank=True)
 
     objects = NameBasedManager()
@@ -82,7 +82,7 @@ class Cache(models.Model):
 
 class SettingModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.TextField(db_index=True)
+    name = models.TextField(blank=False, db_index=True)
     content = models.TextField(blank=True)
 
     objects = NameBasedManager()
@@ -90,7 +90,7 @@ class SettingModel(models.Model):
 
 class ImageModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.TextField(db_index=True)
+    name = models.TextField(blank=False, db_index=True)
     url = models.TextField()
     size = models.TextField()
     date = models.TextField()
@@ -102,7 +102,6 @@ class ImageModel(models.Model):
             # Note: 'name' field already has db_index=True, no need for explicit index
             models.Index(fields=['-date']),  # 倒序索引，常用于按时间倒序查询
         ]
-
 
 class FriendModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -125,7 +124,7 @@ class NotificationModel(models.Model):
 
 class CustomModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.TextField(db_index=True)
+    name = models.TextField(blank=False, db_index=True)
     content = models.TextField(blank=True)
 
     objects = NameBasedManager()
@@ -152,7 +151,7 @@ class TalkModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     content = models.TextField(blank=True)
     tags = models.TextField(blank=True)
-    time = models.TextField(db_index=True)
+    time = models.TextField(blank=False, db_index=True)
     like = models.TextField(blank=True, default="[]")
     values = models.TextField(default="{}")
 
@@ -161,7 +160,6 @@ class TalkModel(models.Model):
             # Note: 'time' field already has db_index=True for forward index
             models.Index(fields=['-time']),  # 倒序索引
         ]
-
 
 class PostModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

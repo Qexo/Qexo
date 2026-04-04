@@ -10,6 +10,7 @@
 # - Other DBs: Only creates reverse indexes (forward indexes come from db_index=True)
 
 from django.db import migrations, models
+import logging
 
 
 logger = logging.getLogger(__name__)

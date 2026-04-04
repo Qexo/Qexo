@@ -9,9 +9,12 @@ from django.db import migrations, models
 logger = logging.getLogger(__name__)
 
 
-def add_reverse_text_indexes_if_supported(apps, schema_editor):
+def add_text_db_indexes_if_supported(apps, schema_editor):
     from django.db.utils import DatabaseError
 
+    Cache = apps.get_model('hexoweb', 'Cache')
+    CustomModel = apps.get_model('hexoweb', 'CustomModel')
+    FriendModel = apps.get_model('hexoweb', 'FriendModel')
     ImageModel = apps.get_model('hexoweb', 'ImageModel')
     TalkModel = apps.get_model('hexoweb', 'TalkModel')
     indexes = [
@@ -23,11 +26,11 @@ def add_reverse_text_indexes_if_supported(apps, schema_editor):
         try:
             schema_editor.add_index(model, index)
         except DatabaseError as exc:
-            # Some backends (e.g. MySQL on TEXT/BLOB) cannot create these indexes.
+            # Some backends do not support indexing these TEXT/BLOB columns.
             logger.warning("Skip creating index %s on %s due to backend limitation: %s", index.name, model._meta.db_table, exc)
 
 
-def remove_reverse_text_indexes_if_present(apps, schema_editor):
+def remove_text_db_indexes_if_present(apps, schema_editor):
     from django.db.utils import DatabaseError
 
     ImageModel = apps.get_model('hexoweb', 'ImageModel')

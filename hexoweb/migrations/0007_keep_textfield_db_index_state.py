@@ -15,8 +15,27 @@ from django.db import migrations, models
 logger = logging.getLogger(__name__)
 
 
+def is_mongodb_backend(schema_editor):
+    """Reuse migration 0006-style MongoDB backend detection."""
+    is_mongodb = (
+        'mongodb' in schema_editor.connection.vendor.lower()
+        if hasattr(schema_editor.connection, 'vendor')
+        else False
+    )
+
+    if not is_mongodb and hasattr(schema_editor.connection, 'settings_dict'):
+        engine = schema_editor.connection.settings_dict.get('ENGINE', '')
+        is_mongodb = 'mongodb' in engine.lower()
+
+    return is_mongodb
+
+
 def add_text_db_indexes_if_supported(apps, schema_editor):
-    from django.db.utils import DatabaseError
+    from django.db.utils import DatabaseError, NotSupportedError
+
+    if is_mongodb_backend(schema_editor):
+        logger.info("Skip adding TEXT db indexes on MongoDB backend.")
+        return
 
     Cache = apps.get_model('hexoweb', 'Cache')
     CustomModel = apps.get_model('hexoweb', 'CustomModel')
@@ -39,13 +58,17 @@ def add_text_db_indexes_if_supported(apps, schema_editor):
     for model, index in indexes:
         try:
             schema_editor.add_index(model, index)
-        except DatabaseError as exc:
+        except (DatabaseError, NotSupportedError, NotImplementedError) as exc:
             # Some backends do not support indexing these TEXT/BLOB columns.
             logger.warning("Skip creating index %s on %s due to backend limitation: %s", index.name, model._meta.db_table, exc)
 
 
 def remove_text_db_indexes_if_present(apps, schema_editor):
-    from django.db.utils import DatabaseError
+    from django.db.utils import DatabaseError, NotSupportedError
+
+    if is_mongodb_backend(schema_editor):
+        logger.info("Skip removing TEXT db indexes on MongoDB backend.")
+        return
 
     Cache = apps.get_model('hexoweb', 'Cache')
     CustomModel = apps.get_model('hexoweb', 'CustomModel')
@@ -68,7 +91,7 @@ def remove_text_db_indexes_if_present(apps, schema_editor):
     for model, index in indexes:
         try:
             schema_editor.remove_index(model, index)
-        except DatabaseError as exc:
+        except (DatabaseError, NotSupportedError, NotImplementedError) as exc:
             logger.warning("Skip removing index %s on %s because it is unavailable: %s", index.name, model._meta.db_table, exc)
 
 

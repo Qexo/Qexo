@@ -165,7 +165,9 @@ class FriendModelTests(TestCase):
         friend = FriendModel.objects.create(
             name="Test Friend",
             url="https://example.com",
-            time="2025-01-01"
+            imageUrl="https://example.com/default-avatar.jpg",
+            time="2025-01-01",
+            description="Default friend description"
         )
         self.assertTrue(friend.status)
 
@@ -413,7 +415,9 @@ class ModelFieldValidationTests(TestCase):
         friend = FriendModel.objects.create(
             name="Friend & Co. #1",
             url="https://example.com",
-            time="2025-01-01"
+            imageUrl="https://example.com/friend-special.jpg",
+            time="2025-01-01",
+            description="Friend with special chars"
         )
         self.assertIn("&", friend.name)
     
@@ -545,7 +549,9 @@ class AdvancedQueryTests(TestCase):
             FriendModel.objects.create(
                 name=f"Friend{i}",
                 url=f"https://example{i}.com",
+                imageUrl=f"https://example{i}.com/avatar.jpg",
                 time="2025-01-01",
+                description=f"Friend {i} description",
                 status=True
             )
         
@@ -554,9 +560,9 @@ class AdvancedQueryTests(TestCase):
     
     def test_image_filter_by_type(self):
         """测试按类型过滤 Image"""
-        ImageModel.objects.create(name="img1.jpg", url="http://ex.com/1", date="2025-01-01", type="jpg")
-        ImageModel.objects.create(name="img2.png", url="http://ex.com/2", date="2025-01-01", type="png")
-        ImageModel.objects.create(name="img3.jpg", url="http://ex.com/3", date="2025-01-01", type="jpg")
+        ImageModel.objects.create(name="img1.jpg", url="http://ex.com/1", size="100KB", date="2025-01-01", type="jpg")
+        ImageModel.objects.create(name="img2.png", url="http://ex.com/2", size="120KB", date="2025-01-01", type="png")
+        ImageModel.objects.create(name="img3.jpg", url="http://ex.com/3", size="110KB", date="2025-01-01", type="jpg")
         
         jpg_images = ImageModel.objects.filter(type="jpg")
         self.assertEqual(jpg_images.count(), 2)
@@ -715,12 +721,16 @@ class DatabaseConsistencyTests(TestCase):
         FriendModel.objects.create(
             name="Friend1",
             url="https://example.com",
-            time="2025-01-01"
+            imageUrl="https://example.com/friend1.jpg",
+            time="2025-01-01",
+            description="Friend 1"
         )
         FriendModel.objects.create(
             name="Friend2",
             url="https://example.com",
-            time="2025-01-01"
+            imageUrl="https://example.com/friend2.jpg",
+            time="2025-01-01",
+            description="Friend 2"
         )
         
         same_url = FriendModel.objects.filter(url="https://example.com")
@@ -806,8 +816,22 @@ class QuerySetOperationTests(TestCase):
     
     def test_queryset_distinct(self):
         """测试 QuerySet distinct 操作"""
-        FriendModel.objects.create(name="Friend", url="https://ex.com", time="2025-01-01", status=True)
-        FriendModel.objects.create(name="Friend", url="https://ex.com", time="2025-01-01", status=True)
+        FriendModel.objects.create(
+            name="Friend",
+            url="https://ex.com",
+            imageUrl="https://ex.com/friend.jpg",
+            time="2025-01-01",
+            description="Friend distinct 1",
+            status=True
+        )
+        FriendModel.objects.create(
+            name="Friend",
+            url="https://ex.com",
+            imageUrl="https://ex.com/friend2.jpg",
+            time="2025-01-01",
+            description="Friend distinct 2",
+            status=True
+        )
         
         distinct_friends = FriendModel.objects.values("name").distinct()
         self.assertEqual(distinct_friends.count(), 1)
@@ -971,7 +995,9 @@ class BusinessLogicTests(TestCase):
             friend = FriendModel.objects.create(
                 name=f"Friend {i}",
                 url=f"https://friend{i}.com",
+                imageUrl=f"https://friend{i}.com/avatar.jpg",
                 time="2025-01-01",
+                description=f"Friend {i} description",
                 status=True
             )
             friends.append(friend)

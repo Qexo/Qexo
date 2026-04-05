@@ -4,7 +4,6 @@
 import logging
 
 from django.db import migrations, models
-import logging
 
 
 logger = logging.getLogger(__name__)
@@ -42,7 +41,7 @@ def add_reverse_text_indexes_if_supported(apps, schema_editor):
     for model, index in indexes:
         try:
             schema_editor.add_index(model, index)
-        except (DatabaseError, NotSupportedError, NotImplementedError) as exc:
+        except (DatabaseError, NotSupportedError, NotImplementedError, AttributeError) as exc:
             # Some backends (e.g. MySQL on TEXT/BLOB) cannot create these indexes.
             logger.warning("Skip creating index %s on %s due to backend limitation: %s", index.name, model._meta.db_table, exc)
 
@@ -64,45 +63,7 @@ def remove_reverse_text_indexes_if_present(apps, schema_editor):
     for model, index in indexes:
         try:
             schema_editor.remove_index(model, index)
-        except (DatabaseError, NotSupportedError, NotImplementedError) as exc:
-            logger.warning("Skip removing index %s on %s because it is unavailable: %s", index.name, model._meta.db_table, exc)
-
-
-logger = logging.getLogger(__name__)
-
-
-def add_reverse_text_indexes_if_supported(apps, schema_editor):
-    from django.db.utils import DatabaseError
-
-    ImageModel = apps.get_model('hexoweb', 'ImageModel')
-    TalkModel = apps.get_model('hexoweb', 'TalkModel')
-    indexes = [
-        (ImageModel, models.Index(fields=['-date'], name='hexoweb_ima_date_dee9c4_idx')),
-        (TalkModel, models.Index(fields=['-time'], name='hexoweb_tal_time_7eb94e_idx')),
-    ]
-
-    for model, index in indexes:
-        try:
-            schema_editor.add_index(model, index)
-        except DatabaseError as exc:
-            # Some backends (e.g. MySQL on TEXT/BLOB) cannot create these indexes.
-            logger.warning("Skip creating index %s on %s due to backend limitation: %s", index.name, model._meta.db_table, exc)
-
-
-def remove_reverse_text_indexes_if_present(apps, schema_editor):
-    from django.db.utils import DatabaseError
-
-    ImageModel = apps.get_model('hexoweb', 'ImageModel')
-    TalkModel = apps.get_model('hexoweb', 'TalkModel')
-    indexes = [
-        (ImageModel, models.Index(fields=['-date'], name='hexoweb_ima_date_dee9c4_idx')),
-        (TalkModel, models.Index(fields=['-time'], name='hexoweb_tal_time_7eb94e_idx')),
-    ]
-
-    for model, index in indexes:
-        try:
-            schema_editor.remove_index(model, index)
-        except DatabaseError as exc:
+        except (DatabaseError, NotSupportedError, NotImplementedError, AttributeError) as exc:
             logger.warning("Skip removing index %s on %s because it is unavailable: %s", index.name, model._meta.db_table, exc)
 
 

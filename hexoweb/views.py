@@ -188,6 +188,7 @@ def logout_view(request):
 def migrate_view(request):
     context = {}
     if request.method == "POST":
+        status_code = 200
         try:
             if request.POST.get("type") == "export":
                 exports = dict()
@@ -205,37 +206,35 @@ def migrate_view(request):
                 response['Content-Type'] = 'application/octet-stream'
                 response['Content-Disposition'] = 'attachment;filename="qexo-export.json"'
                 return response
-            elif request.POST.get("type") == "import_settings":
-                import_settings(json.loads(request.POST.get("data")))
-                context["msg"] = gettext("MIGRATE_CONFIG_SUCCESS")
-            elif request.POST.get("type") == "import_images":
-                import_images(json.loads(request.POST.get("data")))
-                context["msg"] = gettext("MIGRATE_IMAGE_SUCCESS")
-            elif request.POST.get("type") == "import_friends":
-                import_friends(json.loads(request.POST.get("data")))
-                context["msg"] = gettext("MIGRATE_FLINKS_SUCCESS")
-            elif request.POST.get("type") == "import_notifications":
-                import_notifications(json.loads(request.POST.get("data")))
-                context["msg"] = gettext("MIGRATE_MSG_SUCCESS")
-            elif request.POST.get("type") == "import_custom":
-                import_custom(json.loads(request.POST.get("data")))
-                context["msg"] = gettext("MIGRATE_CUSTOM_SUCCESS")
-            elif request.POST.get("type") == "import_uv":
-                import_uv(json.loads(request.POST.get("data")))
-                context["msg"] = gettext("MIGRATE_UV_SUCCESS")
-            elif request.POST.get("type") == "import_pv":
-                import_pv(json.loads(request.POST.get("data")))
-                context["msg"] = gettext("MIGRATE_PV_SUCCESS")
-            elif request.POST.get("type") == "import_talks":
-                import_talks(json.loads(request.POST.get("data")))
-                context["msg"] = gettext("MIGRATE_TALKS_SUCCESS")
-            elif request.POST.get("type") == "import_posts":
-                import_posts(json.loads(request.POST.get("data")))
-                context["msg"] = gettext("MIGRATE_POST_SUCCESS")
+            import_actions = {
+                "import_settings": (import_settings, "MIGRATE_CONFIG_SUCCESS"),
+                "import_images": (import_images, "MIGRATE_IMAGE_SUCCESS"),
+                "import_friends": (import_friends, "MIGRATE_FLINKS_SUCCESS"),
+                "import_notifications": (import_notifications, "MIGRATE_MSG_SUCCESS"),
+                "import_custom": (import_custom, "MIGRATE_CUSTOM_SUCCESS"),
+                "import_uv": (import_uv, "MIGRATE_UV_SUCCESS"),
+                "import_pv": (import_pv, "MIGRATE_PV_SUCCESS"),
+                "import_talks": (import_talks, "MIGRATE_TALKS_SUCCESS"),
+                "import_posts": (import_posts, "MIGRATE_POST_SUCCESS"),
+            }
+
+            action_type = request.POST.get("type")
+            if action_type in import_actions:
+                import_func, success_i18n_key = import_actions[action_type]
+                imported = import_func(json.loads(request.POST.get("data")))
+                if imported:
+                    context["msg"] = gettext(success_i18n_key)
+                else:
+                    status_code = 400
+                    context["msg"] = gettext("MIGRATE_FAILED").format(action_type, gettext("OPERATION_FAILED"))
+            elif action_type != "export":
+                status_code = 400
+                context["msg"] = gettext("MIGRATE_FAILED").format(action_type, gettext("OPERATION_FAILED"))
         except Exception as error:
+            status_code = 500
             logging.error(gettext("MIGRATE_FAILED").format(request.POST.get("type"), repr(error)))
             context["msg"] = gettext("MIGRATE_FAILED").format(request.POST.get("type"), repr(error))
-        return JsonResponse(safe=False, data=context)
+        return JsonResponse(safe=False, data=context, status=status_code)
     else:
         context = get_custom_config()
     return render(request, "accounts/migrate.html", context)

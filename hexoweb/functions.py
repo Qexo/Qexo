@@ -17,6 +17,7 @@ import unicodedata
 import yaml
 from bs4 import BeautifulSoup
 from django.core.management import execute_from_command_line
+from django.db import transaction
 from django.template.defaulttags import register
 from markdown import markdown
 from urllib3 import disable_warnings
@@ -1080,7 +1081,13 @@ def export_pv():
 def export_talks():
     return _export_model_data(
         TalkModel,
-        lambda item: {"content": item.content, "tags": item.tags, "time": item.time, "like": item.like}
+        lambda item: {
+            "content": item.content,
+            "tags": item.tags,
+            "time": item.time,
+            "like": item.like,
+            "values": item.values
+        }
     )
 
 
@@ -1098,15 +1105,74 @@ def export_posts():
     )
 
 
-def _bulk_import(model_class, data, field_mapping_func, model_name):
-    """通用批量导入函数"""
-    try:
-        # 删除现有数据
-        model_class.objects.all().delete()
+def _as_text_value(value, default=""):
+    if value is None:
+        return default
+    return str(value)
 
-        # 批量创建新对象
+
+def _as_bool_value(value, default=True):
+    if value is None:
+        return default
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return bool(value)
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in ["true", "1", "yes", "y", "是"]:
+            return True
+        if normalized in ["false", "0", "no", "n", "否"]:
+            return False
+    return default
+
+
+def _as_float_value(value, default=None):
+    if default is None:
+        default = time()
+    try:
+        return float(value)
+    except Exception:
+        return default
+
+
+def _as_int_value(value, default=0):
+    try:
+        return int(value)
+    except Exception:
+        return default
+
+
+def _as_json_text(value, default="{}"):
+    if value is None or value == "":
+        return default
+    if isinstance(value, (dict, list)):
+        return json.dumps(value, ensure_ascii=False)
+    return str(value)
+
+
+def _safe_get(item, key, default=""):
+    if not isinstance(item, dict):
+        raise TypeError(f"导入数据格式错误，预期对象，实际为: {type(item).__name__}")
+    return item.get(key, default)
+
+
+def _bulk_import(model_class, data, field_mapping_func, model_name):
+    """通用批量导入函数（事务安全，避免导入失败导致旧数据丢失）"""
+    try:
+        if data is None:
+            data = []
+        if not isinstance(data, list):
+            raise TypeError(f"导入数据必须是列表，实际为: {type(data).__name__}")
+
+        # 先完成映射，确保映射阶段异常不会触发删除
         objects = [field_mapping_func(item) for item in data]
-        model_class.objects.bulk_create(objects)
+
+        # 原子替换：删除+写入要么全部成功，要么全部回滚
+        with transaction.atomic():
+            model_class.objects.all().delete()
+            if objects:
+                model_class.objects.bulk_create(objects, batch_size=1000)
 
         logging.info(gettext("IMPORT_SUCCESS").format(model_name))
         return True
@@ -1120,8 +1186,8 @@ def import_settings(ss):
         SettingModel,
         ss,
         lambda s: SettingModel(
-            name=s["name"],
-            content=s["content"]
+            name=_as_text_value(_safe_get(s, "name", "")),
+            content=_as_text_value(_safe_get(s, "content", ""), "")
         ),
         "设置"
     )
@@ -1132,12 +1198,13 @@ def import_images(ss):
         ImageModel,
         ss,
         lambda s: ImageModel(
-            name=s["name"],
-            url=s["url"],
-            size=s["size"],
-            date=s["date"],
-            type=s["type"],
-            deleteConfig=s["deleteConfig"]
+            name=_as_text_value(_safe_get(s, "name", "")),
+            url=_as_text_value(_safe_get(s, "url", ""), ""),
+            size=_as_text_value(_safe_get(s, "size", ""), ""),
+            date=_as_text_value(_safe_get(s, "date", ""), ""),
+            type=_as_text_value(_safe_get(s, "type", ""), ""),
+            # 兼容旧版本备份可能缺失 deleteConfig
+            deleteConfig=_as_json_text(_safe_get(s, "deleteConfig", "{}"), "{}")
         ),
         "图片"
     )
@@ -1148,12 +1215,12 @@ def import_friends(ss):
         FriendModel,
         ss,
         lambda s: FriendModel(
-            name=s["name"],
-            url=s["url"],
-            imageUrl=s["imageUrl"],
-            time=s["time"],
-            description=s["description"],
-            status=s["status"]
+            name=_as_text_value(_safe_get(s, "name", "")),
+            url=_as_text_value(_safe_get(s, "url", ""), ""),
+            imageUrl=_as_text_value(_safe_get(s, "imageUrl", ""), ""),
+            time=_as_text_value(_safe_get(s, "time", str(time())), str(time())),
+            description=_as_text_value(_safe_get(s, "description", ""), ""),
+            status=_as_bool_value(_safe_get(s, "status", True), True)
         ),
         "友链"
     )
@@ -1164,9 +1231,9 @@ def import_notifications(ss):
         NotificationModel,
         ss,
         lambda s: NotificationModel(
-            time=s["time"],
-            label=s["label"],
-            content=s["content"]
+            time=_as_text_value(_safe_get(s, "time", str(time())), str(time())),
+            label=_as_text_value(_safe_get(s, "label", ""), ""),
+            content=_as_text_value(_safe_get(s, "content", ""), "")
         ),
         "通知"
     )
@@ -1177,8 +1244,8 @@ def import_custom(ss):
         CustomModel,
         ss,
         lambda s: CustomModel(
-            name=s["name"],
-            content=s["content"]
+            name=_as_text_value(_safe_get(s, "name", "")),
+            content=_as_text_value(_safe_get(s, "content", ""), "")
         ),
         "自定义"
     )
@@ -1188,7 +1255,7 @@ def import_uv(ss):
     return _bulk_import(
         StatisticUV,
         ss,
-        lambda s: StatisticUV(ip=s["ip"]),
+        lambda s: StatisticUV(ip=_as_text_value(_safe_get(s, "ip", "0.0.0.0"), "0.0.0.0")),
         "UV统计"
     )
 
@@ -1198,8 +1265,8 @@ def import_pv(ss):
         StatisticPV,
         ss,
         lambda s: StatisticPV(
-            url=s["url"],
-            number=s["number"]
+            url=_as_text_value(_safe_get(s, "url", ""), ""),
+            number=_as_int_value(_safe_get(s, "number", 0), 0)
         ),
         "PV统计"
     )
@@ -1210,10 +1277,11 @@ def import_talks(ss):
         TalkModel,
         ss,
         lambda s: TalkModel(
-            content=s["content"],
-            tags=s["tags"],
-            time=s["time"],
-            like=s["like"]
+            content=_as_text_value(_safe_get(s, "content", ""), ""),
+            tags=_as_text_value(_safe_get(s, "tags", ""), ""),
+            time=_as_text_value(_safe_get(s, "time", str(time())), str(time())),
+            like=_as_json_text(_safe_get(s, "like", "[]"), "[]"),
+            values=_as_json_text(_safe_get(s, "values", "{}"), "{}")
         ),
         "说说"
     )
@@ -1224,12 +1292,13 @@ def import_posts(ss):
         PostModel,
         ss,
         lambda s: PostModel(
-            title=s["title"],
-            path=s["path"],
-            status=s["status"],
-            front_matter=s["front_matter"],
-            date=s["date"],
-            filename=s["filename"]
+            title=_as_text_value(_safe_get(s, "title", ""), ""),
+            path=_as_text_value(_safe_get(s, "path", ""), ""),
+            status=_as_bool_value(_safe_get(s, "status", True), True),
+            front_matter=_as_json_text(_safe_get(s, "front_matter", "{}"), "{}"),
+            date=_as_float_value(_safe_get(s, "date", time()), time()),
+            # 兼容旧版本备份可能缺失 filename
+            filename=_as_text_value(_safe_get(s, "filename", _safe_get(s, "path", "")), "")
         ),
         "文章"
     )

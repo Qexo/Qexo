@@ -201,7 +201,11 @@
                         $("#query-modal3-body").html(html);
                     } else {
                         let html = $("#query-modal3-body").html();
-                        html += _type + " {{ "ERROR" | gettext }}...{{ "SKIP" | gettext }}<br>";
+                        if (res.responseJSON && res.responseJSON.msg) {
+                            html += res.responseJSON.msg + "<br>";
+                        } else {
+                            html += _type + " {{ "ERROR" | gettext }}...{{ "SKIP" | gettext }}<br>";
+                        }
                         $("#query-modal3-body").html(html);
                         $("#query-modal3-footer").html(`<button class="btn btn-primary" 
                         data-bs-dismiss="modal">{{ "FINISH" | gettext }}</button>`);

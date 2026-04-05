@@ -17,7 +17,7 @@ def remove_redundant_indexes_if_needed(apps, schema_editor):
     Remove redundant forward indexes only for non-MongoDB databases.
     These were created by earlier versions of migration 0004.
     """
-    from django.db.utils import ProgrammingError, OperationalError
+    from django.db.utils import ProgrammingError, OperationalError, NotSupportedError
     
     # Check if MongoDB is being used
     is_mongodb = 'mongodb' in schema_editor.connection.vendor.lower() if hasattr(schema_editor.connection, 'vendor') else False
@@ -61,7 +61,7 @@ def remove_redundant_indexes_if_needed(apps, schema_editor):
         try:
             index = models.Index(fields=fields, name=index_name)
             schema_editor.remove_index(model, index)
-        except (ProgrammingError, OperationalError):
+        except (ProgrammingError, OperationalError, NotSupportedError, NotImplementedError, AttributeError):
             # Index might not exist
             pass
 

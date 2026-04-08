@@ -245,6 +245,26 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">{{ "SET_SECURE_5" | gettext }}</label>
+                                            <input type="text" name="turnstile-site-token"
+                                                   class="form-control"
+                                                   placeholder="{{ "SET_SECURE_5_PH" | gettext }}"
+                                                   value="{{ LOGIN_TURNSTILE_SITE_TOKEN }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label class="form-control-label">{{ "SET_SECURE_6" | gettext }}</label>
+                                            <input type="text" name="turnstile-server-token"
+                                                   class="form-control"
+                                                   placeholder="{{ "SET_SECURE_6_PH" | gettext }}"
+                                                   value="{{ LOGIN_TURNSTILE_SERVER_TOKEN }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
                                         <input type="button" class="btn btn-primary"
                                                value="{{ "SUBMIT" | gettext }}"
                                                onclick="submit_security_config()">

@@ -10,6 +10,15 @@
         box-shadow: none !important;
         outline: none !important;
     }
+
+    .captcha-wrap {
+        margin-top: 1rem;
+        width: 100%;
+    }
+
+    .captcha-wrap .cf-turnstile {
+        width: 100%;
+    }
 </style>
 {% endblock stylesheets %}
 
@@ -45,6 +54,11 @@
                             {% if site_token_v2 %}
                                 <div class="g-recaptcha" data-sitekey="{{ site_token_v2 }}"></div>
                             {% endif %}
+                            {% if turnstile_site_token %}
+                                <div class="captcha-wrap">
+                                    <div class="cf-turnstile" data-sitekey="{{ turnstile_site_token }}" data-size="flexible"></div>
+                                </div>
+                            {% endif %}
                             <input type="hidden" name="passkeys" id="passkeys"/>
                         </form>
                         <div class="text-center" id="submit-button">
@@ -67,6 +81,9 @@
     {% endif %}
     {% if site_token %}
         <script src="https://recaptcha.google.cn/recaptcha/api.js?render={{ site_token }}"></script>
+    {% endif %}
+    {% if turnstile_site_token %}
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     {% endif %}
 {% endblock content %}
 
@@ -104,13 +121,22 @@
                 return false;
             }
         {% endif %}
+        {% if turnstile_site_token %}
+            let token = document.querySelector("input[name='cf-turnstile-response']")?.value;
+            if (!token) {
+                notyf.error("{{ "LOGIN_FAILED_3" | gettext }}");
+                $("#submit-button").html("<button onclick=\"submit()\" class=\"btn " +
+                    "btn-primary my-4\">{{ "LOGIN" | gettext }}</button>");
+                return false;
+            }
+        {% endif %}
         $.ajax({
             url: '/api/auth/',
             method: 'post',
             data: {
                 "username": $("input[name='username']").val(),
                 "password": $("input[name='password']").val(),
-                {% if site_token or site_token_v2 %}
+                {% if site_token or site_token_v2 or turnstile_site_token %}
                     "verify": token,
                 {% endif %}
                 {% if site_token_v2 %}
@@ -118,6 +144,9 @@
                 {% endif %}
                 {% if site_token %}
                     "type": "v3",
+                {% endif %}
+                {% if turnstile_site_token %}
+                    "type": "turnstile",
                 {% endif %}
             },
             dataType: "json",

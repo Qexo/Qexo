@@ -4,6 +4,7 @@
 @Blog      : https://www.oplog.cn
 """
 
+import json
 import requests
 import logging
 
@@ -76,7 +77,7 @@ class Main(Provider):
             response.encoding = "utf8"
             try:
                 url = response.json()
-            except ValueError:
+            except json.JSONDecodeError:
                 url = data
             if isinstance(url, (dict, list)):
                 for path in json_path:

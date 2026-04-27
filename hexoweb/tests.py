@@ -1423,7 +1423,7 @@ class CFImgBedProviderTests(SimpleTestCase):
     def test_upload_uses_plain_text_when_response_is_not_json(self, mock_post):
         mock_response = Mock()
         mock_response.text = "https://img.example.com/uploads/test.png"
-        mock_response.json.side_effect = ValueError("not json")
+        mock_response.json.side_effect = json.JSONDecodeError("not json", "", 0)
         mock_post.return_value = mock_response
 
         provider = CFImgBedMain(

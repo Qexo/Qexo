@@ -1503,7 +1503,7 @@ class CFImgBedProviderTests(SimpleTestCase):
         self.assertEqual(delete_config["delete_url"], "https://img.example.com/api/manage/delete/test.png")
 
     @patch("hexoweb.libs.image.providers.cfimgbed.requests.delete")
-    def test_delete_uses_official_api_with_auth_code_when_api_key_absent(self, mock_delete):
+    def test_delete_sends_auth_code_as_query_param(self, mock_delete):
         mock_delete.return_value = Mock(text='{"success": true}')
         config = {
             "provider": "CFImgBed",

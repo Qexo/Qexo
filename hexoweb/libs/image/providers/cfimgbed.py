@@ -18,17 +18,18 @@ def delete(config):
     headers = {}
     if config.get("api_key"):
         headers['Authorization'] = f"Bearer {config.get('api_key')}"
-    params = {}
     auth_code = config.get("auth_code")
-    if auth_code:
-        params["authCode"] = auth_code
 
     delete_url = config.get("delete_url")
     if not delete_url:
         logging.warning("Delete URL is not configured; remote delete is not supported.")
         return "Delete URL not configured; remote delete not supported."
 
-    response = requests.delete(delete_url, headers=headers, params=params)
+    response = requests.delete(
+        delete_url,
+        headers=headers,
+        params={"authCode": auth_code} if auth_code else None
+    )
     return response.text
 
 

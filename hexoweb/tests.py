@@ -1,16 +1,19 @@
 from django.core.management import call_command
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import connection, IntegrityError
 from django.test import SimpleTestCase, TransactionTestCase, TestCase, Client
 from django.urls import resolve, reverse
 from django.contrib.auth.models import User
 import json
 import uuid
+from unittest.mock import Mock, patch
 
 from hexoweb.models import (
     Cache, SettingModel, ImageModel, FriendModel, 
     NotificationModel, CustomModel, PostModel, TalkModel,
     StatisticUV, StatisticPV
 )
+from hexoweb.libs.image.providers.cfimgbed import Main as CFImgBedMain
 
 
 # ===== URL 烟雾测试 =====
@@ -1413,3 +1416,49 @@ class ErrorHandlingTests(TestCase):
         posts.delete()  # 不应该抛出异常
         
         self.assertEqual(PostModel.objects.filter(path="/nonexistent/path").count(), 0)
+
+
+class CFImgBedProviderTests(SimpleTestCase):
+    @patch("hexoweb.libs.image.providers.cfimgbed.requests.post")
+    def test_upload_uses_plain_text_when_response_is_not_json(self, mock_post):
+        mock_response = Mock()
+        mock_response.text = "https://img.example.com/uploads/test.png"
+        mock_response.json.side_effect = ValueError("not json")
+        mock_post.return_value = mock_response
+
+        provider = CFImgBedMain(
+            api="https://api.example.com/upload",
+            post_params="file",
+            json_path="0.src",
+            api_key="",
+            custom_url="",
+            delete_url="",
+        )
+        upload_file = SimpleUploadedFile("test.png", b"123", content_type="image/png")
+
+        url, delete_config = provider.upload(upload_file)
+
+        self.assertEqual(url, "https://img.example.com/uploads/test.png")
+        self.assertEqual(delete_config, {})
+
+    @patch("hexoweb.libs.image.providers.cfimgbed.requests.post")
+    def test_upload_keeps_json_path_behavior_for_json_response(self, mock_post):
+        mock_response = Mock()
+        mock_response.text = '[{"src":"/file/test.png"}]'
+        mock_response.json.return_value = [{"src": "/file/test.png"}]
+        mock_post.return_value = mock_response
+
+        provider = CFImgBedMain(
+            api="https://api.example.com/upload",
+            post_params="file",
+            json_path="0.src",
+            api_key="",
+            custom_url="https://img.example.com",
+            delete_url="",
+        )
+        upload_file = SimpleUploadedFile("test.png", b"123", content_type="image/png")
+
+        url, delete_config = provider.upload(upload_file)
+
+        self.assertEqual(url, "https://img.example.com/file/test.png")
+        self.assertEqual(delete_config, {})

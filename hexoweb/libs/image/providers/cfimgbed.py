@@ -4,7 +4,6 @@
 @Blog      : https://www.oplog.cn
 """
 
-import json
 import requests
 import logging
 
@@ -75,12 +74,16 @@ class Main(Provider):
         if self.json_path:
             json_path = self.json_path.split(".")
             response.encoding = "utf8"
-            url = json.loads(data)
-            for path in json_path:
-                if isinstance(url, list):  # 处理列表Index
-                    url = url[int(path)]
-                else:
-                    url = url[path]
+            try:
+                url = response.json()
+            except ValueError:
+                url = data
+            if isinstance(url, (dict, list)):
+                for path in json_path:
+                    if isinstance(url, list):  # 处理列表Index
+                        url = url[int(path)]
+                    else:
+                        url = url[path]
         else:
             url = data
             

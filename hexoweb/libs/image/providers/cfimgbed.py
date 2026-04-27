@@ -51,11 +51,11 @@ class Main(Provider):
             api_key="",
             auth_code="",
             custom_url="",
-            upload_channel="telegram",
+            upload_channel="",
             channel_name="",
-            server_compress=True,
-            auto_retry=True,
-            return_format="default",
+            server_compress=None,
+            auto_retry=None,
+            return_format="",
             upload_folder="",
             upload_name_type="default",
             json_path="0.src",
@@ -64,17 +64,17 @@ class Main(Provider):
             **kwargs
     ):
         self.api = api
-        self.post_params = post_params or kwargs.get("post_params") or "file"
+        self.post_params = post_params
         self.json_path = json_path
         self.api_key = api_key
         self.custom_url = custom_url
         self.delete_url = delete_url
         self.auth_code = auth_code
-        self.upload_channel = upload_channel or "telegram"
+        self.upload_channel = upload_channel
         self.channel_name = channel_name
         self.server_compress = server_compress
         self.auto_retry = auto_retry
-        self.return_format = return_format or "default"
+        self.return_format = return_format
         self.upload_folder = upload_folder
         self.upload_name_type = upload_name_type
 
@@ -97,8 +97,11 @@ class Main(Provider):
         if self.channel_name:
             params["channelName"] = self.channel_name
 
-        params["serverCompress"] = self._format_bool(self.server_compress, True)
-        params["autoRetry"] = self._format_bool(self.auto_retry, True)
+        if self._should_include_param(self.server_compress):
+            params["serverCompress"] = self._format_bool(self.server_compress, True)
+
+        if self._should_include_param(self.auto_retry):
+            params["autoRetry"] = self._format_bool(self.auto_retry, True)
 
         if self.return_format:
             params["returnFormat"] = self.return_format
@@ -163,7 +166,10 @@ class Main(Provider):
         if not d_path:
             return ""
         delete_base = self.delete_url.rstrip("/") if self.delete_url else f"{self._base_url()}/api/manage/delete"
-        if not delete_base or delete_base == "/api/manage/delete":
+        if not delete_base:
+            return ""
+        parsed_delete_base = urlsplit(delete_base)
+        if not (parsed_delete_base.scheme and parsed_delete_base.netloc):
             return ""
         return f"{delete_base}/{d_path}"
 
@@ -188,3 +194,7 @@ class Main(Provider):
         if value_str in {"0", "false", "no", "off"}:
             return "false"
         return "true" if default else "false"
+
+    @staticmethod
+    def _should_include_param(value):
+        return value is not None and value != ""

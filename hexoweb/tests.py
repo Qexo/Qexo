@@ -1484,7 +1484,7 @@ class CFImgBedProviderTests(SimpleTestCase):
         self.assertEqual(delete_config["delete_url"], "https://img.example.com/api/manage/delete/test.png")
 
     @patch("hexoweb.libs.image.providers.cfimgbed.requests.post")
-    def test_upload_builds_default_query_params_from_official_api(self, mock_post):
+    def test_upload_builds_query_params_from_official_api(self, mock_post):
         mock_response = Mock()
         mock_response.text = '[{"src":"/file/test.png"}]'
         mock_response.json.return_value = [{"src": "/file/test.png"}]
@@ -1495,6 +1495,8 @@ class CFImgBedProviderTests(SimpleTestCase):
             api_key="",
             auth_code="auth123",
             upload_channel="telegram",
+            server_compress="false",
+            auto_retry="false",
             return_format="default",
         )
         upload_file = SimpleUploadedFile("test.png", b"123", content_type="image/png")
@@ -1503,6 +1505,22 @@ class CFImgBedProviderTests(SimpleTestCase):
         params = mock_post.call_args.kwargs["params"]
         self.assertEqual(params["authCode"], "auth123")
         self.assertEqual(params["uploadChannel"], "telegram")
-        self.assertEqual(params["serverCompress"], "true")
-        self.assertEqual(params["autoRetry"], "true")
+        self.assertEqual(params["serverCompress"], "false")
+        self.assertEqual(params["autoRetry"], "false")
         self.assertEqual(params["returnFormat"], "default")
+
+    @patch("hexoweb.libs.image.providers.cfimgbed.requests.post")
+    def test_upload_omits_optional_query_params_when_unset(self, mock_post):
+        mock_response = Mock()
+        mock_response.text = '[{"src":"/file/test.png"}]'
+        mock_response.json.return_value = [{"src": "/file/test.png"}]
+        mock_post.return_value = mock_response
+
+        provider = CFImgBedMain(api="https://api.example.com/upload")
+        upload_file = SimpleUploadedFile("test.png", b"123", content_type="image/png")
+        provider.upload(upload_file)
+
+        params = mock_post.call_args.kwargs["params"]
+        self.assertNotIn("serverCompress", params)
+        self.assertNotIn("autoRetry", params)
+        self.assertNotIn("returnFormat", params)

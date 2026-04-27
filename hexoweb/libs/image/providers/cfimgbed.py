@@ -19,8 +19,9 @@ def delete(config):
     if config.get("api_key"):
         headers['Authorization'] = f"Bearer {config.get('api_key')}"
     params = {}
-    if config.get("auth_code"):
-        params["authCode"] = config.get("auth_code")
+    auth_code = config.get("auth_code")
+    if auth_code:
+        params["authCode"] = auth_code
 
     delete_url = config.get("delete_url")
     if not delete_url:

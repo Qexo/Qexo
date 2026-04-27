@@ -1484,7 +1484,7 @@ class CFImgBedProviderTests(SimpleTestCase):
         self.assertEqual(delete_config["delete_url"], "https://img.example.com/api/manage/delete/test.png")
 
     @patch("hexoweb.libs.image.providers.cfimgbed.requests.post")
-    def test_upload_delete_config_keeps_auth_code_for_remote_delete(self, mock_post):
+    def test_upload_persists_auth_code_in_delete_config(self, mock_post):
         mock_response = Mock()
         mock_response.text = '[{"src":"/file/test.png"}]'
         mock_response.json.return_value = [{"src": "/file/test.png"}]

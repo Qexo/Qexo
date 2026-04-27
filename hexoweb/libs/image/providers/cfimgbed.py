@@ -27,7 +27,7 @@ def delete(config):
         logging.warning("Delete URL is not configured; remote delete is not supported.")
         return "Delete URL not configured; remote delete not supported."
 
-    response = requests.delete(delete_url, headers=headers, params=params or None)
+    response = requests.delete(delete_url, headers=headers, params=params)
     return response.text
 
 

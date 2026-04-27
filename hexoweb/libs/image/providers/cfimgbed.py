@@ -18,13 +18,16 @@ def delete(config):
     headers = {}
     if config.get("api_key"):
         headers['Authorization'] = f"Bearer {config.get('api_key')}"
+    params = {}
+    if config.get("auth_code"):
+        params["authCode"] = config.get("auth_code")
 
     delete_url = config.get("delete_url")
     if not delete_url:
         logging.warning("Delete URL is not configured; remote delete is not supported.")
         return "Delete URL not configured; remote delete not supported."
 
-    response = requests.delete(delete_url, headers=headers)
+    response = requests.delete(delete_url, headers=headers, params=params or None)
     return response.text
 
 
@@ -140,7 +143,12 @@ class Main(Provider):
         image_url = self._full_url(str(url))
         delete_full_url = self._build_delete_url(str(url))
         if delete_full_url:
-            return [image_url, {"provider": Main.name, "delete_url": delete_full_url, "api_key": self.api_key}]
+            return [image_url, {
+                "provider": Main.name,
+                "delete_url": delete_full_url,
+                "api_key": self.api_key,
+                "auth_code": self.auth_code,
+            }]
         return [image_url, {}]
 
     def _base_url(self):

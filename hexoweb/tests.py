@@ -13,7 +13,7 @@ from hexoweb.models import (
     NotificationModel, CustomModel, PostModel, TalkModel,
     StatisticUV, StatisticPV
 )
-from hexoweb.libs.image.providers.cfimgbed import Main as CFImgBedMain
+from hexoweb.libs.image.providers.cfimgbed import Main as CFImgBedMain, delete as cfimgbed_delete
 
 
 # ===== URL 烟雾测试 =====
@@ -1482,6 +1482,43 @@ class CFImgBedProviderTests(SimpleTestCase):
 
         self.assertEqual(url, "https://img.example.com/file/test.png")
         self.assertEqual(delete_config["delete_url"], "https://img.example.com/api/manage/delete/test.png")
+
+    @patch("hexoweb.libs.image.providers.cfimgbed.requests.post")
+    def test_upload_delete_config_keeps_auth_code_for_remote_delete(self, mock_post):
+        mock_response = Mock()
+        mock_response.text = '[{"src":"/file/test.png"}]'
+        mock_response.json.return_value = [{"src": "/file/test.png"}]
+        mock_post.return_value = mock_response
+
+        provider = CFImgBedMain(
+            api="https://api.example.com/upload",
+            auth_code="auth123",
+            custom_url="https://img.example.com",
+        )
+        upload_file = SimpleUploadedFile("test.png", b"123", content_type="image/png")
+
+        _, delete_config = provider.upload(upload_file)
+
+        self.assertEqual(delete_config["auth_code"], "auth123")
+        self.assertEqual(delete_config["delete_url"], "https://img.example.com/api/manage/delete/test.png")
+
+    @patch("hexoweb.libs.image.providers.cfimgbed.requests.delete")
+    def test_delete_uses_official_api_with_auth_code_when_api_key_absent(self, mock_delete):
+        mock_delete.return_value = Mock(text='{"success": true}')
+        config = {
+            "provider": "CFImgBed",
+            "delete_url": "https://img.example.com/api/manage/delete/test.png",
+            "auth_code": "auth123",
+        }
+
+        result = cfimgbed_delete(config)
+
+        self.assertEqual(result, '{"success": true}')
+        mock_delete.assert_called_once_with(
+            "https://img.example.com/api/manage/delete/test.png",
+            headers={},
+            params={"authCode": "auth123"},
+        )
 
     @patch("hexoweb.libs.image.providers.cfimgbed.requests.post")
     def test_upload_builds_query_params_from_official_api(self, mock_post):

@@ -178,14 +178,12 @@ class Main(Provider):
         path = urlsplit(url).path if url.startswith("http://") or url.startswith("https://") else url
         if path.startswith('/file/'):
             return path[6:].lstrip("/")
-        if path.startswith('/file'):
-            return path[5:].lstrip("/")
+        if path == '/file':
+            return ""
         return ""
 
     @staticmethod
     def _format_bool(value, default):
-        if value is None or value == "":
-            return "true" if default else "false"
         if isinstance(value, bool):
             return "true" if value else "false"
         value_str = str(value).strip().lower()

@@ -1438,8 +1438,9 @@ class CFImgBedProviderTests(SimpleTestCase):
 
         provider.upload(upload_file)
 
-        files_payload = mock_post.call_args.kwargs["files"]["file"]
+        files_payload = mock_post.call_args.kwargs["files"][provider.post_params]
         self.assertEqual(files_payload[0], "test.png")
+        self.assertEqual(files_payload[1], b"123")
         self.assertEqual(files_payload[2], "image/png")
 
     @patch("hexoweb.libs.image.providers.cfimgbed.requests.post")

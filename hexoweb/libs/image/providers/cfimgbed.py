@@ -72,7 +72,7 @@ class Main(Provider):
             self.api,
             headers=headers,
             params=params or None,
-            files={self.post_params: (file_name, file.read(), content_type)},
+            files={self.post_params: [file_name, file.read(), content_type]},
         )
         data = response.text
         logging.info(data)

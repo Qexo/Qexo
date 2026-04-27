@@ -1419,6 +1419,10 @@ class ErrorHandlingTests(TestCase):
 
 
 class CFImgBedProviderTests(SimpleTestCase):
+    def test_params_hide_fixed_fields(self):
+        self.assertNotIn("post_params", CFImgBedMain.params)
+        self.assertNotIn("delete_url", CFImgBedMain.params)
+
     @patch("hexoweb.libs.image.providers.cfimgbed.requests.post")
     def test_upload_sends_detected_content_type_when_file_content_type_missing(self, mock_post):
         mock_response = Mock()
@@ -1428,17 +1432,13 @@ class CFImgBedProviderTests(SimpleTestCase):
 
         provider = CFImgBedMain(
             api="https://api.example.com/upload",
-            post_params="file",
-            json_path="0.src",
             api_key="",
-            custom_url="",
-            delete_url="",
         )
         upload_file = SimpleUploadedFile("test.png", b"123", content_type=None)
 
         provider.upload(upload_file)
 
-        files_payload = mock_post.call_args.kwargs["files"][provider.post_params]
+        files_payload = mock_post.call_args.kwargs["files"]["file"]
         self.assertEqual(files_payload[0], "test.png")
         self.assertEqual(files_payload[1], b"123")
         self.assertEqual(files_payload[2], "image/png")
@@ -1452,11 +1452,9 @@ class CFImgBedProviderTests(SimpleTestCase):
 
         provider = CFImgBedMain(
             api="https://api.example.com/upload",
-            post_params="file",
             json_path="0.src",
             api_key="",
             custom_url="",
-            delete_url="",
         )
         upload_file = SimpleUploadedFile("test.png", b"123", content_type="image/png")
 
@@ -1474,15 +1472,37 @@ class CFImgBedProviderTests(SimpleTestCase):
 
         provider = CFImgBedMain(
             api="https://api.example.com/upload",
-            post_params="file",
             json_path="0.src",
             api_key="",
             custom_url="https://img.example.com",
-            delete_url="",
         )
         upload_file = SimpleUploadedFile("test.png", b"123", content_type="image/png")
 
         url, delete_config = provider.upload(upload_file)
 
         self.assertEqual(url, "https://img.example.com/file/test.png")
-        self.assertEqual(delete_config, {})
+        self.assertEqual(delete_config["delete_url"], "https://img.example.com/api/manage/delete/test.png")
+
+    @patch("hexoweb.libs.image.providers.cfimgbed.requests.post")
+    def test_upload_builds_default_query_params_from_official_api(self, mock_post):
+        mock_response = Mock()
+        mock_response.text = '[{"src":"/file/test.png"}]'
+        mock_response.json.return_value = [{"src": "/file/test.png"}]
+        mock_post.return_value = mock_response
+
+        provider = CFImgBedMain(
+            api="https://api.example.com/upload",
+            api_key="",
+            auth_code="auth123",
+            upload_channel="telegram",
+            return_format="default",
+        )
+        upload_file = SimpleUploadedFile("test.png", b"123", content_type="image/png")
+        provider.upload(upload_file)
+
+        params = mock_post.call_args.kwargs["params"]
+        self.assertEqual(params["authCode"], "auth123")
+        self.assertEqual(params["uploadChannel"], "telegram")
+        self.assertEqual(params["serverCompress"], "true")
+        self.assertEqual(params["autoRetry"], "true")
+        self.assertEqual(params["returnFormat"], "default")

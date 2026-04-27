@@ -8,6 +8,7 @@ import json
 import mimetypes
 import requests
 import logging
+from urllib.parse import urlsplit
 
 from ..core import Provider
 from ..replace import replace_folder_path
@@ -32,22 +33,48 @@ class Main(Provider):
 
     params = {
         'api': {'description': 'API 地址', 'placeholder': '图床图片上传的 API，例如：https://example.com/upload'},
-        'post_params': {'description': 'POST 参数名', 'placeholder': '请填写file'},
-        'json_path': {'description': 'JSON 路径', 'placeholder': '请填写0.src'},
         'api_key': {'description': 'API 密钥', 'placeholder': '例如：imgbed_XXXXXXXXX'},
-        'custom_url': {'description': '自定义前缀', 'placeholder': '例如：https://example.com'},
-        'delete_url': {'description': '删除 API 地址', 'placeholder': '例如：https://example.com/api/manage/delete'},
+        'auth_code': {'description': '上传认证码', 'placeholder': '上传认证码（可选，和 API 密钥二选一）'},
+        'custom_url': {'description': '自定义访问域名', 'placeholder': '例如：https://example.com（可选）'},
+        'upload_channel': {'description': '上传渠道', 'placeholder': '可选：telegram, cfr2, s3, discord, huggingface（默认 telegram）'},
+        'channel_name': {'description': '渠道名称', 'placeholder': '多渠道场景可选'},
+        'server_compress': {'description': '服务端压缩', 'placeholder': '可选：true/false（默认 true）'},
+        'auto_retry': {'description': '失败自动重试', 'placeholder': '可选：true/false（默认 true）'},
+        'return_format': {'description': '返回链接格式', 'placeholder': '可选：default/full（默认 default）'},
         'upload_folder': {'description': '上传的文件夹', 'placeholder': '图床保存的文件夹'},
         'upload_name_type': {'description': '文件命名规则', 'placeholder': '可选：default, index, origin, short (默认: default)'}
     }
 
-    def __init__(self, api, post_params, json_path, api_key, custom_url, delete_url, upload_folder="", upload_name_type="default"):
+    def __init__(
+            self,
+            api,
+            api_key="",
+            auth_code="",
+            custom_url="",
+            upload_channel="telegram",
+            channel_name="",
+            server_compress=True,
+            auto_retry=True,
+            return_format="default",
+            upload_folder="",
+            upload_name_type="default",
+            json_path="0.src",
+            post_params="file",
+            delete_url="",
+            **kwargs
+    ):
         self.api = api
-        self.post_params = post_params
+        self.post_params = post_params or kwargs.get("post_params") or "file"
         self.json_path = json_path
         self.api_key = api_key
         self.custom_url = custom_url
         self.delete_url = delete_url
+        self.auth_code = auth_code
+        self.upload_channel = upload_channel or "telegram"
+        self.channel_name = channel_name
+        self.server_compress = server_compress
+        self.auto_retry = auto_retry
+        self.return_format = return_format or "default"
         self.upload_folder = upload_folder
         self.upload_name_type = upload_name_type
 
@@ -61,6 +88,21 @@ class Main(Provider):
 
         # 使用 requests 的 params 参数构造并编码查询参数，避免手写字符串拼接
         params = {}
+        if self.auth_code:
+            params["authCode"] = self.auth_code
+
+        if self.upload_channel:
+            params["uploadChannel"] = self.upload_channel
+
+        if self.channel_name:
+            params["channelName"] = self.channel_name
+
+        params["serverCompress"] = self._format_bool(self.server_compress, True)
+        params["autoRetry"] = self._format_bool(self.auto_retry, True)
+
+        if self.return_format:
+            params["returnFormat"] = self.return_format
+
         if self.upload_folder:
             folder_path = replace_folder_path(self.upload_folder)
             params["uploadFolder"] = folder_path
@@ -72,7 +114,7 @@ class Main(Provider):
             self.api,
             headers=headers,
             params=params or None,
-            files={self.post_params: [file_name, file.read(), content_type]},
+            files={"file": [file_name, file.read(), content_type]},
         )
         data = response.text
         logging.info(data)
@@ -92,20 +134,57 @@ class Main(Provider):
         else:
             url = data
             
-        if self.delete_url:
-            # Remove trailing slash from delete_url or leading slash from url to avoid double slashes
-            d_url = self.delete_url if self.delete_url.endswith('/') else self.delete_url + '/'
-            d_path = str(url)
-            
-            if d_path.startswith('/file/'):
-                d_path = d_path[6:]
-            elif d_path.startswith('/file'):
-                d_path = d_path[5:]
-                
-            d_path = d_path.lstrip('/')
-            delete_full_url = d_url + d_path
-            
-            return [str(self.custom_url) + str(url), {"provider": Main.name, "delete_url": delete_full_url, "api_key": self.api_key}]
+        image_url = self._full_url(str(url))
+        delete_full_url = self._build_delete_url(str(url))
+        if delete_full_url:
+            return [image_url, {"provider": Main.name, "delete_url": delete_full_url, "api_key": self.api_key}]
+        return [image_url, {}]
 
-        # 当未配置 delete_url 时，不返回删除配置，避免后续删除时因缺少 delete_url 失败
-        return [str(self.custom_url) + str(url), {}]
+    def _base_url(self):
+        if self.custom_url:
+            return self.custom_url.rstrip("/")
+        parsed = urlsplit(self.api)
+        if parsed.scheme and parsed.netloc:
+            return f"{parsed.scheme}://{parsed.netloc}"
+        return ""
+
+    def _full_url(self, url):
+        if url.startswith("http://") or url.startswith("https://"):
+            return url
+        base_url = self._base_url()
+        if not base_url:
+            return url
+        if url.startswith("/"):
+            return f"{base_url}{url}"
+        return f"{base_url}/{url}"
+
+    def _build_delete_url(self, url):
+        d_path = self._extract_delete_path(url)
+        if not d_path:
+            return ""
+        delete_base = self.delete_url.rstrip("/") if self.delete_url else f"{self._base_url()}/api/manage/delete"
+        if not delete_base or delete_base == "/api/manage/delete":
+            return ""
+        return f"{delete_base}/{d_path}"
+
+    @staticmethod
+    def _extract_delete_path(url):
+        path = urlsplit(url).path if url.startswith("http://") or url.startswith("https://") else url
+        if path.startswith('/file/'):
+            return path[6:].lstrip("/")
+        if path.startswith('/file'):
+            return path[5:].lstrip("/")
+        return ""
+
+    @staticmethod
+    def _format_bool(value, default):
+        if value is None or value == "":
+            return "true" if default else "false"
+        if isinstance(value, bool):
+            return "true" if value else "false"
+        value_str = str(value).strip().lower()
+        if value_str in {"1", "true", "yes", "on"}:
+            return "true"
+        if value_str in {"0", "false", "no", "off"}:
+            return "false"
+        return "true" if default else "false"

@@ -1420,6 +1420,29 @@ class ErrorHandlingTests(TestCase):
 
 class CFImgBedProviderTests(SimpleTestCase):
     @patch("hexoweb.libs.image.providers.cfimgbed.requests.post")
+    def test_upload_sends_detected_content_type_when_file_content_type_missing(self, mock_post):
+        mock_response = Mock()
+        mock_response.text = '[{"src":"/file/test.png"}]'
+        mock_response.json.return_value = [{"src": "/file/test.png"}]
+        mock_post.return_value = mock_response
+
+        provider = CFImgBedMain(
+            api="https://api.example.com/upload",
+            post_params="file",
+            json_path="0.src",
+            api_key="",
+            custom_url="",
+            delete_url="",
+        )
+        upload_file = SimpleUploadedFile("test.png", b"123", content_type=None)
+
+        provider.upload(upload_file)
+
+        files_payload = mock_post.call_args.kwargs["files"]["file"]
+        self.assertEqual(files_payload[0], "test.png")
+        self.assertEqual(files_payload[2], "image/png")
+
+    @patch("hexoweb.libs.image.providers.cfimgbed.requests.post")
     def test_upload_uses_plain_text_when_response_is_not_json(self, mock_post):
         mock_response = Mock()
         mock_response.text = "https://img.example.com/uploads/test.png"

@@ -5,6 +5,7 @@
 """
 
 import json
+import mimetypes
 import requests
 import logging
 
@@ -55,6 +56,9 @@ class Main(Provider):
         if self.api_key:
             headers['Authorization'] = f"Bearer {self.api_key}"
 
+        file_name = getattr(file, "name", "") or "upload.bin"
+        content_type = getattr(file, "content_type", None) or mimetypes.guess_type(file_name)[0] or "application/octet-stream"
+
         # 使用 requests 的 params 参数构造并编码查询参数，避免手写字符串拼接
         params = {}
         if self.upload_folder:
@@ -68,7 +72,7 @@ class Main(Provider):
             self.api,
             headers=headers,
             params=params or None,
-            files={self.post_params: [file.name, file.read(), file.content_type]},
+            files={self.post_params: (file_name, file.read(), content_type)},
         )
         data = response.text
         logging.info(data)

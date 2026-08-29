@@ -4,10 +4,12 @@ from math import ceil
 from urllib.parse import quote, unquote
 
 from django import template
+from django.conf import settings
 from django.contrib.auth import logout
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.template import loader
+from django.utils.http import url_has_allowed_host_and_scheme
 
 import hexoweb.libs.i18n
 from hexoweb.libs.image import all_providers as all_image_providers
@@ -47,10 +49,17 @@ def login_view(request):
         logging.info(gettext("NOT_INIT"))
         return redirect("/init/")
     if request.user.is_authenticated:
-        if not request.GET.get("next"):
-            return redirect("/")
-        else:
-            return redirect(unquote(request.GET.get("next")))
+        # 先解码再校验：若直接校验原始值，https%3A%2F%2Fevil.com 这类编码地址
+        # 会被当作相对路径放行，解码后才变成外部地址，从而绕过白名单。
+        # 解码后校验通过的地址直接用于跳转，保证校验对象与跳转目标一致。
+        next_url = unquote(request.GET.get("next") or "")
+        # allowed_hosts 同时覆盖 ALLOWED_HOSTS 与当前请求的 host，
+        # 以兼容 Vercel 预览域名与生产域名并存的多域名部署
+        if next_url and url_has_allowed_host_and_scheme(
+                next_url,
+                allowed_hosts=set(settings.ALLOWED_HOSTS) | {request.get_host()}):
+            return redirect(next_url)
+        return redirect("/")
     context = get_custom_config()
     site_token = get_setting_cached("LOGIN_RECAPTCHA_SITE_TOKEN")
     server_token = get_setting_cached("LOGIN_RECAPTCHA_SERVER_TOKEN")

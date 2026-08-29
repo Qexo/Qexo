@@ -4,6 +4,9 @@ on: [push]
 jobs:
   sync:
     runs-on: ubuntu-latest
+    permissions:
+      # 仅读取源码，推送到 CNB 使用的是 secrets.CNB_PASSWORD，不依赖 GITHUB_TOKEN
+      contents: read
     steps:
       - uses: actions/checkout@v3
         with:

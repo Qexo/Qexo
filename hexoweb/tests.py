@@ -343,6 +343,44 @@ class ViewsTests(TestCase):
             )
 
 
+# ===== 登录跳转安全测试 =====
+class LoginRedirectSafetyTests(TestCase):
+    """/login/ 的 next 参数跳转安全测试（开放重定向防护）"""
+
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(username="tester", password="pass12345")
+        self.user.is_staff = True
+        self.user.save()
+        # login_view 在未完成初始化时会优先跳转到 /init/，这里先标记为已初始化
+        SettingModel.objects.create(name="INIT", content="6")
+        self.client.force_login(self.user)
+
+    def test_external_next_is_blocked(self):
+        """外部域名的 next 参数不应被跳转"""
+        response = self.client.get('/login/', {"next": "https://evil.example.com/"})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/")
+
+    def test_encoded_external_next_is_blocked(self):
+        """URL 编码的外部地址同样不应被跳转（校验必须先于 unquote）"""
+        response = self.client.get('/login/', {"next": "https%3A%2F%2Fevil.example.com%2F"})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/")
+
+    def test_protocol_relative_next_is_blocked(self):
+        """协议相对地址（//host）不应被跳转"""
+        response = self.client.get('/login/', {"next": "//evil.example.com/"})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/")
+
+    def test_relative_next_is_allowed(self):
+        """相对路径的 next 参数应正常跳转"""
+        response = self.client.get('/login/', {"next": "/settings/"})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/settings/")
+
+
 class MigrateViewDataSafetyTests(TestCase):
     """迁移导入导出安全性回归测试"""
 

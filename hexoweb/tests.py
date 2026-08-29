@@ -353,7 +353,10 @@ class LoginRedirectSafetyTests(TestCase):
         self.user.is_staff = True
         self.user.save()
         # login_view 在未完成初始化时会优先跳转到 /init/，这里先标记为已初始化
+        from hexoweb.functions import clear_setting_cache
+        clear_setting_cache("INIT")
         SettingModel.objects.create(name="INIT", content="6")
+        clear_setting_cache("INIT")
         self.client.force_login(self.user)
 
     def test_external_next_is_blocked(self):

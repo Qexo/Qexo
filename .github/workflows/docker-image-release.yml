@@ -12,6 +12,8 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout
@@ -36,6 +38,10 @@ jobs:
   docker:
     needs: test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # 需要向 ghcr.io 推送镜像，登录使用的是 secrets.GITHUB_TOKEN
+      packages: write
     steps:
       -
         name: Checkout

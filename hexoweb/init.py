@@ -21,6 +21,7 @@ from hexoweb.functions import (
 from hexoweb.libs.platforms import all_configs as platform_configs
 from hexoweb.libs.platforms import all_providers, get_params
 from hexoweb.models import SettingModel
+from hexoweb.secret_key_migration import request_secret_key_deployment
 
 
 @dataclass
@@ -217,9 +218,13 @@ class InitService:
             checkBuilding(project_id, vercel_token)
             save_setting("VERCEL_TOKEN", vercel_token)
             save_setting("PROJECT_ID", project_id)
+            redeploy_pending = bool(os.environ.get("VERCEL")) and not os.environ.get("DJANGO_SECRET_KEY")
+            if redeploy_pending:
+                if not request_secret_key_deployment(project_id, vercel_token):
+                    return StepOutcome(False, "4", gettext("VERIFY_FAILED"))
             save_setting("INIT", "6")
             # Get username for final step context
-            context = {}
+            context = {"redeploy_pending": redeploy_pending}
             user = self.User.objects.first()
             if user:
                 context["username"] = user.username

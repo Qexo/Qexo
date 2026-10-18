@@ -261,6 +261,9 @@
         }
 
         function renderStep6(context) {
+            if (context.redeploy_pending) {
+                return '<p>{{ "INIT_SECRET_REDEPLOY_PENDING" | gettext | escapejs }}</p>';
+            }
             const username = context.username || '';
             return `
                 <ul>{{ "INIT_LOGIN_MSG_1" | gettext }}

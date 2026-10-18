@@ -19,7 +19,10 @@ LOGOUT_REDIRECT_URL = "home"  # Route defined in home/urls.py
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-mrf1flh+i8*!ao73h6)ne#%gowhtype!ld#+(j^r*!^11al2vz'
+from core.secret_key import get_secret_key
+
+SECRET_KEY = get_secret_key()
+VERCEL_BOOTSTRAP = bool(os.environ.get('VERCEL')) and not SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -43,6 +46,15 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# No signing/authentication is available until Vercel injects the shared key.
+if VERCEL_BOOTSTRAP:
+    MIDDLEWARE = [m for m in MIDDLEWARE if m not in {
+        'django.contrib.sessions.middleware.SessionMiddleware',
+        'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'django.contrib.messages.middleware.MessageMiddleware',
+    }]
+    MIDDLEWARE.insert(0, 'core.secret_key.BootstrapMiddleware')
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True

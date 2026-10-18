@@ -202,6 +202,7 @@ class Main(Language):
             "INIT_BLOG": "ブログ設定",
             "INIT_FINISH": "おめでとうございます、初期化が完了しました",
             "INIT_IMAGE": "画像設定",
+            "INIT_SECRET_REDEPLOY_PENDING": "シークレットキーを保存し、再デプロイを開始しました。Vercel のデプロイ完了後、プロジェクトの URL を再読み込みしてログインしてください。",
             "INIT_LOGIN_MSG_1": "ログイン情報を覚えてください：",
             "INIT_LOGIN_MSG_2": "ユーザー名: ",
             "INIT_LOGIN_MSG_3": "パスワード: あなたが設定した値",

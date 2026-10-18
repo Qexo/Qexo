@@ -206,6 +206,7 @@ class Main(Language):
             "INIT_BLOG": "Configuration du blog",
             "INIT_FINISH": "Félicitations, vous avez terminé l'initialisation",
             "INIT_IMAGE": "Configuration du service d'images",
+            "INIT_SECRET_REDEPLOY_PENDING": "La clé secrète a été enregistrée et le redéploiement a commencé. Attendez la fin du déploiement Vercel, puis actualisez l’URL du projet et connectez-vous.",
             "INIT_LOGIN_MSG_1": "Veuillez noter vos informations de connexion :",
             "INIT_LOGIN_MSG_2": "Nom d'utilisateur : ",
             "INIT_LOGIN_MSG_3": "Mot de passe : votre valeur définie",

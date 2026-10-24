@@ -511,7 +511,9 @@ def get_custom(request):
     try:
         from RestrictedPython import compile_restricted, safe_globals, limited_builtins, utility_builtins
         from RestrictedPython.Eval import default_guarded_getitem
-        
+        from RestrictedPython.Guards import full_write_guard, guarded_iter_unpack_sequence, safer_getattr
+        from RestrictedPython.PrintCollector import PrintCollector
+
         key = request.GET.get("key") if request.GET.get("key") else request.POST.get("key")
         custom_field = CustomModel.objects.get(name=key)
         func_str = custom_field.content
@@ -525,49 +527,63 @@ def get_custom(request):
                 body[k] = body[k][0]
         
         # RestrictedPython 安全环境
-        restricted_globals = {
-            '__builtins__': {
-                **limited_builtins,
-                **utility_builtins,
-                '_getitem_': default_guarded_getitem,
-                'json': json,
-                'print': print,
-            }
+        # 注意: safe_globals 仅提供 __builtins__, 直接 update 会整体覆盖掉需要注入的
+        # 内建名(如 json), 因此以它为基底再合并自定义内容。
+        restricted_globals = dict(safe_globals)
+        restricted_globals['__builtins__'] = {
+            **safe_globals['__builtins__'],
+            **limited_builtins,
+            **utility_builtins,
+            'json': json,
         }
-        restricted_globals.update(safe_globals)
+        # 请求参数作为变量注入, 必须放在 guard 之前, 否则请求参数可覆盖 guard 绕过沙箱
         restricted_globals.update(body)
+        # 受限代码中的 print / 迭代 / 属性访问会被改写为 guard 调用, 缺少对应 guard
+        # 会在运行时抛 NameError, 导致脚本静默失败, 因此这里补齐常用 guard。
+        restricted_globals['_print_'] = PrintCollector
+        restricted_globals['_getattr_'] = safer_getattr
+        restricted_globals['_getitem_'] = default_guarded_getitem
+        restricted_globals['_getiter_'] = iter
+        restricted_globals['_unpack_sequence_'] = guarded_iter_unpack_sequence
+        restricted_globals['_write_'] = full_write_guard
         
         # 捕获输出
         old_stdout = sys.stdout
         output = sys.stdout = StringIO()
         
         try:
-            # 使用 RestrictedPython 编译代码
+            # compile_restricted 语法不合法时抛 SyntaxError, 而非返回 CompileResult
             byte_code = compile_restricted(func_str, filename='<custom_field>', mode='exec')
-            
-            if byte_code.errors:
-                # 编译错误
-                error_msg = '\n'.join(byte_code.errors)
-                logging.warning(f"自定义字段编译错误: {custom_field.name} - {error_msg}")
-                print(f"编译错误: {error_msg}")
-            else:
-                # 执行编译后的代码
-                exec(byte_code.code, restricted_globals)
-        except Exception as e:
-            # 执行错误，尝试作为表达式处理
+            exec(byte_code, restricted_globals)
+
+            # 语句模式同样可以编译单个表达式但不会产生输出, 此时再按表达式求值一次,
+            # 保留「纯表达式直接返回结果」的既有行为。
+            printed = restricted_globals.get('_print')
+            if not (printed() if callable(printed) else '') and not output.getvalue():
+                try:
+                    byte_code = compile_restricted(func_str, filename='<custom_field>', mode='eval')
+                    print(eval(byte_code, restricted_globals))
+                except Exception:
+                    print(func_str)
+        except SyntaxError as error:
+            # 编译错误，尝试作为表达式处理
+            logging.warning(f"自定义字段编译错误: {custom_field.name} - {error}")
             try:
                 byte_code = compile_restricted(func_str, filename='<custom_field>', mode='eval')
-                if byte_code.errors:
-                    print(func_str)
-                else:
-                    result = eval(byte_code.code, restricted_globals)
-                    print(result)
+                print(eval(byte_code, restricted_globals))
             except Exception:
-                # 都失败则直接输出内容
                 print(func_str)
-        
-        sys.stdout = old_stdout
-        context = {"data": output.getvalue(), "status": True}
+        except Exception as error:
+            # 执行错误
+            logging.error(f"自定义字段运行错误: {custom_field.name} - {repr(error)}")
+            print(func_str)
+        finally:
+            sys.stdout = old_stdout
+
+        # 受限代码的 print 由 PrintCollector 收集, 需与 stdout 捕获的内容合并
+        printed = restricted_globals.get('_print')
+        collected = printed() if callable(printed) else ''
+        context = {"data": collected + output.getvalue(), "status": True}
         logging.info(f"执行自定义字段: {custom_field.name}")
     except Exception as error:
         logging.error(f"自定义字段执行错误: {repr(error)}")

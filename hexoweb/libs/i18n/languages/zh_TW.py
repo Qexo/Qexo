@@ -206,6 +206,7 @@ class Main(Language):
             "INIT_BLOG": "博客配置",
             "INIT_FINISH": "恭喜您初始化完畢",
             "INIT_IMAGE": "圖床配置",
+            "INIT_SECRET_REDEPLOY_PENDING": "密鑰已儲存，正在重新部署。請等待 Vercel 部署完成後重新整理專案網域，再登入。",
             "INIT_LOGIN_MSG_1": "請牢記您的登錄信息：",
             "INIT_LOGIN_MSG_2": "用戶名: ",
             "INIT_LOGIN_MSG_3": "密碼: 您設定的值",

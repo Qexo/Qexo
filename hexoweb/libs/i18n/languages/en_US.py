@@ -208,6 +208,7 @@ class Main(Language):
             "INIT_BLOG": "Blog Configuration",
             "INIT_FINISH": "Congratulations on Completing Initialization",
             "INIT_IMAGE": "Image Hosting Configuration",
+            "INIT_SECRET_REDEPLOY_PENDING": "The secret key has been saved and redeployment has started. Wait for Vercel to finish, then refresh your project URL and sign in.",
             "INIT_LOGIN_MSG_1": "Please remember your login information:",
             "INIT_LOGIN_MSG_2": "Username: ",
             "INIT_LOGIN_MSG_3": "Password: Your set value",

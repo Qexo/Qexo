@@ -202,6 +202,7 @@ class Main(Language):
             "INIT_BLOG": "블로그 설정",
             "INIT_FINISH": "축하합니다, 초기화가 완료되었습니다",
             "INIT_IMAGE": "이미지 설정",
+            "INIT_SECRET_REDEPLOY_PENDING": "비밀 키가 저장되었으며 재배포가 시작되었습니다. Vercel 배포가 완료되면 프로젝트 URL을 새로 고침한 후 로그인하세요.",
             "INIT_LOGIN_MSG_1": "로그인 정보를 기억하세요:",
             "INIT_LOGIN_MSG_2": "사용자 이름: ",
             "INIT_LOGIN_MSG_3": "비밀번호: 당신이 설정한 값",

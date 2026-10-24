@@ -776,35 +776,120 @@ def webhook(request):
 
 
 # 上传图片 api/upload
+def _image_response_data(image):
+    return {
+        "name": image.name,
+        "size": convert_to_kb_mb_gb(int(image.size)),
+        "url": escape(image.url),
+        "date": strftime("%Y-%m-%d %H:%M:%S", localtime(float(image.date))),
+        "time": str(image.date),
+    }
+
+
+def _save_image_record(name, url, size, content_type, delete_config):
+    image = ImageModel()
+    image.name = name
+    image.url = url
+    image.size = size
+    image.type = content_type
+    image.date = str(time())
+    image.deleteConfig = json.dumps(delete_config)
+    image.save()
+    return image
+
+
 @csrf_exempt
 @login_required(login_url="/login/")
 def upload_img(request):
-    context = dict(msg=gettext("UPLOAD_FAILED"), url=False)
+    context = dict(msg=gettext("UPLOAD_FAILED"), url=False, status=False)
     if request.method == "POST":
-        file = request.FILES.getlist('file[]')[0] if request.FILES.getlist('file[]') else request.FILES.getlist('file')[0]
         try:
+            files = request.FILES.getlist("file[]") or request.FILES.getlist("file")
+            if not files:
+                raise ValueError("No upload file was provided")
+            file = files[0]
             from hexoweb.libs import image as image_lib
             image_host = json.loads(get_setting_cached("IMG_HOST"))
             if image_host["type"] in image_lib.all_providers():
                 res = get_image_host(image_host["type"], **image_host["params"]).upload(file)
-                context["url"] = res[0]
-                context["status"] = True
-                context["msg"] = gettext("UPLOAD_SUCCESS")
-                image = ImageModel()
-                image.name = file.name
-                image.url = context["url"]
-                image.size = file.size
-                image.type = file.content_type
-                image.date = str(time())
-                image.deleteConfig = json.dumps(res[1])
-                image.save()
-                context["data"] = {"name": image.name, "size": convert_to_kb_mb_gb(int(image.size)), "url": escape(image.url),
-                                   "date": strftime("%Y-%m-%d %H:%M:%S", localtime(float(image.date))),
-                                   "time": str(image.date)}
+                image = _save_image_record(file.name, res[0], file.size, file.content_type, res[1])
+                context.update({
+                    "url": res[0],
+                    "status": True,
+                    "msg": gettext("UPLOAD_SUCCESS"),
+                    "data": _image_response_data(image),
+                })
         except Exception as error:
             logging.error(repr(error))
             context = {"msg": repr(error), "url": False, "status": False}
     return JsonResponse(safe=False, data=context)
+
+
+@login_required(login_url="/login/")
+def upload_config(request):
+    """Return direct-upload configuration without sending the file through Vercel."""
+    context = {"direct": False, "provider": None}
+    status = 200
+    try:
+        if request.method != "GET":
+            status = 405
+            context["msg"] = "Method not allowed"
+        else:
+            image_host = json.loads(get_setting_cached("IMG_HOST"))
+            context["provider"] = image_host.get("type")
+            provider = get_image_host(image_host["type"], **image_host.get("params", {}))
+            if image_host.get("type") == "CFImgBed" and hasattr(provider, "direct_upload_config"):
+                context.update({
+                    "direct": True,
+                    "config": provider.direct_upload_config(),
+                })
+    except Exception as error:
+        logging.error(repr(error))
+        status = 400
+        context.update({"direct": False, "msg": repr(error)})
+
+    response = JsonResponse(safe=False, data=context, status=status)
+    response["Cache-Control"] = "no-store"
+    return response
+
+
+@login_required(login_url="/login/")
+def upload_complete(request):
+    """Persist metadata after a browser has uploaded directly to CFImgBed."""
+    context = {"msg": gettext("UPLOAD_FAILED"), "url": False, "status": False}
+    status = 200
+    if request.method != "POST":
+        return JsonResponse(safe=False, data={**context, "msg": "Method not allowed"}, status=405)
+
+    try:
+        image_host = json.loads(get_setting_cached("IMG_HOST"))
+        if image_host.get("type") != "CFImgBed":
+            raise ValueError("The configured image host does not support direct upload completion")
+
+        name = (request.POST.get("name") or "upload.bin").strip()[:1024]
+        remote_url = (request.POST.get("remote_url") or "").strip()
+        content_type = (request.POST.get("content_type") or "application/octet-stream").strip()[:255]
+        size = int(request.POST.get("size") or 0)
+        if size < 0:
+            raise ValueError("Invalid image size")
+        if not content_type.startswith("image/"):
+            raise ValueError("Only image uploads can be recorded")
+
+        provider = get_image_host("CFImgBed", **image_host.get("params", {}))
+        url, delete_config = provider.complete_direct_upload(remote_url)
+        image = _save_image_record(name, url, size, content_type, delete_config)
+        context.update({
+            "url": url,
+            "status": True,
+            "msg": gettext("UPLOAD_SUCCESS"),
+            "data": _image_response_data(image),
+        })
+    except Exception as error:
+        logging.error(repr(error))
+        status = 400
+        context["msg"] = repr(error)
+
+    return JsonResponse(safe=False, data=context, status=status)
 
 
 # 添加友链 api/add_friend

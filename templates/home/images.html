@@ -390,17 +390,11 @@
         }
 
         function upload_file() {
-            let formData = new FormData($("#uploadForm")[0]);
+            const file = imageInput.files[0];
+            if (!file) return;
             let uploadProgress = $("<div class='upload-progress text-center py-3'><i class='fa-solid fa-spinner fa-spin me-2'></i><span id='uploadMsg'>{{ "UPLOADING" | gettext }}</span></div>");
             $("#showurl").html(uploadProgress);
-            $.ajax({
-                url: '/api/upload/',
-                method: 'post',
-                data: formData,
-                dataType: 'JSON',
-                contentType: false,
-                processData: false,
-                success: function (res) {
+            qexoUploadImage(file).then(function (res) {
                     if (res.status) {
                         // Style From SMMS
                         let showImage = `<div id="navTabContent" class="tab-content" style="border:none;">
@@ -470,14 +464,12 @@
                         $("#showurl").html("");
                         $("#uploadForm")[0].reset();
                     }
-                },
-                error: function (res) {
-                    notyf.error("{{ "NETWORK_ERROR" | gettext }}");
+                }).catch(function (error) {
+                    notyf.error(error.message || "{{ "NETWORK_ERROR" | gettext }}");
                     // 清除上传进度提示并重置表单
                     $("#showurl").html("");
                     $("#uploadForm")[0].reset();
-                }
-            })
+                });
         }
     </script>
 

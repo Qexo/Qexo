@@ -1,0 +1,21 @@
+{% comment %}
+Vercel Analytics 注入片段
+- 仅在 VERCEL_ANALYTICS_SRC 非空时输出（由 hexoweb.functions.vercel_analytics 控制）
+- Vercel 部署（VERCEL=1）默认启用官方采集脚本
+- 非 Vercel 部署默认不注入；如需启用，设置 VERCEL_ANALYTICS_ENDPOINT 指向自定义端点
+- 脚本加载失败通过 onerror 静默移除，不影响其它功能
+- 需在 Vercel 后台开启 Analytics / Speed Insights 才会真正收集数据
+{% endcomment %}
+{% if VERCEL_ANALYTICS_SRC %}
+    {# Vercel Web Analytics #}
+    <script>
+        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="{{ VERCEL_ANALYTICS_SRC }}" onerror="this.remove()"></script>
+
+    {# Vercel Speed Insights #}
+    <script>
+        window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+    </script>
+    <script defer src="{{ VERCEL_ANALYTICS_SPEED_SRC }}" onerror="this.remove()"></script>
+{% endif %}

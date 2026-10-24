@@ -84,13 +84,78 @@ class Main(Provider):
         self.upload_name_type = upload_name_type
 
     def upload(self, file):
-        headers = {}
-        if self.api_key:
-            headers['Authorization'] = f"Bearer {self.api_key}"
-
         file_name = getattr(file, "name", "") or "upload.bin"
         content_type = getattr(file, "content_type", None) or mimetypes.guess_type(file_name)[0] or "application/octet-stream"
 
+        response = requests.post(
+            self.api,
+            headers=self._upload_headers(),
+            params=self._upload_params() or None,
+            files={"file": [file_name, file.read(), content_type]},
+        )
+        data = response.text
+        logging.info(data)
+        if self.json_path:
+            json_path = self.json_path.split(".")
+            response.encoding = "utf8"
+            try:
+                url = response.json()
+            except json.JSONDecodeError:
+                url = data
+            if isinstance(url, (dict, list)):
+                for path in json_path:
+                    if isinstance(url, list):  # 处理列表Index
+                        url = url[int(path)]
+                    else:
+                        url = url[path]
+        else:
+            url = data
+
+        return self._complete_upload(str(url), validate_host=False)
+
+    def direct_upload_config(self):
+        """Return the browser-safe data required for a direct CFImgBed upload."""
+        parsed_api = urlsplit(self.api)
+        if parsed_api.scheme not in {"http", "https"} or not parsed_api.netloc:
+            raise ValueError("CFImgBed API address must be an absolute HTTP(S) URL")
+
+        headers = {} if self.auth_code else self._upload_headers()
+
+        return {
+            "url": self.api,
+            "headers": headers,
+            "params": self._upload_params(),
+            "json_path": self.json_path,
+            "field_name": "file",
+        }
+
+    def complete_direct_upload(self, url):
+        """Validate and normalize a browser-provided CFImgBed result."""
+        return self._complete_upload(url, validate_host=True)
+
+    def _complete_upload(self, url, validate_host):
+        url = str(url).strip()
+        if validate_host:
+            self._validate_result_url(url)
+        elif not url:
+            raise ValueError("CFImgBed returned an empty image URL")
+        image_url = self._full_url(url)
+        delete_full_url = self._build_delete_url(url)
+        if delete_full_url:
+            return [image_url, {
+                "provider": Main.name,
+                "delete_url": delete_full_url,
+                "api_key": self.api_key,
+                "auth_code": self.auth_code,
+            }]
+        return [image_url, {}]
+
+    def _upload_headers(self):
+        if not self.api_key:
+            return {}
+        return {"Authorization": f"Bearer {self.api_key}"}
+
+    def _upload_params(self):
         # 使用 requests 的 params 参数构造并编码查询参数，避免手写字符串拼接
         params = {}
         if self.auth_code:
@@ -112,46 +177,28 @@ class Main(Provider):
             params["returnFormat"] = self.return_format
 
         if self.upload_folder:
-            folder_path = replace_folder_path(self.upload_folder)
-            params["uploadFolder"] = folder_path
+            params["uploadFolder"] = replace_folder_path(self.upload_folder)
 
         if self.upload_name_type:
             params["uploadNameType"] = self.upload_name_type
 
-        response = requests.post(
-            self.api,
-            headers=headers,
-            params=params or None,
-            files={"file": [file_name, file.read(), content_type]},
-        )
-        data = response.text
-        logging.info(data)
-        if self.json_path:
-            json_path = self.json_path.split(".")
-            response.encoding = "utf8"
-            try:
-                url = response.json()
-            except json.JSONDecodeError:
-                url = data
-            if isinstance(url, (dict, list)):
-                for path in json_path:
-                    if isinstance(url, list):  # 处理列表Index
-                        url = url[int(path)]
-                    else:
-                        url = url[path]
-        else:
-            url = data
-            
-        image_url = self._full_url(str(url))
-        delete_full_url = self._build_delete_url(str(url))
-        if delete_full_url:
-            return [image_url, {
-                "provider": Main.name,
-                "delete_url": delete_full_url,
-                "api_key": self.api_key,
-                "auth_code": self.auth_code,
-            }]
-        return [image_url, {}]
+        return params
+
+    def _validate_result_url(self, url):
+        if not url:
+            raise ValueError("CFImgBed returned an empty image URL")
+        parsed = urlsplit(url)
+        if parsed.scheme and parsed.scheme not in {"http", "https"}:
+            raise ValueError("CFImgBed returned an unsupported image URL")
+        if not parsed.scheme:
+            if parsed.netloc:
+                raise ValueError("CFImgBed returned an image URL from an unexpected host")
+            return
+        allowed_hosts = {urlsplit(self.api).netloc.lower()}
+        if self.custom_url:
+            allowed_hosts.add(urlsplit(self.custom_url).netloc.lower())
+        if parsed.netloc.lower() not in allowed_hosts:
+            raise ValueError("CFImgBed returned an image URL from an unexpected host")
 
     def _base_url(self):
         if self.custom_url:

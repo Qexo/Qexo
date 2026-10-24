@@ -283,6 +283,137 @@
         })
     }
 
+    let qexoUploadConfigPromise = null;
+
+    async function qexoGetUploadConfig() {
+        if (!qexoUploadConfigPromise) {
+            qexoUploadConfigPromise = fetch('/api/upload/config/', {
+                method: 'GET',
+                credentials: 'same-origin',
+                cache: 'no-store',
+            }).then(async response => {
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.msg || `Upload configuration failed (${response.status})`);
+                }
+                return data;
+            }).catch(error => {
+                qexoUploadConfigPromise = null;
+                throw error;
+            });
+        }
+        return qexoUploadConfigPromise;
+    }
+
+    function qexoExtractUploadUrl(responseText, jsonPath) {
+        let value = responseText;
+        try {
+            value = JSON.parse(responseText);
+        } catch (error) {
+            // CFImgBed can be configured to return a plain-text URL.
+        }
+        if (value !== null && typeof value === 'object' && jsonPath) {
+            for (const part of jsonPath.split('.')) {
+                value = value[part];
+                if (value === undefined || value === null) {
+                    throw new Error(`CFImgBed response does not contain ${jsonPath}`);
+                }
+            }
+        }
+        if (value !== null && typeof value === 'object') {
+            throw new Error('CFImgBed returned an unsupported response');
+        }
+        return String(value || '').trim();
+    }
+
+    async function qexoLegacyUploadImage(file) {
+        const formData = new FormData();
+        formData.append('file', file, file.name);
+        const response = await fetch('/api/upload/', {
+            method: 'POST',
+            credentials: 'same-origin',
+            body: formData,
+        });
+        let data;
+        try {
+            data = await response.json();
+        } catch (error) {
+            if (response.status === 413) {
+                throw new Error('Vercel rejected the upload because it exceeds the 4.5 MB request limit');
+            }
+            throw new Error(`Upload failed (${response.status})`);
+        }
+        if (!response.ok || !data.status) {
+            throw new Error(data.msg || `Upload failed (${response.status})`);
+        }
+        return data;
+    }
+
+    async function qexoDirectUploadImage(file, config) {
+        const uploadUrl = new URL(config.url, window.location.href);
+        Object.entries(config.params || {}).forEach(([key, value]) => {
+            if (value !== null && value !== undefined && value !== '') {
+                uploadUrl.searchParams.set(key, value);
+            }
+        });
+
+        const formData = new FormData();
+        formData.append(config.field_name || 'file', file, file.name);
+        const uploadResponse = await fetch(uploadUrl.toString(), {
+            method: 'POST',
+            headers: config.headers || {},
+            body: formData,
+        });
+        const responseText = await uploadResponse.text();
+        if (!uploadResponse.ok) {
+            throw new Error(responseText || `CFImgBed upload failed (${uploadResponse.status})`);
+        }
+
+        const completeData = new FormData();
+        completeData.append('remote_url', qexoExtractUploadUrl(responseText, config.json_path));
+        completeData.append('name', file.name);
+        completeData.append('size', String(file.size));
+        completeData.append('content_type', file.type);
+        const completeResponse = await fetch('/api/upload/complete/', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {'X-CSRFToken': '{{ csrf_token }}'},
+            body: completeData,
+        });
+        const result = await completeResponse.json();
+        if (!completeResponse.ok || !result.status) {
+            throw new Error(result.msg || `Could not record upload (${completeResponse.status})`);
+        }
+        return result;
+    }
+
+    async function qexoUploadImage(file) {
+        if (!file || !(file.type || '').startsWith('image/')) {
+            throw new Error('Only image files can be uploaded');
+        }
+        const uploadConfig = await qexoGetUploadConfig();
+        if (uploadConfig.direct && uploadConfig.provider === 'CFImgBed') {
+            return qexoDirectUploadImage(file, uploadConfig.config);
+        }
+        return qexoLegacyUploadImage(file);
+    }
+
+    async function qexoVditorUploadHandler(files) {
+        try {
+            for (const file of files) {
+                const result = await qexoUploadImage(file);
+                const imageText = window.vditor && window.vditor.vditor.currentMode === 'wysiwyg'
+                    ? `\n<img alt="" src="${result.url}">`
+                    : `\n![](${result.url})`;
+                window.vditor.insertValue(imageText);
+                notyf.success(result.msg);
+            }
+            return null;
+        } catch (error) {
+            return error.message || String(error);
+        }
+    }
+
     {% if error %}
         notyf.error("{{ error }}");
     {% endif %}
@@ -294,3 +425,5 @@
         100% { width: 0; }
     }
 </style>
+
+    {% include "includes/vercel-analytics.html" %}

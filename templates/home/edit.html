@@ -288,7 +288,8 @@
                 upload: {
                     accept: "image/*",
                     url: "/api/upload/",
-                    max: 5 * 1024 * 1024,
+                    max: 100 * 1024 * 1024,
+                    handler: qexoVditorUploadHandler,
                     filename(name) {
                         return name
                             .replace(/[^(a-zA-Z0-9\u4e00-\u9fa5\.)]/g, "")
@@ -363,7 +364,8 @@
                 upload: {
                     accept: "image/*",
                     url: "/api/upload/",
-                    max: 5 * 1024 * 1024,
+                    max: 100 * 1024 * 1024,
+                    handler: qexoVditorUploadHandler,
                     filename(name) {
                         return name
                             .replace(/[^(a-zA-Z0-9\u4e00-\u9fa5\.)]/g, "")

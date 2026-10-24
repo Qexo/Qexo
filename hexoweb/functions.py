@@ -31,6 +31,10 @@ from hexoweb.libs.elevator import elevator
 from hexoweb.libs.onepush import notify
 from hexoweb.libs.platforms import get_provider
 from hexoweb.libs.i18n import get_language
+from hexoweb.libs.vercel import (
+    checkBuilding, create_file_deployment, ensure_vercel_secret,
+    file_get_contents, getEachFiles, vercel_request,
+)
 from .models import Cache, SettingModel, FriendModel, NotificationModel, CustomModel, StatisticUV, StatisticPV, \
     ImageModel, TalkModel, PostModel
 
@@ -577,54 +581,6 @@ def get_project_detail():
             "id": get_setting("PROJECT_ID")}
 
 
-def checkBuilding(projectId, token):
-    r = 0
-    url = "https://api.vercel.com/v6/deployments/?projectId=" + projectId
-    header = dict()
-    header["Authorization"] = "Bearer " + token
-    header["Content-Type"] = "application/json"
-    response = requests.get(url, headers=header).json()
-    result = response["deployments"]
-    for deployment in result:
-        if deployment['state'] == "BUILDING" or deployment['state'] == "INITIALIZING":
-            r += 1
-    return r
-
-
-def file_get_contents(file):
-    try:
-        with open(file, 'r', encoding="utf8") as f:
-            # logging.info(gettext("READ_FILE") + ": " + file)
-            content = f.read()
-        return content
-    except (OSError, UnicodeDecodeError) as e:
-        logging.warning(gettext("READ_FILE") + ": " + file + " -> " + repr(e))
-        return False
-
-
-def getEachFiles(base, path=""):
-    file = list()
-    current_dir = os.path.join(base, path)
-    try:
-        handler = os.listdir(current_dir)
-    except OSError as e:
-        logging.warning(gettext("READ_FILE") + ": " + current_dir + " -> " + repr(e))
-        return file
-    for item in handler:
-        if item != '.git':
-            fromfile = os.path.join(current_dir, item)
-            rel_path = os.path.join(path, item)
-            if os.path.isdir(fromfile):
-                file += getEachFiles(base, rel_path)
-            else:
-                content = file_get_contents(fromfile)
-                if content is False:
-                    continue
-                file.append({"file": rel_path,
-                             "data": content})
-    return file
-
-
 def getIndexFile(base, path=""):
     index = ""
     handler = os.listdir(base + "/" + path)
@@ -649,23 +605,16 @@ def get_update_url(target):
     return False
 
 
-def VercelUpdate(appId, token, sourcePath=""):
+def VercelUpdate(appId, token, sourcePath="", *, bootstrap=False):
     if checkBuilding(appId, token):
         logging.error(gettext("UPDATE_QUEUING"))
         return {"status": False, "msg": gettext("UPDATE_QUEUING")}
-    url = "https://api.vercel.com/v13/deployments"
-    header = dict()
-    data = dict()
-    header["Authorization"] = "Bearer " + token
-    header["Content-Type"] = "application/json"
-    data["name"] = "qexo"
-    data["project"] = appId
-    data["target"] = "production"
-    if sourcePath == "":
-        sourcePath = os.path.abspath("")
-    data["files"] = getEachFiles(sourcePath)
-    response = requests.post(url, data=json.dumps(data), headers=header)
-    logging.info(gettext("UPDATE_SUCCESS") + ": " + response.text)
+    target = os.environ.get("VERCEL_ENV", "production") if bootstrap else "production"
+    response = create_file_deployment(appId, token, sourcePath, target=target)
+    logging.info(gettext("UPDATE_SUCCESS"))
+    if bootstrap:
+        return {"status": True, "msg": response}
+
     filelist = os.listdir("/tmp")
     logging.info(gettext("START_DEL"))
     for filename in filelist:  # delete all files except tmp
@@ -678,7 +627,7 @@ def VercelUpdate(appId, token, sourcePath=""):
                 pass
         except Exception as e:
             logging.error(gettext("DEL_FAILED") + ": " + repr(e))
-    return {"status": True, "msg": response.json()}
+    return {"status": True, "msg": response}
 
 
 def VercelOnekeyUpdate(url):
@@ -1441,3 +1390,30 @@ if UPDATE_FROM != "false" and UPDATE_FROM != "true" and UPDATE_FROM != QEXO_VERS
         logging.error(gettext("ELEVATOR_ERROR").format(str(e)))
     save_setting("UPDATE_FROM", QEXO_VERSION)
     save_setting("JUMP_UPDATE", "true")
+
+
+def vercel_analytics(request):
+    """向模板注入 Vercel Analytics 配置（仅 Vercel 部署默认启用）。
+
+    非 Vercel 部署默认不注入，保持页面原样；如需在非 Vercel 环境启用，
+    可设置 VERCEL_ANALYTICS_ENDPOINT 指向自定义采集端点。
+    需在 Vercel 后台开启 Analytics / Speed Insights 才会真正收集数据。
+    """
+    is_vercel = bool(os.environ.get("VERCEL"))
+    override = os.environ.get("VERCEL_ANALYTICS")
+    # 未显式设置时跟随 Vercel 环境自动探测；显式设置则用 _as_bool_value 解析（支持 true/1/yes/是 等）
+    if not _as_bool_value(override, default=is_vercel):
+        return {"VERCEL_ANALYTICS_SRC": ""}
+    if is_vercel:
+        return {
+            "VERCEL_ANALYTICS_SRC": "/_vercel/insights/script.js",
+            "VERCEL_ANALYTICS_SPEED_SRC": "/_vercel/speed-insights/script.js",
+        }
+    # 非 Vercel 部署：仅在显式提供自定义端点时启用
+    endpoint = os.environ.get("VERCEL_ANALYTICS_ENDPOINT")
+    if endpoint:
+        return {
+            "VERCEL_ANALYTICS_SRC": endpoint,
+            "VERCEL_ANALYTICS_SPEED_SRC": endpoint,
+        }
+    return {"VERCEL_ANALYTICS_SRC": ""}

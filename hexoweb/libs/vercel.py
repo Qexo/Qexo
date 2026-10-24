@@ -96,9 +96,11 @@ def getEachFiles(base, path=""):
 def create_file_deployment(project_id, token, source_path="", *, target="production"):
     """Submit deployment files without importing application startup code."""
     data = {
-        "name": "qexo", "project": project_id, "target": target,
+        "name": "qexo", "project": project_id,
         "files": getEachFiles(source_path or os.path.abspath("")),
     }
+    if target != "preview":
+        data["target"] = target
     response = vercel_request("POST", "/v13/deployments", token, json=data)
     if response.get("error") or not response.get("id"):
         raise ValueError("Vercel deployment creation failed")

@@ -16,7 +16,7 @@ from hexoweb.libs.onepush import all_providers as onepush_providers
 from hexoweb.libs.onepush import get_notifier
 from hexoweb.libs.platforms import all_providers, get_params
 from hexoweb.libs.platforms import all_configs as platform_configs
-from hexoweb.decorators import staff_required
+from hexoweb.decorators import staff_required, init_not_completed
 from hexoweb.init import InitService
 from .api import *
 
@@ -122,6 +122,7 @@ def update_view(request):
     return render(request, "accounts/update.html", context)
 
 
+@init_not_completed(redirect_to_login=True)
 def init_view(request):
     service = InitService()
     msg = None
@@ -167,9 +168,6 @@ def init_view(request):
         if step == "6" and service.User.objects.all():
             user = service.User.objects.all()[0]
             context["username"] = user.username
-    elif int(step) >= 6:
-        logging.info(gettext("INIT_SUCCESS"))
-        return redirect("/")
     # 不返回敏感数据（vercel_token、project_id）到前端
     context["msg"] = msg
     context["step"] = step

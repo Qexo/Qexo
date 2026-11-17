@@ -75,10 +75,12 @@ def init_not_completed(redirect_to_login=False):
     def decorator(func):
         @wraps(func)
         def wrapper(request, *args, **kwargs):
-            from hexoweb.functions import gettext, get_setting_cached
+            from hexoweb.functions import gettext
+            from hexoweb.models import SettingModel
             
+            # 权限检查直接读取数据库，避免其他进程完成初始化后仍使用旧缓存。
+            init_value = SettingModel.objects.get_content_by_name("INIT")
             try:
-                init_value = get_setting_cached("INIT")
                 current_init = int(init_value) if init_value else 1
             except (ValueError, TypeError):
                 current_init = 1

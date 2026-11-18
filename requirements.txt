@@ -1,7 +1,7 @@
-Django==5.2.11
+Django==5.2.17
 PyMySQL==1.1.2
 boto3==1.42.49
-requests==2.32.5
+requests==2.34.2
 dnspython==2.8.0
 PyGithub==2.8.1
 python-gitlab==7.1.0
@@ -9,7 +9,7 @@ html2text==2025.4.15
 PyYAML==6.0.3
 Markdown==3.10.2
 django-cors-headers==4.9.0
-pyopenssl==25.3.0
+pyopenssl==26.0.0
 oss2==2.19.1
 beautifulsoup4==4.14.3
 upyun==2.5.5
